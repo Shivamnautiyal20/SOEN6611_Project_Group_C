@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FieldDenseMatrix.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Math</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math4.field.linalg</a> &gt; <span class="el_source">FieldDenseMatrix.java</span></div><h1>FieldDenseMatrix.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.math4.field.linalg;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
+import org.apache.commons.numbers.field.Field;
+import org.apache.commons.math4.linear.AnyMatrix;
+
+/**
+ * Square matrix whose elements define a {@link Field}.
+ *
+ * @param &lt;T&gt; Type of the field elements.
+ *
+ * @since 4.0
+ */
+public class FieldDenseMatrix&lt;T&gt;
+    implements AnyMatrix {
+    /** Field. */
+    private final Field&lt;T&gt; field;
+    /** Number of rows. */
+    private final int rows;
+    /** Number of columns. */
+    private final int columns;
+    /** Data storage (in row-major order). */
+    private final T[] data;
+
+    /**
+     * @param f Field.
+     * @param r Number of rows.
+     * @param c Number of columns.
+     * @throws IllegalArgumentException if {@code r &lt;= 0} or {@code c &lt;= 0}.
+     */
+    protected FieldDenseMatrix(Field&lt;T&gt; f,
+                               int r,
+<span class="fc" id="L51">                               int c) {</span>
+<span class="pc bpc" id="L52" title="2 of 4 branches missed.">        if (r &lt;= 0 ||</span>
+            c &lt;= 0) {
+<span class="nc" id="L54">            throw new IllegalArgumentException(&quot;Negative size&quot;);</span>
+        }
+
+<span class="fc" id="L57">        field = f;</span>
+<span class="fc" id="L58">        rows = r;</span>
+<span class="fc" id="L59">        columns = c;</span>
+<span class="fc" id="L60">        data = (T[]) new Object[r * c];</span>
+<span class="fc" id="L61">    }</span>
+
+    /**
+     * Factory method.
+     *
+     * @param &lt;T&gt; Type of the field elements.
+     * @param f Field.
+     * @param r Number of rows.
+     * @param c Number of columns.
+     * @return a new instance.
+     * @throws IllegalArgumentException if {@code r &lt;= 0} or {@code c &lt;= 0}.
+     */
+    public static &lt;T&gt; FieldDenseMatrix&lt;T&gt; create(Field&lt;T&gt; f,
+                                                 int r,
+                                                 int c) {
+<span class="fc" id="L76">        return new FieldDenseMatrix&lt;&gt;(f, r, c);</span>
+    }
+
+    /**
+     * Factory method.
+     *
+     * @param &lt;T&gt; Type of the field elements.
+     * @param f Field.
+     * @param r Number of rows.
+     * @param c Number of columns.
+     * @return a matrix with elements zet to {@link Field#zero() zero}.
+     * @throws IllegalArgumentException if {@code r &lt;= 0} or {@code c &lt;= 0}.
+     */
+    public static &lt;T&gt; FieldDenseMatrix&lt;T&gt; zero(Field&lt;T&gt; f,
+                                               int r,
+                                               int c) {
+<span class="fc" id="L92">        return create(f, r, c).fill(f.zero());</span>
+    }
+
+    /**
+     * Factory method.
+     *
+     * @param &lt;T&gt; Type of the field elements.
+     * @param f Field.
+     * @param n Dimension of the matrix.
+     * @throws IllegalArgumentException if {@code n &lt;= 0}.
+     * @return the identity matrix.
+     */
+    public static &lt;T&gt; FieldDenseMatrix&lt;T&gt; identity(Field&lt;T&gt; f,
+                                                   int n) {
+<span class="fc" id="L106">        final FieldDenseMatrix&lt;T&gt; r = zero(f, n, n);</span>
+
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="fc" id="L109">            r.set(i, i, f.one());</span>
+        }
+
+<span class="fc" id="L112">        return r;</span>
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(Object other) {
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        if (this == other) {</span>
+<span class="fc" id="L119">            return true;</span>
+        } else {
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">            if (other instanceof FieldDenseMatrix) {</span>
+<span class="fc" id="L122">                final FieldDenseMatrix&lt;?&gt; m = (FieldDenseMatrix&lt;?&gt;) other;</span>
+<span class="pc bpc" id="L123" title="1 of 6 branches missed.">                return field.equals(m.field) &amp;&amp;</span>
+                    rows == m.rows &amp;&amp;
+                    columns == m.columns &amp;&amp;
+<span class="fc bfc" id="L126" title="All 2 branches covered.">                    Arrays.equals(data, m.data);</span>
+            } else {
+<span class="nc" id="L128">                return false;</span>
+            }
+        }
+    }
+
+    /**
+     * Copies this matrix.
+     *
+     * @return a new instance.
+     */
+    public FieldDenseMatrix&lt;T&gt; copy() {
+<span class="fc" id="L139">        final FieldDenseMatrix&lt;T&gt; r = create(field, rows, columns);</span>
+<span class="fc" id="L140">        System.arraycopy(data, 0, r.data, 0, data.length);</span>
+<span class="fc" id="L141">        return r;</span>
+    }
+
+    /**
+     * Transposes this matrix.
+     *
+     * @return a new instance.
+     */
+    public FieldDenseMatrix&lt;T&gt; transpose() {
+<span class="fc" id="L150">        final FieldDenseMatrix&lt;T&gt; r = create(field, columns, rows);</span>
+
+<span class="fc bfc" id="L152" title="All 2 branches covered.">        for (int i = 0; i &lt; rows; i++) {</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">            for (int j = 0; j &lt; columns; j++) {</span>
+<span class="fc" id="L154">                r.set(j, i, get(i, j));</span>
+            }
+        }
+
+<span class="fc" id="L158">        return r;</span>
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getRowDimension() {
+<span class="fc" id="L164">        return rows;</span>
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getColumnDimension() {
+<span class="fc" id="L170">        return columns;</span>
+    }
+
+    /**
+     * @return the field associated with the matrix entries.
+     */
+    public Field&lt;T&gt; getField() {
+<span class="fc" id="L177">        return field;</span>
+    }
+
+    /**
+     * Sets all elements to the given value.
+     *
+     * @param value Value of the elements of the matrix.
+     * @return {@code this}.
+     */
+    public FieldDenseMatrix&lt;T&gt; fill(T value) {
+<span class="fc" id="L187">        Arrays.fill(data, value);</span>
+<span class="fc" id="L188">        return this;</span>
+    }
+
+    /**
+     * Gets an element.
+     *
+     * @param i Row.
+     * @param j Column.
+     * @return the element at (i, j).
+     */
+    public T get(int i,
+                 int j) {
+<span class="fc" id="L200">        return data[i * columns + j];</span>
+    }
+
+    /**
+     * Sets an element.
+     *
+     * @param i Row.
+     * @param j Column.
+     * @param value Value.
+     */
+    public void set(int i,
+                    int j,
+                    T value) {
+<span class="fc" id="L213">        data[i * columns + j] = value;</span>
+<span class="fc" id="L214">    }</span>
+
+    /**
+     * Addition.
+     *
+     * @param other Matrix to add.
+     * @return a new instance with the result of the addition.
+     * @throws IllegalArgumentException if the dimensions do not match.
+     */
+    public FieldDenseMatrix&lt;T&gt; add(FieldDenseMatrix&lt;T&gt; other) {
+<span class="fc" id="L224">        checkAdd(other);</span>
+<span class="fc" id="L225">        final FieldDenseMatrix&lt;T&gt; r = create(field, rows, columns);</span>
+
+<span class="fc bfc" id="L227" title="All 2 branches covered.">        for (int i = 0; i &lt; data.length; i++) {</span>
+<span class="fc" id="L228">            r.data[i] = field.add(data[i], other.data[i]);</span>
+        }
+
+<span class="fc" id="L231">        return r;</span>
+    }
+
+    /**
+     * Subtraction.
+     *
+     * @param other Matrix to subtract.
+     * @return a new instance with the result of the subtraction.
+     * @throws IllegalArgumentException if the dimensions do not match.
+     */
+    public FieldDenseMatrix&lt;T&gt; subtract(FieldDenseMatrix&lt;T&gt; other) {
+<span class="fc" id="L242">        checkAdd(other);</span>
+<span class="fc" id="L243">        final FieldDenseMatrix&lt;T&gt; r = create(field, rows, columns);</span>
+
+<span class="fc bfc" id="L245" title="All 2 branches covered.">        for (int i = 0; i &lt; data.length; i++) {</span>
+<span class="fc" id="L246">            r.data[i] = field.subtract(data[i], other.data[i]);</span>
+        }
+
+<span class="fc" id="L249">        return r;</span>
+    }
+
+    /**
+     * Negate.
+     *
+     * @return a new instance with the opposite matrix.
+     */
+    public FieldDenseMatrix&lt;T&gt; negate() {
+<span class="fc" id="L258">        final FieldDenseMatrix&lt;T&gt; r = create(field, rows, columns);</span>
+
+<span class="fc bfc" id="L260" title="All 2 branches covered.">        for (int i = 0; i &lt; data.length; i++) {</span>
+<span class="fc" id="L261">            r.data[i] = field.negate(data[i]);</span>
+        }
+
+<span class="fc" id="L264">        return r;</span>
+    }
+
+    /**
+     * Multiplication.
+     *
+     * @param other Matrix to multiply with.
+     * @return a new instance with the result of the multiplication.
+     * @throws IllegalArgumentException if the dimensions do not match.
+     */
+    public FieldDenseMatrix&lt;T&gt; multiply(FieldDenseMatrix&lt;T&gt; other) {
+<span class="fc" id="L275">        checkMultiply(other);</span>
+<span class="fc" id="L276">        final FieldDenseMatrix&lt;T&gt; r = zero(field, rows, other.columns);</span>
+
+<span class="fc bfc" id="L278" title="All 2 branches covered.">        for (int i = 0; i &lt; rows; i++) {</span>
+<span class="fc" id="L279">            final int o1 = i * columns;</span>
+<span class="fc" id="L280">            final int o2 = i * r.columns;</span>
+<span class="fc bfc" id="L281" title="All 2 branches covered.">            for (int j = 0; j &lt; other.columns; j++) {</span>
+<span class="fc" id="L282">                final int o3 = o2 + j;</span>
+<span class="fc bfc" id="L283" title="All 2 branches covered.">                for (int k = 0; k &lt; columns; k++) {</span>
+<span class="fc" id="L284">                    r.data[o3] = field.add(r.data[o3],</span>
+<span class="fc" id="L285">                                           field.multiply(data[o1 + k],</span>
+                                                          other.data[k * other.columns + j]));
+                }
+            }
+        }
+
+<span class="fc" id="L291">        return r;</span>
+    }
+
+    /**
+     * Multiplies the matrix with itself {@code p} times.
+     *
+     * @param p Exponent.
+     * @return a new instance.
+     * @throws IllegalArgumentException if {@code p &lt; 0}.
+     */
+    public FieldDenseMatrix&lt;T&gt; pow(int p) {
+<span class="fc" id="L302">        checkMultiply(this);</span>
+
+<span class="pc bpc" id="L304" title="1 of 2 branches missed.">        if (p &lt; 0) {</span>
+<span class="nc" id="L305">            throw new IllegalArgumentException(&quot;Negative exponent: &quot; + p);</span>
+        }
+
+<span class="fc bfc" id="L308" title="All 2 branches covered.">        if (p == 0) {</span>
+<span class="fc" id="L309">            return identity(field, rows);</span>
+        }
+
+<span class="fc bfc" id="L312" title="All 2 branches covered.">        if (p == 1) {</span>
+<span class="fc" id="L313">            return copy();</span>
+        }
+
+<span class="fc" id="L316">        final int power = p - 1;</span>
+
+        // Only log_2(p) operations are necessary by doing as follows:
+        //    5^214 = 5^128 * 5^64 * 5^16 * 5^4 * 5^2
+        // The same approach is used for A^p.
+
+<span class="fc" id="L322">        final char[] binary = Integer.toBinaryString(power).toCharArray();</span>
+<span class="fc" id="L323">        final ArrayList&lt;Integer&gt; nonZeroPositions = new ArrayList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L325" title="All 2 branches covered.">        for (int i = 0; i &lt; binary.length; i++) {</span>
+<span class="pc bpc" id="L326" title="1 of 2 branches missed.">            if (binary[i] == '1') {</span>
+<span class="fc" id="L327">                final int pos = binary.length - i - 1;</span>
+<span class="fc" id="L328">                nonZeroPositions.add(pos);</span>
+            }
+        }
+
+<span class="fc" id="L332">        final List&lt;FieldDenseMatrix&lt;T&gt;&gt; results = new ArrayList&lt;&gt;(binary.length);</span>
+<span class="fc" id="L333">        results.add(this);</span>
+<span class="fc bfc" id="L334" title="All 2 branches covered.">        for (int i = 1; i &lt; binary.length; i++) {</span>
+<span class="fc" id="L335">            final FieldDenseMatrix&lt;T&gt; s = results.get(i - 1);</span>
+<span class="fc" id="L336">            final FieldDenseMatrix&lt;T&gt; r = s.multiply(s);</span>
+<span class="fc" id="L337">            results.add(r);</span>
+        }
+
+<span class="fc" id="L340">        FieldDenseMatrix&lt;T&gt; r = this;</span>
+<span class="fc bfc" id="L341" title="All 2 branches covered.">        for (Integer i : nonZeroPositions) {</span>
+<span class="fc" id="L342">            r = r.multiply(results.get(i));</span>
+<span class="fc" id="L343">        }</span>
+
+<span class="fc" id="L345">        return r;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>

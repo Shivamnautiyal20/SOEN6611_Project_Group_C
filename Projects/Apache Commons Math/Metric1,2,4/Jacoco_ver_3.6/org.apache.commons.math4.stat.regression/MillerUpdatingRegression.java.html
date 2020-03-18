@@ -1,0 +1,1109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MillerUpdatingRegression.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Math</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math4.stat.regression</a> &gt; <span class="el_source">MillerUpdatingRegression.java</span></div><h1>MillerUpdatingRegression.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.math4.stat.regression;
+
+import java.util.Arrays;
+
+import org.apache.commons.math4.exception.util.LocalizedFormats;
+import org.apache.commons.math4.util.FastMath;
+import org.apache.commons.numbers.core.Precision;
+
+/**
+ * This class is a concrete implementation of the {@link UpdatingMultipleLinearRegression} interface.
+ *
+ * &lt;p&gt;The algorithm is described in: &lt;pre&gt;
+ * Algorithm AS 274: Least Squares Routines to Supplement Those of Gentleman
+ * Author(s): Alan J. Miller
+ * Source: Journal of the Royal Statistical Society.
+ * Series C (Applied Statistics), Vol. 41, No. 2
+ * (1992), pp. 458-478
+ * Published by: Blackwell Publishing for the Royal Statistical Society
+ * Stable URL: http://www.jstor.org/stable/2347583 &lt;/pre&gt;
+ *
+ * &lt;p&gt;This method for multiple regression forms the solution to the OLS problem
+ * by updating the QR decomposition as described by Gentleman.&lt;/p&gt;
+ *
+ * @since 3.0
+ */
+public class MillerUpdatingRegression implements UpdatingMultipleLinearRegression {
+
+    /** number of variables in regression */
+    private final int nvars;
+    /** diagonals of cross products matrix */
+    private final double[] d;
+    /** the elements of the R`Y */
+    private final double[] rhs;
+    /** the off diagonal portion of the R matrix */
+    private final double[] r;
+    /** the tolerance for each of the variables */
+    private final double[] tol;
+    /** residual sum of squares for all nested regressions */
+    private final double[] rss;
+    /** order of the regressors */
+    private final int[] vorder;
+    /** scratch space for tolerance calc */
+    private final double[] work_tolset;
+    /** number of observations entered */
+<span class="fc" id="L61">    private long nobs = 0;</span>
+    /** sum of squared errors of largest regression */
+<span class="fc" id="L63">    private double sserr = 0.0;</span>
+    /** has rss been called? */
+<span class="fc" id="L65">    private boolean rss_set = false;</span>
+    /** has the tolerance setting method been called */
+<span class="fc" id="L67">    private boolean tol_set = false;</span>
+    /** flags for variables with linear dependency problems */
+    private final boolean[] lindep;
+    /** singular x values */
+    private final double[] x_sing;
+    /** workspace for singularity method */
+    private final double[] work_sing;
+    /** summation of Y variable */
+<span class="fc" id="L75">    private double sumy = 0.0;</span>
+    /** summation of squared Y values */
+<span class="fc" id="L77">    private double sumsqy = 0.0;</span>
+    /** boolean flag whether a regression constant is added */
+    private final boolean hasIntercept;
+    /** zero tolerance */
+    private final double epsilon;
+    /**
+     *  Set the default constructor to private access
+     *  to prevent inadvertent instantiation
+     */
+    @SuppressWarnings(&quot;unused&quot;)
+    private MillerUpdatingRegression() {
+<span class="nc" id="L88">        this(-1, false, Double.NaN);</span>
+<span class="nc" id="L89">    }</span>
+
+    /**
+     * This is the augmented constructor for the MillerUpdatingRegression class.
+     *
+     * @param numberOfVariables number of regressors to expect, not including constant
+     * @param includeConstant include a constant automatically
+     * @param errorTolerance  zero tolerance, how machine zero is determined
+     * @throws ModelSpecificationException if {@code numberOfVariables is less than 1}
+     */
+    public MillerUpdatingRegression(int numberOfVariables, boolean includeConstant, double errorTolerance)
+<span class="fc" id="L100">            throws ModelSpecificationException {</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">        if (numberOfVariables &lt; 1) {</span>
+<span class="nc" id="L102">            throw new ModelSpecificationException(LocalizedFormats.NO_REGRESSORS);</span>
+        }
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        if (includeConstant) {</span>
+<span class="fc" id="L105">            this.nvars = numberOfVariables + 1;</span>
+        } else {
+<span class="fc" id="L107">            this.nvars = numberOfVariables;</span>
+        }
+<span class="fc" id="L109">        this.hasIntercept = includeConstant;</span>
+<span class="fc" id="L110">        this.nobs = 0;</span>
+<span class="fc" id="L111">        this.d = new double[this.nvars];</span>
+<span class="fc" id="L112">        this.rhs = new double[this.nvars];</span>
+<span class="fc" id="L113">        this.r = new double[this.nvars * (this.nvars - 1) / 2];</span>
+<span class="fc" id="L114">        this.tol = new double[this.nvars];</span>
+<span class="fc" id="L115">        this.rss = new double[this.nvars];</span>
+<span class="fc" id="L116">        this.vorder = new int[this.nvars];</span>
+<span class="fc" id="L117">        this.x_sing = new double[this.nvars];</span>
+<span class="fc" id="L118">        this.work_sing = new double[this.nvars];</span>
+<span class="fc" id="L119">        this.work_tolset = new double[this.nvars];</span>
+<span class="fc" id="L120">        this.lindep = new boolean[this.nvars];</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">        for (int i = 0; i &lt; this.nvars; i++) {</span>
+<span class="fc" id="L122">            vorder[i] = i;</span>
+        }
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">        if (errorTolerance &gt; 0) {</span>
+<span class="fc" id="L125">            this.epsilon = errorTolerance;</span>
+        } else {
+<span class="nc" id="L127">            this.epsilon = -errorTolerance;</span>
+        }
+<span class="fc" id="L129">    }</span>
+
+    /**
+     * Primary constructor for the MillerUpdatingRegression.
+     *
+     * @param numberOfVariables maximum number of potential regressors
+     * @param includeConstant include a constant automatically
+     * @throws ModelSpecificationException if {@code numberOfVariables is less than 1}
+     */
+    public MillerUpdatingRegression(int numberOfVariables, boolean includeConstant)
+            throws ModelSpecificationException {
+<span class="fc" id="L140">        this(numberOfVariables, includeConstant, Precision.EPSILON);</span>
+<span class="fc" id="L141">    }</span>
+
+    /**
+     * A getter method which determines whether a constant is included.
+     * @return true regression has an intercept, false no intercept
+     */
+    @Override
+    public boolean hasIntercept() {
+<span class="fc" id="L149">        return this.hasIntercept;</span>
+    }
+
+    /**
+     * Gets the number of observations added to the regression model.
+     * @return number of observations
+     */
+    @Override
+    public long getN() {
+<span class="fc" id="L158">        return this.nobs;</span>
+    }
+
+    /**
+     * Adds an observation to the regression model.
+     * @param x the array with regressor values
+     * @param y  the value of dependent variable given these regressors
+     * @exception ModelSpecificationException if the length of {@code x} does not equal
+     * the number of independent variables in the model
+     */
+    @Override
+    public void addObservation(final double[] x, final double y)
+            throws ModelSpecificationException {
+
+<span class="fc bfc" id="L172" title="All 8 branches covered.">        if ((!this.hasIntercept &amp;&amp; x.length != nvars) ||</span>
+               (this.hasIntercept &amp;&amp; x.length + 1 != nvars)) {
+<span class="fc" id="L174">            throw new ModelSpecificationException(LocalizedFormats.INVALID_REGRESSION_OBSERVATION,</span>
+<span class="fc" id="L175">                    x.length, nvars);</span>
+        }
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        if (!this.hasIntercept) {</span>
+<span class="fc" id="L178">            include(Arrays.copyOf(x, x.length), 1.0, y);</span>
+        } else {
+<span class="fc" id="L180">            final double[] tmp = new double[x.length + 1];</span>
+<span class="fc" id="L181">            System.arraycopy(x, 0, tmp, 1, x.length);</span>
+<span class="fc" id="L182">            tmp[0] = 1.0;</span>
+<span class="fc" id="L183">            include(tmp, 1.0, y);</span>
+        }
+<span class="fc" id="L185">        ++nobs;</span>
+
+<span class="fc" id="L187">    }</span>
+
+    /**
+     * Adds multiple observations to the model.
+     * @param x observations on the regressors
+     * @param y observations on the regressand
+     * @throws ModelSpecificationException if {@code x} is not rectangular, does not match
+     * the length of {@code y} or does not contain sufficient data to estimate the model
+     */
+    @Override
+    public void addObservations(double[][] x, double[] y) throws ModelSpecificationException {
+<span class="pc bpc" id="L198" title="2 of 6 branches missed.">        if ((x == null) || (y == null) || (x.length != y.length)) {</span>
+<span class="fc" id="L199">            throw new ModelSpecificationException(</span>
+                  LocalizedFormats.DIMENSIONS_MISMATCH_SIMPLE,
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">                  (x == null) ? 0 : x.length,</span>
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">                  (y == null) ? 0 : y.length);</span>
+        }
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">        if (x.length == 0) {  // Must be no y data either</span>
+<span class="nc" id="L205">            throw new ModelSpecificationException(</span>
+                    LocalizedFormats.NO_DATA);
+        }
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">        if (x[0].length + 1 &gt; x.length) {</span>
+<span class="nc" id="L209">            throw new ModelSpecificationException(</span>
+                  LocalizedFormats.NOT_ENOUGH_DATA_FOR_NUMBER_OF_PREDICTORS,
+<span class="nc" id="L211">                  x.length, x[0].length);</span>
+        }
+<span class="fc bfc" id="L213" title="All 2 branches covered.">        for (int i = 0; i &lt; x.length; i++) {</span>
+<span class="fc" id="L214">            addObservation(x[i], y[i]);</span>
+        }
+<span class="fc" id="L216">    }</span>
+
+    /**
+     * The include method is where the QR decomposition occurs. This statement forms all
+     * intermediate data which will be used for all derivative measures.
+     * According to the miller paper, note that in the original implementation the x vector
+     * is overwritten. In this implementation, the include method is passed a copy of the
+     * original data vector so that there is no contamination of the data. Additionally,
+     * this method differs slightly from Gentleman's method, in that the assumption is
+     * of dense design matrices, there is some advantage in using the original gentleman algorithm
+     * on sparse matrices.
+     *
+     * @param x observations on the regressors
+     * @param wi weight of the this observation (-1,1)
+     * @param yi observation on the regressand
+     */
+    private void include(final double[] x, final double wi, final double yi) {
+<span class="fc" id="L233">        int nextr = 0;</span>
+<span class="fc" id="L234">        double w = wi;</span>
+<span class="fc" id="L235">        double y = yi;</span>
+        double xi;
+        double di;
+        double wxi;
+        double dpi;
+        double xk;
+        double _w;
+<span class="fc" id="L242">        this.rss_set = false;</span>
+<span class="fc" id="L243">        sumy = smartAdd(yi, sumy);</span>
+<span class="fc" id="L244">        sumsqy = smartAdd(sumsqy, yi * yi);</span>
+<span class="fc bfc" id="L245" title="All 2 branches covered.">        for (int i = 0; i &lt; x.length; i++) {</span>
+<span class="fc bfc" id="L246" title="All 2 branches covered.">            if (w == 0.0) {</span>
+<span class="fc" id="L247">                return;</span>
+            }
+<span class="fc" id="L249">            xi = x[i];</span>
+
+<span class="fc bfc" id="L251" title="All 2 branches covered.">            if (xi == 0.0) {</span>
+<span class="fc" id="L252">                nextr += nvars - i - 1;</span>
+<span class="fc" id="L253">                continue;</span>
+            }
+<span class="fc" id="L255">            di = d[i];</span>
+<span class="fc" id="L256">            wxi = w * xi;</span>
+<span class="fc" id="L257">            _w = w;</span>
+<span class="fc bfc" id="L258" title="All 2 branches covered.">            if (di != 0.0) {</span>
+<span class="fc" id="L259">                dpi = smartAdd(di, wxi * xi);</span>
+<span class="fc" id="L260">                final double tmp = wxi * xi / di;</span>
+<span class="pc bpc" id="L261" title="1 of 2 branches missed.">                if (FastMath.abs(tmp) &gt; Precision.EPSILON) {</span>
+<span class="fc" id="L262">                    w = (di * w) / dpi;</span>
+                }
+<span class="fc" id="L264">            } else {</span>
+<span class="fc" id="L265">                dpi = wxi * xi;</span>
+<span class="fc" id="L266">                w = 0.0;</span>
+            }
+<span class="fc" id="L268">            d[i] = dpi;</span>
+<span class="fc bfc" id="L269" title="All 2 branches covered.">            for (int k = i + 1; k &lt; nvars; k++) {</span>
+<span class="fc" id="L270">                xk = x[k];</span>
+<span class="fc" id="L271">                x[k] = smartAdd(xk, -xi * r[nextr]);</span>
+<span class="fc bfc" id="L272" title="All 2 branches covered.">                if (di != 0.0) {</span>
+<span class="fc" id="L273">                    r[nextr] = smartAdd(di * r[nextr], (_w * xi) * xk) / dpi;</span>
+                } else {
+<span class="fc" id="L275">                    r[nextr] = xk / xi;</span>
+                }
+<span class="fc" id="L277">                ++nextr;</span>
+            }
+<span class="fc" id="L279">            xk = y;</span>
+<span class="fc" id="L280">            y = smartAdd(xk, -xi * rhs[i]);</span>
+<span class="fc bfc" id="L281" title="All 2 branches covered.">            if (di != 0.0) {</span>
+<span class="fc" id="L282">                rhs[i] = smartAdd(di * rhs[i], wxi * xk) / dpi;</span>
+            } else {
+<span class="fc" id="L284">                rhs[i] = xk / xi;</span>
+            }
+        }
+<span class="fc" id="L287">        sserr = smartAdd(sserr, w * y * y);</span>
+<span class="fc" id="L288">    }</span>
+
+    /**
+     * Adds to number a and b such that the contamination due to
+     * numerical smallness of one addend does not corrupt the sum.
+     * @param a - an addend
+     * @param b - an addend
+     * @return the sum of the a and b
+     */
+    private double smartAdd(double a, double b) {
+<span class="fc" id="L298">        final double _a = FastMath.abs(a);</span>
+<span class="fc" id="L299">        final double _b = FastMath.abs(b);</span>
+<span class="fc bfc" id="L300" title="All 2 branches covered.">        if (_a &gt; _b) {</span>
+<span class="fc" id="L301">            final double eps = _a * Precision.EPSILON;</span>
+<span class="fc bfc" id="L302" title="All 2 branches covered.">            if (_b &gt; eps) {</span>
+<span class="fc" id="L303">                return a + b;</span>
+            }
+<span class="fc" id="L305">            return a;</span>
+        } else {
+<span class="fc" id="L307">            final double eps = _b * Precision.EPSILON;</span>
+<span class="fc bfc" id="L308" title="All 2 branches covered.">            if (_a &gt; eps) {</span>
+<span class="fc" id="L309">                return a + b;</span>
+            }
+<span class="fc" id="L311">            return b;</span>
+        }
+    }
+
+    /**
+     * As the name suggests,  clear wipes the internals and reorders everything in the
+     * canonical order.
+     */
+    @Override
+    public void clear() {
+<span class="fc" id="L321">        Arrays.fill(this.d, 0.0);</span>
+<span class="fc" id="L322">        Arrays.fill(this.rhs, 0.0);</span>
+<span class="fc" id="L323">        Arrays.fill(this.r, 0.0);</span>
+<span class="fc" id="L324">        Arrays.fill(this.tol, 0.0);</span>
+<span class="fc" id="L325">        Arrays.fill(this.rss, 0.0);</span>
+<span class="fc" id="L326">        Arrays.fill(this.work_tolset, 0.0);</span>
+<span class="fc" id="L327">        Arrays.fill(this.work_sing, 0.0);</span>
+<span class="fc" id="L328">        Arrays.fill(this.x_sing, 0.0);</span>
+<span class="fc" id="L329">        Arrays.fill(this.lindep, false);</span>
+<span class="fc bfc" id="L330" title="All 2 branches covered.">        for (int i = 0; i &lt; nvars; i++) {</span>
+<span class="fc" id="L331">            this.vorder[i] = i;</span>
+        }
+<span class="fc" id="L333">        this.nobs = 0;</span>
+<span class="fc" id="L334">        this.sserr = 0.0;</span>
+<span class="fc" id="L335">        this.sumy = 0.0;</span>
+<span class="fc" id="L336">        this.sumsqy = 0.0;</span>
+<span class="fc" id="L337">        this.rss_set = false;</span>
+<span class="fc" id="L338">        this.tol_set = false;</span>
+<span class="fc" id="L339">    }</span>
+
+    /**
+     * This sets up tolerances for singularity testing.
+     */
+    private void tolset() {
+        int pos;
+        double total;
+<span class="fc" id="L347">        final double eps = this.epsilon;</span>
+<span class="fc bfc" id="L348" title="All 2 branches covered.">        for (int i = 0; i &lt; nvars; i++) {</span>
+<span class="fc" id="L349">            this.work_tolset[i] = FastMath.sqrt(d[i]);</span>
+        }
+<span class="fc" id="L351">        tol[0] = eps * this.work_tolset[0];</span>
+<span class="fc bfc" id="L352" title="All 2 branches covered.">        for (int col = 1; col &lt; nvars; col++) {</span>
+<span class="fc" id="L353">            pos = col - 1;</span>
+<span class="fc" id="L354">            total = work_tolset[col];</span>
+<span class="fc bfc" id="L355" title="All 2 branches covered.">            for (int row = 0; row &lt; col; row++) {</span>
+<span class="fc" id="L356">                total += FastMath.abs(r[pos]) * work_tolset[row];</span>
+<span class="fc" id="L357">                pos += nvars - row - 2;</span>
+            }
+<span class="fc" id="L359">            tol[col] = eps * total;</span>
+        }
+<span class="fc" id="L361">        tol_set = true;</span>
+<span class="fc" id="L362">    }</span>
+
+    /**
+     * The regcf method conducts the linear regression and extracts the
+     * parameter vector. Notice that the algorithm can do subset regression
+     * with no alteration.
+     *
+     * @param nreq how many of the regressors to include (either in canonical
+     * order, or in the current reordered state)
+     * @return an array with the estimated slope coefficients
+     * @throws ModelSpecificationException if {@code nreq} is less than 1
+     * or greater than the number of independent variables
+     */
+    private double[] regcf(int nreq) throws ModelSpecificationException {
+        int nextr;
+<span class="pc bpc" id="L377" title="1 of 2 branches missed.">        if (nreq &lt; 1) {</span>
+<span class="nc" id="L378">            throw new ModelSpecificationException(LocalizedFormats.NO_REGRESSORS);</span>
+        }
+<span class="pc bpc" id="L380" title="1 of 2 branches missed.">        if (nreq &gt; this.nvars) {</span>
+<span class="nc" id="L381">            throw new ModelSpecificationException(</span>
+<span class="nc" id="L382">                    LocalizedFormats.TOO_MANY_REGRESSORS, nreq, this.nvars);</span>
+        }
+<span class="pc bpc" id="L384" title="1 of 2 branches missed.">        if (!this.tol_set) {</span>
+<span class="nc" id="L385">            tolset();</span>
+        }
+<span class="fc" id="L387">        final double[] ret = new double[nreq];</span>
+<span class="fc" id="L388">        boolean rankProblem = false;</span>
+<span class="fc bfc" id="L389" title="All 2 branches covered.">        for (int i = nreq - 1; i &gt; -1; i--) {</span>
+<span class="fc bfc" id="L390" title="All 2 branches covered.">            if (FastMath.sqrt(d[i]) &lt; tol[i]) {</span>
+<span class="fc" id="L391">                ret[i] = 0.0;</span>
+<span class="fc" id="L392">                d[i] = 0.0;</span>
+<span class="fc" id="L393">                rankProblem = true;</span>
+            } else {
+<span class="fc" id="L395">                ret[i] = rhs[i];</span>
+<span class="fc" id="L396">                nextr = i * (nvars + nvars - i - 1) / 2;</span>
+<span class="fc bfc" id="L397" title="All 2 branches covered.">                for (int j = i + 1; j &lt; nreq; j++) {</span>
+<span class="fc" id="L398">                    ret[i] = smartAdd(ret[i], -r[nextr] * ret[j]);</span>
+<span class="fc" id="L399">                    ++nextr;</span>
+                }
+            }
+        }
+<span class="fc bfc" id="L403" title="All 2 branches covered.">        if (rankProblem) {</span>
+<span class="fc bfc" id="L404" title="All 2 branches covered.">            for (int i = 0; i &lt; nreq; i++) {</span>
+<span class="fc bfc" id="L405" title="All 2 branches covered.">                if (this.lindep[i]) {</span>
+<span class="fc" id="L406">                    ret[i] = Double.NaN;</span>
+                }
+            }
+        }
+<span class="fc" id="L410">        return ret;</span>
+    }
+
+    /**
+     * The method which checks for singularities and then eliminates the offending
+     * columns.
+     */
+    private void singcheck() {
+        int pos;
+<span class="fc bfc" id="L419" title="All 2 branches covered.">        for (int i = 0; i &lt; nvars; i++) {</span>
+<span class="fc" id="L420">            work_sing[i] = FastMath.sqrt(d[i]);</span>
+        }
+<span class="fc bfc" id="L422" title="All 2 branches covered.">        for (int col = 0; col &lt; nvars; col++) {</span>
+            // Set elements within R to zero if they are less than tol(col) in
+            // absolute value after being scaled by the square root of their row
+            // multiplier
+<span class="fc" id="L426">            final double temp = tol[col];</span>
+<span class="fc" id="L427">            pos = col - 1;</span>
+<span class="fc bfc" id="L428" title="All 2 branches covered.">            for (int row = 0; row &lt; col - 1; row++) {</span>
+<span class="fc bfc" id="L429" title="All 2 branches covered.">                if (FastMath.abs(r[pos]) * work_sing[row] &lt; temp) {</span>
+<span class="fc" id="L430">                    r[pos] = 0.0;</span>
+                }
+<span class="fc" id="L432">                pos += nvars - row - 2;</span>
+            }
+            // If diagonal element is near zero, set it to zero, set appropriate
+            // element of LINDEP, and use INCLUD to augment the projections in
+            // the lower rows of the orthogonalization.
+<span class="fc" id="L437">            lindep[col] = false;</span>
+<span class="fc bfc" id="L438" title="All 2 branches covered.">            if (work_sing[col] &lt; temp) {</span>
+<span class="fc" id="L439">                lindep[col] = true;</span>
+<span class="fc bfc" id="L440" title="All 2 branches covered.">                if (col &lt; nvars - 1) {</span>
+<span class="fc" id="L441">                    Arrays.fill(x_sing, 0.0);</span>
+<span class="fc" id="L442">                    int _pi = col * (nvars + nvars - col - 1) / 2;</span>
+<span class="fc bfc" id="L443" title="All 2 branches covered.">                    for (int _xi = col + 1; _xi &lt; nvars; _xi++, _pi++) {</span>
+<span class="fc" id="L444">                        x_sing[_xi] = r[_pi];</span>
+<span class="fc" id="L445">                        r[_pi] = 0.0;</span>
+                    }
+<span class="fc" id="L447">                    final double y = rhs[col];</span>
+<span class="fc" id="L448">                    final double weight = d[col];</span>
+<span class="fc" id="L449">                    d[col] = 0.0;</span>
+<span class="fc" id="L450">                    rhs[col] = 0.0;</span>
+<span class="fc" id="L451">                    this.include(x_sing, weight, y);</span>
+<span class="fc" id="L452">                } else {</span>
+<span class="fc" id="L453">                    sserr += d[col] * rhs[col] * rhs[col];</span>
+                }
+            }
+        }
+<span class="fc" id="L457">    }</span>
+
+    /**
+     * Calculates the sum of squared errors for the full regression
+     * and all subsets in the following manner: &lt;pre&gt;
+     * rss[] ={
+     * ResidualSumOfSquares_allNvars,
+     * ResidualSumOfSquares_FirstNvars-1,
+     * ResidualSumOfSquares_FirstNvars-2,
+     * ..., ResidualSumOfSquares_FirstVariable} &lt;/pre&gt;
+     */
+    private void ss() {
+<span class="fc" id="L469">        double total = sserr;</span>
+<span class="fc" id="L470">        rss[nvars - 1] = sserr;</span>
+<span class="fc bfc" id="L471" title="All 2 branches covered.">        for (int i = nvars - 1; i &gt; 0; i--) {</span>
+<span class="fc" id="L472">            total += d[i] * rhs[i] * rhs[i];</span>
+<span class="fc" id="L473">            rss[i - 1] = total;</span>
+        }
+<span class="fc" id="L475">        rss_set = true;</span>
+<span class="fc" id="L476">    }</span>
+
+    /**
+     * Calculates the cov matrix assuming only the first nreq variables are
+     * included in the calculation. The returned array contains a symmetric
+     * matrix stored in lower triangular form. The matrix will have
+     * ( nreq + 1 ) * nreq / 2 elements. For illustration &lt;pre&gt;
+     * cov =
+     * {
+     *  cov_00,
+     *  cov_10, cov_11,
+     *  cov_20, cov_21, cov22,
+     *  ...
+     * } &lt;/pre&gt;
+     *
+     * @param nreq how many of the regressors to include (either in canonical
+     * order, or in the current reordered state)
+     * @return an array with the variance covariance of the included
+     * regressors in lower triangular form
+     */
+    private double[] cov(int nreq) {
+<span class="pc bpc" id="L497" title="1 of 2 branches missed.">        if (this.nobs &lt;= nreq) {</span>
+<span class="nc" id="L498">            return null;</span>
+        }
+<span class="fc" id="L500">        double rnk = 0.0;</span>
+<span class="fc bfc" id="L501" title="All 2 branches covered.">        for (int i = 0; i &lt; nreq; i++) {</span>
+<span class="fc bfc" id="L502" title="All 2 branches covered.">            if (!this.lindep[i]) {</span>
+<span class="fc" id="L503">                rnk += 1.0;</span>
+            }
+        }
+<span class="fc" id="L506">        final double var = rss[nreq - 1] / (nobs - rnk);</span>
+<span class="fc" id="L507">        final double[] rinv = new double[nreq * (nreq - 1) / 2];</span>
+<span class="fc" id="L508">        inverse(rinv, nreq);</span>
+<span class="fc" id="L509">        final double[] covmat = new double[nreq * (nreq + 1) / 2];</span>
+<span class="fc" id="L510">        Arrays.fill(covmat, Double.NaN);</span>
+        int pos2;
+        int pos1;
+<span class="fc" id="L513">        int start = 0;</span>
+<span class="fc" id="L514">        double total = 0;</span>
+<span class="fc bfc" id="L515" title="All 2 branches covered.">        for (int row = 0; row &lt; nreq; row++) {</span>
+<span class="fc" id="L516">            pos2 = start;</span>
+<span class="fc bfc" id="L517" title="All 2 branches covered.">            if (!this.lindep[row]) {</span>
+<span class="fc bfc" id="L518" title="All 2 branches covered.">                for (int col = row; col &lt; nreq; col++) {</span>
+<span class="fc bfc" id="L519" title="All 2 branches covered.">                    if (!this.lindep[col]) {</span>
+<span class="fc" id="L520">                        pos1 = start + col - row;</span>
+<span class="fc bfc" id="L521" title="All 2 branches covered.">                        if (row == col) {</span>
+<span class="fc" id="L522">                            total = 1.0 / d[col];</span>
+                        } else {
+<span class="fc" id="L524">                            total = rinv[pos1 - 1] / d[col];</span>
+                        }
+<span class="fc bfc" id="L526" title="All 2 branches covered.">                        for (int k = col + 1; k &lt; nreq; k++) {</span>
+<span class="fc bfc" id="L527" title="All 2 branches covered.">                            if (!this.lindep[k]) {</span>
+<span class="fc" id="L528">                                total += rinv[pos1] * rinv[pos2] / d[k];</span>
+                            }
+<span class="fc" id="L530">                            ++pos1;</span>
+<span class="fc" id="L531">                            ++pos2;</span>
+                        }
+<span class="fc" id="L533">                        covmat[ (col + 1) * col / 2 + row] = total * var;</span>
+                    } else {
+<span class="fc" id="L535">                        pos2 += nreq - col - 1;</span>
+                    }
+                }
+            }
+<span class="fc" id="L539">            start += nreq - row - 1;</span>
+        }
+<span class="fc" id="L541">        return covmat;</span>
+    }
+
+    /**
+     * This internal method calculates the inverse of the upper-triangular portion
+     * of the R matrix.
+     * @param rinv  the storage for the inverse of r
+     * @param nreq how many of the regressors to include (either in canonical
+     * order, or in the current reordered state)
+     */
+    private void inverse(double[] rinv, int nreq) {
+<span class="fc" id="L552">        int pos = nreq * (nreq - 1) / 2 - 1;</span>
+<span class="fc" id="L553">        int pos1 = -1;</span>
+<span class="fc" id="L554">        int pos2 = -1;</span>
+<span class="fc" id="L555">        double total = 0.0;</span>
+<span class="fc" id="L556">        Arrays.fill(rinv, Double.NaN);</span>
+<span class="fc bfc" id="L557" title="All 2 branches covered.">        for (int row = nreq - 1; row &gt; 0; --row) {</span>
+<span class="fc bfc" id="L558" title="All 2 branches covered.">            if (!this.lindep[row]) {</span>
+<span class="fc" id="L559">                final int start = (row - 1) * (nvars + nvars - row) / 2;</span>
+<span class="fc bfc" id="L560" title="All 2 branches covered.">                for (int col = nreq; col &gt; row; --col) {</span>
+<span class="fc" id="L561">                    pos1 = start;</span>
+<span class="fc" id="L562">                    pos2 = pos;</span>
+<span class="fc" id="L563">                    total = 0.0;</span>
+<span class="fc bfc" id="L564" title="All 2 branches covered.">                    for (int k = row; k &lt; col - 1; k++) {</span>
+<span class="fc" id="L565">                        pos2 += nreq - k - 1;</span>
+<span class="fc bfc" id="L566" title="All 2 branches covered.">                        if (!this.lindep[k]) {</span>
+<span class="fc" id="L567">                            total += -r[pos1] * rinv[pos2];</span>
+                        }
+<span class="fc" id="L569">                        ++pos1;</span>
+                    }
+<span class="fc" id="L571">                    rinv[pos] = total - r[pos1];</span>
+<span class="fc" id="L572">                    --pos;</span>
+                }
+<span class="fc" id="L574">            } else {</span>
+<span class="fc" id="L575">                pos -= nreq - row;</span>
+            }
+        }
+<span class="fc" id="L578">    }</span>
+
+    /**
+     * In the original algorithm only the partial correlations of the regressors
+     * is returned to the user. In this implementation, we have &lt;pre&gt;
+     * corr =
+     * {
+     *   corrxx - lower triangular
+     *   corrxy - bottom row of the matrix
+     * }
+     * Replaces subroutines PCORR and COR of:
+     * ALGORITHM AS274  APPL. STATIST. (1992) VOL.41, NO. 2 &lt;/pre&gt;
+     *
+     * &lt;p&gt;Calculate partial correlations after the variables in rows
+     * 1, 2, ..., IN have been forced into the regression.
+     * If IN = 1, and the first row of R represents a constant in the
+     * model, then the usual simple correlations are returned.&lt;/p&gt;
+     *
+     * &lt;p&gt;If IN = 0, the value returned in array CORMAT for the correlation
+     * of variables Xi &amp;amp; Xj is: &lt;pre&gt;
+     * sum ( Xi.Xj ) / Sqrt ( sum (Xi^2) . sum (Xj^2) )&lt;/pre&gt;
+     *
+     * &lt;p&gt;On return, array CORMAT contains the upper triangle of the matrix of
+     * partial correlations stored by rows, excluding the 1's on the diagonal.
+     * e.g. if IN = 2, the consecutive elements returned are:
+     * (3,4) (3,5) ... (3,ncol), (4,5) (4,6) ... (4,ncol), etc.
+     * Array YCORR stores the partial correlations with the Y-variable
+     * starting with YCORR(IN+1) = partial correlation with the variable in
+     * position (IN+1). &lt;/p&gt;
+     *
+     * @param in how many of the regressors to include (either in canonical
+     * order, or in the current reordered state)
+     * @return an array with the partial correlations of the remainder of
+     * regressors with each other and the regressand, in lower triangular form
+     */
+    public double[] getPartialCorrelations(int in) {
+<span class="fc" id="L614">        final double[] output = new double[(nvars - in + 1) * (nvars - in) / 2];</span>
+        int pos;
+        int pos1;
+        int pos2;
+<span class="fc" id="L618">        final int rms_off = -in;</span>
+<span class="fc" id="L619">        final int wrk_off = -(in + 1);</span>
+<span class="fc" id="L620">        final double[] rms = new double[nvars - in];</span>
+<span class="fc" id="L621">        final double[] work = new double[nvars - in - 1];</span>
+        double sumxx;
+        double sumxy;
+        double sumyy;
+<span class="fc" id="L625">        final int offXX = (nvars - in) * (nvars - in - 1) / 2;</span>
+<span class="pc bpc" id="L626" title="2 of 4 branches missed.">        if (in &lt; -1 || in &gt;= nvars) {</span>
+<span class="nc" id="L627">            return null;</span>
+        }
+<span class="fc" id="L629">        final int nvm = nvars - 1;</span>
+<span class="fc" id="L630">        final int base_pos = r.length - (nvm - in) * (nvm - in + 1) / 2;</span>
+<span class="pc bpc" id="L631" title="1 of 2 branches missed.">        if (d[in] &gt; 0.0) {</span>
+<span class="fc" id="L632">            rms[in + rms_off] = 1.0 / FastMath.sqrt(d[in]);</span>
+        }
+<span class="fc bfc" id="L634" title="All 2 branches covered.">        for (int col = in + 1; col &lt; nvars; col++) {</span>
+<span class="fc" id="L635">            pos = base_pos + col - 1 - in;</span>
+<span class="fc" id="L636">            sumxx = d[col];</span>
+<span class="fc bfc" id="L637" title="All 2 branches covered.">            for (int row = in; row &lt; col; row++) {</span>
+<span class="fc" id="L638">                sumxx += d[row] * r[pos] * r[pos];</span>
+<span class="fc" id="L639">                pos += nvars - row - 2;</span>
+            }
+<span class="pc bpc" id="L641" title="1 of 2 branches missed.">            if (sumxx &gt; 0.0) {</span>
+<span class="fc" id="L642">                rms[col + rms_off] = 1.0 / FastMath.sqrt(sumxx);</span>
+            } else {
+<span class="nc" id="L644">                rms[col + rms_off] = 0.0;</span>
+            }
+        }
+<span class="fc" id="L647">        sumyy = sserr;</span>
+<span class="fc bfc" id="L648" title="All 2 branches covered.">        for (int row = in; row &lt; nvars; row++) {</span>
+<span class="fc" id="L649">            sumyy += d[row] * rhs[row] * rhs[row];</span>
+        }
+<span class="pc bpc" id="L651" title="1 of 2 branches missed.">        if (sumyy &gt; 0.0) {</span>
+<span class="fc" id="L652">            sumyy = 1.0 / FastMath.sqrt(sumyy);</span>
+        }
+<span class="fc" id="L654">        pos = 0;</span>
+<span class="fc bfc" id="L655" title="All 2 branches covered.">        for (int col1 = in; col1 &lt; nvars; col1++) {</span>
+<span class="fc" id="L656">            sumxy = 0.0;</span>
+<span class="fc" id="L657">            Arrays.fill(work, 0.0);</span>
+<span class="fc" id="L658">            pos1 = base_pos + col1 - in - 1;</span>
+<span class="fc bfc" id="L659" title="All 2 branches covered.">            for (int row = in; row &lt; col1; row++) {</span>
+<span class="fc" id="L660">                pos2 = pos1 + 1;</span>
+<span class="fc bfc" id="L661" title="All 2 branches covered.">                for (int col2 = col1 + 1; col2 &lt; nvars; col2++) {</span>
+<span class="fc" id="L662">                    work[col2 + wrk_off] += d[row] * r[pos1] * r[pos2];</span>
+<span class="fc" id="L663">                    pos2++;</span>
+                }
+<span class="fc" id="L665">                sumxy += d[row] * r[pos1] * rhs[row];</span>
+<span class="fc" id="L666">                pos1 += nvars - row - 2;</span>
+            }
+<span class="fc" id="L668">            pos2 = pos1 + 1;</span>
+<span class="fc bfc" id="L669" title="All 2 branches covered.">            for (int col2 = col1 + 1; col2 &lt; nvars; col2++) {</span>
+<span class="fc" id="L670">                work[col2 + wrk_off] += d[col1] * r[pos2];</span>
+<span class="fc" id="L671">                ++pos2;</span>
+<span class="fc" id="L672">                output[ (col2 - 1 - in) * (col2 - in) / 2 + col1 - in] =</span>
+                        work[col2 + wrk_off] * rms[col1 + rms_off] * rms[col2 + rms_off];
+<span class="fc" id="L674">                ++pos;</span>
+            }
+<span class="fc" id="L676">            sumxy += d[col1] * rhs[col1];</span>
+<span class="fc" id="L677">            output[col1 + rms_off + offXX] = sumxy * rms[col1 + rms_off] * sumyy;</span>
+        }
+
+<span class="fc" id="L680">        return output;</span>
+    }
+
+    /**
+     * ALGORITHM AS274 APPL. STATIST. (1992) VOL.41, NO. 2.
+     * Move variable from position FROM to position TO in an
+     * orthogonal reduction produced by AS75.1.
+     *
+     * @param from initial position
+     * @param to destination
+     */
+    private void vmove(int from, int to) {
+        double d1;
+        double d2;
+        double X;
+        double d1new;
+        double d2new;
+        double cbar;
+        double sbar;
+        double Y;
+        int first;
+        int inc;
+        int m1;
+        int m2;
+        int mp1;
+        int pos;
+<span class="fc" id="L706">        boolean bSkipTo40 = false;</span>
+<span class="pc bpc" id="L707" title="1 of 2 branches missed.">        if (from == to) {</span>
+<span class="nc" id="L708">            return;</span>
+        }
+<span class="fc bfc" id="L710" title="All 2 branches covered.">        if (!this.rss_set) {</span>
+<span class="fc" id="L711">            ss();</span>
+        }
+<span class="fc" id="L713">        int count = 0;</span>
+<span class="pc bpc" id="L714" title="1 of 2 branches missed.">        if (from &lt; to) {</span>
+<span class="nc" id="L715">            first = from;</span>
+<span class="nc" id="L716">            inc = 1;</span>
+<span class="nc" id="L717">            count = to - from;</span>
+        } else {
+<span class="fc" id="L719">            first = from - 1;</span>
+<span class="fc" id="L720">            inc = -1;</span>
+<span class="fc" id="L721">            count = from - to;</span>
+        }
+
+<span class="fc" id="L724">        int m = first;</span>
+<span class="fc" id="L725">        int idx = 0;</span>
+<span class="fc bfc" id="L726" title="All 2 branches covered.">        while (idx &lt; count) {</span>
+<span class="fc" id="L727">            m1 = m * (nvars + nvars - m - 1) / 2;</span>
+<span class="fc" id="L728">            m2 = m1 + nvars - m - 1;</span>
+<span class="fc" id="L729">            mp1 = m + 1;</span>
+
+<span class="fc" id="L731">            d1 = d[m];</span>
+<span class="fc" id="L732">            d2 = d[mp1];</span>
+            // Special cases.
+<span class="pc bpc" id="L734" title="3 of 4 branches missed.">            if (d1 &gt; this.epsilon || d2 &gt; this.epsilon) {</span>
+<span class="fc" id="L735">                X = r[m1];</span>
+<span class="pc bpc" id="L736" title="1 of 2 branches missed.">                if (FastMath.abs(X) * FastMath.sqrt(d1) &lt; tol[mp1]) {</span>
+<span class="nc" id="L737">                    X = 0.0;</span>
+                }
+<span class="pc bpc" id="L739" title="2 of 4 branches missed.">                if (d1 &lt; this.epsilon || FastMath.abs(X) &lt; this.epsilon) {</span>
+<span class="nc" id="L740">                    d[m] = d2;</span>
+<span class="nc" id="L741">                    d[mp1] = d1;</span>
+<span class="nc" id="L742">                    r[m1] = 0.0;</span>
+<span class="nc bnc" id="L743" title="All 2 branches missed.">                    for (int col = m + 2; col &lt; nvars; col++) {</span>
+<span class="nc" id="L744">                        ++m1;</span>
+<span class="nc" id="L745">                        X = r[m1];</span>
+<span class="nc" id="L746">                        r[m1] = r[m2];</span>
+<span class="nc" id="L747">                        r[m2] = X;</span>
+<span class="nc" id="L748">                        ++m2;</span>
+                    }
+<span class="nc" id="L750">                    X = rhs[m];</span>
+<span class="nc" id="L751">                    rhs[m] = rhs[mp1];</span>
+<span class="nc" id="L752">                    rhs[mp1] = X;</span>
+<span class="nc" id="L753">                    bSkipTo40 = true;</span>
+                    //break;
+<span class="pc bpc" id="L755" title="1 of 2 branches missed.">                } else if (d2 &lt; this.epsilon) {</span>
+<span class="nc" id="L756">                    d[m] = d1 * X * X;</span>
+<span class="nc" id="L757">                    r[m1] = 1.0 / X;</span>
+<span class="nc bnc" id="L758" title="All 2 branches missed.">                    for (int _i = m1 + 1; _i &lt; m1 + nvars - m - 1; _i++) {</span>
+<span class="nc" id="L759">                        r[_i] /= X;</span>
+                    }
+<span class="nc" id="L761">                    rhs[m] /= X;</span>
+<span class="nc" id="L762">                    bSkipTo40 = true;</span>
+                    //break;
+                }
+<span class="pc bpc" id="L765" title="1 of 2 branches missed.">                if (!bSkipTo40) {</span>
+<span class="fc" id="L766">                    d1new = d2 + d1 * X * X;</span>
+<span class="fc" id="L767">                    cbar = d2 / d1new;</span>
+<span class="fc" id="L768">                    sbar = X * d1 / d1new;</span>
+<span class="fc" id="L769">                    d2new = d1 * cbar;</span>
+<span class="fc" id="L770">                    d[m] = d1new;</span>
+<span class="fc" id="L771">                    d[mp1] = d2new;</span>
+<span class="fc" id="L772">                    r[m1] = sbar;</span>
+<span class="fc bfc" id="L773" title="All 2 branches covered.">                    for (int col = m + 2; col &lt; nvars; col++) {</span>
+<span class="fc" id="L774">                        ++m1;</span>
+<span class="fc" id="L775">                        Y = r[m1];</span>
+<span class="fc" id="L776">                        r[m1] = cbar * r[m2] + sbar * Y;</span>
+<span class="fc" id="L777">                        r[m2] = Y - X * r[m2];</span>
+<span class="fc" id="L778">                        ++m2;</span>
+                    }
+<span class="fc" id="L780">                    Y = rhs[m];</span>
+<span class="fc" id="L781">                    rhs[m] = cbar * rhs[mp1] + sbar * Y;</span>
+<span class="fc" id="L782">                    rhs[mp1] = Y - X * rhs[mp1];</span>
+                }
+            }
+<span class="fc bfc" id="L785" title="All 2 branches covered.">            if (m &gt; 0) {</span>
+<span class="fc" id="L786">                pos = m;</span>
+<span class="fc bfc" id="L787" title="All 2 branches covered.">                for (int row = 0; row &lt; m; row++) {</span>
+<span class="fc" id="L788">                    X = r[pos];</span>
+<span class="fc" id="L789">                    r[pos] = r[pos - 1];</span>
+<span class="fc" id="L790">                    r[pos - 1] = X;</span>
+<span class="fc" id="L791">                    pos += nvars - row - 2;</span>
+                }
+            }
+            // Adjust variable order (VORDER), the tolerances (TOL) and
+            // the vector of residual sums of squares (RSS).
+<span class="fc" id="L796">            m1 = vorder[m];</span>
+<span class="fc" id="L797">            vorder[m] = vorder[mp1];</span>
+<span class="fc" id="L798">            vorder[mp1] = m1;</span>
+<span class="fc" id="L799">            X = tol[m];</span>
+<span class="fc" id="L800">            tol[m] = tol[mp1];</span>
+<span class="fc" id="L801">            tol[mp1] = X;</span>
+<span class="fc" id="L802">            rss[m] = rss[mp1] + d[mp1] * rhs[mp1] * rhs[mp1];</span>
+
+<span class="fc" id="L804">            m += inc;</span>
+<span class="fc" id="L805">            ++idx;</span>
+        }
+<span class="fc" id="L807">    }</span>
+
+    /**
+     * ALGORITHM AS274  APPL. STATIST. (1992) VOL.41, NO. 2
+     *
+     * &lt;p&gt; Re-order the variables in an orthogonal reduction produced by
+     * AS75.1 so that the N variables in LIST start at position POS1,
+     * though will not necessarily be in the same order as in LIST.
+     * Any variables in VORDER before position POS1 are not moved.
+     * Auxiliary routine called: VMOVE. &lt;/p&gt;
+     *
+     * &lt;p&gt;This internal method reorders the regressors.&lt;/p&gt;
+     *
+     * @param list the regressors to move
+     * @param pos1 where the list will be placed
+     * @return -1 error, 0 everything ok
+     */
+    private int reorderRegressors(int[] list, int pos1) {
+        int next;
+        int i;
+        int l;
+<span class="pc bpc" id="L828" title="2 of 4 branches missed.">        if (list.length &lt; 1 || list.length &gt; nvars + 1 - pos1) {</span>
+<span class="nc" id="L829">            return -1;</span>
+        }
+<span class="fc" id="L831">        next = pos1;</span>
+<span class="fc" id="L832">        i = pos1;</span>
+<span class="fc bfc" id="L833" title="All 2 branches covered.">        while (i &lt; nvars) {</span>
+<span class="fc" id="L834">            l = vorder[i];</span>
+<span class="fc bfc" id="L835" title="All 2 branches covered.">            for (int j = 0; j &lt; list.length; j++) {</span>
+<span class="fc bfc" id="L836" title="All 4 branches covered.">                if (l == list[j] &amp;&amp; i &gt; next) {</span>
+<span class="fc" id="L837">                    this.vmove(i, next);</span>
+<span class="fc" id="L838">                    ++next;</span>
+<span class="fc bfc" id="L839" title="All 2 branches covered.">                    if (next &gt;= list.length + pos1) {</span>
+<span class="fc" id="L840">                        return 0;</span>
+                    } else {
+                        break;
+                    }
+                }
+            }
+<span class="fc" id="L846">            ++i;</span>
+        }
+<span class="fc" id="L848">        return 0;</span>
+    }
+
+    /**
+     * Gets the diagonal of the Hat matrix also known as the leverage matrix.
+     *
+     * @param  row_data returns the diagonal of the hat matrix for this observation
+     * @return the diagonal element of the hatmatrix
+     */
+    public double getDiagonalOfHatMatrix(double[] row_data) {
+<span class="fc" id="L858">        double[] wk = new double[this.nvars];</span>
+        int pos;
+        double total;
+
+<span class="pc bpc" id="L862" title="1 of 2 branches missed.">        if (row_data.length &gt; nvars) {</span>
+<span class="nc" id="L863">            return Double.NaN;</span>
+        }
+        double[] xrow;
+<span class="fc bfc" id="L866" title="All 2 branches covered.">        if (this.hasIntercept) {</span>
+<span class="fc" id="L867">            xrow = new double[row_data.length + 1];</span>
+<span class="fc" id="L868">            xrow[0] = 1.0;</span>
+<span class="fc" id="L869">            System.arraycopy(row_data, 0, xrow, 1, row_data.length);</span>
+        } else {
+<span class="fc" id="L871">            xrow = row_data;</span>
+        }
+<span class="fc" id="L873">        double hii = 0.0;</span>
+<span class="fc bfc" id="L874" title="All 2 branches covered.">        for (int col = 0; col &lt; xrow.length; col++) {</span>
+<span class="pc bpc" id="L875" title="1 of 2 branches missed.">            if (FastMath.sqrt(d[col]) &lt; tol[col]) {</span>
+<span class="nc" id="L876">                wk[col] = 0.0;</span>
+            } else {
+<span class="fc" id="L878">                pos = col - 1;</span>
+<span class="fc" id="L879">                total = xrow[col];</span>
+<span class="fc bfc" id="L880" title="All 2 branches covered.">                for (int row = 0; row &lt; col; row++) {</span>
+<span class="fc" id="L881">                    total = smartAdd(total, -wk[row] * r[pos]);</span>
+<span class="fc" id="L882">                    pos += nvars - row - 2;</span>
+                }
+<span class="fc" id="L884">                wk[col] = total;</span>
+<span class="fc" id="L885">                hii = smartAdd(hii, (total * total) / d[col]);</span>
+            }
+        }
+<span class="fc" id="L888">        return hii;</span>
+    }
+
+    /**
+     * Gets the order of the regressors, useful if some type of reordering
+     * has been called. Calling regress with int[]{} args will trigger
+     * a reordering.
+     *
+     * @return int[] with the current order of the regressors
+     */
+    public int[] getOrderOfRegressors(){
+<span class="nc" id="L899">        return Arrays.copyOf(vorder, vorder.length);</span>
+    }
+
+    /**
+     * Conducts a regression on the data in the model, using all regressors.
+     *
+     * @return RegressionResults the structure holding all regression results
+     * @exception  ModelSpecificationException - thrown if number of observations is
+     * less than the number of variables
+     */
+    @Override
+    public RegressionResults regress() throws ModelSpecificationException {
+<span class="fc" id="L911">        return regress(this.nvars);</span>
+    }
+
+    /**
+     * Conducts a regression on the data in the model, using a subset of regressors.
+     *
+     * @param numberOfRegressors many of the regressors to include (either in canonical
+     * order, or in the current reordered state)
+     * @return RegressionResults the structure holding all regression results
+     * @exception  ModelSpecificationException - thrown if number of observations is
+     * less than the number of variables or number of regressors requested
+     * is greater than the regressors in the model
+     */
+    public RegressionResults regress(int numberOfRegressors) throws ModelSpecificationException {
+<span class="pc bpc" id="L925" title="1 of 2 branches missed.">        if (this.nobs &lt;= numberOfRegressors) {</span>
+<span class="nc" id="L926">           throw new ModelSpecificationException(</span>
+                   LocalizedFormats.NOT_ENOUGH_DATA_FOR_NUMBER_OF_PREDICTORS,
+<span class="nc" id="L928">                   this.nobs, numberOfRegressors);</span>
+        }
+<span class="pc bpc" id="L930" title="1 of 2 branches missed.">        if( numberOfRegressors &gt; this.nvars ){</span>
+<span class="nc" id="L931">            throw new ModelSpecificationException(</span>
+<span class="nc" id="L932">                    LocalizedFormats.TOO_MANY_REGRESSORS, numberOfRegressors, this.nvars);</span>
+        }
+
+<span class="fc" id="L935">        tolset();</span>
+<span class="fc" id="L936">        singcheck();</span>
+
+<span class="fc" id="L938">        double[] beta = this.regcf(numberOfRegressors);</span>
+
+<span class="fc" id="L940">        ss();</span>
+
+<span class="fc" id="L942">        double[] cov = this.cov(numberOfRegressors);</span>
+
+<span class="fc" id="L944">        int rnk = 0;</span>
+<span class="fc bfc" id="L945" title="All 2 branches covered.">        for (int i = 0; i &lt; this.lindep.length; i++) {</span>
+<span class="fc bfc" id="L946" title="All 2 branches covered.">            if (!this.lindep[i]) {</span>
+<span class="fc" id="L947">                ++rnk;</span>
+            }
+        }
+
+<span class="fc" id="L951">        boolean needsReorder = false;</span>
+<span class="fc bfc" id="L952" title="All 2 branches covered.">        for (int i = 0; i &lt; numberOfRegressors; i++) {</span>
+<span class="pc bpc" id="L953" title="1 of 2 branches missed.">            if (this.vorder[i] != i) {</span>
+<span class="nc" id="L954">                needsReorder = true;</span>
+<span class="nc" id="L955">                break;</span>
+            }
+        }
+<span class="pc bpc" id="L958" title="1 of 2 branches missed.">        if (!needsReorder) {</span>
+<span class="fc" id="L959">            return new RegressionResults(</span>
+                    beta, new double[][]{cov}, true, this.nobs, rnk,
+                    this.sumy, this.sumsqy, this.sserr, this.hasIntercept, false);
+        } else {
+<span class="nc" id="L963">            double[] betaNew = new double[beta.length];</span>
+<span class="nc" id="L964">            double[] covNew = new double[cov.length];</span>
+
+<span class="nc" id="L966">            int[] newIndices = new int[beta.length];</span>
+<span class="nc bnc" id="L967" title="All 2 branches missed.">            for (int i = 0; i &lt; nvars; i++) {</span>
+<span class="nc bnc" id="L968" title="All 2 branches missed.">                for (int j = 0; j &lt; numberOfRegressors; j++) {</span>
+<span class="nc bnc" id="L969" title="All 2 branches missed.">                    if (this.vorder[j] == i) {</span>
+<span class="nc" id="L970">                        betaNew[i] = beta[ j];</span>
+<span class="nc" id="L971">                        newIndices[i] = j;</span>
+                    }
+                }
+            }
+
+<span class="nc" id="L976">            int idx1 = 0;</span>
+            int idx2;
+            int _i;
+            int _j;
+<span class="nc bnc" id="L980" title="All 2 branches missed.">            for (int i = 0; i &lt; beta.length; i++) {</span>
+<span class="nc" id="L981">                _i = newIndices[i];</span>
+<span class="nc bnc" id="L982" title="All 2 branches missed.">                for (int j = 0; j &lt;= i; j++, idx1++) {</span>
+<span class="nc" id="L983">                    _j = newIndices[j];</span>
+<span class="nc bnc" id="L984" title="All 2 branches missed.">                    if (_i &gt; _j) {</span>
+<span class="nc" id="L985">                        idx2 = _i * (_i + 1) / 2 + _j;</span>
+                    } else {
+<span class="nc" id="L987">                        idx2 = _j * (_j + 1) / 2 + _i;</span>
+                    }
+<span class="nc" id="L989">                    covNew[idx1] = cov[idx2];</span>
+                }
+            }
+<span class="nc" id="L992">            return new RegressionResults(</span>
+                    betaNew, new double[][]{covNew}, true, this.nobs, rnk,
+                    this.sumy, this.sumsqy, this.sserr, this.hasIntercept, false);
+        }
+    }
+
+    /**
+     * Conducts a regression on the data in the model, using regressors in array
+     * Calling this method will change the internal order of the regressors
+     * and care is required in interpreting the hatmatrix.
+     *
+     * @param  variablesToInclude array of variables to include in regression
+     * @return RegressionResults the structure holding all regression results
+     * @exception  ModelSpecificationException - thrown if number of observations is
+     * less than the number of variables, the number of regressors requested
+     * is greater than the regressors in the model or a regressor index in
+     * regressor array does not exist
+     */
+    @Override
+    public RegressionResults regress(int[] variablesToInclude) throws ModelSpecificationException {
+<span class="pc bpc" id="L1012" title="1 of 2 branches missed.">        if (variablesToInclude.length &gt; this.nvars) {</span>
+<span class="nc" id="L1013">            throw new ModelSpecificationException(</span>
+<span class="nc" id="L1014">                    LocalizedFormats.TOO_MANY_REGRESSORS, variablesToInclude.length, this.nvars);</span>
+        }
+<span class="pc bpc" id="L1016" title="1 of 2 branches missed.">        if (this.nobs &lt;= this.nvars) {</span>
+<span class="nc" id="L1017">            throw new ModelSpecificationException(</span>
+                    LocalizedFormats.NOT_ENOUGH_DATA_FOR_NUMBER_OF_PREDICTORS,
+<span class="nc" id="L1019">                    this.nobs, this.nvars);</span>
+        }
+<span class="fc" id="L1021">        Arrays.sort(variablesToInclude);</span>
+<span class="fc" id="L1022">        int iExclude = 0;</span>
+<span class="fc bfc" id="L1023" title="All 2 branches covered.">        for (int i = 0; i &lt; variablesToInclude.length; i++) {</span>
+<span class="pc bpc" id="L1024" title="1 of 2 branches missed.">            if (i &gt;= this.nvars) {</span>
+<span class="nc" id="L1025">                throw new ModelSpecificationException(</span>
+<span class="nc" id="L1026">                        LocalizedFormats.INDEX_LARGER_THAN_MAX, i, this.nvars);</span>
+            }
+<span class="pc bpc" id="L1028" title="1 of 4 branches missed.">            if (i &gt; 0 &amp;&amp; variablesToInclude[i] == variablesToInclude[i - 1]) {</span>
+<span class="nc" id="L1029">                variablesToInclude[i] = -1;</span>
+<span class="nc" id="L1030">                ++iExclude;</span>
+            }
+        }
+        int[] series;
+<span class="pc bpc" id="L1034" title="1 of 2 branches missed.">        if (iExclude &gt; 0) {</span>
+<span class="nc" id="L1035">            int j = 0;</span>
+<span class="nc" id="L1036">            series = new int[variablesToInclude.length - iExclude];</span>
+<span class="nc bnc" id="L1037" title="All 2 branches missed.">            for (int i = 0; i &lt; variablesToInclude.length; i++) {</span>
+<span class="nc bnc" id="L1038" title="All 2 branches missed.">                if (variablesToInclude[i] &gt; -1) {</span>
+<span class="nc" id="L1039">                    series[j] = variablesToInclude[i];</span>
+<span class="nc" id="L1040">                    ++j;</span>
+                }
+            }
+<span class="nc" id="L1043">        } else {</span>
+<span class="fc" id="L1044">            series = variablesToInclude;</span>
+        }
+
+<span class="fc" id="L1047">        reorderRegressors(series, 0);</span>
+<span class="fc" id="L1048">        tolset();</span>
+<span class="fc" id="L1049">        singcheck();</span>
+
+<span class="fc" id="L1051">        double[] beta = this.regcf(series.length);</span>
+
+<span class="fc" id="L1053">        ss();</span>
+
+<span class="fc" id="L1055">        double[] cov = this.cov(series.length);</span>
+
+<span class="fc" id="L1057">        int rnk = 0;</span>
+<span class="fc bfc" id="L1058" title="All 2 branches covered.">        for (int i = 0; i &lt; this.lindep.length; i++) {</span>
+<span class="pc bpc" id="L1059" title="1 of 2 branches missed.">            if (!this.lindep[i]) {</span>
+<span class="fc" id="L1060">                ++rnk;</span>
+            }
+        }
+
+<span class="fc" id="L1064">        boolean needsReorder = false;</span>
+<span class="fc bfc" id="L1065" title="All 2 branches covered.">        for (int i = 0; i &lt; series.length; i++) {</span>
+<span class="fc bfc" id="L1066" title="All 2 branches covered.">            if (this.vorder[i] != series[i]) {</span>
+<span class="fc" id="L1067">                needsReorder = true;</span>
+<span class="fc" id="L1068">                break;</span>
+            }
+        }
+<span class="fc bfc" id="L1071" title="All 2 branches covered.">        if (!needsReorder) {</span>
+<span class="fc" id="L1072">            return new RegressionResults(</span>
+                    beta, new double[][]{cov}, true, this.nobs, rnk,
+                    this.sumy, this.sumsqy, this.sserr, this.hasIntercept, false);
+        } else {
+<span class="fc" id="L1076">            double[] betaNew = new double[beta.length];</span>
+<span class="fc" id="L1077">            int[] newIndices = new int[beta.length];</span>
+<span class="fc bfc" id="L1078" title="All 2 branches covered.">            for (int i = 0; i &lt; series.length; i++) {</span>
+<span class="fc bfc" id="L1079" title="All 2 branches covered.">                for (int j = 0; j &lt; this.vorder.length; j++) {</span>
+<span class="fc bfc" id="L1080" title="All 2 branches covered.">                    if (this.vorder[j] == series[i]) {</span>
+<span class="fc" id="L1081">                        betaNew[i] = beta[ j];</span>
+<span class="fc" id="L1082">                        newIndices[i] = j;</span>
+                    }
+                }
+            }
+<span class="fc" id="L1086">            double[] covNew = new double[cov.length];</span>
+<span class="fc" id="L1087">            int idx1 = 0;</span>
+            int idx2;
+            int _i;
+            int _j;
+<span class="fc bfc" id="L1091" title="All 2 branches covered.">            for (int i = 0; i &lt; beta.length; i++) {</span>
+<span class="fc" id="L1092">                _i = newIndices[i];</span>
+<span class="fc bfc" id="L1093" title="All 2 branches covered.">                for (int j = 0; j &lt;= i; j++, idx1++) {</span>
+<span class="fc" id="L1094">                    _j = newIndices[j];</span>
+<span class="fc bfc" id="L1095" title="All 2 branches covered.">                    if (_i &gt; _j) {</span>
+<span class="fc" id="L1096">                        idx2 = _i * (_i + 1) / 2 + _j;</span>
+                    } else {
+<span class="fc" id="L1098">                        idx2 = _j * (_j + 1) / 2 + _i;</span>
+                    }
+<span class="fc" id="L1100">                    covNew[idx1] = cov[idx2];</span>
+                }
+            }
+<span class="fc" id="L1103">            return new RegressionResults(</span>
+                    betaNew, new double[][]{covNew}, true, this.nobs, rnk,
+                    this.sumy, this.sumsqy, this.sserr, this.hasIntercept, false);
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>
