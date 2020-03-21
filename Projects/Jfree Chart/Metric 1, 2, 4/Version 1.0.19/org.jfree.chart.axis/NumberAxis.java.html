@@ -1,0 +1,1190 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NumberAxis.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.axis</a> &gt; <span class="el_source">NumberAxis.java</span></div><h1>NumberAxis.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------
+ * NumberAxis.java
+ * ---------------
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Laurence Vanhelsuwe;
+ *                   Peter Kolb (patches 1934255 and 2603321);
+ *
+ * Changes
+ * -------
+ * 18-Sep-2001 : Added standard header and fixed DOS encoding problem (DG);
+ * 22-Sep-2001 : Changed setMinimumAxisValue() and setMaximumAxisValue() so
+ *               that they clear the autoRange flag (DG);
+ * 27-Nov-2001 : Removed old, redundant code (DG);
+ * 30-Nov-2001 : Added accessor methods for the standard tick units (DG);
+ * 08-Jan-2002 : Added setAxisRange() method (since renamed setRange()) (DG);
+ * 16-Jan-2002 : Added setTickUnit() method.  Extended ValueAxis to support an
+ *               optional cross-hair (DG);
+ * 08-Feb-2002 : Fixes bug to ensure the autorange is recalculated if the
+ *               setAutoRangeIncludesZero flag is changed (DG);
+ * 25-Feb-2002 : Added a new flag autoRangeStickyZero to provide further
+ *               control over margins in the auto-range mechanism.  Updated
+ *               constructors.  Updated import statements.  Moved the
+ *               createStandardTickUnits() method to the TickUnits class (DG);
+ * 19-Apr-2002 : Updated Javadoc comments (DG);
+ * 01-May-2002 : Updated for changes to TickUnit class, removed valueToString()
+ *               method (DG);
+ * 25-Jul-2002 : Moved the lower and upper margin attributes, and the
+ *               auto-range minimum size, up one level to the ValueAxis
+ *               class (DG);
+ * 05-Sep-2002 : Updated constructor to match changes in Axis class (DG);
+ * 01-Oct-2002 : Fixed errors reported by Checkstyle (DG);
+ * 04-Oct-2002 : Moved standardTickUnits from NumberAxis --&gt; ValueAxis (DG);
+ * 24-Oct-2002 : Added a number format override (DG);
+ * 08-Nov-2002 : Moved to new package com.jrefinery.chart.axis (DG);
+ * 19-Nov-2002 : Removed grid settings (now controlled by the plot) (DG);
+ * 14-Jan-2003 : Changed autoRangeMinimumSize from Number --&gt; double, and moved
+ *               crosshair settings to the plot classes (DG);
+ * 20-Jan-2003 : Removed the monolithic constructor (DG);
+ * 26-Mar-2003 : Implemented Serializable (DG);
+ * 16-Jul-2003 : Reworked to allow for multiple secondary axes (DG);
+ * 13-Aug-2003 : Implemented Cloneable (DG);
+ * 07-Oct-2003 : Fixed bug (815028) in the auto range calculation (DG);
+ * 29-Oct-2003 : Added workaround for font alignment in PDF output (DG);
+ * 07-Nov-2003 : Modified to use NumberTick class (DG);
+ * 21-Jan-2004 : Renamed translateJava2DToValue --&gt; java2DToValue, and
+ *               translateValueToJava2D --&gt; valueToJava2D (DG);
+ * 03-Mar-2004 : Added plotState to draw() method (DG);
+ * 07-Apr-2004 : Changed string width calculation (DG);
+ * 11-Jan-2005 : Removed deprecated methods in preparation for 1.0.0
+ *               release (DG);
+ * 28-Mar-2005 : Renamed autoRangeIncludesZero() --&gt; getAutoRangeIncludesZero()
+ *               and autoRangeStickyZero() --&gt; getAutoRangeStickyZero() (DG);
+ * 21-Apr-2005 : Removed redundant argument from selectAutoTickUnit() (DG);
+ * 22-Apr-2005 : Renamed refreshHorizontalTicks --&gt; refreshTicksHorizontal
+ *               (and likewise the vertical version) for consistency with
+ *               other axis classes (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 10-Feb-2006 : Added some API doc comments in respect of bug 821046 (DG);
+ * 20-Feb-2006 : Modified equals() method to check rangeType field (fixes bug
+ *               1435461) (DG);
+ * 04-Sep-2006 : Fix auto range calculation for the case where all data values
+ *               are constant and large (see bug report 1549218) (DG);
+ * 11-Dec-2006 : Fix bug in auto-tick unit selection with tick format override,
+ *               see bug 1608371 (DG);
+ * 22-Mar-2007 : Use new defaultAutoRange attribute (DG);
+ * 25-Sep-2008 : Added minor tick support, see patch 1934255 by Peter Kolb (DG);
+ * 21-Jan-2009 : Default minor tick counts will now come from the tick unit
+ *               collection (DG);
+ * 19-Mar-2009 : Added entity support - see patch 2603321 by Peter Kolb (DG);
+ * 02-Jul-2013 : Use ParamChecks (DG);
+ * 01-Aug-2013 : Added attributedLabel override to support superscripts,
+ *               subscripts and more (DG);
+ * 
+ */
+
+package org.jfree.chart.axis;
+
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineMetrics;
+import java.awt.geom.Rectangle2D;
+import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Locale;
+
+import org.jfree.chart.event.AxisChangeEvent;
+import org.jfree.chart.plot.Plot;
+import org.jfree.chart.plot.PlotRenderingInfo;
+import org.jfree.chart.plot.ValueAxisPlot;
+import org.jfree.chart.util.ParamChecks;
+import org.jfree.data.Range;
+import org.jfree.data.RangeType;
+import org.jfree.ui.RectangleEdge;
+import org.jfree.ui.RectangleInsets;
+import org.jfree.ui.TextAnchor;
+import org.jfree.util.ObjectUtilities;
+
+/**
+ * An axis for displaying numerical data.
+ * &lt;P&gt;
+ * If the axis is set up to automatically determine its range to fit the data,
+ * you can ensure that the range includes zero (statisticians usually prefer
+ * this) by setting the &lt;code&gt;autoRangeIncludesZero&lt;/code&gt; flag to
+ * &lt;code&gt;true&lt;/code&gt;.
+ * &lt;P&gt;
+ * The &lt;code&gt;NumberAxis&lt;/code&gt; class has a mechanism for automatically
+ * selecting a tick unit that is appropriate for the current axis range.  This
+ * mechanism is an adaptation of code suggested by Laurence Vanhelsuwe.
+ */
+public class NumberAxis extends ValueAxis implements Cloneable, Serializable {
+
+    /** For serialization. */
+    private static final long serialVersionUID = 2805933088476185789L;
+
+    /** The default value for the autoRangeIncludesZero flag. */
+    public static final boolean DEFAULT_AUTO_RANGE_INCLUDES_ZERO = true;
+
+    /** The default value for the autoRangeStickyZero flag. */
+    public static final boolean DEFAULT_AUTO_RANGE_STICKY_ZERO = true;
+
+    /** The default tick unit. */
+<span class="fc" id="L154">    public static final NumberTickUnit DEFAULT_TICK_UNIT = new NumberTickUnit(</span>
+            1.0, new DecimalFormat(&quot;0&quot;));
+
+    /** The default setting for the vertical tick labels flag. */
+    public static final boolean DEFAULT_VERTICAL_TICK_LABELS = false;
+
+    /**
+     * The range type (can be used to force the axis to display only positive
+     * values or only negative values).
+     */
+    private RangeType rangeType;
+
+    /**
+     * A flag that affects the axis range when the range is determined
+     * automatically.  If the auto range does NOT include zero and this flag
+     * is TRUE, then the range is changed to include zero.
+     */
+    private boolean autoRangeIncludesZero;
+
+    /**
+     * A flag that affects the size of the margins added to the axis range when
+     * the range is determined automatically.  If the value 0 falls within the
+     * margin and this flag is TRUE, then the margin is truncated at zero.
+     */
+    private boolean autoRangeStickyZero;
+
+    /** The tick unit for the axis. */
+    private NumberTickUnit tickUnit;
+
+    /** The override number format. */
+    private NumberFormat numberFormatOverride;
+
+    /** An optional band for marking regions on the axis. */
+    private MarkerAxisBand markerBand;
+
+    /**
+     * Default constructor.
+     */
+    public NumberAxis() {
+<span class="fc" id="L193">        this(null);</span>
+<span class="fc" id="L194">    }</span>
+
+    /**
+     * Constructs a number axis, using default values where necessary.
+     *
+     * @param label  the axis label (&lt;code&gt;null&lt;/code&gt; permitted).
+     */
+    public NumberAxis(String label) {
+<span class="fc" id="L202">        super(label, NumberAxis.createStandardTickUnits());</span>
+<span class="fc" id="L203">        this.rangeType = RangeType.FULL;</span>
+<span class="fc" id="L204">        this.autoRangeIncludesZero = DEFAULT_AUTO_RANGE_INCLUDES_ZERO;</span>
+<span class="fc" id="L205">        this.autoRangeStickyZero = DEFAULT_AUTO_RANGE_STICKY_ZERO;</span>
+<span class="fc" id="L206">        this.tickUnit = DEFAULT_TICK_UNIT;</span>
+<span class="fc" id="L207">        this.numberFormatOverride = null;</span>
+<span class="fc" id="L208">        this.markerBand = null;</span>
+<span class="fc" id="L209">    }</span>
+
+    /**
+     * Returns the axis range type.
+     *
+     * @return The axis range type (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setRangeType(RangeType)
+     */
+    public RangeType getRangeType() {
+<span class="nc" id="L219">        return this.rangeType;</span>
+    }
+
+    /**
+     * Sets the axis range type.
+     *
+     * @param rangeType  the range type (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #getRangeType()
+     */
+    public void setRangeType(RangeType rangeType) {
+<span class="fc" id="L230">        ParamChecks.nullNotPermitted(rangeType, &quot;rangeType&quot;);</span>
+<span class="fc" id="L231">        this.rangeType = rangeType;</span>
+<span class="fc" id="L232">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="fc" id="L233">    }</span>
+
+    /**
+     * Returns the flag that indicates whether or not the automatic axis range
+     * (if indeed it is determined automatically) is forced to include zero.
+     *
+     * @return The flag.
+     */
+    public boolean getAutoRangeIncludesZero() {
+<span class="fc" id="L242">        return this.autoRangeIncludesZero;</span>
+    }
+
+    /**
+     * Sets the flag that indicates whether or not the axis range, if
+     * automatically calculated, is forced to include zero.
+     * &lt;p&gt;
+     * If the flag is changed to &lt;code&gt;true&lt;/code&gt;, the axis range is
+     * recalculated.
+     * &lt;p&gt;
+     * Any change to the flag will trigger an {@link AxisChangeEvent}.
+     *
+     * @param flag  the new value of the flag.
+     *
+     * @see #getAutoRangeIncludesZero()
+     */
+    public void setAutoRangeIncludesZero(boolean flag) {
+<span class="fc bfc" id="L259" title="All 2 branches covered.">        if (this.autoRangeIncludesZero != flag) {</span>
+<span class="fc" id="L260">            this.autoRangeIncludesZero = flag;</span>
+<span class="pc bpc" id="L261" title="1 of 2 branches missed.">            if (isAutoRange()) {</span>
+<span class="fc" id="L262">                autoAdjustRange();</span>
+            }
+<span class="fc" id="L264">            notifyListeners(new AxisChangeEvent(this));</span>
+        }
+<span class="fc" id="L266">    }</span>
+
+    /**
+     * Returns a flag that affects the auto-range when zero falls outside the
+     * data range but inside the margins defined for the axis.
+     *
+     * @return The flag.
+     *
+     * @see #setAutoRangeStickyZero(boolean)
+     */
+    public boolean getAutoRangeStickyZero() {
+<span class="fc" id="L277">        return this.autoRangeStickyZero;</span>
+    }
+
+    /**
+     * Sets a flag that affects the auto-range when zero falls outside the data
+     * range but inside the margins defined for the axis.
+     *
+     * @param flag  the new flag.
+     *
+     * @see #getAutoRangeStickyZero()
+     */
+    public void setAutoRangeStickyZero(boolean flag) {
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">        if (this.autoRangeStickyZero != flag) {</span>
+<span class="fc" id="L290">            this.autoRangeStickyZero = flag;</span>
+<span class="pc bpc" id="L291" title="1 of 2 branches missed.">            if (isAutoRange()) {</span>
+<span class="fc" id="L292">                autoAdjustRange();</span>
+            }
+<span class="fc" id="L294">            notifyListeners(new AxisChangeEvent(this));</span>
+        }
+<span class="fc" id="L296">    }</span>
+
+    /**
+     * Returns the tick unit for the axis.
+     * &lt;p&gt;
+     * Note: if the &lt;code&gt;autoTickUnitSelection&lt;/code&gt; flag is
+     * &lt;code&gt;true&lt;/code&gt; the tick unit may be changed while the axis is being
+     * drawn, so in that case the return value from this method may be
+     * irrelevant if the method is called before the axis has been drawn.
+     *
+     * @return The tick unit for the axis.
+     *
+     * @see #setTickUnit(NumberTickUnit)
+     * @see ValueAxis#isAutoTickUnitSelection()
+     */
+    public NumberTickUnit getTickUnit() {
+<span class="fc" id="L312">        return this.tickUnit;</span>
+    }
+
+    /**
+     * Sets the tick unit for the axis and sends an {@link AxisChangeEvent} to
+     * all registered listeners.  A side effect of calling this method is that
+     * the &quot;auto-select&quot; feature for tick units is switched off (you can
+     * restore it using the {@link ValueAxis#setAutoTickUnitSelection(boolean)}
+     * method).
+     *
+     * @param unit  the new tick unit (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #getTickUnit()
+     * @see #setTickUnit(NumberTickUnit, boolean, boolean)
+     */
+    public void setTickUnit(NumberTickUnit unit) {
+        // defer argument checking...
+<span class="fc" id="L329">        setTickUnit(unit, true, true);</span>
+<span class="fc" id="L330">    }</span>
+
+    /**
+     * Sets the tick unit for the axis and, if requested, sends an
+     * {@link AxisChangeEvent} to all registered listeners.  In addition, an
+     * option is provided to turn off the &quot;auto-select&quot; feature for tick units
+     * (you can restore it using the
+     * {@link ValueAxis#setAutoTickUnitSelection(boolean)} method).
+     *
+     * @param unit  the new tick unit (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param notify  notify listeners?
+     * @param turnOffAutoSelect  turn off the auto-tick selection?
+     */
+    public void setTickUnit(NumberTickUnit unit, boolean notify,
+            boolean turnOffAutoSelect) {
+
+<span class="fc" id="L346">        ParamChecks.nullNotPermitted(unit, &quot;unit&quot;);</span>
+<span class="fc" id="L347">        this.tickUnit = unit;</span>
+<span class="fc bfc" id="L348" title="All 2 branches covered.">        if (turnOffAutoSelect) {</span>
+<span class="fc" id="L349">            setAutoTickUnitSelection(false, false);</span>
+        }
+<span class="fc bfc" id="L351" title="All 2 branches covered.">        if (notify) {</span>
+<span class="fc" id="L352">            notifyListeners(new AxisChangeEvent(this));</span>
+        }
+
+<span class="fc" id="L355">    }</span>
+
+    /**
+     * Returns the number format override.  If this is non-null, then it will
+     * be used to format the numbers on the axis.
+     *
+     * @return The number formatter (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setNumberFormatOverride(NumberFormat)
+     */
+    public NumberFormat getNumberFormatOverride() {
+<span class="fc" id="L366">        return this.numberFormatOverride;</span>
+    }
+
+    /**
+     * Sets the number format override.  If this is non-null, then it will be
+     * used to format the numbers on the axis.
+     *
+     * @param formatter  the number formatter (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @see #getNumberFormatOverride()
+     */
+    public void setNumberFormatOverride(NumberFormat formatter) {
+<span class="fc" id="L378">        this.numberFormatOverride = formatter;</span>
+<span class="fc" id="L379">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="fc" id="L380">    }</span>
+
+    /**
+     * Returns the (optional) marker band for the axis.
+     *
+     * @return The marker band (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setMarkerBand(MarkerAxisBand)
+     */
+    public MarkerAxisBand getMarkerBand() {
+<span class="nc" id="L390">        return this.markerBand;</span>
+    }
+
+    /**
+     * Sets the marker band for the axis.
+     * &lt;P&gt;
+     * The marker band is optional, leave it set to &lt;code&gt;null&lt;/code&gt; if you
+     * don't require it.
+     *
+     * @param band the new band (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @see #getMarkerBand()
+     */
+    public void setMarkerBand(MarkerAxisBand band) {
+<span class="nc" id="L404">        this.markerBand = band;</span>
+<span class="nc" id="L405">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="nc" id="L406">    }</span>
+
+    /**
+     * Configures the axis to work with the specified plot.  If the axis has
+     * auto-scaling, then sets the maximum and minimum values.
+     */
+    @Override
+    public void configure() {
+<span class="fc bfc" id="L414" title="All 2 branches covered.">        if (isAutoRange()) {</span>
+<span class="fc" id="L415">            autoAdjustRange();</span>
+        }
+<span class="fc" id="L417">    }</span>
+
+    /**
+     * Rescales the axis to ensure that all data is visible.
+     */
+    @Override
+    protected void autoAdjustRange() {
+
+<span class="fc" id="L425">        Plot plot = getPlot();</span>
+<span class="fc bfc" id="L426" title="All 2 branches covered.">        if (plot == null) {</span>
+<span class="fc" id="L427">            return;  // no plot, no data</span>
+        }
+
+<span class="pc bpc" id="L430" title="1 of 2 branches missed.">        if (plot instanceof ValueAxisPlot) {</span>
+<span class="fc" id="L431">            ValueAxisPlot vap = (ValueAxisPlot) plot;</span>
+
+<span class="fc" id="L433">            Range r = vap.getDataRange(this);</span>
+<span class="fc bfc" id="L434" title="All 2 branches covered.">            if (r == null) {</span>
+<span class="fc" id="L435">                r = getDefaultAutoRange();</span>
+            }
+
+<span class="fc" id="L438">            double upper = r.getUpperBound();</span>
+<span class="fc" id="L439">            double lower = r.getLowerBound();</span>
+<span class="pc bpc" id="L440" title="1 of 2 branches missed.">            if (this.rangeType == RangeType.POSITIVE) {</span>
+<span class="nc" id="L441">                lower = Math.max(0.0, lower);</span>
+<span class="nc" id="L442">                upper = Math.max(0.0, upper);</span>
+            }
+<span class="pc bpc" id="L444" title="1 of 2 branches missed.">            else if (this.rangeType == RangeType.NEGATIVE) {</span>
+<span class="nc" id="L445">                lower = Math.min(0.0, lower);</span>
+<span class="nc" id="L446">                upper = Math.min(0.0, upper);</span>
+            }
+
+<span class="fc bfc" id="L449" title="All 2 branches covered.">            if (getAutoRangeIncludesZero()) {</span>
+<span class="fc" id="L450">                lower = Math.min(lower, 0.0);</span>
+<span class="fc" id="L451">                upper = Math.max(upper, 0.0);</span>
+            }
+<span class="fc" id="L453">            double range = upper - lower;</span>
+
+            // if fixed auto range, then derive lower bound...
+<span class="fc" id="L456">            double fixedAutoRange = getFixedAutoRange();</span>
+<span class="pc bpc" id="L457" title="1 of 2 branches missed.">            if (fixedAutoRange &gt; 0.0) {</span>
+<span class="nc" id="L458">                lower = upper - fixedAutoRange;</span>
+            }
+            else {
+                // ensure the autorange is at least &lt;minRange&gt; in size...
+<span class="fc" id="L462">                double minRange = getAutoRangeMinimumSize();</span>
+<span class="fc bfc" id="L463" title="All 2 branches covered.">                if (range &lt; minRange) {</span>
+<span class="fc" id="L464">                    double expand = (minRange - range) / 2;</span>
+<span class="fc" id="L465">                    upper = upper + expand;</span>
+<span class="fc" id="L466">                    lower = lower - expand;</span>
+<span class="pc bpc" id="L467" title="1 of 2 branches missed.">                    if (lower == upper) { // see bug report 1549218</span>
+<span class="nc" id="L468">                        double adjust = Math.abs(lower) / 10.0;</span>
+<span class="nc" id="L469">                        lower = lower - adjust;</span>
+<span class="nc" id="L470">                        upper = upper + adjust;</span>
+                    }
+<span class="pc bpc" id="L472" title="1 of 2 branches missed.">                    if (this.rangeType == RangeType.POSITIVE) {</span>
+<span class="nc bnc" id="L473" title="All 2 branches missed.">                        if (lower &lt; 0.0) {</span>
+<span class="nc" id="L474">                            upper = upper - lower;</span>
+<span class="nc" id="L475">                            lower = 0.0;</span>
+                        }
+                    }
+<span class="pc bpc" id="L478" title="1 of 2 branches missed.">                    else if (this.rangeType == RangeType.NEGATIVE) {</span>
+<span class="nc bnc" id="L479" title="All 2 branches missed.">                        if (upper &gt; 0.0) {</span>
+<span class="nc" id="L480">                            lower = lower - upper;</span>
+<span class="nc" id="L481">                            upper = 0.0;</span>
+                        }
+                    }
+                }
+
+<span class="pc bpc" id="L486" title="1 of 2 branches missed.">                if (getAutoRangeStickyZero()) {</span>
+<span class="pc bpc" id="L487" title="1 of 2 branches missed.">                    if (upper &lt;= 0.0) {</span>
+<span class="nc" id="L488">                        upper = Math.min(0.0, upper + getUpperMargin() * range);</span>
+                    }
+                    else {
+<span class="fc" id="L491">                        upper = upper + getUpperMargin() * range;</span>
+                    }
+<span class="fc bfc" id="L493" title="All 2 branches covered.">                    if (lower &gt;= 0.0) {</span>
+<span class="fc" id="L494">                        lower = Math.max(0.0, lower - getLowerMargin() * range);</span>
+                    }
+                    else {
+<span class="fc" id="L497">                        lower = lower - getLowerMargin() * range;</span>
+                    }
+                }
+                else {
+<span class="nc" id="L501">                    upper = upper + getUpperMargin() * range;</span>
+<span class="nc" id="L502">                    lower = lower - getLowerMargin() * range;</span>
+                }
+            }
+
+<span class="fc" id="L506">            setRange(new Range(lower, upper), false, false);</span>
+        }
+
+<span class="fc" id="L509">    }</span>
+
+    /**
+     * Converts a data value to a coordinate in Java2D space, assuming that the
+     * axis runs along one edge of the specified dataArea.
+     * &lt;p&gt;
+     * Note that it is possible for the coordinate to fall outside the plotArea.
+     *
+     * @param value  the data value.
+     * @param area  the area for plotting the data.
+     * @param edge  the axis location.
+     *
+     * @return The Java2D coordinate.
+     *
+     * @see #java2DToValue(double, Rectangle2D, RectangleEdge)
+     */
+    @Override
+    public double valueToJava2D(double value, Rectangle2D area,
+            RectangleEdge edge) {
+
+<span class="fc" id="L529">        Range range = getRange();</span>
+<span class="fc" id="L530">        double axisMin = range.getLowerBound();</span>
+<span class="fc" id="L531">        double axisMax = range.getUpperBound();</span>
+
+<span class="fc" id="L533">        double min = 0.0;</span>
+<span class="fc" id="L534">        double max = 0.0;</span>
+<span class="fc bfc" id="L535" title="All 2 branches covered.">        if (RectangleEdge.isTopOrBottom(edge)) {</span>
+<span class="fc" id="L536">            min = area.getX();</span>
+<span class="fc" id="L537">            max = area.getMaxX();</span>
+        }
+<span class="pc bpc" id="L539" title="1 of 2 branches missed.">        else if (RectangleEdge.isLeftOrRight(edge)) {</span>
+<span class="fc" id="L540">            max = area.getMinY();</span>
+<span class="fc" id="L541">            min = area.getMaxY();</span>
+        }
+<span class="pc bpc" id="L543" title="1 of 2 branches missed.">        if (isInverted()) {</span>
+<span class="nc" id="L544">            return max</span>
+                   - ((value - axisMin) / (axisMax - axisMin)) * (max - min);
+        }
+        else {
+<span class="fc" id="L548">            return min</span>
+                   + ((value - axisMin) / (axisMax - axisMin)) * (max - min);
+        }
+
+    }
+
+    /**
+     * Converts a coordinate in Java2D space to the corresponding data value,
+     * assuming that the axis runs along one edge of the specified dataArea.
+     *
+     * @param java2DValue  the coordinate in Java2D space.
+     * @param area  the area in which the data is plotted.
+     * @param edge  the location.
+     *
+     * @return The data value.
+     *
+     * @see #valueToJava2D(double, Rectangle2D, RectangleEdge)
+     */
+    @Override
+    public double java2DToValue(double java2DValue, Rectangle2D area,
+            RectangleEdge edge) {
+
+<span class="fc" id="L570">        Range range = getRange();</span>
+<span class="fc" id="L571">        double axisMin = range.getLowerBound();</span>
+<span class="fc" id="L572">        double axisMax = range.getUpperBound();</span>
+
+<span class="fc" id="L574">        double min = 0.0;</span>
+<span class="fc" id="L575">        double max = 0.0;</span>
+<span class="fc bfc" id="L576" title="All 2 branches covered.">        if (RectangleEdge.isTopOrBottom(edge)) {</span>
+<span class="fc" id="L577">            min = area.getX();</span>
+<span class="fc" id="L578">            max = area.getMaxX();</span>
+        }
+<span class="pc bpc" id="L580" title="1 of 2 branches missed.">        else if (RectangleEdge.isLeftOrRight(edge)) {</span>
+<span class="fc" id="L581">            min = area.getMaxY();</span>
+<span class="fc" id="L582">            max = area.getY();</span>
+        }
+<span class="fc bfc" id="L584" title="All 2 branches covered.">        if (isInverted()) {</span>
+<span class="fc" id="L585">            return axisMax</span>
+                   - (java2DValue - min) / (max - min) * (axisMax - axisMin);
+        }
+        else {
+<span class="fc" id="L589">            return axisMin</span>
+                   + (java2DValue - min) / (max - min) * (axisMax - axisMin);
+        }
+
+    }
+
+    /**
+     * Calculates the value of the lowest visible tick on the axis.
+     *
+     * @return The value of the lowest visible tick on the axis.
+     *
+     * @see #calculateHighestVisibleTickValue()
+     */
+    protected double calculateLowestVisibleTickValue() {
+<span class="fc" id="L603">        double unit = getTickUnit().getSize();</span>
+<span class="fc" id="L604">        double index = Math.ceil(getRange().getLowerBound() / unit);</span>
+<span class="fc" id="L605">        return index * unit;</span>
+    }
+
+    /**
+     * Calculates the value of the highest visible tick on the axis.
+     *
+     * @return The value of the highest visible tick on the axis.
+     *
+     * @see #calculateLowestVisibleTickValue()
+     */
+    protected double calculateHighestVisibleTickValue() {
+<span class="nc" id="L616">        double unit = getTickUnit().getSize();</span>
+<span class="nc" id="L617">        double index = Math.floor(getRange().getUpperBound() / unit);</span>
+<span class="nc" id="L618">        return index * unit;</span>
+    }
+
+    /**
+     * Calculates the number of visible ticks.
+     *
+     * @return The number of visible ticks on the axis.
+     */
+    protected int calculateVisibleTickCount() {
+<span class="fc" id="L627">        double unit = getTickUnit().getSize();</span>
+<span class="fc" id="L628">        Range range = getRange();</span>
+<span class="fc" id="L629">        return (int) (Math.floor(range.getUpperBound() / unit)</span>
+<span class="fc" id="L630">                      - Math.ceil(range.getLowerBound() / unit) + 1);</span>
+    }
+
+    /**
+     * Draws the axis on a Java 2D graphics device (such as the screen or a
+     * printer).
+     *
+     * @param g2  the graphics device (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param cursor  the cursor location.
+     * @param plotArea  the area within which the axes and data should be drawn
+     *                  (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param dataArea  the area within which the data should be drawn
+     *                  (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param edge  the location of the axis (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param plotState  collects information about the plot
+     *                   (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return The axis state (never &lt;code&gt;null&lt;/code&gt;).
+     */
+    @Override
+    public AxisState draw(Graphics2D g2, double cursor, Rectangle2D plotArea,
+            Rectangle2D dataArea, RectangleEdge edge,
+            PlotRenderingInfo plotState) {
+
+        AxisState state;
+        // if the axis is not visible, don't draw it...
+<span class="pc bpc" id="L656" title="1 of 2 branches missed.">        if (!isVisible()) {</span>
+<span class="nc" id="L657">            state = new AxisState(cursor);</span>
+            // even though the axis is not visible, we need ticks for the
+            // gridlines...
+<span class="nc" id="L660">            List ticks = refreshTicks(g2, state, dataArea, edge);</span>
+<span class="nc" id="L661">            state.setTicks(ticks);</span>
+<span class="nc" id="L662">            return state;</span>
+        }
+
+        // draw the tick marks and labels...
+<span class="fc" id="L666">        state = drawTickMarksAndLabels(g2, cursor, plotArea, dataArea, edge);</span>
+
+<span class="pc bpc" id="L668" title="1 of 2 branches missed.">        if (getAttributedLabel() != null) {</span>
+<span class="nc" id="L669">            state = drawAttributedLabel(getAttributedLabel(), g2, plotArea, </span>
+                    dataArea, edge, state);
+            
+        } else {
+<span class="fc" id="L673">            state = drawLabel(getLabel(), g2, plotArea, dataArea, edge, state);</span>
+        }
+<span class="fc" id="L675">        createAndAddEntity(cursor, state, dataArea, edge, plotState);</span>
+<span class="fc" id="L676">        return state;</span>
+
+    }
+
+    /**
+     * Creates the standard tick units.
+     * &lt;P&gt;
+     * If you don't like these defaults, create your own instance of TickUnits
+     * and then pass it to the setStandardTickUnits() method in the
+     * NumberAxis class.
+     *
+     * @return The standard tick units.
+     *
+     * @see #setStandardTickUnits(TickUnitSource)
+     * @see #createIntegerTickUnits()
+     */
+    public static TickUnitSource createStandardTickUnits() {
+<span class="fc" id="L693">        return new NumberTickUnitSource();</span>
+    }
+
+    /**
+     * Returns a collection of tick units for integer values.
+     *
+     * @return A collection of tick units for integer values.
+     *
+     * @see #setStandardTickUnits(TickUnitSource)
+     * @see #createStandardTickUnits()
+     */
+    public static TickUnitSource createIntegerTickUnits() {
+<span class="fc" id="L705">        return new NumberTickUnitSource(true);</span>
+    }
+
+    /**
+     * Creates a collection of standard tick units.  The supplied locale is
+     * used to create the number formatter (a localised instance of
+     * &lt;code&gt;NumberFormat&lt;/code&gt;).
+     * &lt;P&gt;
+     * If you don't like these defaults, create your own instance of
+     * {@link TickUnits} and then pass it to the
+     * &lt;code&gt;setStandardTickUnits()&lt;/code&gt; method.
+     *
+     * @param locale  the locale.
+     *
+     * @return A tick unit collection.
+     *
+     * @see #setStandardTickUnits(TickUnitSource)
+     */
+    public static TickUnitSource createStandardTickUnits(Locale locale) {
+<span class="nc" id="L724">        NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);</span>
+<span class="nc" id="L725">        return new NumberTickUnitSource(false, numberFormat);</span>
+    }
+
+    /**
+     * Returns a collection of tick units for integer values.
+     * Uses a given Locale to create the DecimalFormats.
+     *
+     * @param locale the locale to use to represent Numbers.
+     *
+     * @return A collection of tick units for integer values.
+     *
+     * @see #setStandardTickUnits(TickUnitSource)
+     */
+    public static TickUnitSource createIntegerTickUnits(Locale locale) {
+<span class="nc" id="L739">        NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);</span>
+<span class="nc" id="L740">        return new NumberTickUnitSource(true, numberFormat);</span>
+    }
+
+    /**
+     * Estimates the maximum tick label height.
+     *
+     * @param g2  the graphics device.
+     *
+     * @return The maximum height.
+     */
+    protected double estimateMaximumTickLabelHeight(Graphics2D g2) {
+<span class="fc" id="L751">        RectangleInsets tickLabelInsets = getTickLabelInsets();</span>
+<span class="fc" id="L752">        double result = tickLabelInsets.getTop() + tickLabelInsets.getBottom();</span>
+
+<span class="fc" id="L754">        Font tickLabelFont = getTickLabelFont();</span>
+<span class="fc" id="L755">        FontRenderContext frc = g2.getFontRenderContext();</span>
+<span class="fc" id="L756">        result += tickLabelFont.getLineMetrics(&quot;123&quot;, frc).getHeight();</span>
+<span class="fc" id="L757">        return result;</span>
+    }
+
+    /**
+     * Estimates the maximum width of the tick labels, assuming the specified
+     * tick unit is used.
+     * &lt;P&gt;
+     * Rather than computing the string bounds of every tick on the axis, we
+     * just look at two values: the lower bound and the upper bound for the
+     * axis.  These two values will usually be representative.
+     *
+     * @param g2  the graphics device.
+     * @param unit  the tick unit to use for calculation.
+     *
+     * @return The estimated maximum width of the tick labels.
+     */
+    protected double estimateMaximumTickLabelWidth(Graphics2D g2,
+                                                   TickUnit unit) {
+
+<span class="fc" id="L776">        RectangleInsets tickLabelInsets = getTickLabelInsets();</span>
+<span class="fc" id="L777">        double result = tickLabelInsets.getLeft() + tickLabelInsets.getRight();</span>
+
+<span class="pc bpc" id="L779" title="1 of 2 branches missed.">        if (isVerticalTickLabels()) {</span>
+            // all tick labels have the same width (equal to the height of the
+            // font)...
+<span class="nc" id="L782">            FontRenderContext frc = g2.getFontRenderContext();</span>
+<span class="nc" id="L783">            LineMetrics lm = getTickLabelFont().getLineMetrics(&quot;0&quot;, frc);</span>
+<span class="nc" id="L784">            result += lm.getHeight();</span>
+<span class="nc" id="L785">        }</span>
+        else {
+            // look at lower and upper bounds...
+<span class="fc" id="L788">            FontMetrics fm = g2.getFontMetrics(getTickLabelFont());</span>
+<span class="fc" id="L789">            Range range = getRange();</span>
+<span class="fc" id="L790">            double lower = range.getLowerBound();</span>
+<span class="fc" id="L791">            double upper = range.getUpperBound();</span>
+            String lowerStr, upperStr;
+<span class="fc" id="L793">            NumberFormat formatter = getNumberFormatOverride();</span>
+<span class="pc bpc" id="L794" title="1 of 2 branches missed.">            if (formatter != null) {</span>
+<span class="nc" id="L795">                lowerStr = formatter.format(lower);</span>
+<span class="nc" id="L796">                upperStr = formatter.format(upper);</span>
+            }
+            else {
+<span class="fc" id="L799">                lowerStr = unit.valueToString(lower);</span>
+<span class="fc" id="L800">                upperStr = unit.valueToString(upper);</span>
+            }
+<span class="fc" id="L802">            double w1 = fm.stringWidth(lowerStr);</span>
+<span class="fc" id="L803">            double w2 = fm.stringWidth(upperStr);</span>
+<span class="fc" id="L804">            result += Math.max(w1, w2);</span>
+        }
+
+<span class="fc" id="L807">        return result;</span>
+
+    }
+
+    /**
+     * Selects an appropriate tick value for the axis.  The strategy is to
+     * display as many ticks as possible (selected from an array of 'standard'
+     * tick units) without the labels overlapping.
+     *
+     * @param g2  the graphics device.
+     * @param dataArea  the area defined by the axes.
+     * @param edge  the axis location.
+     */
+    protected void selectAutoTickUnit(Graphics2D g2, Rectangle2D dataArea,
+            RectangleEdge edge) {
+
+<span class="fc bfc" id="L823" title="All 2 branches covered.">        if (RectangleEdge.isTopOrBottom(edge)) {</span>
+<span class="fc" id="L824">            selectHorizontalAutoTickUnit(g2, dataArea, edge);</span>
+        }
+<span class="pc bpc" id="L826" title="1 of 2 branches missed.">        else if (RectangleEdge.isLeftOrRight(edge)) {</span>
+<span class="fc" id="L827">            selectVerticalAutoTickUnit(g2, dataArea, edge);</span>
+        }
+
+<span class="fc" id="L830">    }</span>
+
+    /**
+     * Selects an appropriate tick value for the axis.  The strategy is to
+     * display as many ticks as possible (selected from an array of 'standard'
+     * tick units) without the labels overlapping.
+     *
+     * @param g2  the graphics device.
+     * @param dataArea  the area defined by the axes.
+     * @param edge  the axis location.
+     */
+   protected void selectHorizontalAutoTickUnit(Graphics2D g2,
+            Rectangle2D dataArea, RectangleEdge edge) {
+
+<span class="fc" id="L844">        double tickLabelWidth = estimateMaximumTickLabelWidth(g2,</span>
+<span class="fc" id="L845">                getTickUnit());</span>
+
+        // start with the current tick unit...
+<span class="fc" id="L848">        TickUnitSource tickUnits = getStandardTickUnits();</span>
+<span class="fc" id="L849">        TickUnit unit1 = tickUnits.getCeilingTickUnit(getTickUnit());</span>
+<span class="fc" id="L850">        double unit1Width = lengthToJava2D(unit1.getSize(), dataArea, edge);</span>
+
+        // then extrapolate...
+<span class="fc" id="L853">        double guess = (tickLabelWidth / unit1Width) * unit1.getSize();</span>
+
+<span class="fc" id="L855">        NumberTickUnit unit2 = (NumberTickUnit) tickUnits.getCeilingTickUnit(</span>
+                guess);
+<span class="fc" id="L857">        double unit2Width = lengthToJava2D(unit2.getSize(), dataArea, edge);</span>
+
+<span class="fc" id="L859">        tickLabelWidth = estimateMaximumTickLabelWidth(g2, unit2);</span>
+<span class="fc bfc" id="L860" title="All 2 branches covered.">        if (tickLabelWidth &gt; unit2Width) {</span>
+<span class="fc" id="L861">            unit2 = (NumberTickUnit) tickUnits.getLargerTickUnit(unit2);</span>
+        }
+
+<span class="fc" id="L864">        setTickUnit(unit2, false, false);</span>
+
+<span class="fc" id="L866">    }</span>
+
+    /**
+     * Selects an appropriate tick value for the axis.  The strategy is to
+     * display as many ticks as possible (selected from an array of 'standard'
+     * tick units) without the labels overlapping.
+     *
+     * @param g2  the graphics device.
+     * @param dataArea  the area in which the plot should be drawn.
+     * @param edge  the axis location.
+     */
+    protected void selectVerticalAutoTickUnit(Graphics2D g2, 
+            Rectangle2D dataArea, RectangleEdge edge) {
+
+<span class="fc" id="L880">        double tickLabelHeight = estimateMaximumTickLabelHeight(g2);</span>
+
+        // start with the current tick unit...
+<span class="fc" id="L883">        TickUnitSource tickUnits = getStandardTickUnits();</span>
+<span class="fc" id="L884">        TickUnit unit1 = tickUnits.getCeilingTickUnit(getTickUnit());</span>
+<span class="fc" id="L885">        double unitHeight = lengthToJava2D(unit1.getSize(), dataArea, edge);</span>
+<span class="fc" id="L886">        double guess = unit1.getSize();</span>
+<span class="pc bpc" id="L887" title="1 of 2 branches missed.">        if (unitHeight &gt; 0) {</span>
+            // then extrapolate...
+<span class="fc" id="L889">            guess = (tickLabelHeight / unitHeight) * unit1.getSize();</span>
+        }
+<span class="fc" id="L891">        NumberTickUnit unit2 = (NumberTickUnit) tickUnits.getCeilingTickUnit(</span>
+                guess);
+<span class="fc" id="L893">        double unit2Height = lengthToJava2D(unit2.getSize(), dataArea, edge);</span>
+
+<span class="fc" id="L895">        tickLabelHeight = estimateMaximumTickLabelHeight(g2);</span>
+<span class="pc bpc" id="L896" title="1 of 2 branches missed.">        if (tickLabelHeight &gt; unit2Height) {</span>
+<span class="nc" id="L897">            unit2 = (NumberTickUnit) tickUnits.getLargerTickUnit(unit2);</span>
+        }
+
+<span class="fc" id="L900">        setTickUnit(unit2, false, false);</span>
+
+<span class="fc" id="L902">    }</span>
+
+    /**
+     * Calculates the positions of the tick labels for the axis, storing the
+     * results in the tick label list (ready for drawing).
+     *
+     * @param g2  the graphics device.
+     * @param state  the axis state.
+     * @param dataArea  the area in which the plot should be drawn.
+     * @param edge  the location of the axis.
+     *
+     * @return A list of ticks.
+     */
+    @Override
+    public List refreshTicks(Graphics2D g2, AxisState state, 
+            Rectangle2D dataArea, RectangleEdge edge) {
+
+<span class="fc" id="L919">        List result = new java.util.ArrayList();</span>
+<span class="fc bfc" id="L920" title="All 2 branches covered.">        if (RectangleEdge.isTopOrBottom(edge)) {</span>
+<span class="fc" id="L921">            result = refreshTicksHorizontal(g2, dataArea, edge);</span>
+        }
+<span class="pc bpc" id="L923" title="1 of 2 branches missed.">        else if (RectangleEdge.isLeftOrRight(edge)) {</span>
+<span class="fc" id="L924">            result = refreshTicksVertical(g2, dataArea, edge);</span>
+        }
+<span class="fc" id="L926">        return result;</span>
+
+    }
+
+    /**
+     * Calculates the positions of the tick labels for the axis, storing the
+     * results in the tick label list (ready for drawing).
+     *
+     * @param g2  the graphics device.
+     * @param dataArea  the area in which the data should be drawn.
+     * @param edge  the location of the axis.
+     *
+     * @return A list of ticks.
+     */
+    protected List refreshTicksHorizontal(Graphics2D g2,
+            Rectangle2D dataArea, RectangleEdge edge) {
+
+<span class="fc" id="L943">        List result = new java.util.ArrayList();</span>
+
+<span class="fc" id="L945">        Font tickLabelFont = getTickLabelFont();</span>
+<span class="fc" id="L946">        g2.setFont(tickLabelFont);</span>
+
+<span class="pc bpc" id="L948" title="1 of 2 branches missed.">        if (isAutoTickUnitSelection()) {</span>
+<span class="fc" id="L949">            selectAutoTickUnit(g2, dataArea, edge);</span>
+        }
+
+<span class="fc" id="L952">        TickUnit tu = getTickUnit();</span>
+<span class="fc" id="L953">        double size = tu.getSize();</span>
+<span class="fc" id="L954">        int count = calculateVisibleTickCount();</span>
+<span class="fc" id="L955">        double lowestTickValue = calculateLowestVisibleTickValue();</span>
+
+<span class="pc bpc" id="L957" title="1 of 2 branches missed.">        if (count &lt;= ValueAxis.MAXIMUM_TICK_COUNT) {</span>
+<span class="fc" id="L958">            int minorTickSpaces = getMinorTickCount();</span>
+<span class="pc bpc" id="L959" title="1 of 2 branches missed.">            if (minorTickSpaces &lt;= 0) {</span>
+<span class="fc" id="L960">                minorTickSpaces = tu.getMinorTickCount();</span>
+            }
+<span class="fc bfc" id="L962" title="All 2 branches covered.">            for (int minorTick = 1; minorTick &lt; minorTickSpaces; minorTick++) {</span>
+<span class="fc" id="L963">                double minorTickValue = lowestTickValue </span>
+                        - size * minorTick / minorTickSpaces;
+<span class="fc bfc" id="L965" title="All 2 branches covered.">                if (getRange().contains(minorTickValue)) {</span>
+<span class="fc" id="L966">                    result.add(new NumberTick(TickType.MINOR, minorTickValue,</span>
+                            &quot;&quot;, TextAnchor.TOP_CENTER, TextAnchor.CENTER,
+                            0.0));
+                }
+            }
+<span class="fc bfc" id="L971" title="All 2 branches covered.">            for (int i = 0; i &lt; count; i++) {</span>
+<span class="fc" id="L972">                double currentTickValue = lowestTickValue + (i * size);</span>
+                String tickLabel;
+<span class="fc" id="L974">                NumberFormat formatter = getNumberFormatOverride();</span>
+<span class="pc bpc" id="L975" title="1 of 2 branches missed.">                if (formatter != null) {</span>
+<span class="nc" id="L976">                    tickLabel = formatter.format(currentTickValue);</span>
+                }
+                else {
+<span class="fc" id="L979">                    tickLabel = getTickUnit().valueToString(currentTickValue);</span>
+                }
+                TextAnchor anchor, rotationAnchor;
+<span class="fc" id="L982">                double angle = 0.0;</span>
+<span class="pc bpc" id="L983" title="1 of 2 branches missed.">                if (isVerticalTickLabels()) {</span>
+<span class="nc" id="L984">                    anchor = TextAnchor.CENTER_RIGHT;</span>
+<span class="nc" id="L985">                    rotationAnchor = TextAnchor.CENTER_RIGHT;</span>
+<span class="nc bnc" id="L986" title="All 2 branches missed.">                    if (edge == RectangleEdge.TOP) {</span>
+<span class="nc" id="L987">                        angle = Math.PI / 2.0;</span>
+                    }
+                    else {
+<span class="nc" id="L990">                        angle = -Math.PI / 2.0;</span>
+                    }
+                }
+                else {
+<span class="fc bfc" id="L994" title="All 2 branches covered.">                    if (edge == RectangleEdge.TOP) {</span>
+<span class="fc" id="L995">                        anchor = TextAnchor.BOTTOM_CENTER;</span>
+<span class="fc" id="L996">                        rotationAnchor = TextAnchor.BOTTOM_CENTER;</span>
+                    }
+                    else {
+<span class="fc" id="L999">                        anchor = TextAnchor.TOP_CENTER;</span>
+<span class="fc" id="L1000">                        rotationAnchor = TextAnchor.TOP_CENTER;</span>
+                    }
+                }
+
+<span class="fc" id="L1004">                Tick tick = new NumberTick(new Double(currentTickValue),</span>
+                        tickLabel, anchor, rotationAnchor, angle);
+<span class="fc" id="L1006">                result.add(tick);</span>
+<span class="fc" id="L1007">                double nextTickValue = lowestTickValue + ((i + 1) * size);</span>
+<span class="fc bfc" id="L1008" title="All 2 branches covered.">                for (int minorTick = 1; minorTick &lt; minorTickSpaces;</span>
+<span class="fc" id="L1009">                        minorTick++) {</span>
+<span class="fc" id="L1010">                    double minorTickValue = currentTickValue</span>
+                            + (nextTickValue - currentTickValue)
+                            * minorTick / minorTickSpaces;
+<span class="fc bfc" id="L1013" title="All 2 branches covered.">                    if (getRange().contains(minorTickValue)) {</span>
+<span class="fc" id="L1014">                        result.add(new NumberTick(TickType.MINOR,</span>
+                                minorTickValue, &quot;&quot;, TextAnchor.TOP_CENTER,
+                                TextAnchor.CENTER, 0.0));
+                    }
+                }
+            }
+        }
+<span class="fc" id="L1021">        return result;</span>
+
+    }
+
+    /**
+     * Calculates the positions of the tick labels for the axis, storing the
+     * results in the tick label list (ready for drawing).
+     *
+     * @param g2  the graphics device.
+     * @param dataArea  the area in which the plot should be drawn.
+     * @param edge  the location of the axis.
+     *
+     * @return A list of ticks.
+     */
+    protected List refreshTicksVertical(Graphics2D g2,
+            Rectangle2D dataArea, RectangleEdge edge) {
+
+<span class="fc" id="L1038">        List result = new java.util.ArrayList();</span>
+<span class="fc" id="L1039">        result.clear();</span>
+
+<span class="fc" id="L1041">        Font tickLabelFont = getTickLabelFont();</span>
+<span class="fc" id="L1042">        g2.setFont(tickLabelFont);</span>
+<span class="pc bpc" id="L1043" title="1 of 2 branches missed.">        if (isAutoTickUnitSelection()) {</span>
+<span class="fc" id="L1044">            selectAutoTickUnit(g2, dataArea, edge);</span>
+        }
+
+<span class="fc" id="L1047">        TickUnit tu = getTickUnit();</span>
+<span class="fc" id="L1048">        double size = tu.getSize();</span>
+<span class="fc" id="L1049">        int count = calculateVisibleTickCount();</span>
+<span class="fc" id="L1050">        double lowestTickValue = calculateLowestVisibleTickValue();</span>
+
+<span class="pc bpc" id="L1052" title="1 of 2 branches missed.">        if (count &lt;= ValueAxis.MAXIMUM_TICK_COUNT) {</span>
+<span class="fc" id="L1053">            int minorTickSpaces = getMinorTickCount();</span>
+<span class="pc bpc" id="L1054" title="1 of 2 branches missed.">            if (minorTickSpaces &lt;= 0) {</span>
+<span class="fc" id="L1055">                minorTickSpaces = tu.getMinorTickCount();</span>
+            }
+<span class="fc bfc" id="L1057" title="All 2 branches covered.">            for (int minorTick = 1; minorTick &lt; minorTickSpaces; minorTick++) {</span>
+<span class="fc" id="L1058">                double minorTickValue = lowestTickValue</span>
+                        - size * minorTick / minorTickSpaces;
+<span class="fc bfc" id="L1060" title="All 2 branches covered.">                if (getRange().contains(minorTickValue)) {</span>
+<span class="fc" id="L1061">                    result.add(new NumberTick(TickType.MINOR, minorTickValue,</span>
+                            &quot;&quot;, TextAnchor.TOP_CENTER, TextAnchor.CENTER,
+                            0.0));
+                }
+            }
+
+<span class="fc bfc" id="L1067" title="All 2 branches covered.">            for (int i = 0; i &lt; count; i++) {</span>
+<span class="fc" id="L1068">                double currentTickValue = lowestTickValue + (i * size);</span>
+                String tickLabel;
+<span class="fc" id="L1070">                NumberFormat formatter = getNumberFormatOverride();</span>
+<span class="pc bpc" id="L1071" title="1 of 2 branches missed.">                if (formatter != null) {</span>
+<span class="nc" id="L1072">                    tickLabel = formatter.format(currentTickValue);</span>
+                }
+                else {
+<span class="fc" id="L1075">                    tickLabel = getTickUnit().valueToString(currentTickValue);</span>
+                }
+
+                TextAnchor anchor;
+                TextAnchor rotationAnchor;
+<span class="fc" id="L1080">                double angle = 0.0;</span>
+<span class="pc bpc" id="L1081" title="1 of 2 branches missed.">                if (isVerticalTickLabels()) {</span>
+<span class="nc bnc" id="L1082" title="All 2 branches missed.">                    if (edge == RectangleEdge.LEFT) {</span>
+<span class="nc" id="L1083">                        anchor = TextAnchor.BOTTOM_CENTER;</span>
+<span class="nc" id="L1084">                        rotationAnchor = TextAnchor.BOTTOM_CENTER;</span>
+<span class="nc" id="L1085">                        angle = -Math.PI / 2.0;</span>
+                    }
+                    else {
+<span class="nc" id="L1088">                        anchor = TextAnchor.BOTTOM_CENTER;</span>
+<span class="nc" id="L1089">                        rotationAnchor = TextAnchor.BOTTOM_CENTER;</span>
+<span class="nc" id="L1090">                        angle = Math.PI / 2.0;</span>
+                    }
+                }
+                else {
+<span class="pc bpc" id="L1094" title="1 of 2 branches missed.">                    if (edge == RectangleEdge.LEFT) {</span>
+<span class="fc" id="L1095">                        anchor = TextAnchor.CENTER_RIGHT;</span>
+<span class="fc" id="L1096">                        rotationAnchor = TextAnchor.CENTER_RIGHT;</span>
+                    }
+                    else {
+<span class="nc" id="L1099">                        anchor = TextAnchor.CENTER_LEFT;</span>
+<span class="nc" id="L1100">                        rotationAnchor = TextAnchor.CENTER_LEFT;</span>
+                    }
+                }
+
+<span class="fc" id="L1104">                Tick tick = new NumberTick(new Double(currentTickValue),</span>
+                        tickLabel, anchor, rotationAnchor, angle);
+<span class="fc" id="L1106">                result.add(tick);</span>
+
+<span class="fc" id="L1108">                double nextTickValue = lowestTickValue + ((i + 1) * size);</span>
+<span class="fc bfc" id="L1109" title="All 2 branches covered.">                for (int minorTick = 1; minorTick &lt; minorTickSpaces;</span>
+<span class="fc" id="L1110">                        minorTick++) {</span>
+<span class="fc" id="L1111">                    double minorTickValue = currentTickValue</span>
+                            + (nextTickValue - currentTickValue)
+                            * minorTick / minorTickSpaces;
+<span class="fc bfc" id="L1114" title="All 2 branches covered.">                    if (getRange().contains(minorTickValue)) {</span>
+<span class="fc" id="L1115">                        result.add(new NumberTick(TickType.MINOR,</span>
+                                minorTickValue, &quot;&quot;, TextAnchor.TOP_CENTER,
+                                TextAnchor.CENTER, 0.0));
+                    }
+                }
+            }
+        }
+<span class="fc" id="L1122">        return result;</span>
+
+    }
+
+    /**
+     * Returns a clone of the axis.
+     *
+     * @return A clone
+     *
+     * @throws CloneNotSupportedException if some component of the axis does
+     *         not support cloning.
+     */
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+<span class="fc" id="L1136">        NumberAxis clone = (NumberAxis) super.clone();</span>
+<span class="pc bpc" id="L1137" title="1 of 2 branches missed.">        if (this.numberFormatOverride != null) {</span>
+<span class="nc" id="L1138">            clone.numberFormatOverride</span>
+<span class="nc" id="L1139">                = (NumberFormat) this.numberFormatOverride.clone();</span>
+        }
+<span class="fc" id="L1141">        return clone;</span>
+    }
+
+    /**
+     * Tests the axis for equality with an arbitrary object.
+     *
+     * @param obj  the object (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    @Override
+    public boolean equals(Object obj) {
+<span class="fc bfc" id="L1153" title="All 2 branches covered.">        if (obj == this) {</span>
+<span class="fc" id="L1154">            return true;</span>
+        }
+<span class="fc bfc" id="L1156" title="All 2 branches covered.">        if (!(obj instanceof NumberAxis)) {</span>
+<span class="fc" id="L1157">            return false;</span>
+        }
+<span class="fc" id="L1159">        NumberAxis that = (NumberAxis) obj;</span>
+<span class="fc bfc" id="L1160" title="All 2 branches covered.">        if (this.autoRangeIncludesZero != that.autoRangeIncludesZero) {</span>
+<span class="fc" id="L1161">            return false;</span>
+        }
+<span class="fc bfc" id="L1163" title="All 2 branches covered.">        if (this.autoRangeStickyZero != that.autoRangeStickyZero) {</span>
+<span class="fc" id="L1164">            return false;</span>
+        }
+<span class="fc bfc" id="L1166" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.tickUnit, that.tickUnit)) {</span>
+<span class="fc" id="L1167">            return false;</span>
+        }
+<span class="fc bfc" id="L1169" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.numberFormatOverride,</span>
+                that.numberFormatOverride)) {
+<span class="fc" id="L1171">            return false;</span>
+        }
+<span class="fc bfc" id="L1173" title="All 2 branches covered.">        if (!this.rangeType.equals(that.rangeType)) {</span>
+<span class="fc" id="L1174">            return false;</span>
+        }
+<span class="fc" id="L1176">        return super.equals(obj);</span>
+    }
+
+    /**
+     * Returns a hash code for this object.
+     *
+     * @return A hash code.
+     */
+    @Override
+    public int hashCode() {
+<span class="fc" id="L1186">        return super.hashCode();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

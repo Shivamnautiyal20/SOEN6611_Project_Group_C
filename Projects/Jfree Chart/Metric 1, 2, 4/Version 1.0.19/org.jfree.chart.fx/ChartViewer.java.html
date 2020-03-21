@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChartViewer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.fx</a> &gt; <span class="el_source">ChartViewer.java</span></div><h1>ChartViewer.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------
+ * ChartViewer.java
+ * ----------------
+ * (C) Copyright 2014, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes:
+ * --------
+ * 27-Jun-2014 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.fx;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import javafx.event.ActionEvent;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Control;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.Skinnable;
+import javafx.stage.FileChooser;
+import javafx.stage.WindowEvent;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartRenderingInfo;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.fx.interaction.ChartMouseEventFX;
+import org.jfree.chart.fx.interaction.ChartMouseListenerFX;
+import org.jfree.chart.util.ExportUtils;
+import org.jfree.chart.util.ParamChecks;
+
+/**
+ * A control for displaying a {@link JFreeChart} in JavaFX (embeds a 
+ * {@link ChartCanvas}, adds drag zooming and provides a popup menu for export
+ * to PNG/JPG/SVG and PDF formats).  Many behaviours(tooltips, zooming etc) are 
+ * provided directly by the canvas.
+ * 
+ * &lt;p&gt;THE API FOR THIS CLASS IS SUBJECT TO CHANGE IN FUTURE RELEASES.  This is
+ * so that we can incorporate feedback on the (new) JavaFX support in 
+ * JFreeChart.&lt;/p&gt;
+ * 
+ * @since 1.0.18
+ */
+public class ChartViewer extends Control implements Skinnable, 
+        ChartMouseListenerFX {
+    
+    /** The chart to display. */
+    private JFreeChart chart;
+    
+    /** The context menu that will be attached to the canvas. */
+    private ContextMenu contextMenu;
+
+    /** Does the viewer show tooltips from the chart? */
+    private boolean tooltipEnabled;
+    
+    /** Storage for registered chart mouse listeners. */
+    private transient List&lt;ChartMouseListenerFX&gt; chartMouseListeners;
+
+    /**
+     * Creates a new viewer to display the supplied chart in JavaFX.
+     * 
+     * @param chart  the chart ({@code null} not permitted). 
+     */
+    public ChartViewer(JFreeChart chart) {
+<span class="nc" id="L96">        this(chart, true);</span>
+<span class="nc" id="L97">    }</span>
+    
+    /**
+     * Creates a new viewer instance.
+     * 
+     * @param chart  the chart ({@code null} not permitted).
+     * @param contextMenuEnabled  enable the context menu?
+     */
+<span class="nc" id="L105">    public ChartViewer(JFreeChart chart, boolean contextMenuEnabled) {</span>
+<span class="nc" id="L106">        ParamChecks.nullNotPermitted(chart, &quot;chart&quot;);</span>
+<span class="nc" id="L107">        this.chart = chart;</span>
+<span class="nc" id="L108">        getStyleClass().add(&quot;chart-control&quot;);</span>
+<span class="nc" id="L109">        this.contextMenu = createContextMenu();</span>
+<span class="nc" id="L110">        this.contextMenu.setOnShowing((WindowEvent event) -&gt; {</span>
+<span class="nc" id="L111">            ChartViewer.this.setTooltipEnabled(false);</span>
+<span class="nc" id="L112">        });</span>
+<span class="nc" id="L113">        this.contextMenu.setOnHiding((WindowEvent event) -&gt; {</span>
+<span class="nc" id="L114">            ChartViewer.this.setTooltipEnabled(true);</span>
+<span class="nc" id="L115">        });</span>
+<span class="nc" id="L116">        setContextMenu(this.contextMenu);</span>
+<span class="nc" id="L117">        this.tooltipEnabled = true;</span>
+<span class="nc" id="L118">        this.chartMouseListeners = new ArrayList&lt;ChartMouseListenerFX&gt;();</span>
+<span class="nc" id="L119">    }</span>
+    
+    @Override
+    public String getUserAgentStylesheet() {
+<span class="nc" id="L123">        return ChartViewer.class.getResource(&quot;chart-viewer.css&quot;)</span>
+<span class="nc" id="L124">                .toExternalForm();</span>
+    }
+
+    /**
+     * Returns the chart that is being displayed by this node.
+     * 
+     * @return The chart (never {@code null}). 
+     */
+    public JFreeChart getChart() {
+<span class="nc" id="L133">        return this.chart;</span>
+    }
+    
+    /**
+     * Sets the chart to be displayed by this node.
+     * 
+     * @param chart  the chart ({@code null} not permitted). 
+     */
+    public void setChart(JFreeChart chart) {
+<span class="nc" id="L142">        ParamChecks.nullNotPermitted(chart, &quot;chart&quot;);</span>
+<span class="nc" id="L143">        this.chart = chart;</span>
+<span class="nc" id="L144">        ChartViewerSkin skin = (ChartViewerSkin) getSkin();</span>
+<span class="nc" id="L145">        skin.setChart(chart);</span>
+<span class="nc" id="L146">    }</span>
+    
+    /**
+     * Returns the flag that controls whether or not tooltips are displayed
+     * for the chart.
+     * 
+     * @return A boolean.
+     */
+    public boolean isTooltipEnabled() {
+<span class="nc" id="L155">        return this.tooltipEnabled;    </span>
+    }
+    
+    /**
+     * Sets the flag that controls whether or not the chart tooltips are shown
+     * by this viewer.
+     * 
+     * @param enabled  the new flag value. 
+     */
+    public void setTooltipEnabled(boolean enabled) {
+<span class="nc" id="L165">        this.tooltipEnabled = enabled;</span>
+<span class="nc" id="L166">        ChartViewerSkin skin = (ChartViewerSkin) getSkin();</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (skin != null) {</span>
+<span class="nc" id="L168">            skin.setTooltipEnabled(enabled);        </span>
+        }
+<span class="nc" id="L170">    }</span>
+
+    /**
+     * Returns the rendering info from the most recent drawing of the chart.
+     * 
+     * @return The rendering info (possibly {@code null}). 
+     */
+    public ChartRenderingInfo getRenderingInfo() {
+<span class="nc" id="L178">        ChartViewerSkin skin = (ChartViewerSkin) getSkin();</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        if (skin != null) {</span>
+<span class="nc" id="L180">            return skin.getRenderingInfo();</span>
+        }
+<span class="nc" id="L182">        return null;</span>
+    }
+
+    /**
+     * Hides the zoom rectangle.  The work is delegated to the control's 
+     * current skin.
+     */
+    public void hideZoomRectangle() {
+<span class="nc" id="L190">        ChartViewerSkin skin = (ChartViewerSkin) getSkin();</span>
+<span class="nc" id="L191">        skin.setZoomRectangleVisible(false);</span>
+<span class="nc" id="L192">    }</span>
+    
+    /**
+     * Sets the size and location of the zoom rectangle and makes it visible
+     * if it wasn't already visible.  The work is delegated to the control's 
+     * current skin.
+     * 
+     * @param x  the x-location.
+     * @param y  the y-location.
+     * @param w  the width.
+     * @param h  the height.
+     */
+    public void showZoomRectangle(double x, double y, double w, double h) {
+<span class="nc" id="L205">        ChartViewerSkin skin = (ChartViewerSkin) getSkin();</span>
+<span class="nc" id="L206">        skin.showZoomRectangle(x, y, w, h);</span>
+<span class="nc" id="L207">    }</span>
+    
+    /**
+     * Registers a listener to receive {@link ChartMouseEvent} notifications
+     * from this viewer.
+     *
+     * @param listener  the listener ({@code null} not permitted).
+     */
+    public void addChartMouseListener(ChartMouseListenerFX listener) {
+<span class="nc" id="L216">        ParamChecks.nullNotPermitted(listener, &quot;listener&quot;);</span>
+<span class="nc" id="L217">        this.chartMouseListeners.add(listener);</span>
+<span class="nc" id="L218">    }</span>
+
+    /**
+     * Removes a listener from the list of objects listening for chart mouse
+     * events.
+     *
+     * @param listener  the listener.
+     */
+    public void removeChartMouseListener(ChartMouseListenerFX listener) {
+<span class="nc" id="L227">        ParamChecks.nullNotPermitted(listener, &quot;listener&quot;);</span>
+<span class="nc" id="L228">        this.chartMouseListeners.remove(listener);</span>
+<span class="nc" id="L229">    }</span>
+
+    /**
+     * Creates the context menu.
+     * 
+     * @return The context menu.
+     */
+    private ContextMenu createContextMenu() {
+<span class="nc" id="L237">        final ContextMenu menu = new ContextMenu();</span>
+       
+<span class="nc" id="L239">        Menu export = new Menu(&quot;Export As&quot;);</span>
+        
+<span class="nc" id="L241">        MenuItem pngItem = new MenuItem(&quot;PNG...&quot;);</span>
+<span class="nc" id="L242">        pngItem.setOnAction((ActionEvent e) -&gt; { handleExportToPNG(); });        </span>
+<span class="nc" id="L243">        export.getItems().add(pngItem);</span>
+        
+<span class="nc" id="L245">        MenuItem jpegItem = new MenuItem(&quot;JPEG...&quot;);</span>
+<span class="nc" id="L246">        jpegItem.setOnAction((ActionEvent e) -&gt; { handleExportToJPEG(); });        </span>
+<span class="nc" id="L247">        export.getItems().add(jpegItem);</span>
+        
+<span class="nc bnc" id="L249" title="All 2 branches missed.">        if (ExportUtils.isOrsonPDFAvailable()) {</span>
+<span class="nc" id="L250">            MenuItem pdfItem = new MenuItem(&quot;PDF...&quot;);</span>
+<span class="nc" id="L251">            pdfItem.setOnAction((ActionEvent e) -&gt; {</span>
+<span class="nc" id="L252">                handleExportToPDF();</span>
+<span class="nc" id="L253">            });</span>
+<span class="nc" id="L254">            export.getItems().add(pdfItem);</span>
+        }
+<span class="nc bnc" id="L256" title="All 2 branches missed.">        if (ExportUtils.isJFreeSVGAvailable()) {</span>
+<span class="nc" id="L257">            MenuItem svgItem = new MenuItem(&quot;SVG...&quot;);</span>
+<span class="nc" id="L258">            svgItem.setOnAction((ActionEvent e) -&gt; {</span>
+<span class="nc" id="L259">                handleExportToSVG();</span>
+<span class="nc" id="L260">            });</span>
+<span class="nc" id="L261">            export.getItems().add(svgItem);        </span>
+        }
+<span class="nc" id="L263">        menu.getItems().add(export);</span>
+<span class="nc" id="L264">        return menu;</span>
+    }
+    
+    /**
+     * A handler for the export to PDF option in the context menu.
+     */
+    private void handleExportToPDF() {
+<span class="nc" id="L271">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L272">        fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter(</span>
+                &quot;Portable Document Format (PDF)&quot;, &quot;pdf&quot;));
+<span class="nc" id="L274">        fileChooser.setTitle(&quot;Export to PDF&quot;);</span>
+<span class="nc" id="L275">        File file = fileChooser.showSaveDialog(this.getScene().getWindow());</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">        if (file != null) {</span>
+<span class="nc" id="L277">            ExportUtils.writeAsPDF(this.chart, (int) getWidth(), </span>
+<span class="nc" id="L278">                    (int) getHeight(), file);</span>
+        } 
+<span class="nc" id="L280">    }</span>
+    
+    /**
+     * A handler for the export to SVG option in the context menu.
+     */
+    private void handleExportToSVG() {
+<span class="nc" id="L286">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L287">        fileChooser.setTitle(&quot;Export to SVG&quot;);</span>
+<span class="nc" id="L288">        fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter(</span>
+                &quot;Scalable Vector Graphics (SVG)&quot;, &quot;svg&quot;));
+<span class="nc" id="L290">        File file = fileChooser.showSaveDialog(this.getScene().getWindow());</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        if (file != null) {</span>
+<span class="nc" id="L292">            ExportUtils.writeAsSVG(this.chart, (int) getWidth(), </span>
+<span class="nc" id="L293">                    (int) getHeight(), file);</span>
+        }
+<span class="nc" id="L295">    }</span>
+    
+    /**
+     * A handler for the export to PNG option in the context menu.
+     */
+    private void handleExportToPNG() {
+<span class="nc" id="L301">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L302">        fileChooser.setTitle(&quot;Export to PNG&quot;);</span>
+<span class="nc" id="L303">        fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter(</span>
+                &quot;Portable Network Graphics (PNG)&quot;, &quot;png&quot;));
+<span class="nc" id="L305">        File file = fileChooser.showSaveDialog(this.getScene().getWindow());</span>
+<span class="nc bnc" id="L306" title="All 2 branches missed.">        if (file != null) {</span>
+            try {
+<span class="nc" id="L308">                ExportUtils.writeAsPNG(this.chart, (int) getWidth(),</span>
+<span class="nc" id="L309">                        (int) getHeight(), file);</span>
+<span class="nc" id="L310">            } catch (IOException ex) {</span>
+                // FIXME: show a dialog with the error
+<span class="nc" id="L312">            }</span>
+        }        
+<span class="nc" id="L314">    }</span>
+
+    /**
+     * A handler for the export to JPEG option in the context menu.
+     */
+    private void handleExportToJPEG() {
+<span class="nc" id="L320">        FileChooser fileChooser = new FileChooser();</span>
+<span class="nc" id="L321">        fileChooser.setTitle(&quot;Export to JPEG&quot;);</span>
+<span class="nc" id="L322">        fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter(</span>
+                &quot;JPEG&quot;, &quot;jpg&quot;));
+<span class="nc" id="L324">        File file = fileChooser.showSaveDialog(this.getScene().getWindow());</span>
+<span class="nc bnc" id="L325" title="All 2 branches missed.">        if (file != null) {</span>
+            try {
+<span class="nc" id="L327">                ExportUtils.writeAsJPEG(this.chart, (int) getWidth(),</span>
+<span class="nc" id="L328">                        (int) getHeight(), file);</span>
+<span class="nc" id="L329">            } catch (IOException ex) {</span>
+                // FIXME: show a dialog with the error
+<span class="nc" id="L331">            }</span>
+        }        
+<span class="nc" id="L333">    }</span>
+
+    @Override
+    public void chartMouseClicked(ChartMouseEventFX event) {
+        // relay the event from the canvas to our registered listeners
+<span class="nc bnc" id="L338" title="All 2 branches missed.">        for (ChartMouseListenerFX listener: this.chartMouseListeners) {</span>
+<span class="nc" id="L339">            listener.chartMouseClicked(event);</span>
+<span class="nc" id="L340">        }</span>
+<span class="nc" id="L341">    }</span>
+
+    @Override
+    public void chartMouseMoved(ChartMouseEventFX event) {
+        // relay the event from the canvas to our registered listeners
+<span class="nc bnc" id="L346" title="All 2 branches missed.">        for (ChartMouseListenerFX listener: this.chartMouseListeners) {</span>
+<span class="nc" id="L347">            listener.chartMouseMoved(event);</span>
+<span class="nc" id="L348">        }</span>
+<span class="nc" id="L349">    }</span>
+ 
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

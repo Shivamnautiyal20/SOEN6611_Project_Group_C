@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractMouseHandlerFX.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.fx.interaction</a> &gt; <span class="el_source">AbstractMouseHandlerFX.java</span></div><h1>AbstractMouseHandlerFX.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------------
+ * AbstractMouseHandlerFX.java
+ * ---------------------------
+ * (C) Copyright 2014, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes:
+ * --------
+ * 25-Jun-2014 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.fx.interaction;
+
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import org.jfree.chart.fx.ChartCanvas;
+import org.jfree.chart.util.ParamChecks;
+
+/**
+ * A base class that can be used to implement the {@link MouseHandlerFX}
+ * interface.
+ * 
+ * &lt;p&gt;THE API FOR THIS CLASS IS SUBJECT TO CHANGE IN FUTURE RELEASES.  This is
+ * so that we can incorporate feedback on the (new) JavaFX support in 
+ * JFreeChart.&lt;/p&gt;
+ * 
+ * @since 1.0.18
+ */
+public class AbstractMouseHandlerFX implements MouseHandlerFX {
+
+    /** The handler id. */
+    private String id;
+    
+    /** 
+     * A flag used to enable/disable the handler (usually temporarily, removing
+     * a handler is the preferred way to disable it permanently).
+     */
+    private boolean enabled;
+    
+    /** Requires ALT key modifier? */
+    private boolean altKey;
+    
+    /** Requires CTRL key modifier? */
+    private boolean ctrlKey;
+
+    /** Requires META key modifier? */
+    private boolean metaKey;
+    
+    /** Requires SHIFT key modifier? */
+    private boolean shiftKey;
+    
+    /**
+     * Creates a new instance.  The modifier keys are used to select a 
+     * mouse handler to be the current &quot;live&quot; handler (when a handler is
+     * used as an auxiliary handler, the modifier keys are not relevant).
+     * 
+     * @param id  the handler id (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param altKey  require ALT key modifier?
+     * @param ctrlKey  require ALT key modifier?
+     * @param metaKey  require ALT key modifier?
+     * @param shiftKey   require ALT key modifier?
+     */
+    public AbstractMouseHandlerFX(String id, boolean altKey, boolean ctrlKey, 
+<span class="nc" id="L93">            boolean metaKey, boolean shiftKey) {</span>
+<span class="nc" id="L94">        ParamChecks.nullNotPermitted(id, &quot;id&quot;);</span>
+<span class="nc" id="L95">        this.id = id;</span>
+<span class="nc" id="L96">        this.enabled = true;</span>
+<span class="nc" id="L97">        this.altKey = altKey;</span>
+<span class="nc" id="L98">        this.ctrlKey = ctrlKey;</span>
+<span class="nc" id="L99">        this.metaKey = metaKey;</span>
+<span class="nc" id="L100">        this.shiftKey = shiftKey;</span>
+<span class="nc" id="L101">    }</span>
+    
+    /**
+     * Returns the ID for the handler.
+     * 
+     * @return The ID (never &lt;code&gt;null&lt;/code&gt;).
+     */
+    @Override
+    public String getID() {
+<span class="nc" id="L110">        return this.id;</span>
+    }
+    
+    /**
+     * Returns the flag that controls whether or not the handler is enabled.
+     * 
+     * @return A boolean. 
+     */
+    @Override
+    public boolean isEnabled() {
+<span class="nc" id="L120">        return this.enabled;</span>
+    }
+    
+    /**
+     * Sets the flag that controls the enabled/disabled state of the handler.
+     * 
+     * @param enabled  the new flag value. 
+     */
+    public void setEnabled(boolean enabled) {
+<span class="nc" id="L129">        this.enabled = enabled;</span>
+<span class="nc" id="L130">    }</span>
+    
+    /**
+     * Returns &lt;code&gt;true&lt;/code&gt; if the specified mouse event has modifier
+     * keys that match this handler.
+     * 
+     * @param e  the mouse event (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * 
+     * @return A boolean. 
+     */
+    @Override
+    public boolean hasMatchingModifiers(MouseEvent e) {
+<span class="nc" id="L142">        boolean b = true;</span>
+<span class="nc bnc" id="L143" title="All 4 branches missed.">        b = b &amp;&amp; (this.altKey == e.isAltDown());</span>
+<span class="nc bnc" id="L144" title="All 4 branches missed.">        b = b &amp;&amp; (this.ctrlKey == e.isControlDown());</span>
+<span class="nc bnc" id="L145" title="All 4 branches missed.">        b = b &amp;&amp; (this.metaKey == e.isMetaDown());</span>
+<span class="nc bnc" id="L146" title="All 4 branches missed.">        b = b &amp;&amp; (this.shiftKey == e.isShiftDown());</span>
+<span class="nc" id="L147">        return b;</span>
+    }
+    
+    /**
+     * Handles a mouse moved event.  This implementation does nothing,
+     * override the method if required.
+     * 
+     * @param canvas  the canvas (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param e  the event (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    @Override
+    public void handleMouseMoved(ChartCanvas canvas, MouseEvent e) {
+        // does nothing unless overridden
+<span class="nc" id="L160">    }</span>
+    
+    /**
+     * Handles a mouse clicked event.  This implementation does nothing,
+     * override the method if required.
+     * 
+     * @param canvas  the canvas (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param e  the event (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    @Override
+    public void handleMouseClicked(ChartCanvas canvas, MouseEvent e) {
+        // does nothing unless overridden
+<span class="nc" id="L172">    }</span>
+
+    /**
+     * Handles a mouse pressed event.  This implementation does nothing,
+     * override the method if required.
+     * 
+     * @param canvas  the canvas (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param e  the event (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    @Override
+    public void handleMousePressed(ChartCanvas canvas, MouseEvent e) {
+        // does nothing unless overridden        
+<span class="nc" id="L184">    }</span>
+    
+    /**
+     * Handles a mouse dragged event.  This implementation does nothing,
+     * override the method if required.
+     * 
+     * @param canvas  the canvas (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param e  the event (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    @Override
+    public void handleMouseDragged(ChartCanvas canvas, MouseEvent e) {
+        // does nothing unless overridden
+<span class="nc" id="L196">    }</span>
+    
+    /**
+     * Handles a mouse released event.  This implementation does nothing,
+     * override the method if required.
+     * 
+     * @param canvas  the canvas (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param e  the event (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    @Override
+    public void handleMouseReleased(ChartCanvas canvas, MouseEvent e) {
+        // does nothing unless overridden
+<span class="nc" id="L208">    }</span>
+
+    /**
+     * Handles a scroll event.  This implementation does nothing,
+     * override the method if required.
+     * 
+     * @param canvas  the canvas (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param e  the event (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    @Override
+    public void handleScroll(ChartCanvas canvas, ScrollEvent e) {
+        // does nothing unless overridden
+<span class="nc" id="L220">    }</span>
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

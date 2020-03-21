@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BarChartFXDemo1.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.fx.demo</a> &gt; <span class="el_source">BarChartFXDemo1.java</span></div><h1>BarChartFXDemo1.java</h1><pre class="source lang-java linenums">/* ====================
+ * BarChartFXDemo1.java
+ * ====================
+ * 
+ * Copyright (c) 2014, Object Refinery Limited.
+ * All rights reserved.
+ *
+ * http://www.jfree.org/jfreechart/index.html
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *   - Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   - Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *   - Neither the name of the Object Refinery Limited nor the
+ *     names of its contributors may be used to endorse or promote products
+ *     derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * ARE DISCLAIMED. IN NO EVENT SHALL OBJECT REFINERY LIMITED BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+ */
+
+package org.jfree.chart.fx.demo;
+
+import static javafx.application.Application.launch;
+
+import java.awt.Color;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.fx.ChartViewer;
+import org.jfree.chart.fx.interaction.ChartMouseEventFX;
+import org.jfree.chart.fx.interaction.ChartMouseListenerFX;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.title.TextTitle;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
+
+/**
+ * A demo showing the display of JFreeChart within a JavaFX application.
+ * For more information about the JFreeSVG vs Batik performance test, see
+ * this link: http://www.object-refinery.com/blog/blog-20140423.html
+ */
+<span class="nc" id="L60">public class BarChartFXDemo1 extends Application implements ChartMouseListenerFX {</span>
+
+    /**
+     * Returns a sample dataset.
+     *
+     * @return The dataset.
+     */
+    private static CategoryDataset createDataset() {
+<span class="nc" id="L68">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="nc" id="L69">        dataset.addValue(7445, &quot;JFreeSVG&quot;, &quot;Warm-up&quot;);</span>
+<span class="nc" id="L70">        dataset.addValue(24448, &quot;Batik&quot;, &quot;Warm-up&quot;);</span>
+<span class="nc" id="L71">        dataset.addValue(4297, &quot;JFreeSVG&quot;, &quot;Test&quot;);</span>
+<span class="nc" id="L72">        dataset.addValue(21022, &quot;Batik&quot;, &quot;Test&quot;);</span>
+<span class="nc" id="L73">        return dataset;</span>
+    }
+    
+    /**
+     * Creates a sample chart.
+     *
+     * @param dataset  the dataset.
+     *
+     * @return The chart.
+     */
+    private static JFreeChart createChart(CategoryDataset dataset) {
+<span class="nc" id="L84">        JFreeChart chart = ChartFactory.createBarChart(</span>
+            &quot;Performance: JFreeSVG vs Batik&quot;, null /* x-axis label*/, 
+                &quot;Milliseconds&quot; /* y-axis label */, dataset);
+<span class="nc" id="L87">        chart.addSubtitle(new TextTitle(&quot;Time to generate 1000 charts in SVG &quot; </span>
+                + &quot;format (lower bars = better performance)&quot;));
+<span class="nc" id="L89">        chart.setBackgroundPaint(Color.white);</span>
+<span class="nc" id="L90">        CategoryPlot plot = (CategoryPlot) chart.getPlot();</span>
+
+<span class="nc" id="L92">        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();</span>
+<span class="nc" id="L93">        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());</span>
+<span class="nc" id="L94">        BarRenderer renderer = (BarRenderer) plot.getRenderer();</span>
+<span class="nc" id="L95">        renderer.setDrawBarOutline(false);</span>
+<span class="nc" id="L96">        chart.getLegend().setFrame(BlockBorder.NONE);</span>
+<span class="nc" id="L97">        return chart;</span>
+    }
+
+    /**
+     * Adds a chart viewer to the stage and displays it.
+     * 
+     * @param stage  the stage.
+     * @throws Exception if something goes wrong.
+     */
+    @Override 
+    public void start(Stage stage) throws Exception {
+<span class="nc" id="L108">        CategoryDataset dataset = createDataset();</span>
+<span class="nc" id="L109">        JFreeChart chart = createChart(dataset); </span>
+<span class="nc" id="L110">        ChartViewer viewer = new ChartViewer(chart);</span>
+<span class="nc" id="L111">        viewer.addChartMouseListener(this);</span>
+<span class="nc" id="L112">        stage.setScene(new Scene(viewer)); </span>
+<span class="nc" id="L113">        stage.setTitle(&quot;JFreeChart: BarChartFXDemo1.java&quot;); </span>
+<span class="nc" id="L114">        stage.setWidth(700);</span>
+<span class="nc" id="L115">        stage.setHeight(390);</span>
+<span class="nc" id="L116">        stage.show(); </span>
+<span class="nc" id="L117">    }</span>
+    
+    /**
+     * Entry point.
+     * 
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L125">        launch(args);</span>
+<span class="nc" id="L126">    }</span>
+
+    /**
+     * Write the event to the console, just to illustrate.
+     * 
+     * @param event  event info. 
+     */
+    @Override
+    public void chartMouseClicked(ChartMouseEventFX event) {
+<span class="nc" id="L135">        System.out.println(event);</span>
+<span class="nc" id="L136">    }</span>
+
+    /**
+     * Write the event to the console, just to illustrate.
+     * 
+     * @param event  event info. 
+     */
+    @Override
+    public void chartMouseMoved(ChartMouseEventFX event) {
+<span class="nc" id="L145">        System.out.println(event);</span>
+<span class="nc" id="L146">    }</span>
+  
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

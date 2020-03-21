@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChartViewerSkin.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.fx</a> &gt; <span class="el_source">ChartViewerSkin.java</span></div><h1>ChartViewerSkin.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------
+ * ChartViewerSkin.java
+ * --------------------
+ * (C) Copyright 2014, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes:
+ * --------
+ * 20-Jun-2014 : Version 1 (DG);
+ */
+
+
+package org.jfree.chart.fx;
+
+import org.jfree.chart.fx.interaction.ZoomHandlerFX;
+import javafx.scene.control.SkinBase;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Rectangle;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartRenderingInfo;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.fx.interaction.ChartMouseListenerFX;
+import org.jfree.chart.util.ParamChecks;
+
+/**
+ * A default skin for the {@link ChartViewer} control.
+ * 
+ * &lt;p&gt;THE API FOR THIS CLASS IS SUBJECT TO CHANGE IN FUTURE RELEASES.  This is
+ * so that we can incorporate feedback on the (new) JavaFX support in 
+ * JFreeChart.&lt;/p&gt;
+ * 
+ * @since 1.0.18
+ */
+public class ChartViewerSkin extends SkinBase&lt;ChartViewer&gt;  {
+
+    /** The chart canvas. */
+    private ChartCanvas canvas;
+    
+    /** 
+     * The zoom rectangle is used to display the zooming region when
+     * doing a drag-zoom with the mouse.  Most of the time this rectangle
+     * is not visible.
+     */
+    private Rectangle zoomRectangle;
+    
+    /**
+     * Creates a new instance.
+     * 
+     * @param control  the control ({@code null} not permitted). 
+     */    
+    public ChartViewerSkin(ChartViewer control) {
+<span class="nc" id="L83">        super(control);</span>
+<span class="nc" id="L84">        getChildren().add(createNode(control));</span>
+<span class="nc" id="L85">        this.zoomRectangle = new Rectangle(0, 0, new Color(0, 0, 1, 0.25));</span>
+<span class="nc" id="L86">        this.zoomRectangle.setManaged(false);</span>
+<span class="nc" id="L87">        this.zoomRectangle.setVisible(false);</span>
+<span class="nc" id="L88">        getChildren().add(this.zoomRectangle);</span>
+<span class="nc" id="L89">    }</span>
+    
+    /**
+     * Returns the rendering info from the most recent drawing of the chart.
+     * 
+     * @return The rendering info (possibly {@code null}).
+     * 
+     * @since 1.0.19
+     */
+    public ChartRenderingInfo getRenderingInfo() {
+<span class="nc" id="L99">        return this.canvas.getRenderingInfo();</span>
+    }
+
+    /**
+     * Sets the chart displayed by this control.
+     * 
+     * @param chart  the chart ({@code null} not permitted). 
+     */
+    public void setChart(JFreeChart chart) {
+<span class="nc" id="L108">        this.canvas.setChart(chart);</span>
+<span class="nc" id="L109">    }</span>
+    
+    public void setTooltipEnabled(boolean enabled) {
+<span class="nc" id="L112">        this.canvas.setTooltipEnabled(enabled);        </span>
+<span class="nc" id="L113">    }</span>
+    
+    /**
+     * Returns the current fill paint for the zoom rectangle.
+     * 
+     * @return The fill paint.
+     */
+    public Paint getZoomFillPaint() {
+<span class="nc" id="L121">        return this.zoomRectangle.getFill();</span>
+    }
+    
+    /**
+     * Sets the fill paint for the zoom rectangle.
+     * 
+     * @param paint  the new paint. 
+     */
+    public void setZoomFillPaint(Paint paint) {
+<span class="nc" id="L130">        this.zoomRectangle.setFill(paint);</span>
+<span class="nc" id="L131">    }</span>
+    
+    /**
+     * Registers a listener to receive {@link ChartMouseEvent} notifications
+     * from the chart viewer.
+     *
+     * @param listener  the listener ({@code null} not permitted).
+     */
+    public void addChartMouseListener(ChartMouseListenerFX listener) {
+<span class="nc" id="L140">        ParamChecks.nullNotPermitted(listener, &quot;listener&quot;);</span>
+<span class="nc" id="L141">        this.canvas.addChartMouseListener(listener);</span>
+<span class="nc" id="L142">    }</span>
+
+    /**
+     * Removes a listener from the list of objects listening for chart mouse
+     * events.
+     *
+     * @param listener  the listener.
+     */
+    public void removeChartMouseListener(ChartMouseListenerFX listener) {
+<span class="nc" id="L151">        this.canvas.removeChartMouseListener(listener);</span>
+<span class="nc" id="L152">    }</span>
+    
+    /**
+     * Sets the visibility of the zoom rectangle.
+     * 
+     * @param visible  the new flag value.
+     */
+    public void setZoomRectangleVisible(boolean visible) {
+<span class="nc" id="L160">        this.zoomRectangle.setVisible(visible);</span>
+<span class="nc" id="L161">    }</span>
+    
+    /**
+     * Sets the location and size of the zoom rectangle and makes it visible
+     * if it is not already visible.
+     * 
+     * @param x  the x-coordinate.
+     * @param y  the y-coordinate.
+     * @param w  the width.
+     * @param h  the height.
+     */
+    public void showZoomRectangle(double x, double y, double w, double h) {
+<span class="nc" id="L173">        this.zoomRectangle.setX(x);</span>
+<span class="nc" id="L174">        this.zoomRectangle.setY(y);</span>
+<span class="nc" id="L175">        this.zoomRectangle.setWidth(w);</span>
+<span class="nc" id="L176">        this.zoomRectangle.setHeight(h);</span>
+<span class="nc" id="L177">        this.zoomRectangle.setVisible(true);</span>
+<span class="nc" id="L178">    }</span>
+
+    /** 
+     * Creates the node representing this control.
+     * 
+     * @return The node.
+     */
+    private BorderPane createNode(ChartViewer control) {
+<span class="nc" id="L186">        BorderPane borderPane = new BorderPane();</span>
+<span class="nc" id="L187">        borderPane.setPrefSize(800, 500);</span>
+<span class="nc" id="L188">        StackPane sp = new StackPane();</span>
+<span class="nc" id="L189">        sp.setMinSize(10, 10);</span>
+<span class="nc" id="L190">        sp.setPrefSize(600, 400);</span>
+<span class="nc" id="L191">        this.canvas = new ChartCanvas(getSkinnable().getChart());</span>
+<span class="nc" id="L192">        this.canvas.setTooltipEnabled(control.isTooltipEnabled());</span>
+<span class="nc" id="L193">        this.canvas.addChartMouseListener(control);</span>
+<span class="nc" id="L194">        this.canvas.widthProperty().bind(sp.widthProperty());</span>
+<span class="nc" id="L195">        this.canvas.heightProperty().bind(sp.heightProperty());</span>
+ 
+<span class="nc" id="L197">        this.canvas.addMouseHandler(new ZoomHandlerFX(&quot;zoom&quot;, control));</span>
+<span class="nc" id="L198">        sp.getChildren().add(this.canvas);</span>
+        
+<span class="nc" id="L200">        borderPane.setCenter(sp);</span>
+<span class="nc" id="L201">        return borderPane;</span>
+    }
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TextUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.util</a> &gt; <span class="el_source">TextUtils.java</span></div><h1>TextUtils.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ * 
+ * --------------
+ * TextUtils.java
+ * --------------
+ * (C) Copyright 2014, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 30-Jun-2014 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.util;
+
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineMetrics;
+import java.awt.geom.Rectangle2D;
+import org.jfree.ui.TextAnchor;
+
+/**
+ * Text utility functions.
+ * 
+ * @since 1.0.18
+ */
+<span class="nc" id="L56">public class TextUtils {</span>
+    
+    /**
+     * Draws a string such that the specified anchor point is aligned to the
+     * given &lt;code&gt;(x, y)&lt;/code&gt; location, and returns a bounding rectangle 
+     * for the text.
+     *
+     * @param text  the text.
+     * @param g2  the graphics device.
+     * @param x  the x coordinate (Java 2D).
+     * @param y  the y coordinate (Java 2D).
+     * @param anchor  the anchor location.
+     *
+     * @return The text bounds (adjusted for the text position).
+     */
+    public static Rectangle2D drawAlignedString(String text,
+            Graphics2D g2, float x, float y, TextAnchor anchor) {
+
+<span class="nc" id="L74">        Rectangle2D textBounds = new Rectangle2D.Double();</span>
+<span class="nc" id="L75">        float[] adjust = deriveTextBoundsAnchorOffsets(g2, text, anchor,</span>
+                textBounds);
+        // adjust text bounds to match string position
+<span class="nc" id="L78">        textBounds.setRect(x + adjust[0], y + adjust[1] + adjust[2],</span>
+<span class="nc" id="L79">            textBounds.getWidth(), textBounds.getHeight());</span>
+<span class="nc" id="L80">        g2.drawString(text, x + adjust[0], y + adjust[1]);</span>
+<span class="nc" id="L81">        return textBounds;</span>
+    }
+
+    /**
+     * Returns the bounds of an aligned string.
+     * 
+     * @param text  the string (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param g2  the graphics target (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param x  the x-coordinate.
+     * @param y  the y-coordinate.
+     * @param anchor  the anchor point that will be aligned to 
+     *     &lt;code&gt;(x, y)&lt;/code&gt; (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * 
+     * @return The text bounds (never &lt;code&gt;null&lt;/code&gt;).
+     * 
+     * @since 1.3
+     */
+    public static Rectangle2D calcAlignedStringBounds(String text,
+            Graphics2D g2, float x, float y, TextAnchor anchor) {
+
+<span class="nc" id="L101">        Rectangle2D textBounds = new Rectangle2D.Double();</span>
+<span class="nc" id="L102">        float[] adjust = deriveTextBoundsAnchorOffsets(g2, text, anchor,</span>
+                textBounds);
+        // adjust text bounds to match string position
+<span class="nc" id="L105">        textBounds.setRect(x + adjust[0], y + adjust[1] + adjust[2],</span>
+<span class="nc" id="L106">            textBounds.getWidth(), textBounds.getHeight());</span>
+<span class="nc" id="L107">        return textBounds;</span>
+    }
+    
+    /**
+     * A utility method that calculates the anchor offsets for a string.
+     * Normally, the (x, y) coordinate for drawing text is a point on the
+     * baseline at the left of the text string.  If you add these offsets to
+     * (x, y) and draw the string, then the anchor point should coincide with
+     * the (x, y) point.
+     *
+     * @param g2  the graphics device (not &lt;code&gt;null&lt;/code&gt;).
+     * @param text  the text.
+     * @param anchor  the anchor point.
+     *
+     * @return  The offsets.
+     */
+    private static float[] deriveTextBoundsAnchorOffsets(Graphics2D g2,
+            String text, TextAnchor anchor) {
+
+<span class="nc" id="L126">        float[] result = new float[2];</span>
+<span class="nc" id="L127">        FontRenderContext frc = g2.getFontRenderContext();</span>
+<span class="nc" id="L128">        Font f = g2.getFont();</span>
+<span class="nc" id="L129">        FontMetrics fm = g2.getFontMetrics(f);</span>
+<span class="nc" id="L130">        Rectangle2D bounds = getTextBounds(text, fm);</span>
+<span class="nc" id="L131">        LineMetrics metrics = f.getLineMetrics(text, frc);</span>
+<span class="nc" id="L132">        float ascent = metrics.getAscent();</span>
+<span class="nc" id="L133">        float halfAscent = ascent / 2.0f;</span>
+<span class="nc" id="L134">        float descent = metrics.getDescent();</span>
+<span class="nc" id="L135">        float leading = metrics.getLeading();</span>
+<span class="nc" id="L136">        float xAdj = 0.0f;</span>
+<span class="nc" id="L137">        float yAdj = 0.0f;</span>
+
+<span class="nc bnc" id="L139" title="All 2 branches missed.">        if (anchor.isHorizontalCenter()) {</span>
+<span class="nc" id="L140">            xAdj = (float) -bounds.getWidth() / 2.0f;</span>
+        }
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        else if (anchor.isRight()) {</span>
+<span class="nc" id="L143">            xAdj = (float) -bounds.getWidth();</span>
+        }
+
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (anchor.isTop()) {</span>
+<span class="nc" id="L147">            yAdj = -descent - leading + (float) bounds.getHeight();</span>
+        }
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        else if (anchor.isHalfAscent()) {</span>
+<span class="nc" id="L150">            yAdj = halfAscent;</span>
+        }
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        else if (anchor.isVerticalCenter()) {</span>
+<span class="nc" id="L153">            yAdj = -descent - leading + (float) (bounds.getHeight() / 2.0);</span>
+        }
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        else if (anchor.isBaseline()) {</span>
+<span class="nc" id="L156">            yAdj = 0.0f;</span>
+        }
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        else if (anchor.isBottom()) {</span>
+<span class="nc" id="L159">            yAdj = -metrics.getDescent() - metrics.getLeading();</span>
+        }
+<span class="nc" id="L161">        result[0] = xAdj;</span>
+<span class="nc" id="L162">        result[1] = yAdj;</span>
+<span class="nc" id="L163">        return result;</span>
+
+    }
+
+    /**
+     * A utility method that calculates the anchor offsets for a string.
+     * Normally, the (x, y) coordinate for drawing text is a point on the
+     * baseline at the left of the text string.  If you add these offsets to
+     * (x, y) and draw the string, then the anchor point should coincide with
+     * the (x, y) point.
+     *
+     * @param g2  the graphics device (not &lt;code&gt;null&lt;/code&gt;).
+     * @param text  the text.
+     * @param anchor  the anchor point.
+     * @param textBounds  the text bounds (if not &lt;code&gt;null&lt;/code&gt;, this
+     *                    object will be updated by this method to match the
+     *                    string bounds).
+     *
+     * @return  The offsets.
+     */
+    private static float[] deriveTextBoundsAnchorOffsets(Graphics2D g2,
+            String text, TextAnchor anchor, Rectangle2D textBounds) {
+
+<span class="nc" id="L186">        float[] result = new float[3];</span>
+<span class="nc" id="L187">        FontRenderContext frc = g2.getFontRenderContext();</span>
+<span class="nc" id="L188">        Font f = g2.getFont();</span>
+<span class="nc" id="L189">        FontMetrics fm = g2.getFontMetrics(f);</span>
+<span class="nc" id="L190">        Rectangle2D bounds = getTextBounds(text, fm);</span>
+<span class="nc" id="L191">        LineMetrics metrics = f.getLineMetrics(text, frc);</span>
+<span class="nc" id="L192">        float ascent = metrics.getAscent();</span>
+<span class="nc" id="L193">        result[2] = -ascent;</span>
+<span class="nc" id="L194">        float halfAscent = ascent / 2.0f;</span>
+<span class="nc" id="L195">        float descent = metrics.getDescent();</span>
+<span class="nc" id="L196">        float leading = metrics.getLeading();</span>
+<span class="nc" id="L197">        float xAdj = 0.0f;</span>
+<span class="nc" id="L198">        float yAdj = 0.0f;</span>
+
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (anchor.isHorizontalCenter()) {</span>
+<span class="nc" id="L201">            xAdj = (float) -bounds.getWidth() / 2.0f;</span>
+        }
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        else if (anchor.isRight()) {</span>
+<span class="nc" id="L204">            xAdj = (float) -bounds.getWidth();</span>
+        }
+
+<span class="nc bnc" id="L207" title="All 2 branches missed.">        if (anchor.isTop()) {</span>
+<span class="nc" id="L208">            yAdj = -descent - leading + (float) bounds.getHeight();</span>
+        }
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        else if (anchor.isHalfAscent()) {</span>
+<span class="nc" id="L211">            yAdj = halfAscent;</span>
+        }
+<span class="nc bnc" id="L213" title="All 2 branches missed.">        else if (anchor.isHorizontalCenter()) {</span>
+<span class="nc" id="L214">            yAdj = -descent - leading + (float) (bounds.getHeight() / 2.0);</span>
+        }
+<span class="nc bnc" id="L216" title="All 2 branches missed.">        else if (anchor.isBaseline()) {</span>
+<span class="nc" id="L217">            yAdj = 0.0f;</span>
+        }
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        else if (anchor.isBottom()) {</span>
+<span class="nc" id="L220">            yAdj = -metrics.getDescent() - metrics.getLeading();</span>
+        }
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        if (textBounds != null) {</span>
+<span class="nc" id="L223">            textBounds.setRect(bounds);</span>
+        }
+<span class="nc" id="L225">        result[0] = xAdj;</span>
+<span class="nc" id="L226">        result[1] = yAdj;</span>
+<span class="nc" id="L227">        return result;</span>
+    }
+    
+    /**
+     * Returns the bounds for the specified text.  The supplied text is
+     * assumed to be on a single line (no carriage return or newline 
+     * characters).
+     *
+     * @param text  the text (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param fm  the font metrics (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The text bounds.
+     */
+    public static Rectangle2D getTextBounds(String text, FontMetrics fm) {
+<span class="nc" id="L241">        return getTextBounds(text, 0.0, 0.0, fm);</span>
+    }
+    
+    /**
+     * Returns the bounds for the specified text when it is drawn with the 
+     * left-baseline aligned to the point &lt;code&gt;(x, y)&lt;/code&gt;.
+     * 
+     * @param text  the text (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param x  the x-coordinate.
+     * @param y  the y-coordinate.
+     * @param fm  the font metrics (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * 
+     * @return The bounding rectangle (never &lt;code&gt;null&lt;/code&gt;). 
+     */
+    public static Rectangle2D getTextBounds(String text, double x, double y,
+            FontMetrics fm) {
+<span class="nc" id="L257">        ParamChecks.nullNotPermitted(text, &quot;text&quot;);</span>
+<span class="nc" id="L258">        ParamChecks.nullNotPermitted(fm, &quot;fm&quot;);</span>
+<span class="nc" id="L259">        double width = fm.stringWidth(text);</span>
+<span class="nc" id="L260">        double height = fm.getHeight();</span>
+<span class="nc" id="L261">        return new Rectangle2D.Double(x, y - fm.getAscent(), width, height);</span>
+        
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

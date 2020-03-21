@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DispatchHandlerFX.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.fx.interaction</a> &gt; <span class="el_source">DispatchHandlerFX.java</span></div><h1>DispatchHandlerFX.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------
+ * DispatchHandlerFX.java
+ * ----------------------
+ * (C) Copyright 2014, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes:
+ * --------
+ * 25-Jun-2014 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.fx.interaction;
+
+import java.awt.geom.Point2D;
+import javafx.scene.input.MouseEvent;
+import org.jfree.chart.fx.ChartCanvas;
+import org.jfree.chart.fx.ChartViewer;
+
+/**
+ * Handles mouse move and click events on the {@link ChartCanvas} by 
+ * dispatching {@link ChartMouseEventFX} events to listeners that are 
+ * registered with the {@code ChartCanvas} (listeners can also be registered
+ * with a {@link ChartViewer} control).
+ * 
+ * &lt;p&gt;THE API FOR THIS CLASS IS SUBJECT TO CHANGE IN FUTURE RELEASES.  This is
+ * so that we can incorporate feedback on the (new) JavaFX support in 
+ * JFreeChart.&lt;/p&gt;
+ * 
+ * @since 1.0.18
+ */
+public class DispatchHandlerFX extends AbstractMouseHandlerFX {
+    
+    /** Records the mouse down location. */
+    private Point2D mousePressedPoint;
+    
+    /**
+     * Creates a new instance.
+     * 
+     * @param id  the id (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public DispatchHandlerFX(String id) {
+<span class="nc" id="L71">        super(id, false, false, false, false);</span>
+<span class="nc" id="L72">    }</span>
+    
+    /**
+     * Handles a mouse pressed event by recording the location of the mouse
+     * pointer (so that later we can check that the click isn't part of a
+     * drag).
+     * 
+     * @param canvas  the chart canvas.
+     * @param e  the mouse event.
+     */
+    @Override
+    public void handleMousePressed(ChartCanvas canvas, MouseEvent e) {
+<span class="nc" id="L84">        this.mousePressedPoint = new Point2D.Double(e.getX(), e.getY());</span>
+<span class="nc" id="L85">    }</span>
+
+    @Override
+    public void handleMouseMoved(ChartCanvas canvas, MouseEvent e) {
+<span class="nc" id="L89">        Point2D currPt = new Point2D.Double(e.getX(), e.getY());</span>
+<span class="nc" id="L90">        canvas.dispatchMouseMovedEvent(currPt, e);</span>
+<span class="nc" id="L91">     }</span>
+
+    /**
+     * Handles a mouse clicked event by setting the anchor point for the
+     * canvas and redrawing the chart (the anchor point is a reference point
+     * used by the chart to determine crosshair lines).
+     * 
+     * @param canvas  the chart canvas (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param e  the mouse event (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    @Override
+    public void handleMouseClicked(ChartCanvas canvas, MouseEvent e) {
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        if (this.mousePressedPoint == null) {</span>
+<span class="nc" id="L104">            return;</span>
+        }
+<span class="nc" id="L106">        Point2D currPt = new Point2D.Double(e.getX(), e.getY());</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (this.mousePressedPoint.distance(currPt) &lt; 2) {</span>
+<span class="nc" id="L108">            canvas.dispatchMouseClickedEvent(currPt, e);</span>
+        }
+<span class="nc" id="L110">        this.mousePressedPoint = null;</span>
+<span class="nc" id="L111">    }</span>
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

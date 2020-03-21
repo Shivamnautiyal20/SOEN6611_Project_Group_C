@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ScrollHandlerFX.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.fx.interaction</a> &gt; <span class="el_source">ScrollHandlerFX.java</span></div><h1>ScrollHandlerFX.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------
+ * ScrollHandlerFX.java
+ * --------------------
+ * (C) Copyright 2014, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes:
+ * --------
+ * 25-Jun-2014 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.fx.interaction;
+
+import java.awt.geom.Point2D;
+import javafx.scene.input.ScrollEvent;
+import org.jfree.chart.ChartRenderingInfo;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.fx.ChartCanvas;
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.chart.plot.Plot;
+import org.jfree.chart.plot.PlotRenderingInfo;
+import org.jfree.chart.plot.Zoomable;
+
+/**
+ * Handles scroll events (mouse wheel etc) on a {@link ChartCanvas}.
+ * 
+ * &lt;p&gt;THE API FOR THIS CLASS IS SUBJECT TO CHANGE IN FUTURE RELEASES.  This is
+ * so that we can incorporate feedback on the (new) JavaFX support in 
+ * JFreeChart.&lt;/p&gt;
+ * 
+ * @since 1.0.18
+ */
+public class ScrollHandlerFX extends AbstractMouseHandlerFX 
+        implements MouseHandlerFX {
+
+    /** The zoom factor. */
+<span class="nc" id="L66">    private double zoomFactor = 0.1;</span>
+    
+    /**
+     * Creates a new instance with the specified ID.
+     * 
+     * @param id  the handler ID (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public ScrollHandlerFX(String id) {
+<span class="nc" id="L74">        super(id, false, false, false, false);</span>
+<span class="nc" id="L75">        this.zoomFactor = 0.1;</span>
+<span class="nc" id="L76">    };</span>
+
+    /**
+     * Returns the zoom factor.  The default value is 0.10 (ten percent).
+     * 
+     * @return The zoom factor. 
+     */
+    public double getZoomFactor() {
+<span class="nc" id="L84">        return this.zoomFactor;</span>
+    }
+
+    /**
+     * Sets the zoom factor (a percentage amount by which the mouse wheel 
+     * movement will change the chart size).
+     * 
+     * @param zoomFactor  the zoom factor.
+     */
+    public void setZoomFactor(double zoomFactor) {
+<span class="nc" id="L94">        this.zoomFactor = zoomFactor;</span>
+<span class="nc" id="L95">    }</span>
+    
+    @Override
+    public void handleScroll(ChartCanvas canvas, ScrollEvent e) {
+<span class="nc" id="L99">        JFreeChart chart = canvas.getChart();</span>
+<span class="nc" id="L100">        Plot plot = chart.getPlot();</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (plot instanceof Zoomable) {</span>
+<span class="nc" id="L102">            Zoomable zoomable = (Zoomable) plot;</span>
+<span class="nc" id="L103">            handleZoomable(canvas, zoomable, e);</span>
+<span class="nc" id="L104">        }</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        else if (plot instanceof PiePlot) {</span>
+<span class="nc" id="L106">            PiePlot pp = (PiePlot) plot;</span>
+<span class="nc" id="L107">            pp.handleMouseWheelRotation((int) e.getDeltaY());</span>
+        }
+<span class="nc" id="L109">    }</span>
+    
+    /**
+     * Handle the case where a plot implements the {@link Zoomable} interface.
+     *
+     * @param zoomable  the zoomable plot.
+     * @param e  the mouse wheel event.
+     */
+    private void handleZoomable(ChartCanvas canvas, Zoomable zoomable, 
+            ScrollEvent e) {
+        // don't zoom unless the mouse pointer is in the plot's data area
+<span class="nc" id="L120">        ChartRenderingInfo info = canvas.getRenderingInfo();</span>
+<span class="nc" id="L121">        PlotRenderingInfo pinfo = info.getPlotInfo();</span>
+<span class="nc" id="L122">        Point2D p = new Point2D.Double(e.getX(), e.getY());</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        if (pinfo.getDataArea().contains(p)) {</span>
+<span class="nc" id="L124">            Plot plot = (Plot) zoomable;</span>
+            // do not notify while zooming each axis
+<span class="nc" id="L126">            boolean notifyState = plot.isNotify();</span>
+<span class="nc" id="L127">            plot.setNotify(false);</span>
+<span class="nc" id="L128">            int clicks = (int) e.getDeltaY();</span>
+<span class="nc" id="L129">            double zf = 1.0 + this.zoomFactor;</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">            if (clicks &lt; 0) {</span>
+<span class="nc" id="L131">                zf = 1.0 / zf;</span>
+            }
+            if (true) { //this.chartPanel.isDomainZoomable()) {
+<span class="nc" id="L134">                zoomable.zoomDomainAxes(zf, pinfo, p, true);</span>
+            }
+            if (true) { //this.chartPanel.isRangeZoomable()) {
+<span class="nc" id="L137">                zoomable.zoomRangeAxes(zf, pinfo, p, true);</span>
+            }
+<span class="nc" id="L139">            plot.setNotify(notifyState);  // this generates the change event too</span>
+        } 
+<span class="nc" id="L141">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

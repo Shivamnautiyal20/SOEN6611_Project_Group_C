@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StackedBarRenderer3DTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.category</a> &gt; <span class="el_source">StackedBarRenderer3DTest.java</span></div><h1>StackedBarRenderer3DTest.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------------------
+ * StackedBarRenderer3DTest.java
+ * -----------------------------
+ * (C) Copyright 2003-2013, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 25-Mar-2003 : Version 1 (DG);
+ * 18-Jan-2007 : Added many new tests (DG);
+ * 23-Apr-2008 : Added testPublicCloneable() (DG);
+ * 03-Feb-2009 : Added testFindRangeBounds() (DG);
+ * 
+ */
+
+package org.jfree.chart.renderer.category;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+
+import java.util.List;
+
+import org.jfree.chart.TestUtilities;
+
+import org.jfree.data.Range;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.util.PublicCloneable;
+import org.junit.Test;
+
+/**
+ * Tests for the {@link StackedBarRenderer3D} class.
+ */
+<span class="fc" id="L63">public class StackedBarRenderer3DTest {</span>
+
+    /**
+     * Provide access to protected method.
+     */
+<span class="fc" id="L68">    static class MyRenderer extends StackedBarRenderer3D {</span>
+        @Override
+        public List createStackedValueList(CategoryDataset dataset,
+                Comparable category, int[] includedRows, double base,
+                boolean asPercentages) {
+<span class="fc" id="L73">            return super.createStackedValueList(dataset, category,</span>
+                    includedRows, base, asPercentages);
+        }
+    }
+
+    /**
+     * Some checks for the findRangeBounds() method.
+     */
+    @Test
+    public void testFindRangeBounds() {
+<span class="fc" id="L83">        StackedBarRenderer3D r = new StackedBarRenderer3D();</span>
+<span class="fc" id="L84">        assertNull(r.findRangeBounds(null));</span>
+
+        // an empty dataset should return a null range
+<span class="fc" id="L87">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L88">        assertNull(r.findRangeBounds(dataset));</span>
+
+<span class="fc" id="L90">        dataset.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L91">        assertEquals(new Range(0.0, 1.0), r.findRangeBounds(dataset));</span>
+
+<span class="fc" id="L93">        dataset.addValue(-2.0, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L94">        assertEquals(new Range(-2.0, 1.0), r.findRangeBounds(dataset));</span>
+
+<span class="fc" id="L96">        dataset.addValue(null, &quot;R1&quot;, &quot;C3&quot;);</span>
+<span class="fc" id="L97">        assertEquals(new Range(-2.0, 1.0), r.findRangeBounds(dataset));</span>
+
+<span class="fc" id="L99">        dataset.addValue(2.0, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L100">        assertEquals(new Range(-2.0, 3.0), r.findRangeBounds(dataset));</span>
+
+<span class="fc" id="L102">        dataset.addValue(null, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L103">        assertEquals(new Range(-2.0, 3.0), r.findRangeBounds(dataset));</span>
+<span class="fc" id="L104">    }</span>
+
+    /**
+     * Check that the equals() method distinguishes all fields.
+     */
+    @Test
+    public void testEquals() {
+<span class="fc" id="L111">        StackedBarRenderer3D r1 = new StackedBarRenderer3D();</span>
+<span class="fc" id="L112">        StackedBarRenderer3D r2 = new StackedBarRenderer3D();</span>
+<span class="fc" id="L113">        assertEquals(r1, r2);</span>
+<span class="fc" id="L114">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    @Test
+    public void testHashcode() {
+<span class="fc" id="L121">        StackedBarRenderer3D r1 = new StackedBarRenderer3D();</span>
+<span class="fc" id="L122">        StackedBarRenderer3D r2 = new StackedBarRenderer3D();</span>
+<span class="fc" id="L123">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L124">        int h1 = r1.hashCode();</span>
+<span class="fc" id="L125">        int h2 = r2.hashCode();</span>
+<span class="fc" id="L126">        assertEquals(h1, h2);</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    @Test
+    public void testCloning() throws CloneNotSupportedException {
+<span class="fc" id="L134">        StackedBarRenderer3D r1 = new StackedBarRenderer3D();</span>
+<span class="fc" id="L135">        StackedBarRenderer3D r2 = (StackedBarRenderer3D) r1.clone();</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L138">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L139">    }</span>
+
+    /**
+     * Check that this class implements PublicCloneable.
+     */
+    @Test
+    public void testPublicCloneable() {
+<span class="fc" id="L146">        StackedBarRenderer3D r1 = new StackedBarRenderer3D();</span>
+<span class="fc" id="L147">        assertTrue(r1 instanceof PublicCloneable);</span>
+<span class="fc" id="L148">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    @Test
+    public void testSerialization() {
+<span class="fc" id="L155">        StackedBarRenderer3D r1 = new StackedBarRenderer3D();</span>
+<span class="fc" id="L156">        StackedBarRenderer3D r2 = (StackedBarRenderer3D) </span>
+<span class="fc" id="L157">                TestUtilities.serialised(r1);</span>
+<span class="fc" id="L158">        assertEquals(r1, r2);</span>
+<span class="fc" id="L159">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList1() {
+<span class="fc" id="L166">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L167">        d.addValue(1.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L168">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L169">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0 }, 0.0, false);</span>
+<span class="fc" id="L170">        assertEquals(2, l.size());</span>
+<span class="fc" id="L171">        assertEquals(new Double(0.0), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L172">        assertEquals(new Double(1.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList2() {
+<span class="fc" id="L180">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L181">        d.addValue(-1.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L182">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L183">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0 }, 0.0, false);</span>
+<span class="fc" id="L184">        assertEquals(2, l.size());</span>
+<span class="fc" id="L185">        assertEquals(new Double(-1.0), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L186">        assertEquals(new Double(0.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L187">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList3() {
+<span class="fc" id="L194">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L195">        d.addValue(0.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L196">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L197">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0 }, 0.0, false);</span>
+<span class="fc" id="L198">        assertEquals(2, l.size());</span>
+<span class="fc" id="L199">        assertEquals(new Double(0.0), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L200">        assertEquals(new Double(0.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L201">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList4() {
+<span class="fc" id="L208">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L209">        d.addValue(null, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L210">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L211">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0 }, 0.0, false);</span>
+<span class="fc" id="L212">        assertEquals(0, l.size());</span>
+<span class="fc" id="L213">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList1a() {
+<span class="fc" id="L220">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L221">        d.addValue(1.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L222">        d.addValue(1.1, &quot;s1&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L223">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L224">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0, 1 }, 0.0,</span>
+                false);
+<span class="fc" id="L226">        assertEquals(3, l.size());</span>
+<span class="fc" id="L227">        assertEquals(new Double(0.0), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L228">        assertEquals(new Double(1.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L229">        assertEquals(new Double(2.1), ((Object[]) l.get(2))[1]);</span>
+<span class="fc" id="L230">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList1b() {
+<span class="fc" id="L237">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L238">        d.addValue(1.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L239">        d.addValue(-1.1, &quot;s1&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L240">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L241">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0, 1 }, 0.0,</span>
+                false);
+<span class="fc" id="L243">        assertEquals(3, l.size());</span>
+<span class="fc" id="L244">        assertEquals(new Double(-1.1), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L245">        assertEquals(new Double(0.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L246">        assertEquals(new Double(1.0), ((Object[]) l.get(2))[1]);</span>
+<span class="fc" id="L247">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList1c() {
+<span class="fc" id="L254">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L255">        d.addValue(1.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L256">        d.addValue(0.0, &quot;s1&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L257">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L258">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0, 1 }, 0.0,</span>
+                false);
+<span class="fc" id="L260">        assertEquals(3, l.size());</span>
+<span class="fc" id="L261">        assertEquals(new Double(0.0), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L262">        assertEquals(new Double(1.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L263">        assertEquals(new Double(1.0), ((Object[]) l.get(2))[1]);</span>
+<span class="fc" id="L264">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList1d() {
+<span class="fc" id="L271">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L272">        d.addValue(1.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L273">        d.addValue(null, &quot;s1&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L274">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L275">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0, 1 }, 0.0,</span>
+                false);
+<span class="fc" id="L277">        assertEquals(2, l.size());</span>
+<span class="fc" id="L278">        assertEquals(new Double(0.0), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L279">        assertEquals(new Double(1.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L280">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList2a() {
+<span class="fc" id="L287">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L288">        d.addValue(-1.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L289">        d.addValue(1.1, &quot;s1&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L290">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L291">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0, 1 }, 0.0,</span>
+                false);
+<span class="fc" id="L293">        assertEquals(3, l.size());</span>
+<span class="fc" id="L294">        assertEquals(new Double(-1.0), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L295">        assertEquals(new Double(0.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L296">        assertEquals(new Double(1.1), ((Object[]) l.get(2))[1]);</span>
+<span class="fc" id="L297">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList2b() {
+<span class="fc" id="L304">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L305">        d.addValue(-1.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L306">        d.addValue(-1.1, &quot;s1&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L307">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L308">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0, 1 }, 0.0,</span>
+                false);
+<span class="fc" id="L310">        assertEquals(3, l.size());</span>
+<span class="fc" id="L311">        assertEquals(new Double(-2.1), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L312">        assertEquals(new Double(-1.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L313">        assertEquals(new Double(0.0), ((Object[]) l.get(2))[1]);</span>
+<span class="fc" id="L314">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList2c() {
+<span class="fc" id="L321">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L322">        d.addValue(-1.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L323">        d.addValue(0.0, &quot;s1&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L324">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L325">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0, 1 }, 0.0,</span>
+                false);
+<span class="fc" id="L327">        assertEquals(3, l.size());</span>
+<span class="fc" id="L328">        assertEquals(new Double(-1.0), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L329">        assertEquals(new Double(0.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L330">        assertEquals(new Double(0.0), ((Object[]) l.get(2))[1]);</span>
+<span class="fc" id="L331">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList2d() {
+<span class="fc" id="L338">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L339">        d.addValue(-1.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L340">        d.addValue(null, &quot;s1&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L341">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L342">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0, 1 }, 0.0,</span>
+                false);
+<span class="fc" id="L344">        assertEquals(2, l.size());</span>
+<span class="fc" id="L345">        assertEquals(new Double(-1.0), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L346">        assertEquals(new Double(0.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L347">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList3a() {
+<span class="fc" id="L354">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L355">        d.addValue(0.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L356">        d.addValue(1.1, &quot;s1&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L357">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L358">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0, 1 }, 0.0,</span>
+                false);
+<span class="fc" id="L360">        assertEquals(3, l.size());</span>
+<span class="fc" id="L361">        assertEquals(new Double(0.0), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L362">        assertEquals(new Double(0.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L363">        assertEquals(new Double(1.1), ((Object[]) l.get(2))[1]);</span>
+<span class="fc" id="L364">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList3b() {
+<span class="fc" id="L371">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L372">        d.addValue(0.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L373">        d.addValue(-1.1, &quot;s1&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L374">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L375">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0, 1 }, 0.0,</span>
+                false);
+<span class="fc" id="L377">        assertEquals(3, l.size());</span>
+<span class="fc" id="L378">        assertEquals(new Double(-1.1), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L379">        assertEquals(new Double(0.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L380">        assertEquals(new Double(0.0), ((Object[]) l.get(2))[1]);</span>
+<span class="fc" id="L381">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList3c() {
+<span class="fc" id="L388">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L389">        d.addValue(0.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L390">        d.addValue(0.0, &quot;s1&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L391">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L392">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0, 1 }, 0.0,</span>
+                false);
+<span class="fc" id="L394">        assertEquals(3, l.size());</span>
+<span class="fc" id="L395">        assertEquals(new Double(0.0), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L396">        assertEquals(new Double(0.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L397">        assertEquals(new Double(0.0), ((Object[]) l.get(2))[1]);</span>
+<span class="fc" id="L398">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList3d() {
+<span class="fc" id="L405">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L406">        d.addValue(0.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L407">        d.addValue(null, &quot;s1&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L408">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L409">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0, 1 }, 0.0,</span>
+                false);
+<span class="fc" id="L411">        assertEquals(2, l.size());</span>
+<span class="fc" id="L412">        assertEquals(new Double(0.0), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L413">        assertEquals(new Double(0.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L414">    }</span>
+
+    /**
+     * A test for the createStackedValueList() method.
+     */
+    @Test
+    public void testCreateStackedValueList5() {
+<span class="fc" id="L421">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L422">        d.addValue(1.0, &quot;s0&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L423">        d.addValue(null, &quot;s1&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L424">        d.addValue(2.0, &quot;s2&quot;, &quot;c0&quot;);</span>
+<span class="fc" id="L425">        MyRenderer r = new MyRenderer();</span>
+<span class="fc" id="L426">        List l = r.createStackedValueList(d, &quot;c0&quot;, new int[] { 0, 1, 2 }, 0.0,</span>
+                false);
+<span class="fc" id="L428">        assertEquals(3, l.size());</span>
+<span class="fc" id="L429">        assertEquals(new Double(0.0), ((Object[]) l.get(0))[1]);</span>
+<span class="fc" id="L430">        assertEquals(new Double(1.0), ((Object[]) l.get(1))[1]);</span>
+<span class="fc" id="L431">        assertEquals(new Double(3.0), ((Object[]) l.get(2))[1]);</span>
+<span class="fc" id="L432">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

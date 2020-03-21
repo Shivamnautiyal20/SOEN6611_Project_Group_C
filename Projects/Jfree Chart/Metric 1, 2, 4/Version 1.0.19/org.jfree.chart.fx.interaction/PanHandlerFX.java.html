@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PanHandlerFX.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.fx.interaction</a> &gt; <span class="el_source">PanHandlerFX.java</span></div><h1>PanHandlerFX.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------
+ * PanHandlerFX.java
+ * -----------------
+ * (C) Copyright 2014, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes:
+ * --------
+ * 25-Jun-2014 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.fx.interaction;
+
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import javafx.scene.input.MouseEvent;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.fx.ChartCanvas;
+import org.jfree.chart.plot.Pannable;
+import org.jfree.chart.plot.Plot;
+import org.jfree.chart.plot.PlotRenderingInfo;
+
+/**
+ * Handles panning of charts on a {@link ChartCanvas}.  This handler
+ * should be configured with the required modifier keys and installed as a
+ * live handler (not an auxiliary handler).
+ * 
+ * &lt;p&gt;THE API FOR THIS CLASS IS SUBJECT TO CHANGE IN FUTURE RELEASES.  This is
+ * so that we can incorporate feedback on the (new) JavaFX support in 
+ * JFreeChart.&lt;/p&gt;
+ * 
+ * @since 1.0.18
+ */
+public class PanHandlerFX extends AbstractMouseHandlerFX {
+
+    /** The last mouse location seen during panning. */
+    private Point2D panLast;
+ 
+    private double panW;
+    private double panH;
+    
+    /**
+     * Creates a new instance that requires no modifier keys.
+     * 
+     * @param id  the id (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public PanHandlerFX(String id) { 
+<span class="nc" id="L77">        this(id, false, false, false, false);</span>
+<span class="nc" id="L78">    }</span>
+    
+    /**
+     * Creates a new instance that will be activated using the specified 
+     * combination of modifier keys.
+     * 
+     * @param id  the id (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param altKey  require ALT key?
+     * @param ctrlKey  require CTRL key?
+     * @param metaKey  require META key?
+     * @param shiftKey   require SHIFT key?
+     */
+    public PanHandlerFX(String id, boolean altKey, boolean ctrlKey, 
+            boolean metaKey, boolean shiftKey) {
+<span class="nc" id="L92">        super(id, altKey, ctrlKey, metaKey, shiftKey);</span>
+<span class="nc" id="L93">    }</span>
+    
+    /**
+     * Handles a mouse pressed event by recording the initial mouse pointer
+     * location.
+     * 
+     * @param canvas  the JavaFX canvas (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param e  the mouse event (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    @Override
+    public void handleMousePressed(ChartCanvas canvas, MouseEvent e) {
+<span class="nc" id="L104">        Plot plot = canvas.getChart().getPlot();</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        if (!(plot instanceof Pannable)) {</span>
+<span class="nc" id="L106">            canvas.clearLiveHandler();</span>
+<span class="nc" id="L107">            return;</span>
+        }
+<span class="nc" id="L109">        Pannable pannable = (Pannable) plot;</span>
+<span class="nc bnc" id="L110" title="All 4 branches missed.">        if (pannable.isDomainPannable() || pannable.isRangePannable()) {</span>
+<span class="nc" id="L111">            Point2D point = new Point2D.Double(e.getX(), e.getY());</span>
+<span class="nc" id="L112">            Rectangle2D dataArea = canvas.findDataArea(point);</span>
+<span class="nc bnc" id="L113" title="All 4 branches missed.">            if (dataArea != null &amp;&amp; dataArea.contains(point)) {</span>
+<span class="nc" id="L114">                this.panW = dataArea.getWidth();</span>
+<span class="nc" id="L115">                this.panH = dataArea.getHeight();</span>
+<span class="nc" id="L116">                this.panLast = point;</span>
+<span class="nc" id="L117">                canvas.setCursor(javafx.scene.Cursor.MOVE);</span>
+            }
+        }
+        // the actual panning occurs later in the mouseDragged() method
+<span class="nc" id="L121">    }</span>
+    
+    /**
+     * Handles a mouse dragged event by calculating the distance panned and
+     * updating the axes accordingly.
+     * 
+     * @param canvas  the JavaFX canvas (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param e  the mouse event (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public void handleMouseDragged(ChartCanvas canvas, MouseEvent e) {
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        if (this.panLast == null) {</span>
+            //handle panning if we have a start point else unregister
+<span class="nc" id="L133">            canvas.clearLiveHandler();</span>
+<span class="nc" id="L134">            return;</span>
+        }
+
+<span class="nc" id="L137">        JFreeChart chart = canvas.getChart();</span>
+<span class="nc" id="L138">        double dx = e.getX() - this.panLast.getX();</span>
+<span class="nc" id="L139">        double dy = e.getY() - this.panLast.getY();</span>
+<span class="nc bnc" id="L140" title="All 4 branches missed.">        if (dx == 0.0 &amp;&amp; dy == 0.0) {</span>
+<span class="nc" id="L141">            return;</span>
+        }
+<span class="nc" id="L143">        double wPercent = -dx / this.panW;</span>
+<span class="nc" id="L144">        double hPercent = dy / this.panH;</span>
+<span class="nc" id="L145">        boolean old = chart.getPlot().isNotify();</span>
+<span class="nc" id="L146">        chart.getPlot().setNotify(false);</span>
+<span class="nc" id="L147">        Pannable p = (Pannable) chart.getPlot();</span>
+<span class="nc" id="L148">        PlotRenderingInfo info = canvas.getRenderingInfo().getPlotInfo();</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        if (p.getOrientation().isVertical()) {</span>
+<span class="nc" id="L150">            p.panDomainAxes(wPercent, info, this.panLast);</span>
+<span class="nc" id="L151">            p.panRangeAxes(hPercent, info, this.panLast);</span>
+        }
+        else {
+<span class="nc" id="L154">            p.panDomainAxes(hPercent, info, this.panLast);</span>
+<span class="nc" id="L155">            p.panRangeAxes(wPercent, info, this.panLast);</span>
+        }
+<span class="nc" id="L157">        this.panLast = new Point2D.Double(e.getX(), e.getY());</span>
+<span class="nc" id="L158">        chart.getPlot().setNotify(old);</span>
+<span class="nc" id="L159">    }</span>
+
+    public void handleMouseReleased(ChartCanvas canvas, MouseEvent e) {  
+        //if we have been panning reset the cursor
+        //unregister in any case
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        if (this.panLast != null) {</span>
+<span class="nc" id="L165">            canvas.setCursor(javafx.scene.Cursor.DEFAULT);</span>
+        }
+<span class="nc" id="L167">        this.panLast = null;</span>
+<span class="nc" id="L168">        canvas.clearLiveHandler();</span>
+<span class="nc" id="L169">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,715 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PiePlotTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot</a> &gt; <span class="el_source">PiePlotTest.java</span></div><h1>PiePlotTest.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2014, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------
+ * PiePlotTest.java
+ * ----------------
+ * (C) Copyright 2003-2014, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 18-Mar-2003 : Version 1 (DG);
+ * 10-May-2005 : Strengthened equals() test (DG);
+ * 27-Sep-2006 : Added tests for the getBaseSectionPaint() method (DG);
+ * 23-Nov-2006 : Additional equals() and clone() tests (DG);
+ * 17-Apr-2007 : Added check for label generator that returns a null label (DG);
+ * 31-Mar-2008 : Updated testEquals() (DG);
+ * 10-Jul-2009 : Updated testEquals() (DG);
+ * 07-Apr-2014 : Add cloning tests (DG);
+ *
+ */
+
+package org.jfree.chart.plot;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Stroke;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.text.AttributedString;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItemCollection;
+import org.jfree.chart.TestUtilities;
+import org.jfree.chart.labels.PieSectionLabelGenerator;
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
+import org.jfree.chart.labels.StandardPieToolTipGenerator;
+import org.jfree.chart.urls.CustomPieURLGenerator;
+import org.jfree.chart.urls.StandardPieURLGenerator;
+import org.jfree.chart.util.DefaultShadowGenerator;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.PieDataset;
+import org.jfree.util.Rotation;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import org.junit.Test;
+
+/**
+ * Some tests for the {@link PiePlot} class.
+ */
+<span class="fc" id="L86">public class PiePlotTest {</span>
+
+    /**
+     * Test the equals() method.
+     */
+    @Test
+    public void testEquals() {
+
+<span class="fc" id="L94">        PiePlot plot1 = new PiePlot();</span>
+<span class="fc" id="L95">        PiePlot plot2 = new PiePlot();</span>
+<span class="fc" id="L96">        assertTrue(plot1.equals(plot2));</span>
+<span class="fc" id="L97">        assertTrue(plot2.equals(plot1));</span>
+
+        // pieIndex...
+<span class="fc" id="L100">        plot1.setPieIndex(99);</span>
+<span class="fc" id="L101">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L102">        plot2.setPieIndex(99);</span>
+<span class="fc" id="L103">        assertTrue(plot1.equals(plot2));</span>
+
+        // interiorGap...
+<span class="fc" id="L106">        plot1.setInteriorGap(0.15);</span>
+<span class="fc" id="L107">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L108">        plot2.setInteriorGap(0.15);</span>
+<span class="fc" id="L109">        assertTrue(plot1.equals(plot2));</span>
+
+        // circular
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">        plot1.setCircular(!plot1.isCircular());</span>
+<span class="fc" id="L113">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L114">        plot2.setCircular(false);</span>
+<span class="fc" id="L115">        assertTrue(plot1.equals(plot2));</span>
+
+        // startAngle
+<span class="fc" id="L118">        plot1.setStartAngle(Math.PI);</span>
+<span class="fc" id="L119">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L120">        plot2.setStartAngle(Math.PI);</span>
+<span class="fc" id="L121">        assertTrue(plot1.equals(plot2));</span>
+
+        // direction
+<span class="fc" id="L124">        plot1.setDirection(Rotation.ANTICLOCKWISE);</span>
+<span class="fc" id="L125">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L126">        plot2.setDirection(Rotation.ANTICLOCKWISE);</span>
+<span class="fc" id="L127">        assertTrue(plot1.equals(plot2));</span>
+
+        // ignoreZeroValues
+<span class="fc" id="L130">        plot1.setIgnoreZeroValues(true);</span>
+<span class="fc" id="L131">        plot2.setIgnoreZeroValues(false);</span>
+<span class="fc" id="L132">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L133">        plot2.setIgnoreZeroValues(true);</span>
+<span class="fc" id="L134">        assertTrue(plot1.equals(plot2));</span>
+
+        // ignoreNullValues
+<span class="fc" id="L137">        plot1.setIgnoreNullValues(true);</span>
+<span class="fc" id="L138">        plot2.setIgnoreNullValues(false);</span>
+<span class="fc" id="L139">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L140">        plot2.setIgnoreNullValues(true);</span>
+<span class="fc" id="L141">        assertTrue(plot1.equals(plot2));</span>
+
+        // sectionPaint
+<span class="fc" id="L144">        plot1.setSectionPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L146">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L147">        plot2.setSectionPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L149">        assertTrue(plot1.equals(plot2));</span>
+
+        // sectionPaintMap
+<span class="fc" id="L152">        plot1.setSectionPaint(&quot;A&quot;, new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L154">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L155">        plot2.setSectionPaint(&quot;A&quot;, new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L157">        assertTrue(plot1.equals(plot2));</span>
+
+        // baseSectionPaint
+<span class="fc" id="L160">        plot1.setBaseSectionPaint(new GradientPaint(1.0f, 2.0f, Color.black,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L162">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L163">        plot2.setBaseSectionPaint(new GradientPaint(1.0f, 2.0f, Color.black,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L165">        assertTrue(plot1.equals(plot2));</span>
+
+        // sectionOutlinesVisible
+<span class="fc" id="L168">        plot1.setSectionOutlinesVisible(false);</span>
+<span class="fc" id="L169">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L170">        plot2.setSectionOutlinesVisible(false);</span>
+<span class="fc" id="L171">        assertTrue(plot1.equals(plot2));</span>
+
+        // sectionOutlinePaint
+<span class="fc" id="L174">        plot1.setSectionOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.cyan,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L176">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L177">        plot2.setSectionOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.cyan,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L179">        assertTrue(plot1.equals(plot2));</span>
+
+        // sectionOutlinePaintList
+<span class="fc" id="L182">        plot1.setSectionOutlinePaint(&quot;A&quot;, new GradientPaint(1.0f, 2.0f,</span>
+                Color.green, 3.0f, 4.0f, Color.white));
+<span class="fc" id="L184">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L185">        plot2.setSectionOutlinePaint(&quot;A&quot;, new GradientPaint(1.0f, 2.0f,</span>
+                Color.green, 3.0f, 4.0f, Color.white));
+<span class="fc" id="L187">        assertTrue(plot1.equals(plot2));</span>
+
+        // baseSectionOutlinePaint
+<span class="fc" id="L190">        plot1.setBaseSectionOutlinePaint(new GradientPaint(1.0f, 2.0f,</span>
+                Color.gray, 3.0f, 4.0f, Color.white));
+<span class="fc" id="L192">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L193">        plot2.setBaseSectionOutlinePaint(new GradientPaint(1.0f, 2.0f,</span>
+                Color.gray, 3.0f, 4.0f, Color.white));
+<span class="fc" id="L195">        assertTrue(plot1.equals(plot2));</span>
+
+        // sectionOutlineStroke
+<span class="fc" id="L198">        plot1.setSectionOutlineStroke(new BasicStroke(1.0f));</span>
+<span class="fc" id="L199">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L200">        plot2.setSectionOutlineStroke(new BasicStroke(1.0f));</span>
+<span class="fc" id="L201">        assertTrue(plot1.equals(plot2));</span>
+
+        // sectionOutlineStrokeList
+<span class="fc" id="L204">        plot1.setSectionOutlineStroke(&quot;A&quot;, new BasicStroke(1.0f));</span>
+<span class="fc" id="L205">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L206">        plot2.setSectionOutlineStroke(&quot;A&quot;, new BasicStroke(1.0f));</span>
+<span class="fc" id="L207">        assertTrue(plot1.equals(plot2));</span>
+
+        // baseSectionOutlineStroke
+<span class="fc" id="L210">        plot1.setBaseSectionOutlineStroke(new BasicStroke(1.0f));</span>
+<span class="fc" id="L211">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L212">        plot2.setBaseSectionOutlineStroke(new BasicStroke(1.0f));</span>
+<span class="fc" id="L213">        assertTrue(plot1.equals(plot2));</span>
+
+        // shadowPaint
+<span class="fc" id="L216">        plot1.setShadowPaint(new GradientPaint(1.0f, 2.0f, Color.orange,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L218">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L219">        plot2.setShadowPaint(new GradientPaint(1.0f, 2.0f, Color.orange,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L221">        assertTrue(plot1.equals(plot2));</span>
+
+        // shadowXOffset
+<span class="fc" id="L224">        plot1.setShadowXOffset(4.4);</span>
+<span class="fc" id="L225">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L226">        plot2.setShadowXOffset(4.4);</span>
+<span class="fc" id="L227">        assertTrue(plot1.equals(plot2));</span>
+
+        // shadowYOffset
+<span class="fc" id="L230">        plot1.setShadowYOffset(4.4);</span>
+<span class="fc" id="L231">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L232">        plot2.setShadowYOffset(4.4);</span>
+<span class="fc" id="L233">        assertTrue(plot1.equals(plot2));</span>
+
+        // labelFont
+<span class="fc" id="L236">        plot1.setLabelFont(new Font(&quot;Serif&quot;, Font.PLAIN, 18));</span>
+<span class="fc" id="L237">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L238">        plot2.setLabelFont(new Font(&quot;Serif&quot;, Font.PLAIN, 18));</span>
+<span class="fc" id="L239">        assertTrue(plot1.equals(plot2));</span>
+
+        // labelPaint
+<span class="fc" id="L242">        plot1.setLabelPaint(new GradientPaint(1.0f, 2.0f, Color.darkGray,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L244">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L245">        plot2.setLabelPaint(new GradientPaint(1.0f, 2.0f, Color.darkGray,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L247">        assertTrue(plot1.equals(plot2));</span>
+
+        // labelBackgroundPaint
+<span class="fc" id="L250">        plot1.setLabelBackgroundPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L252">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L253">        plot2.setLabelBackgroundPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L255">        assertTrue(plot1.equals(plot2));</span>
+
+        // labelOutlinePaint
+<span class="fc" id="L258">        plot1.setLabelOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L260">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L261">        plot2.setLabelOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L263">        assertTrue(plot1.equals(plot2));</span>
+
+        // labelOutlineStroke
+<span class="fc" id="L266">        Stroke s = new BasicStroke(1.1f);</span>
+<span class="fc" id="L267">        plot1.setLabelOutlineStroke(s);</span>
+<span class="fc" id="L268">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L269">        plot2.setLabelOutlineStroke(s);</span>
+<span class="fc" id="L270">        assertTrue(plot1.equals(plot2));</span>
+
+        // labelShadowPaint
+<span class="fc" id="L273">        plot1.setLabelShadowPaint(new GradientPaint(1.0f, 2.0f, Color.yellow,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L275">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L276">        plot2.setLabelShadowPaint(new GradientPaint(1.0f, 2.0f, Color.yellow,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L278">        assertTrue(plot1.equals(plot2));</span>
+
+        // explodePercentages
+<span class="fc" id="L281">        plot1.setExplodePercent(&quot;A&quot;, 0.33);</span>
+<span class="fc" id="L282">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L283">        plot2.setExplodePercent(&quot;A&quot;, 0.33);</span>
+<span class="fc" id="L284">        assertTrue(plot1.equals(plot2));</span>
+
+        // labelGenerator
+<span class="fc" id="L287">        plot1.setLabelGenerator(new StandardPieSectionLabelGenerator(</span>
+                &quot;{2}{1}{0}&quot;));
+<span class="fc" id="L289">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L290">        plot2.setLabelGenerator(new StandardPieSectionLabelGenerator(</span>
+                &quot;{2}{1}{0}&quot;));
+<span class="fc" id="L292">        assertTrue(plot1.equals(plot2));</span>
+
+        // labelFont
+<span class="fc" id="L295">        Font f = new Font(&quot;SansSerif&quot;, Font.PLAIN, 20);</span>
+<span class="fc" id="L296">        plot1.setLabelFont(f);</span>
+<span class="fc" id="L297">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L298">        plot2.setLabelFont(f);</span>
+<span class="fc" id="L299">        assertTrue(plot1.equals(plot2));</span>
+
+        // labelPaint
+<span class="fc" id="L302">        plot1.setLabelPaint(new GradientPaint(1.0f, 2.0f, Color.magenta,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L304">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L305">        plot2.setLabelPaint(new GradientPaint(1.0f, 2.0f, Color.magenta,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L307">        assertTrue(plot1.equals(plot2));</span>
+
+        // maximumLabelWidth
+<span class="fc" id="L310">        plot1.setMaximumLabelWidth(0.33);</span>
+<span class="fc" id="L311">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L312">        plot2.setMaximumLabelWidth(0.33);</span>
+<span class="fc" id="L313">        assertTrue(plot1.equals(plot2));</span>
+
+        // labelGap
+<span class="fc" id="L316">        plot1.setLabelGap(0.11);</span>
+<span class="fc" id="L317">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L318">        plot2.setLabelGap(0.11);</span>
+<span class="fc" id="L319">        assertTrue(plot1.equals(plot2));</span>
+
+        // links visible
+<span class="fc" id="L322">        plot1.setLabelLinksVisible(false);</span>
+<span class="fc" id="L323">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L324">        plot2.setLabelLinksVisible(false);</span>
+<span class="fc" id="L325">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L327">        plot1.setLabelLinkStyle(PieLabelLinkStyle.QUAD_CURVE);</span>
+<span class="fc" id="L328">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L329">        plot2.setLabelLinkStyle(PieLabelLinkStyle.QUAD_CURVE);</span>
+<span class="fc" id="L330">        assertTrue(plot1.equals(plot2));</span>
+
+        // linkMargin
+<span class="fc" id="L333">        plot1.setLabelLinkMargin(0.11);</span>
+<span class="fc" id="L334">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L335">        plot2.setLabelLinkMargin(0.11);</span>
+<span class="fc" id="L336">        assertTrue(plot1.equals(plot2));</span>
+
+        // labelLinkPaint
+<span class="fc" id="L339">        plot1.setLabelLinkPaint(new GradientPaint(1.0f, 2.0f, Color.magenta,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L341">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L342">        plot2.setLabelLinkPaint(new GradientPaint(1.0f, 2.0f, Color.magenta,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L344">        assertTrue(plot1.equals(plot2));</span>
+
+        // labelLinkStroke
+<span class="fc" id="L347">        plot1.setLabelLinkStroke(new BasicStroke(1.0f));</span>
+<span class="fc" id="L348">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L349">        plot2.setLabelLinkStroke(new BasicStroke(1.0f));</span>
+<span class="fc" id="L350">        assertTrue(plot1.equals(plot2));</span>
+
+        // toolTipGenerator
+<span class="fc" id="L353">        plot1.setToolTipGenerator(</span>
+            new StandardPieToolTipGenerator(&quot;{2}{1}{0}&quot;)
+        );
+<span class="fc" id="L356">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L357">        plot2.setToolTipGenerator(</span>
+            new StandardPieToolTipGenerator(&quot;{2}{1}{0}&quot;)
+        );
+<span class="fc" id="L360">        assertTrue(plot1.equals(plot2));</span>
+
+        // urlGenerator
+<span class="fc" id="L363">        plot1.setURLGenerator(new StandardPieURLGenerator(&quot;xx&quot;));</span>
+<span class="fc" id="L364">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L365">        plot2.setURLGenerator(new StandardPieURLGenerator(&quot;xx&quot;));</span>
+<span class="fc" id="L366">        assertTrue(plot1.equals(plot2));</span>
+
+        // minimumArcAngleToDraw
+<span class="fc" id="L369">        plot1.setMinimumArcAngleToDraw(1.0);</span>
+<span class="fc" id="L370">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L371">        plot2.setMinimumArcAngleToDraw(1.0);</span>
+<span class="fc" id="L372">        assertTrue(plot1.equals(plot2));</span>
+
+        // legendItemShape
+<span class="fc" id="L375">        plot1.setLegendItemShape(new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L376">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L377">        plot2.setLegendItemShape(new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L378">        assertTrue(plot1.equals(plot2));</span>
+
+        // legendLabelGenerator
+<span class="fc" id="L381">        plot1.setLegendLabelGenerator(new StandardPieSectionLabelGenerator(</span>
+                &quot;{0} --&gt; {1}&quot;));
+<span class="fc" id="L383">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L384">        plot2.setLegendLabelGenerator(new StandardPieSectionLabelGenerator(</span>
+                &quot;{0} --&gt; {1}&quot;));
+<span class="fc" id="L386">        assertTrue(plot1.equals(plot2));</span>
+
+        // legendLabelToolTipGenerator
+<span class="fc" id="L389">        plot1.setLegendLabelToolTipGenerator(</span>
+                new StandardPieSectionLabelGenerator(&quot;{0} is {1}&quot;));
+<span class="fc" id="L391">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L392">        plot2.setLegendLabelToolTipGenerator(</span>
+                new StandardPieSectionLabelGenerator(&quot;{0} is {1}&quot;));
+<span class="fc" id="L394">        assertTrue(plot1.equals(plot2));</span>
+
+        // legendLabelURLGenerator
+<span class="fc" id="L397">        plot1.setLegendLabelURLGenerator(new StandardPieURLGenerator(</span>
+                &quot;index.html&quot;));
+<span class="fc" id="L399">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L400">        plot2.setLegendLabelURLGenerator(new StandardPieURLGenerator(</span>
+                &quot;index.html&quot;));
+<span class="fc" id="L402">        assertTrue(plot1.equals(plot2));</span>
+
+        // autoPopulateSectionPaint
+<span class="fc" id="L405">        plot1.setAutoPopulateSectionPaint(false);</span>
+<span class="fc" id="L406">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L407">        plot2.setAutoPopulateSectionPaint(false);</span>
+<span class="fc" id="L408">        assertTrue(plot1.equals(plot2));</span>
+
+        // autoPopulateSectionOutlinePaint
+<span class="fc" id="L411">        plot1.setAutoPopulateSectionOutlinePaint(true);</span>
+<span class="fc" id="L412">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L413">        plot2.setAutoPopulateSectionOutlinePaint(true);</span>
+<span class="fc" id="L414">        assertTrue(plot1.equals(plot2));</span>
+
+        // autoPopulateSectionOutlineStroke
+<span class="fc" id="L417">        plot1.setAutoPopulateSectionOutlineStroke(true);</span>
+<span class="fc" id="L418">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L419">        plot2.setAutoPopulateSectionOutlineStroke(true);</span>
+<span class="fc" id="L420">        assertTrue(plot1.equals(plot2));</span>
+
+        // shadowGenerator
+<span class="fc" id="L423">        plot1.setShadowGenerator(new DefaultShadowGenerator(5, Color.gray,</span>
+                0.6f, 4, -Math.PI / 4));
+<span class="fc" id="L425">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L426">        plot2.setShadowGenerator(new DefaultShadowGenerator(5, Color.gray,</span>
+                0.6f, 4, -Math.PI / 4));
+<span class="fc" id="L428">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L430">        plot1.setShadowGenerator(null);</span>
+<span class="fc" id="L431">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L432">        plot2.setShadowGenerator(null);</span>
+<span class="fc" id="L433">        assertTrue(plot1.equals(plot2));</span>
+<span class="fc" id="L434">    }</span>
+
+    /**
+     * Some basic checks for the clone() method.
+     */
+    @Test
+    public void testCloning() throws CloneNotSupportedException {
+<span class="fc" id="L441">        PiePlot p1 = new PiePlot();</span>
+<span class="fc" id="L442">        PiePlot p2 = (PiePlot) p1.clone();</span>
+<span class="pc bpc" id="L443" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L444" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L445">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L446">    }</span>
+
+    /**
+     * Check cloning of the urlGenerator field.
+     */
+    @Test
+    public void testCloning_URLGenerator() throws CloneNotSupportedException {
+<span class="fc" id="L453">        CustomPieURLGenerator generator = new CustomPieURLGenerator();</span>
+<span class="fc" id="L454">        PiePlot p1 = new PiePlot();</span>
+<span class="fc" id="L455">        p1.setURLGenerator(generator);</span>
+<span class="fc" id="L456">        PiePlot p2 = (PiePlot) p1.clone();</span>
+<span class="pc bpc" id="L457" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L458" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L459">        assertTrue(p1.equals(p2));</span>
+
+        // check that the URL generator has been cloned
+<span class="pc bpc" id="L462" title="1 of 2 branches missed.">        assertTrue(p1.getURLGenerator() != p2.getURLGenerator());</span>
+<span class="fc" id="L463">    }</span>
+
+    /**
+     * Check cloning of the legendItemShape field.
+     */
+    @Test
+    public void testCloning_LegendItemShape() throws CloneNotSupportedException {
+<span class="fc" id="L470">        Rectangle shape = new Rectangle(-4, -4, 8, 8);</span>
+<span class="fc" id="L471">        PiePlot p1 = new PiePlot();</span>
+<span class="fc" id="L472">        p1.setLegendItemShape(shape);</span>
+<span class="fc" id="L473">        PiePlot p2 = (PiePlot) p1.clone();</span>
+<span class="pc bpc" id="L474" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L475" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L476">        assertTrue(p1.equals(p2));</span>
+
+        // change the shape and make sure it only affects p1
+<span class="fc" id="L479">        shape.setRect(1.0, 2.0, 3.0, 4.0);</span>
+<span class="fc" id="L480">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L481">    }</span>
+
+    /**
+     * Check cloning of the legendLabelGenerator field.
+     */
+    @Test
+    public void testCloning_LegendLabelGenerator() throws CloneNotSupportedException {
+<span class="fc" id="L488">        StandardPieSectionLabelGenerator generator</span>
+                = new StandardPieSectionLabelGenerator();
+<span class="fc" id="L490">        PiePlot p1 = new PiePlot();</span>
+<span class="fc" id="L491">        p1.setLegendLabelGenerator(generator);</span>
+<span class="fc" id="L492">        PiePlot p2 = (PiePlot) p1.clone();</span>
+<span class="pc bpc" id="L493" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L494" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L495">        assertTrue(p1.equals(p2));</span>
+
+        // change the generator and make sure it only affects p1
+<span class="fc" id="L498">        generator.getNumberFormat().setMinimumFractionDigits(2);</span>
+<span class="fc" id="L499">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L500">    }</span>
+
+    /**
+     * Check cloning of the legendLabelToolTipGenerator field.
+     */
+    @Test
+    public void testCloning_LegendLabelToolTipGenerator() throws CloneNotSupportedException {
+<span class="fc" id="L507">        StandardPieSectionLabelGenerator generator</span>
+                = new StandardPieSectionLabelGenerator();
+<span class="fc" id="L509">        PiePlot p1 = new PiePlot();</span>
+<span class="fc" id="L510">        p1.setLegendLabelToolTipGenerator(generator);</span>
+<span class="fc" id="L511">        PiePlot p2 = (PiePlot) p1.clone();</span>
+<span class="pc bpc" id="L512" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L513" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L514">        assertTrue(p1.equals(p2));</span>
+
+        // change the generator and make sure it only affects p1
+<span class="fc" id="L517">        generator.getNumberFormat().setMinimumFractionDigits(2);</span>
+<span class="fc" id="L518">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L519">    }</span>
+
+    /**
+     * Check cloning of the legendLabelURLGenerator field.
+     */
+    @Test
+    public void testCloning_LegendLabelURLGenerator() throws CloneNotSupportedException {
+<span class="fc" id="L526">        CustomPieURLGenerator generator = new CustomPieURLGenerator();</span>
+<span class="fc" id="L527">        PiePlot p1 = new PiePlot();</span>
+<span class="fc" id="L528">        p1.setLegendLabelURLGenerator(generator);</span>
+<span class="fc" id="L529">        PiePlot p2 = (PiePlot) p1.clone();</span>
+<span class="pc bpc" id="L530" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L531" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L532">        assertTrue(p1.equals(p2));</span>
+
+        // check that the URL generator has been cloned
+<span class="fc" id="L535">        assertTrue(p1.getLegendLabelURLGenerator()</span>
+<span class="pc bpc" id="L536" title="1 of 2 branches missed.">                != p2.getLegendLabelURLGenerator());</span>
+<span class="fc" id="L537">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    @Test
+    public void testSerialization() {
+<span class="fc" id="L544">        PiePlot p1 = new PiePlot(null);</span>
+<span class="fc" id="L545">        PiePlot p2 = (PiePlot) TestUtilities.serialised(p1);</span>
+<span class="fc" id="L546">        assertEquals(p1, p2);</span>
+<span class="fc" id="L547">    }</span>
+
+    /**
+     * Some checks for the getLegendItems() method.
+     */
+    @Test
+    public void testGetLegendItems() {
+<span class="fc" id="L554">        DefaultPieDataset dataset = new DefaultPieDataset();</span>
+<span class="fc" id="L555">        dataset.setValue(&quot;Item 1&quot;, 1.0);</span>
+<span class="fc" id="L556">        dataset.setValue(&quot;Item 2&quot;, 2.0);</span>
+<span class="fc" id="L557">        dataset.setValue(&quot;Item 3&quot;, 0.0);</span>
+<span class="fc" id="L558">        dataset.setValue(&quot;Item 4&quot;, null);</span>
+
+<span class="fc" id="L560">        PiePlot plot = new PiePlot(dataset);</span>
+<span class="fc" id="L561">        plot.setIgnoreNullValues(false);</span>
+<span class="fc" id="L562">        plot.setIgnoreZeroValues(false);</span>
+<span class="fc" id="L563">        LegendItemCollection items = plot.getLegendItems();</span>
+<span class="fc" id="L564">        assertEquals(4, items.getItemCount());</span>
+
+        // check that null items are ignored if requested
+<span class="fc" id="L567">        plot.setIgnoreNullValues(true);</span>
+<span class="fc" id="L568">        items = plot.getLegendItems();</span>
+<span class="fc" id="L569">        assertEquals(3, items.getItemCount());</span>
+
+        // check that zero items are ignored if requested
+<span class="fc" id="L572">        plot.setIgnoreZeroValues(true);</span>
+<span class="fc" id="L573">        items = plot.getLegendItems();</span>
+<span class="fc" id="L574">        assertEquals(2, items.getItemCount());</span>
+
+        // check that negative items are always ignored
+<span class="fc" id="L577">        dataset.setValue(&quot;Item 5&quot;, -1.0);</span>
+<span class="fc" id="L578">        items = plot.getLegendItems();</span>
+<span class="fc" id="L579">        assertEquals(2, items.getItemCount());</span>
+<span class="fc" id="L580">    }</span>
+
+    /**
+     * Check that the default base section paint is not null, and that you
+     * can never set it to null.
+     */
+    @Test
+    public void testGetBaseSectionPaint() {
+<span class="fc" id="L588">        PiePlot plot = new PiePlot();</span>
+<span class="fc" id="L589">        assertNotNull(plot.getBaseSectionPaint());</span>
+
+<span class="fc" id="L591">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L593">            plot.setBaseSectionPaint(null);</span>
+        }
+<span class="fc" id="L595">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L596">            pass = true;</span>
+<span class="nc" id="L597">        }</span>
+<span class="fc" id="L598">        assertTrue(pass);</span>
+<span class="fc" id="L599">    }</span>
+
+<span class="fc" id="L601">    static class NullLegendLabelGenerator implements PieSectionLabelGenerator {</span>
+        @Override
+        public AttributedString generateAttributedSectionLabel(
+                PieDataset dataset, Comparable key) {
+<span class="nc" id="L605">            return null;</span>
+        }
+        @Override
+        public String generateSectionLabel(PieDataset dataset, Comparable key) {
+<span class="fc" id="L609">            return null;</span>
+        }
+    }
+
+    /**
+     * Draws a pie chart where the label generator returns null.
+     */
+    @Test
+    public void testDrawWithNullLegendLabels() {
+<span class="fc" id="L618">        DefaultPieDataset dataset = new DefaultPieDataset();</span>
+<span class="fc" id="L619">        dataset.setValue(&quot;L1&quot;, 12.0);</span>
+<span class="fc" id="L620">        dataset.setValue(&quot;L2&quot;, 11.0);</span>
+<span class="fc" id="L621">        JFreeChart chart = ChartFactory.createPieChart(&quot;Test&quot;, dataset, true,</span>
+                false, false);
+<span class="fc" id="L623">        PiePlot plot = (PiePlot) chart.getPlot();</span>
+<span class="fc" id="L624">        plot.setLegendLabelGenerator(new NullLegendLabelGenerator());</span>
+<span class="fc" id="L625">        boolean success = false;</span>
+        try {
+<span class="fc" id="L627">            BufferedImage image = new BufferedImage(200 , 100,</span>
+                    BufferedImage.TYPE_INT_RGB);
+<span class="fc" id="L629">            Graphics2D g2 = image.createGraphics();</span>
+<span class="fc" id="L630">            chart.draw(g2, new Rectangle2D.Double(0, 0, 200, 100), null, null);</span>
+<span class="fc" id="L631">            g2.dispose();</span>
+<span class="fc" id="L632">            success = true;</span>
+        }
+<span class="nc" id="L634">        catch (Exception e) {</span>
+<span class="nc" id="L635">          success = false;</span>
+<span class="fc" id="L636">        }</span>
+<span class="fc" id="L637">        assertTrue(success);</span>
+<span class="fc" id="L638">    }</span>
+    
+    @Test
+    public void testBug1126() throws CloneNotSupportedException {
+<span class="fc" id="L642">        DefaultPieDataset dataset1 = new DefaultPieDataset();</span>
+<span class="fc" id="L643">        PiePlot plot1 = new PiePlot(dataset1);</span>
+<span class="fc" id="L644">        plot1.setSectionPaint(&quot;A&quot;, Color.RED);</span>
+<span class="fc" id="L645">        plot1.setSectionPaint(&quot;B&quot;, Color.GREEN);</span>
+<span class="fc" id="L646">        PiePlot plot2 = (PiePlot) plot1.clone();</span>
+<span class="fc" id="L647">        plot2.setSectionPaint(&quot;A&quot;, Color.BLUE);</span>
+<span class="fc" id="L648">        plot2.setSectionPaint(&quot;B&quot;, Color.YELLOW);</span>
+<span class="fc" id="L649">        assertEquals(Color.RED, plot1.getSectionPaint(&quot;A&quot;));</span>
+<span class="fc" id="L650">        assertEquals(Color.GREEN, plot1.getSectionPaint(&quot;B&quot;));</span>
+<span class="fc" id="L651">        assertEquals(Color.BLUE, plot2.getSectionPaint(&quot;A&quot;));</span>
+<span class="fc" id="L652">        assertEquals(Color.YELLOW, plot2.getSectionPaint(&quot;B&quot;));</span>
+<span class="fc" id="L653">    }</span>
+    
+    @Test
+    public void testBug1126_b() throws CloneNotSupportedException {
+<span class="fc" id="L657">        DefaultPieDataset dataset1 = new DefaultPieDataset();</span>
+<span class="fc" id="L658">        PiePlot plot1 = new PiePlot(dataset1);</span>
+<span class="fc" id="L659">        plot1.setSectionOutlinePaint(&quot;A&quot;, Color.RED);</span>
+<span class="fc" id="L660">        plot1.setSectionOutlinePaint(&quot;B&quot;, Color.GREEN);</span>
+<span class="fc" id="L661">        PiePlot plot2 = (PiePlot) plot1.clone();</span>
+<span class="fc" id="L662">        plot2.setSectionOutlinePaint(&quot;A&quot;, Color.BLUE);</span>
+<span class="fc" id="L663">        plot2.setSectionOutlinePaint(&quot;B&quot;, Color.YELLOW);</span>
+<span class="fc" id="L664">        assertEquals(Color.RED, plot1.getSectionOutlinePaint(&quot;A&quot;));</span>
+<span class="fc" id="L665">        assertEquals(Color.GREEN, plot1.getSectionOutlinePaint(&quot;B&quot;));</span>
+<span class="fc" id="L666">        assertEquals(Color.BLUE, plot2.getSectionOutlinePaint(&quot;A&quot;));</span>
+<span class="fc" id="L667">        assertEquals(Color.YELLOW, plot2.getSectionOutlinePaint(&quot;B&quot;));</span>
+<span class="fc" id="L668">    }</span>
+    
+    @Test
+    public void testBug1126_c() throws CloneNotSupportedException {
+<span class="fc" id="L672">        DefaultPieDataset dataset1 = new DefaultPieDataset();</span>
+<span class="fc" id="L673">        PiePlot plot1 = new PiePlot(dataset1);</span>
+<span class="fc" id="L674">        plot1.setSectionOutlineStroke(&quot;A&quot;, new BasicStroke(5.0f));</span>
+<span class="fc" id="L675">        plot1.setSectionOutlineStroke(&quot;B&quot;, new BasicStroke(6.0f));</span>
+<span class="fc" id="L676">        PiePlot plot2 = (PiePlot) plot1.clone();</span>
+<span class="fc" id="L677">        plot2.setSectionOutlineStroke(&quot;A&quot;, new BasicStroke(7.0f));</span>
+<span class="fc" id="L678">        plot2.setSectionOutlineStroke(&quot;B&quot;, new BasicStroke(8.0f));</span>
+<span class="fc" id="L679">        assertEquals(new BasicStroke(5.0f), plot1.getSectionOutlineStroke(&quot;A&quot;));</span>
+<span class="fc" id="L680">        assertEquals(new BasicStroke(6.0f), plot1.getSectionOutlineStroke(&quot;B&quot;));</span>
+<span class="fc" id="L681">        assertEquals(new BasicStroke(7.0f), plot2.getSectionOutlineStroke(&quot;A&quot;));</span>
+<span class="fc" id="L682">        assertEquals(new BasicStroke(8.0f), plot2.getSectionOutlineStroke(&quot;B&quot;));</span>
+<span class="fc" id="L683">    }</span>
+    
+    @Test
+    public void testBug1126_d() throws CloneNotSupportedException {
+<span class="fc" id="L687">        DefaultPieDataset dataset1 = new DefaultPieDataset();</span>
+<span class="fc" id="L688">        PiePlot plot1 = new PiePlot(dataset1);</span>
+<span class="fc" id="L689">        plot1.setExplodePercent(&quot;A&quot;, 0.1);</span>
+<span class="fc" id="L690">        plot1.setExplodePercent(&quot;B&quot;, 0.2);</span>
+<span class="fc" id="L691">        PiePlot plot2 = (PiePlot) plot1.clone();</span>
+<span class="fc" id="L692">        plot2.setExplodePercent(&quot;A&quot;, 0.3);</span>
+<span class="fc" id="L693">        plot2.setExplodePercent(&quot;B&quot;, 0.4);</span>
+<span class="fc" id="L694">        assertEquals(0.1, plot1.getExplodePercent(&quot;A&quot;), EPSILON);</span>
+<span class="fc" id="L695">        assertEquals(0.2, plot1.getExplodePercent(&quot;B&quot;), EPSILON);</span>
+<span class="fc" id="L696">        assertEquals(0.3, plot2.getExplodePercent(&quot;A&quot;), EPSILON);</span>
+<span class="fc" id="L697">        assertEquals(0.4, plot2.getExplodePercent(&quot;B&quot;), EPSILON);</span>
+<span class="fc" id="L698">    }</span>
+    
+    private static final double EPSILON = 0.000000001;
+
+    @Test
+    public void testBug1126_e() throws CloneNotSupportedException {
+<span class="fc" id="L704">        DefaultPieDataset dataset1 = new DefaultPieDataset();</span>
+<span class="fc" id="L705">        PiePlot plot1 = new PiePlot(dataset1);</span>
+<span class="fc" id="L706">        plot1.setLabelGenerator(new StandardPieSectionLabelGenerator());</span>
+<span class="fc" id="L707">        PiePlot plot2 = (PiePlot) plot1.clone();</span>
+<span class="fc" id="L708">        StandardPieSectionLabelGenerator g2 </span>
+<span class="fc" id="L709">                = (StandardPieSectionLabelGenerator) plot2.getLabelGenerator();</span>
+<span class="fc" id="L710">        g2.setAttributedLabel(1, new AttributedString(&quot;TESTING&quot;));</span>
+<span class="fc" id="L711">        assertNotEquals(plot1, plot2);</span>
+<span class="fc" id="L712">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
