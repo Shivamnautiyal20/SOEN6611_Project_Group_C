@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="iso-8859-1"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DigesterLoader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Digester :: Core</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.digester3.binder</a> &gt; <span class="el_source">DigesterLoader.java</span></div><h1>DigesterLoader.java</h1><pre class="source lang-java linenums">package org.apache.commons.digester3.binder;
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+import static org.apache.commons.digester3.binder.BinderClassLoader.createBinderClassLoader;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.validation.Schema;
+
+import org.apache.commons.digester3.Digester;
+import org.apache.commons.digester3.RuleSet;
+import org.apache.commons.digester3.Rules;
+import org.apache.commons.digester3.RulesBase;
+import org.apache.commons.digester3.StackAction;
+import org.apache.commons.digester3.Substitutor;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
+
+/**
+ * This class manages the creation of Digester instances from digester rules modules.
+ */
+public final class DigesterLoader
+{
+
+    /**
+     * The default head when reporting an errors list.
+     */
+    private static final String HEADING = &quot;Digester creation errors:%n%n&quot;;
+
+    /**
+     * Creates a new {@link DigesterLoader} instance given one or more {@link RulesModule} instance.
+     *
+     * @param rulesModules The modules containing the {@code Rule} binding
+     * @return A new {@link DigesterLoader} instance
+     */
+    public static DigesterLoader newLoader( RulesModule... rulesModules )
+    {
+<span class="pc bpc" id="L73" title="2 of 4 branches missed.">        if ( rulesModules == null || rulesModules.length == 0 )</span>
+        {
+<span class="nc" id="L75">            throw new DigesterLoadingException( &quot;At least one RulesModule has to be specified&quot; );</span>
+        }
+<span class="fc" id="L77">        return newLoader( Arrays.asList( rulesModules ) );</span>
+    }
+
+    /**
+     * Creates a new {@link DigesterLoader} instance given a collection of {@link RulesModule} instance.
+     *
+     * @param rulesModules The modules containing the {@code Rule} binding
+     * @return A new {@link DigesterLoader} instance
+     */
+    public static DigesterLoader newLoader( Iterable&lt;RulesModule&gt; rulesModules )
+    {
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">        if ( rulesModules == null )</span>
+        {
+<span class="nc" id="L90">            throw new DigesterLoadingException( &quot;RulesModule has to be specified&quot; );</span>
+        }
+
+<span class="fc" id="L93">        return new DigesterLoader( rulesModules );</span>
+    }
+
+    /**
+     * The concrete {@link RulesBinder} implementation.
+     */
+<span class="fc" id="L99">    private final DefaultRulesBinder rulesBinder = new DefaultRulesBinder();</span>
+
+    /**
+     * The URLs of entityValidator that have been registered, keyed by the public
+     * identifier that corresponds.
+     */
+<span class="fc" id="L105">    private final Map&lt;String, URL&gt; entityValidator = new HashMap&lt;String, URL&gt;();</span>
+
+    /**
+     * The SAXParserFactory to create new default {@link Digester} instances.
+     */
+<span class="fc" id="L110">    private final SAXParserFactory factory = SAXParserFactory.newInstance();</span>
+
+    private final Iterable&lt;RulesModule&gt; rulesModules;
+
+    /**
+     * The class loader to use for instantiating application objects.
+     * If not specified, the context class loader, or the class loader
+     * used to load Digester itself, is used, based on the value of the
+     * &lt;code&gt;useContextClassLoader&lt;/code&gt; variable.
+     */
+    private BinderClassLoader classLoader;
+
+    /**
+     * An optional class that substitutes values in attributes and body text. This may be null and so a null check is
+     * always required before use.
+     */
+    private Substitutor substitutor;
+
+    /**
+     * The EntityResolver used by the SAX parser. By default it use this class
+     */
+    private EntityResolver entityResolver;
+
+    /**
+     * Object which will receive callbacks for every pop/push action on the default stack or named stacks.
+     */
+    private StackAction stackAction;
+
+    /**
+     * The executor service to run asynchronous parse method.
+     * @since 3.1
+     */
+    private ExecutorService executorService;
+
+    /**
+     * The application-supplied error handler that is notified when parsing warnings, errors, or fatal errors occur.
+     * @since 3.2
+     */
+<span class="fc" id="L148">    private ErrorHandler errorHandler = null;</span>
+
+    /**
+     * The Locator associated with our parser.
+     * @since 3.2
+     */
+<span class="fc" id="L154">    private Locator locator = null;</span>
+
+    /**
+     * Creates a new {@link DigesterLoader} instance given a collection of {@link RulesModule} instance.
+     *
+     * @param rulesModules The modules containing the {@code Rule} binding
+     */
+    private DigesterLoader( Iterable&lt;RulesModule&gt; rulesModules )
+<span class="fc" id="L162">    {</span>
+<span class="fc" id="L163">        this.rulesModules = rulesModules;</span>
+<span class="fc" id="L164">        setUseContextClassLoader( true );</span>
+<span class="fc" id="L165">    }</span>
+
+    /**
+     * Determine whether to use the Context ClassLoader (the one found by
+     * calling &lt;code&gt;Thread.currentThread().getContextClassLoader()&lt;/code&gt;)
+     * to resolve/load classes that are defined in various rules.  If not
+     * using Context ClassLoader, then the class-loading defaults to
+     * using the calling-class' ClassLoader.
+     *
+     * @param useContextClassLoader determines whether to use Context ClassLoader.
+     * @return This loader instance, useful to chain methods.
+     */
+    public DigesterLoader setUseContextClassLoader( boolean useContextClassLoader )
+    {
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">        if ( useContextClassLoader )</span>
+        {
+<span class="fc" id="L181">            setClassLoader( Thread.currentThread().getContextClassLoader() );</span>
+        }
+        else
+        {
+<span class="nc" id="L185">            setClassLoader( getClass().getClassLoader() );</span>
+        }
+<span class="fc" id="L187">        return this;</span>
+    }
+
+    /**
+     * Set the class loader to be used for instantiating application objects when required.
+     *
+     * @param classLoader the class loader to be used for instantiating application objects when required.
+     * @return This loader instance, useful to chain methods.
+     */
+    public DigesterLoader setClassLoader( ClassLoader classLoader )
+    {
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">        if ( classLoader == null )</span>
+        {
+<span class="nc" id="L200">            throw new IllegalArgumentException( &quot;Parameter 'classLoader' cannot be null&quot; );</span>
+        }
+
+<span class="fc" id="L203">        this.classLoader = createBinderClassLoader( classLoader );</span>
+
+<span class="fc" id="L205">        rulesBinder.initialize( this.classLoader );</span>
+<span class="fc bfc" id="L206" title="All 2 branches covered.">        for ( RulesModule rulesModule : rulesModules )</span>
+        {
+<span class="fc" id="L208">            rulesModule.configure( rulesBinder );</span>
+<span class="fc" id="L209">        }</span>
+
+<span class="fc" id="L211">        return this;</span>
+    }
+
+    /**
+     * Sets the &lt;code&gt;Substitutor&lt;/code&gt; to be used to convert attributes and body text.
+     *
+     * @param substitutor the Substitutor to be used to convert attributes and body text
+     *        or null if not substitution of these values is to be performed.
+     * @return This loader instance, useful to chain methods.
+     */
+    public DigesterLoader setSubstitutor( Substitutor substitutor )
+    {
+<span class="nc" id="L223">        this.substitutor = substitutor;</span>
+<span class="nc" id="L224">        return this;</span>
+    }
+
+    /**
+     * Set the &quot;namespace aware&quot; flag for parsers we create.
+     *
+     * @param namespaceAware The new &quot;namespace aware&quot; flag
+     * @return This loader instance, useful to chain methods.
+     */
+    public DigesterLoader setNamespaceAware( boolean namespaceAware )
+    {
+<span class="fc" id="L235">        factory.setNamespaceAware( namespaceAware );</span>
+<span class="fc" id="L236">        return this;</span>
+    }
+
+    /**
+     * Return the &quot;namespace aware&quot; flag for parsers we create.
+     *
+     * @return true, if the &quot;namespace aware&quot; flag for parsers we create, false otherwise.
+     */
+    public boolean isNamespaceAware()
+    {
+<span class="fc" id="L246">        return factory.isNamespaceAware();</span>
+    }
+
+    /**
+     * Set the XInclude-aware flag for parsers we create. This additionally
+     * requires namespace-awareness.
+     *
+     * @param xIncludeAware The new XInclude-aware flag
+     * @return This loader instance, useful to chain methods.
+     * @see #setNamespaceAware(boolean)
+     */
+    public DigesterLoader setXIncludeAware( boolean xIncludeAware )
+    {
+<span class="fc" id="L259">        factory.setXIncludeAware( xIncludeAware );</span>
+<span class="fc" id="L260">        return this;</span>
+    }
+
+    /**
+     * Return the XInclude-aware flag for parsers we create;
+     *
+     * @return true, if the XInclude-aware flag for parsers we create is set,
+     *         false otherwise
+     */
+    public boolean isXIncludeAware()
+    {
+<span class="nc" id="L271">        return factory.isXIncludeAware();</span>
+    }
+
+    /**
+     * Set the {@code DOCTYPE} validation parser flag and should not be used when using schemas.
+     *
+     * @param validating The new validating parser flag.
+     * @return This loader instance, useful to chain methods.
+     * @see javax.xml.parsers.SAXParserFactory#setValidating(boolean)
+     */
+    public DigesterLoader setValidating( boolean validating )
+    {
+<span class="fc" id="L283">        factory.setValidating( validating );</span>
+<span class="fc" id="L284">        return this;</span>
+    }
+
+    /**
+     * Return the {@code DOCTYPE} validation parser flag.
+     *
+     * @return true, if the validating parser flag is set, false otherwise
+     */
+    public boolean isValidating()
+    {
+<span class="nc" id="L294">        return this.factory.isValidating();</span>
+    }
+
+    /**
+     * Set the XML Schema to be used when parsing.
+     *
+     * @param schema The {@link Schema} instance to use.
+     * @return This loader instance, useful to chain methods.
+     */
+    public DigesterLoader setSchema( Schema schema )
+    {
+<span class="nc" id="L305">        factory.setSchema( schema );</span>
+<span class="nc" id="L306">        return this;</span>
+    }
+
+    /**
+     * Sets a flag indicating whether the requested feature is supported by the underlying implementation of
+     * &lt;code&gt;org.xml.sax.XMLReader&lt;/code&gt;.
+     * 
+     * @see org.apache.commons.digester3.Digester#setFeature(String, boolean)
+     * @param feature Name of the feature to set the status for
+     * @param value The new value for this feature
+     * @return This loader instance, useful to chain methods.
+     * @throws ParserConfigurationException if a parser configuration error occurs
+     * @throws SAXNotRecognizedException if the property name is not recognized
+     * @throws SAXNotSupportedException if the property name is recognized but not supported
+     * @since 3.3
+     */
+    public DigesterLoader setFeature( String feature, boolean value )
+        throws SAXNotRecognizedException, SAXNotSupportedException, ParserConfigurationException
+    {
+<span class="fc" id="L325">        factory.setFeature(feature, value);</span>
+<span class="fc" id="L326">        return this;</span>
+    }
+
+    /**
+     * &lt;p&gt;Register the specified DTD URL for the specified public identifier.
+     * This must be called before the first call to &lt;code&gt;parse()&lt;/code&gt;.
+     * &lt;/p&gt;&lt;p&gt;
+     * &lt;code&gt;Digester&lt;/code&gt; contains an internal &lt;code&gt;EntityResolver&lt;/code&gt;
+     * implementation. This maps &lt;code&gt;PUBLICID&lt;/code&gt;'s to URLs
+     * (from which the resource will be loaded). A common use case for this
+     * method is to register local URLs (possibly computed at runtime by a
+     * classloader) for DTDs. This allows the performance advantage of using
+     * a local version without having to ensure every &lt;code&gt;SYSTEM&lt;/code&gt;
+     * URI on every processed xml document is local. This implementation provides
+     * only basic functionality. If more sophisticated features are required,
+     * using {@link #setEntityResolver(EntityResolver)} to set a custom resolver is recommended.
+     * &lt;/p&gt;&lt;p&gt;
+     * &lt;strong&gt;Note:&lt;/strong&gt; This method will have no effect when a custom
+     * &lt;code&gt;EntityResolver&lt;/code&gt; has been set. (Setting a custom
+     * &lt;code&gt;EntityResolver&lt;/code&gt; overrides the internal implementation.)
+     * &lt;/p&gt;
+     * @param publicId Public identifier of the DTD to be resolved
+     * @param entityURL The URL to use for reading this DTD
+     * @return This loader instance, useful to chain methods.
+     */
+    public DigesterLoader register( String publicId, URL entityURL )
+    {
+<span class="fc" id="L353">        entityValidator.put( publicId, entityURL );</span>
+<span class="fc" id="L354">        return this;</span>
+    }
+
+    /**
+     * &lt;p&gt;Convenience method that registers the string version of an entity URL
+     * instead of a URL version.&lt;/p&gt;
+     *
+     * @param publicId Public identifier of the entity to be resolved
+     * @param entityURL The URL to use for reading this entity
+     * @return This loader instance, useful to chain methods.
+     */
+    public DigesterLoader register( String publicId, String entityURL )
+    {
+        try
+        {
+<span class="fc" id="L369">            return register( publicId, new URL( entityURL ) );</span>
+        }
+<span class="nc" id="L371">        catch ( MalformedURLException e )</span>
+        {
+<span class="nc" id="L373">            throw new IllegalArgumentException( &quot;Malformed URL '&quot; + entityURL + &quot;' : &quot; + e.getMessage() );</span>
+        }
+    }
+
+    /**
+     * Return the set of DTD URL registrations, keyed by public identifier.
+     *
+     * @return the set of DTD URL registrations.
+     */
+    public Map&lt;String, URL&gt; getRegistrations()
+    {
+<span class="nc" id="L384">        return Collections.unmodifiableMap( this.entityValidator );</span>
+    }
+
+    /**
+     * Set the &lt;code&gt;EntityResolver&lt;/code&gt; used by SAX when resolving public id and system id. This must be called
+     * before the first call to &lt;code&gt;parse()&lt;/code&gt;.
+     *
+     * @param entityResolver a class that implement the &lt;code&gt;EntityResolver&lt;/code&gt; interface.
+     * @return This loader instance, useful to chain methods.
+     */
+    public DigesterLoader setEntityResolver( EntityResolver entityResolver )
+    {
+<span class="nc" id="L396">        this.entityResolver = entityResolver;</span>
+<span class="nc" id="L397">        return this;</span>
+    }
+
+    /**
+     * Sets the Object which will receive callbacks for every pop/push action on the default stack or named stacks.
+     *
+     * @param stackAction the Object which will receive callbacks for every pop/push action on the default stack
+     *        or named stacks.
+     * @return This loader instance, useful to chain methods.
+     */
+    public DigesterLoader setStackAction( StackAction stackAction )
+    {
+<span class="fc" id="L409">        this.stackAction = stackAction;</span>
+<span class="fc" id="L410">        return this;</span>
+    }
+
+    /**
+     * Returns the executor service used to run asynchronous parse method.
+     *
+     * @return the executor service used to run asynchronous parse method
+     * @since 3.1
+     */
+    public ExecutorService getExecutorService()
+    {
+<span class="nc" id="L421">        return executorService;</span>
+    }
+
+    /**
+     * Sets the executor service to run asynchronous parse method.
+     *
+     * @param executorService the executor service to run asynchronous parse method
+     * @return This loader instance, useful to chain methods.
+     * @since 3.1
+     */
+    public DigesterLoader setExecutorService( ExecutorService executorService )
+    {
+<span class="fc" id="L433">        this.executorService = executorService;</span>
+<span class="fc" id="L434">        return this;</span>
+    }
+
+    /**
+     * Return the error handler for this Digester.
+     *
+     * @return the error handler for this Digester.
+     * @since 3.2
+     */
+    public ErrorHandler getErrorHandler()
+    {
+<span class="nc" id="L445">        return ( this.errorHandler );</span>
+    }
+
+    /**
+     * Set the error handler for this Digester.
+     *
+     * @param errorHandler The new error handler
+     * @return This loader instance, useful to chain methods.
+     * @since 3.2
+     */
+    public DigesterLoader setErrorHandler( ErrorHandler errorHandler )
+    {
+<span class="fc" id="L457">        this.errorHandler = errorHandler;</span>
+<span class="fc" id="L458">        return this;</span>
+    }
+
+    /**
+     * Gets the document locator associated with our parser.
+     *
+     * @return the Locator supplied by the document parser
+     * @since 3.2
+     */
+    public Locator getDocumentLocator()
+    {
+<span class="nc" id="L469">        return locator;</span>
+    }
+
+    /**
+     * Sets the document locator associated with our parser.
+     *
+     * @param locator the document locator associated with our parser.
+     * @return This loader instance, useful to chain methods.
+     * @since 3.2
+     */
+    public DigesterLoader setDocumentLocator( Locator locator )
+    {
+<span class="fc" id="L481">        this.locator = locator;</span>
+<span class="fc" id="L482">        return this;</span>
+    }
+
+    /**
+     * Creates a new {@link Digester} instance that relies on the default {@link Rules} implementation.
+     *
+     * @return a new {@link Digester} instance
+     */
+    public Digester newDigester()
+    {
+<span class="fc" id="L492">        return this.newDigester( new RulesBase() );</span>
+    }
+
+    /**
+     * Creates a new {@link Digester} instance that relies on the custom user define {@link Rules} implementation
+     *
+     * @param rules The custom user define {@link Rules} implementation
+     * @return a new {@link Digester} instance
+     */
+    public Digester newDigester( Rules rules )
+    {
+        try
+        {
+<span class="fc" id="L505">            return this.newDigester( this.factory.newSAXParser(), rules );</span>
+        }
+<span class="nc" id="L507">        catch ( ParserConfigurationException e )</span>
+        {
+<span class="nc" id="L509">            throw new DigesterLoadingException( &quot;SAX Parser misconfigured&quot;, e );</span>
+        }
+<span class="nc" id="L511">        catch ( SAXException e )</span>
+        {
+<span class="nc" id="L513">            throw new DigesterLoadingException( &quot;An error occurred while initializing the SAX Parser&quot;, e );</span>
+        }
+    }
+
+    /**
+     * Creates a new {@link Digester} instance that relies on the given {@code SAXParser}
+     * and the default {@link Rules} implementation.
+     *
+     * @param parser the user defined {@code SAXParser}
+     * @return a new {@link Digester} instance
+     */
+    public Digester newDigester( SAXParser parser )
+    {
+<span class="nc" id="L526">        return newDigester( parser, new RulesBase() );</span>
+    }
+
+    /**
+     * Creates a new {@link Digester} instance that relies on the given {@code SAXParser}
+     * and custom user define {@link Rules} implementation.
+     *
+     * @param parser The user defined {@code SAXParser}
+     * @param rules The custom user define {@link Rules} implementation
+     * @return a new {@link Digester} instance
+     */
+    public Digester newDigester( SAXParser parser, Rules rules )
+    {
+<span class="pc bpc" id="L539" title="1 of 2 branches missed.">        if ( parser == null )</span>
+        {
+<span class="nc" id="L541">            throw new DigesterLoadingException( &quot;SAXParser must be not null&quot; );</span>
+        }
+
+        try
+        {
+<span class="fc" id="L546">            return this.newDigester( parser.getXMLReader(), rules );</span>
+        }
+<span class="nc" id="L548">        catch ( SAXException e )</span>
+        {
+<span class="nc" id="L550">            throw new DigesterLoadingException( &quot;An error occurred while creating the XML Reader&quot;, e );</span>
+        }
+    }
+
+    /**
+     * Creates a new {@link XMLReader} instance that relies on the given {@code XMLReader}
+     * and the default {@link Rules} implementation.
+     *
+     * &lt;b&gt;WARNING&lt;/b&gt; Input {@link XMLReader} will be linked to built Digester instance so it is recommended
+     * to &lt;b&gt;NOT&lt;/b&gt; share same {@link XMLReader} instance to produce the Digester.
+     *
+     * @param reader The user defined {@code XMLReader}
+     * @return a new {@link Digester} instance
+     */
+    public Digester newDigester( XMLReader reader )
+    {
+<span class="nc" id="L566">        return this.newDigester( reader, new RulesBase() );</span>
+    }
+
+    /**
+     * Creates a new {@link XMLReader} instance that relies on the given {@code XMLReader}
+     * and custom user define {@link Rules} implementation.
+     *
+     * &lt;b&gt;WARNING&lt;/b&gt; Input {@link XMLReader} and {@link Rules} will be linked to built Digester instance,
+     * so it is recommended to &lt;b&gt;NOT&lt;/b&gt; share same {@link XMLReader} and {@link Rules} instance to produce the Digester.
+     *
+     * @param reader The user defined {@code XMLReader}
+     * @param rules The custom user define {@link Rules} implementation
+     * @return a new {@link Digester} instance
+     */
+    public Digester newDigester( XMLReader reader, Rules rules )
+    {
+<span class="pc bpc" id="L582" title="1 of 2 branches missed.">        if ( reader == null )</span>
+        {
+<span class="nc" id="L584">            throw new DigesterLoadingException( &quot;XMLReader must be not null&quot; );</span>
+        }
+<span class="pc bpc" id="L586" title="1 of 2 branches missed.">        if ( rules == null )</span>
+        {
+<span class="nc" id="L588">            throw new DigesterLoadingException( &quot;Impossible to create a new Digester with null Rules&quot; );</span>
+        }
+
+<span class="fc" id="L591">        Digester digester = new Digester( reader );</span>
+        // the ClassLoader adapter is no needed anymore
+<span class="fc" id="L593">        digester.setClassLoader( classLoader.getAdaptedClassLoader() );</span>
+<span class="fc" id="L594">        digester.setRules( rules );</span>
+<span class="fc" id="L595">        digester.setSubstitutor( substitutor );</span>
+<span class="fc" id="L596">        digester.registerAll( entityValidator );</span>
+<span class="fc" id="L597">        digester.setEntityResolver( entityResolver );</span>
+<span class="fc" id="L598">        digester.setStackAction( stackAction );</span>
+<span class="fc" id="L599">        digester.setNamespaceAware( isNamespaceAware() );</span>
+<span class="fc" id="L600">        digester.setExecutorService( executorService );</span>
+<span class="fc" id="L601">        digester.setErrorHandler( errorHandler );</span>
+<span class="fc" id="L602">        digester.setDocumentLocator( locator );</span>
+
+<span class="fc" id="L604">        addRules( digester );</span>
+
+<span class="fc" id="L606">        return digester;</span>
+    }
+
+    /**
+     * Add rules to an already created Digester instance, analyzing the digester annotations in the target class.
+     *
+     * @param digester the Digester instance reference.
+     */
+    public void addRules( final Digester digester )
+    {
+<span class="fc" id="L616">        RuleSet ruleSet = createRuleSet();</span>
+<span class="fc" id="L617">        ruleSet.addRuleInstances( digester );</span>
+<span class="fc" id="L618">    }</span>
+
+    /**
+     * Creates a new {@link RuleSet} instance based on the current configuration.
+     *
+     * @return A new {@link RuleSet} instance based on the current configuration.
+     */
+    public RuleSet createRuleSet()
+    {
+<span class="fc bfc" id="L627" title="All 2 branches covered.">        if ( rulesBinder.hasError() )</span>
+        {
+<span class="fc" id="L629">            Formatter fmt = new Formatter().format( HEADING );</span>
+<span class="fc" id="L630">            int index = 1;</span>
+
+<span class="fc bfc" id="L632" title="All 2 branches covered.">            for ( ErrorMessage errorMessage : rulesBinder.getErrors() )</span>
+            {
+<span class="fc" id="L634">                fmt.format( &quot;%s) %s%n&quot;, index++, errorMessage.getMessage() );</span>
+
+<span class="fc" id="L636">                Throwable cause = errorMessage.getCause();</span>
+<span class="fc bfc" id="L637" title="All 2 branches covered.">                if ( cause != null )</span>
+                {
+<span class="fc" id="L639">                    StringWriter writer = new StringWriter();</span>
+<span class="fc" id="L640">                    cause.printStackTrace( new PrintWriter( writer ) );</span>
+<span class="fc" id="L641">                    fmt.format( &quot;Caused by: %s&quot;, writer.getBuffer() );</span>
+                }
+
+<span class="fc" id="L644">                fmt.format( &quot;%n&quot; );</span>
+<span class="fc" id="L645">            }</span>
+
+<span class="pc bpc" id="L647" title="1 of 2 branches missed.">            if ( rulesBinder.errorsSize() == 1 )</span>
+            {
+<span class="fc" id="L649">                fmt.format( &quot;1 error&quot; );</span>
+            }
+            else
+            {
+<span class="nc" id="L653">                fmt.format( &quot;%s errors&quot;, rulesBinder.errorsSize() );</span>
+            }
+
+<span class="fc" id="L656">            throw new DigesterLoadingException( fmt.toString() );</span>
+        }
+
+<span class="fc" id="L659">        return rulesBinder.getFromBinderRuleSet();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
