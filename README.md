@@ -93,7 +93,7 @@ cloc --diff “version1Code” “Version2Code” --out=report.csv
 This creates a file report.csv that contains the count of files ,blank lines, commented lines and lines of code that are same, added , modified and removed in each of the languages used in the given projects .
 We consider the sum of values of LOC for added/modified/deleted sections and get a Code Churn value.
 
-SonarCloud :
+SonarCloud :It is online platform that help to evaluate different type of metrices like code smells, line of code etc of any project uploaded to github repository.
 
 
 Jdeodorant :
