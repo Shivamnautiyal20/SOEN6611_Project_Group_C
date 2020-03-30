@@ -4,6 +4,7 @@ The main folder is called Project, which contains four folders:
 
 Apache Commons Configuration.
 Apache Commons Math.
+Apache Commons Digester
 Jfree Chart.
 
 
@@ -21,28 +22,29 @@ Test coverage can be done in two ways; namely code statement coverage and code b
 
 Statement coverage shows exactly how much percentage of statements of the given code are executed.
 Branch coverage verifies that all branches of the code are executed, meaning that all edges in the control flow graph are executed.
+
 Metric 3- Mutation Score
 
 Mutation Testing includes changing the code — a small part at a time — creating mutants and running the unit tests suite repeatedly.
-
 If the tests still pass — meaning that they were not able to identify the mutant (which might represent a wrong behavior) — we can conclude that they are less strong, and vice-versa.
 We have used PiTest tool for calculating the mutation coverage for our projects.
+
 Metric 4- Cyclomatic Complexity : McCabe
 
 According to its definition by McCabe (1996); cyclomatic complexity is the minimum number of paths that can, in (linear) combination, generate all possible paths through a method.
 
 We are using JaCoCo plugin to calculate the cyclomatic complexity.
 Based on the coverage status of each branch JaCoCo also calculates covered and missed complexity for each method.Missed complexity again is an indication for the number of test cases missing to fully cover a module. Note that as JaCoCo does not consider exception handling as branches try/catch blocks will also not increase complexity.
-Metric 5- Sofware Maintainance Metric :Code Churn
+
+Metric 5- Sofware Maintainance Metric : Code Churn
 
 Code churn is a means to figure out the changes in the code from one release to next.
-
 It monitors changes in code like refactoring , adding new features etc. to ensure that the code remains stable after these changes.
 We have used CLOC to determine the number of lines of code added, modified and deleted.
-Metric 6- Software quality metric :Code Smells
+
+Metric 6- Software quality metric : Code Smells
 
 A code smell is a surface indication that usually corresponds to a deeper problem in the system.
-
 Code Smells indicate that the code needs refactoring and/or cleaning to increase its quality.
 There are various code smells like duplicated Code and Logic ,long Methods and Classes,Dead Code ,etc.
 We used SonarCloud and Jdeodorant to identify the code smells in out projects.
@@ -67,6 +69,9 @@ Versions:-
 Apache Commons Configuration         SLOC ~ 80K
 Versions:-
 
+Apache Commons Digester             SLOC ~27K
+Versions:-
+
 
 Tools/Plugins used for Metric Measurement
 
@@ -79,8 +84,8 @@ Insert the plugin in pom.xml in the root directory of the project
 Run Maven Clean Goal.
 Run the Maven Test Goal.
 We get the reports in jacoco-ut folder which is currently present in the above folder structure in each project/version sub-folders
-PiTest Plugin
 
+PiTest Plugin
 We get the reports in a Pit-test reports folder after successfully running pit-test plugin.
 The output is in the form of index.html format for desired result We had to build script inorder to extract data for further correlation.
 
@@ -90,6 +95,7 @@ Download and install cloc
 Command used :
 
 cloc --diff “version1Code” “Version2Code” --out=report.csv  
+
 This creates a file report.csv that contains the count of files ,blank lines, commented lines and lines of code that are same, added , modified and removed in each of the languages used in the given projects .
 We consider the sum of values of LOC for added/modified/deleted sections and get a Code Churn value.
 
@@ -111,5 +117,3 @@ Nikunj Arora,         40104832, nikunjarora333@gmail.com
 Sardar Mutesham Ali,  40094168, sardarms9@gmail.com
 
 Saikiran Alagatham,   40103833, saikiran.ask007@gmail.com
-
-
