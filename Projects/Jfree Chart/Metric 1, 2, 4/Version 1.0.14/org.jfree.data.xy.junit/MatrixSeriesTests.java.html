@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MatrixSeriesTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.xy.junit</a> &gt; <span class="el_source">MatrixSeriesTests.java</span></div><h1>MatrixSeriesTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------
+ * MatrixSeriesTests.java
+ * ----------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 21-May-2004 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.data.xy.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.xy.MatrixSeries;
+
+/**
+ * Tests for the {@link MatrixSeries} class.
+ */
+public class MatrixSeriesTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        return new TestSuite(MatrixSeriesTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public MatrixSeriesTests(String name) {
+<span class="fc" id="L76">        super(name);</span>
+<span class="fc" id="L77">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L84">        MatrixSeries m1 = new MatrixSeries(&quot;Test&quot;, 8, 3);</span>
+<span class="fc" id="L85">        m1.update(0, 0, 11.0);</span>
+<span class="fc" id="L86">        m1.update(7, 2, 22.0);</span>
+<span class="fc" id="L87">        MatrixSeries m2 = new MatrixSeries(&quot;Test&quot;, 8, 3);</span>
+<span class="fc" id="L88">        m2.update(0, 0, 11.0);</span>
+<span class="fc" id="L89">        m2.update(7, 2, 22.0);</span>
+<span class="fc" id="L90">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L91">        assertTrue(m2.equals(m1));</span>
+
+<span class="fc" id="L93">        m1 = new MatrixSeries(&quot;Test 2&quot;, 8, 3);</span>
+<span class="fc" id="L94">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L95">        m2 = new MatrixSeries(&quot;Test 2&quot;, 8, 3);</span>
+<span class="fc" id="L96">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L98">        m1 = new MatrixSeries(&quot;Test 2&quot;, 10, 3);</span>
+<span class="fc" id="L99">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L100">        m2 = new MatrixSeries(&quot;Test 2&quot;, 10, 3);</span>
+<span class="fc" id="L101">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L103">        m1 = new MatrixSeries(&quot;Test 2&quot;, 10, 5);</span>
+<span class="fc" id="L104">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L105">        m2 = new MatrixSeries(&quot;Test 2&quot;, 10, 5);</span>
+<span class="fc" id="L106">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L108">        m1.update(0, 0, 99);</span>
+<span class="fc" id="L109">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L110">        m2.update(0, 0, 99);</span>
+<span class="fc" id="L111">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L112">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L118">        MatrixSeries m1 = new MatrixSeries(&quot;Test&quot;, 8, 3);</span>
+<span class="fc" id="L119">        m1.update(0, 0, 11.0);</span>
+<span class="fc" id="L120">        m1.update(7, 2, 22.0);</span>
+<span class="fc" id="L121">        MatrixSeries m2 = null;</span>
+        try {
+<span class="fc" id="L123">            m2 = (MatrixSeries) m1.clone();</span>
+        }
+<span class="nc" id="L125">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L126">            e.printStackTrace();</span>
+<span class="fc" id="L127">        }</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">        assertTrue(m1 != m2);</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        assertTrue(m1.getClass() == m2.getClass());</span>
+<span class="fc" id="L130">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L137">        MatrixSeries m1 = new MatrixSeries(&quot;Test&quot;, 8, 3);</span>
+<span class="fc" id="L138">        m1.update(0, 0, 11.0);</span>
+<span class="fc" id="L139">        m1.update(7, 2, 22.0);</span>
+<span class="fc" id="L140">        MatrixSeries m2 = null;</span>
+        try {
+<span class="fc" id="L142">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L143">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L144">            out.writeObject(m1);</span>
+<span class="fc" id="L145">            out.close();</span>
+
+<span class="fc" id="L147">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L148">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L149">            m2 = (MatrixSeries) in.readObject();</span>
+<span class="fc" id="L150">            in.close();</span>
+        }
+<span class="nc" id="L152">        catch (Exception e) {</span>
+<span class="nc" id="L153">            e.printStackTrace();</span>
+<span class="fc" id="L154">        }</span>
+<span class="fc" id="L155">        assertEquals(m1, m2);</span>
+<span class="fc" id="L156">    }</span>
+
+    /**
+     * Tests the getItemColumn() method.
+     */
+    public void testGetItemColumn() {
+<span class="fc" id="L162">        MatrixSeries m = new MatrixSeries(&quot;Test&quot;, 3, 2);</span>
+<span class="fc" id="L163">        assertEquals(0, m.getItemColumn(0));</span>
+<span class="fc" id="L164">        assertEquals(1, m.getItemColumn(1));</span>
+<span class="fc" id="L165">        assertEquals(0, m.getItemColumn(2));</span>
+<span class="fc" id="L166">        assertEquals(1, m.getItemColumn(3));</span>
+<span class="fc" id="L167">        assertEquals(0, m.getItemColumn(4));</span>
+<span class="fc" id="L168">        assertEquals(1, m.getItemColumn(5));</span>
+<span class="fc" id="L169">    }</span>
+
+    /**
+     * Tests the getItemRow() method.
+     */
+    public void testGetItemRow() {
+<span class="fc" id="L175">        MatrixSeries m = new MatrixSeries(&quot;Test&quot;, 3, 2);</span>
+<span class="fc" id="L176">        assertEquals(0, m.getItemRow(0));</span>
+<span class="fc" id="L177">        assertEquals(0, m.getItemRow(1));</span>
+<span class="fc" id="L178">        assertEquals(1, m.getItemRow(2));</span>
+<span class="fc" id="L179">        assertEquals(1, m.getItemRow(3));</span>
+<span class="fc" id="L180">        assertEquals(2, m.getItemRow(4));</span>
+<span class="fc" id="L181">        assertEquals(2, m.getItemRow(5));</span>
+<span class="fc" id="L182">    }</span>
+
+    /**
+     * Tests the getItem() method.
+     */
+    public void testGetItem() {
+<span class="fc" id="L188">        MatrixSeries m = new MatrixSeries(&quot;Test&quot;, 3, 2);</span>
+<span class="fc" id="L189">        m.update(0, 0, 0.0);</span>
+<span class="fc" id="L190">        m.update(0, 1, 1.0);</span>
+<span class="fc" id="L191">        m.update(1, 0, 2.0);</span>
+<span class="fc" id="L192">        m.update(1, 1, 3.0);</span>
+<span class="fc" id="L193">        m.update(2, 0, 4.0);</span>
+<span class="fc" id="L194">        m.update(2, 1, 5.0);</span>
+<span class="fc" id="L195">        assertEquals(0.0, m.getItem(0).doubleValue(), 0.001);</span>
+<span class="fc" id="L196">        assertEquals(1.0, m.getItem(1).doubleValue(), 0.001);</span>
+<span class="fc" id="L197">        assertEquals(2.0, m.getItem(2).doubleValue(), 0.001);</span>
+<span class="fc" id="L198">        assertEquals(3.0, m.getItem(3).doubleValue(), 0.001);</span>
+<span class="fc" id="L199">        assertEquals(4.0, m.getItem(4).doubleValue(), 0.001);</span>
+<span class="fc" id="L200">        assertEquals(5.0, m.getItem(5).doubleValue(), 0.001);</span>
+<span class="fc" id="L201">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

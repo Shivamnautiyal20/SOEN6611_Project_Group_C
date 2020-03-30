@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultMultiValueCategoryDatasetTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.statistics.junit</a> &gt; <span class="el_source">DefaultMultiValueCategoryDatasetTests.java</span></div><h1>DefaultMultiValueCategoryDatasetTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------------------------------
+ * DefaultMultiValueCategoryDatasetTests.java
+ * ------------------------------------------
+ * (C) Copyright 2007, 2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 28-Sep-2007 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.data.statistics.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.UnknownKeyException;
+import org.jfree.data.statistics.DefaultMultiValueCategoryDataset;
+
+/**
+ * Tests for the {@link DefaultMultiValueCategoryDataset} class.
+ */
+public class DefaultMultiValueCategoryDatasetTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        return new TestSuite(DefaultMultiValueCategoryDatasetTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DefaultMultiValueCategoryDatasetTests(String name) {
+<span class="fc" id="L79">        super(name);</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Some checks for the getValue() method.
+     */
+    public void testGetValue() {
+<span class="fc" id="L86">        DefaultMultiValueCategoryDataset d</span>
+                = new DefaultMultiValueCategoryDataset();
+<span class="fc" id="L88">        List values = new ArrayList();</span>
+<span class="fc" id="L89">        values.add(new Integer(1));</span>
+<span class="fc" id="L90">        values.add(new Integer(2));</span>
+<span class="fc" id="L91">        d.add(values, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L92">        assertEquals(new Double(1.5), d.getValue(&quot;R1&quot;, &quot;C1&quot;));</span>
+<span class="fc" id="L93">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L95">            d.getValue(&quot;XX&quot;, &quot;C1&quot;);</span>
+        }
+<span class="fc" id="L97">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L98">            pass = true;</span>
+<span class="nc" id="L99">        }</span>
+<span class="fc" id="L100">        assertTrue(pass);</span>
+
+<span class="fc" id="L102">        pass = false;</span>
+        try {
+<span class="nc" id="L104">            d.getValue(&quot;R1&quot;, &quot;XX&quot;);</span>
+        }
+<span class="fc" id="L106">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L107">            pass = true;</span>
+<span class="nc" id="L108">        }</span>
+<span class="fc" id="L109">        assertTrue(pass);</span>
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * A simple check for the getValue(int, int) method.
+     */
+    public void testGetValue2() {
+<span class="fc" id="L116">        DefaultMultiValueCategoryDataset d</span>
+                = new DefaultMultiValueCategoryDataset();
+<span class="fc" id="L118">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L120">            /* Number n =*/ d.getValue(0, 0);</span>
+        }
+<span class="fc" id="L122">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L123">            pass = true;</span>
+<span class="nc" id="L124">        }</span>
+<span class="fc" id="L125">        assertTrue(pass);</span>
+<span class="fc" id="L126">    }</span>
+
+    /**
+     * Some tests for the getRowCount() method.
+     */
+    public void testGetRowCount() {
+<span class="fc" id="L132">        DefaultMultiValueCategoryDataset d</span>
+                = new DefaultMultiValueCategoryDataset();
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">        assertTrue(d.getRowCount() == 0);</span>
+<span class="fc" id="L135">        List values = new ArrayList();</span>
+<span class="fc" id="L136">        d.add(values, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">        assertTrue(d.getRowCount() == 1);</span>
+
+<span class="fc" id="L139">        d.add(values, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">        assertTrue(d.getRowCount() == 2);</span>
+
+<span class="fc" id="L142">        d.add(values, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">        assertTrue(d.getRowCount() == 2);</span>
+<span class="fc" id="L144">    }</span>
+
+    /**
+     * Some tests for the getColumnCount() method.
+     */
+    public void testGetColumnCount() {
+<span class="fc" id="L150">        DefaultMultiValueCategoryDataset d</span>
+                = new DefaultMultiValueCategoryDataset();
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">        assertTrue(d.getColumnCount() == 0);</span>
+
+<span class="fc" id="L154">        List values = new ArrayList();</span>
+<span class="fc" id="L155">        d.add(values, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">        assertTrue(d.getColumnCount() == 1);</span>
+
+<span class="fc" id="L158">        d.add(values, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">        assertTrue(d.getColumnCount() == 2);</span>
+
+<span class="fc" id="L161">        d.add(values, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">        assertTrue(d.getColumnCount() == 2);</span>
+
+<span class="fc" id="L164">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L170">        DefaultMultiValueCategoryDataset d1</span>
+                = new DefaultMultiValueCategoryDataset();
+<span class="fc" id="L172">        DefaultMultiValueCategoryDataset d2</span>
+                = new DefaultMultiValueCategoryDataset();
+<span class="fc" id="L174">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L175">        assertTrue(d2.equals(d1));</span>
+
+<span class="fc" id="L177">        List values = new ArrayList();</span>
+<span class="fc" id="L178">        d1.add(values, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L179">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L180">        d2.add(values, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L181">        assertTrue(d1.equals(d2));</span>
+
+<span class="fc" id="L183">        values.add(new Integer(99));</span>
+<span class="fc" id="L184">        d1.add(values, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L185">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L186">        d2.add(values, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L187">        assertTrue(d1.equals(d2));</span>
+
+<span class="fc" id="L189">        values.add(new Integer(99));</span>
+<span class="fc" id="L190">        d1.add(values, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L191">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L192">        d2.add(values, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L193">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L194">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L201">        DefaultMultiValueCategoryDataset d1</span>
+                = new DefaultMultiValueCategoryDataset();
+<span class="fc" id="L203">        DefaultMultiValueCategoryDataset d2</span>
+                = new DefaultMultiValueCategoryDataset();
+
+        try {
+<span class="fc" id="L207">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L208">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L209">            out.writeObject(d1);</span>
+<span class="fc" id="L210">            out.close();</span>
+
+<span class="fc" id="L212">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L213">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L214">            d2 = (DefaultMultiValueCategoryDataset) in.readObject();</span>
+<span class="fc" id="L215">            in.close();</span>
+        }
+<span class="nc" id="L217">        catch (Exception e) {</span>
+<span class="nc" id="L218">            e.printStackTrace();</span>
+<span class="fc" id="L219">        }</span>
+<span class="fc" id="L220">        assertEquals(d1, d2);</span>
+
+<span class="fc" id="L222">    }</span>
+
+    /**
+     * Some checks for the add() method.
+     */
+    public void testAddValue() {
+<span class="fc" id="L228">        DefaultMultiValueCategoryDataset d1</span>
+                = new DefaultMultiValueCategoryDataset();
+
+<span class="fc" id="L231">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L233">            d1.add(null, &quot;R1&quot;, &quot;C1&quot;);</span>
+        }
+<span class="fc" id="L235">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L236">            pass = true;</span>
+<span class="nc" id="L237">        }</span>
+<span class="fc" id="L238">        assertTrue(pass);</span>
+
+<span class="fc" id="L240">        List values = new ArrayList();</span>
+<span class="fc" id="L241">        d1.add(values, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L242">        assertEquals(values, d1.getValues(&quot;R2&quot;, &quot;C1&quot;));</span>
+
+<span class="fc" id="L244">        pass = false;</span>
+        try {
+<span class="nc" id="L246">            d1.add(values, null, &quot;C2&quot;);</span>
+        }
+<span class="fc" id="L248">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L249">            pass = true;</span>
+<span class="nc" id="L250">        }</span>
+<span class="fc" id="L251">        assertTrue(pass);</span>
+<span class="fc" id="L252">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L258">        DefaultMultiValueCategoryDataset d1</span>
+                = new DefaultMultiValueCategoryDataset();
+<span class="fc" id="L260">        DefaultMultiValueCategoryDataset d2 = null;</span>
+        try {
+<span class="fc" id="L262">            d2 = (DefaultMultiValueCategoryDataset) d1.clone();</span>
+        }
+<span class="nc" id="L264">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L265">            e.printStackTrace();</span>
+<span class="fc" id="L266">        }</span>
+<span class="pc bpc" id="L267" title="1 of 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="pc bpc" id="L268" title="1 of 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="fc" id="L269">        assertTrue(d1.equals(d2));</span>
+
+        // try a dataset with some content...
+<span class="fc" id="L272">        List values = new ArrayList();</span>
+<span class="fc" id="L273">        values.add(new Integer(99));</span>
+<span class="fc" id="L274">        d1.add(values, &quot;R1&quot;, &quot;C1&quot;);</span>
+        try {
+<span class="fc" id="L276">            d2 = (DefaultMultiValueCategoryDataset) d1.clone();</span>
+        }
+<span class="nc" id="L278">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L279">            e.printStackTrace();</span>
+<span class="fc" id="L280">        }</span>
+<span class="pc bpc" id="L281" title="1 of 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="fc" id="L283">        assertTrue(d1.equals(d2));</span>
+
+        // check that the clone doesn't share the same underlying arrays.
+<span class="fc" id="L286">        List values2 = new ArrayList();</span>
+<span class="fc" id="L287">        values2.add(new Integer(111));</span>
+<span class="fc" id="L288">        d1.add(values2, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L289">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L290">        d2.add(values2, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L291">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L292">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

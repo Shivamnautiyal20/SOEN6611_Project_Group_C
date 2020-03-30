@@ -1,0 +1,847 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BorderArrangementTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.block.junit</a> &gt; <span class="el_source">BorderArrangementTests.java</span></div><h1>BorderArrangementTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------------
+ * BorderArrangementTests.java
+ * ---------------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 22-Oct-2004 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.block.junit;
+
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.block.Block;
+import org.jfree.chart.block.BlockContainer;
+import org.jfree.chart.block.BorderArrangement;
+import org.jfree.chart.block.EmptyBlock;
+import org.jfree.chart.block.LengthConstraintType;
+import org.jfree.chart.block.RectangleConstraint;
+import org.jfree.data.Range;
+import org.jfree.ui.RectangleEdge;
+import org.jfree.ui.Size2D;
+
+/**
+ * Tests for the {@link BorderArrangement} class.
+ */
+public class BorderArrangementTests extends TestCase {
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        return new TestSuite(BorderArrangementTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public BorderArrangementTests(String name) {
+<span class="fc" id="L88">        super(name);</span>
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * Confirm that the equals() method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L95">        BorderArrangement b1 = new BorderArrangement();</span>
+<span class="fc" id="L96">        BorderArrangement b2 = new BorderArrangement();</span>
+<span class="fc" id="L97">        assertTrue(b1.equals(b2));</span>
+<span class="fc" id="L98">        assertTrue(b2.equals(b1));</span>
+
+<span class="fc" id="L100">        b1.add(new EmptyBlock(99.0, 99.0), null);</span>
+<span class="fc" id="L101">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L102">        b2.add(new EmptyBlock(99.0, 99.0), null);</span>
+<span class="fc" id="L103">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L105">        b1.add(new EmptyBlock(1.0, 1.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L106">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L107">        b2.add(new EmptyBlock(1.0, 1.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L108">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L110">        b1.add(new EmptyBlock(2.0, 2.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L111">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L112">        b2.add(new EmptyBlock(2.0, 2.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L113">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L115">        b1.add(new EmptyBlock(3.0, 3.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L116">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L117">        b2.add(new EmptyBlock(3.0, 3.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L118">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L120">        b1.add(new EmptyBlock(4.0, 4.0), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L121">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L122">        b2.add(new EmptyBlock(4.0, 4.0), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L123">        assertTrue(b1.equals(b2));</span>
+<span class="fc" id="L124">    }</span>
+
+    /**
+     * Immutable - cloning is not necessary.
+     */
+    public void testCloning() {
+<span class="fc" id="L130">        BorderArrangement b1 = new BorderArrangement();</span>
+<span class="fc" id="L131">        assertFalse(b1 instanceof Cloneable);</span>
+<span class="fc" id="L132">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L138">        BorderArrangement b1 = new BorderArrangement();</span>
+<span class="fc" id="L139">        BorderArrangement b2 = null;</span>
+        try {
+<span class="fc" id="L141">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L142">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L143">            out.writeObject(b1);</span>
+<span class="fc" id="L144">            out.close();</span>
+
+<span class="fc" id="L146">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L147">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L148">            b2 = (BorderArrangement) in.readObject();</span>
+<span class="fc" id="L149">            in.close();</span>
+        }
+<span class="nc" id="L151">        catch (Exception e) {</span>
+<span class="nc" id="L152">            fail(e.toString());</span>
+<span class="fc" id="L153">        }</span>
+<span class="fc" id="L154">        assertEquals(b1, b2);</span>
+<span class="fc" id="L155">    }</span>
+
+    /**
+     * Run some checks on sizing.
+     */
+    public void testSizing() {
+<span class="fc" id="L161">        BlockContainer container = new BlockContainer(new BorderArrangement());</span>
+<span class="fc" id="L162">        BufferedImage image = new BufferedImage(200, 100,</span>
+                BufferedImage.TYPE_INT_RGB);
+<span class="fc" id="L164">        Graphics2D g2 = image.createGraphics();</span>
+
+        // TBLRC
+        // 00000 - no items
+<span class="fc" id="L168">        Size2D size = container.arrange(g2);</span>
+<span class="fc" id="L169">        assertEquals(0.0, size.width, EPSILON);</span>
+<span class="fc" id="L170">        assertEquals(0.0, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 00001 - center item only
+<span class="fc" id="L174">        container.add(new EmptyBlock(123.4, 567.8));</span>
+<span class="fc" id="L175">        size = container.arrange(g2);</span>
+<span class="fc" id="L176">        assertEquals(123.4, size.width, EPSILON);</span>
+<span class="fc" id="L177">        assertEquals(567.8, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 00010 - right item only
+<span class="fc" id="L181">        container.clear();</span>
+<span class="fc" id="L182">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L183">        size = container.arrange(g2);</span>
+<span class="fc" id="L184">        assertEquals(12.3, size.width, EPSILON);</span>
+<span class="fc" id="L185">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 00011 - right and center items
+<span class="fc" id="L189">        container.clear();</span>
+<span class="fc" id="L190">        container.add(new EmptyBlock(10.0, 20.0));</span>
+<span class="fc" id="L191">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L192">        size = container.arrange(g2);</span>
+<span class="fc" id="L193">        assertEquals(22.3, size.width, EPSILON);</span>
+<span class="fc" id="L194">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // try case where right item is shorter than center item
+<span class="fc" id="L197">        container.clear();</span>
+<span class="fc" id="L198">        Block rb = new EmptyBlock(12.3, 15.6);</span>
+<span class="fc" id="L199">        container.add(new EmptyBlock(10.0, 20.0));</span>
+<span class="fc" id="L200">        container.add(rb, RectangleEdge.RIGHT);</span>
+<span class="fc" id="L201">        size = container.arrange(g2);</span>
+<span class="fc" id="L202">        assertEquals(22.3, size.width, EPSILON);</span>
+<span class="fc" id="L203">        assertEquals(20.0, size.height, EPSILON);</span>
+<span class="fc" id="L204">        assertEquals(20.0, rb.getBounds().getHeight(), EPSILON);</span>
+
+        // TBLRC
+        // 00100 - left item only
+<span class="fc" id="L208">        container.clear();</span>
+<span class="fc" id="L209">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.LEFT);</span>
+<span class="fc" id="L210">        size = container.arrange(g2);</span>
+<span class="fc" id="L211">        assertEquals(12.3, size.width, EPSILON);</span>
+<span class="fc" id="L212">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 00101 - left and center items
+<span class="fc" id="L216">        container.clear();</span>
+<span class="fc" id="L217">        container.add(new EmptyBlock(10.0, 20.0));</span>
+<span class="fc" id="L218">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.LEFT);</span>
+<span class="fc" id="L219">        size = container.arrange(g2);</span>
+<span class="fc" id="L220">        assertEquals(22.3, size.width, EPSILON);</span>
+<span class="fc" id="L221">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // try case where left item is shorter than center item
+<span class="fc" id="L224">        container.clear();</span>
+<span class="fc" id="L225">        Block lb = new EmptyBlock(12.3, 15.6);</span>
+<span class="fc" id="L226">        container.add(new EmptyBlock(10.0, 20.0));</span>
+<span class="fc" id="L227">        container.add(lb, RectangleEdge.LEFT);</span>
+<span class="fc" id="L228">        size = container.arrange(g2);</span>
+<span class="fc" id="L229">        assertEquals(22.3, size.width, EPSILON);</span>
+<span class="fc" id="L230">        assertEquals(20.0, size.height, EPSILON);</span>
+<span class="fc" id="L231">        assertEquals(20.0, lb.getBounds().getHeight(), EPSILON);</span>
+
+        // TBLRC
+        // 00110 - left and right items
+<span class="fc" id="L235">        container.clear();</span>
+<span class="fc" id="L236">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L237">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.LEFT);</span>
+<span class="fc" id="L238">        size = container.arrange(g2);</span>
+<span class="fc" id="L239">        assertEquals(22.3, size.width, EPSILON);</span>
+<span class="fc" id="L240">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 00111 - left, right and center items
+<span class="fc" id="L244">        container.clear();</span>
+<span class="fc" id="L245">        container.add(new EmptyBlock(10.0, 20.0));</span>
+<span class="fc" id="L246">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.LEFT);</span>
+<span class="fc" id="L247">        container.add(new EmptyBlock(5.4, 3.2), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L248">        size = container.arrange(g2);</span>
+<span class="fc" id="L249">        assertEquals(27.7, size.width, EPSILON);</span>
+<span class="fc" id="L250">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01000 - bottom item only
+<span class="fc" id="L254">        container.clear();</span>
+<span class="fc" id="L255">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L256">        size = container.arrange(g2);</span>
+<span class="fc" id="L257">        assertEquals(12.3, size.width, EPSILON);</span>
+<span class="fc" id="L258">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01001 - bottom and center only
+<span class="fc" id="L262">        container.clear();</span>
+<span class="fc" id="L263">        container.add(new EmptyBlock(10.0, 20.0));</span>
+<span class="fc" id="L264">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L265">        size = container.arrange(g2);</span>
+<span class="fc" id="L266">        assertEquals(12.3, size.width, EPSILON);</span>
+<span class="fc" id="L267">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01010 - bottom and right only
+<span class="fc" id="L271">        container.clear();</span>
+<span class="fc" id="L272">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L273">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L274">        size = container.arrange(g2);</span>
+<span class="fc" id="L275">        assertEquals(12.3, size.width, EPSILON);</span>
+<span class="fc" id="L276">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01011 - bottom, right and center
+<span class="fc" id="L280">        container.clear();</span>
+<span class="fc" id="L281">        container.add(new EmptyBlock(21.0, 12.3));</span>
+<span class="fc" id="L282">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L283">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L284">        size = container.arrange(g2);</span>
+<span class="fc" id="L285">        assertEquals(31.0, size.width, EPSILON);</span>
+<span class="fc" id="L286">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01100
+<span class="fc" id="L290">        container.clear();</span>
+<span class="fc" id="L291">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L292">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L293">        size = container.arrange(g2);</span>
+<span class="fc" id="L294">        assertEquals(12.3, size.width, EPSILON);</span>
+<span class="fc" id="L295">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01101 - bottom, left and center
+<span class="fc" id="L299">        container.clear();</span>
+<span class="fc" id="L300">        container.add(new EmptyBlock(21.0, 12.3));</span>
+<span class="fc" id="L301">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L302">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L303">        size = container.arrange(g2);</span>
+<span class="fc" id="L304">        assertEquals(31.0, size.width, EPSILON);</span>
+<span class="fc" id="L305">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01110 - bottom. left and right
+<span class="fc" id="L309">        container.clear();</span>
+<span class="fc" id="L310">        container.add(new EmptyBlock(21.0, 12.3), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L311">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L312">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L313">        size = container.arrange(g2);</span>
+<span class="fc" id="L314">        assertEquals(31.0, size.width, EPSILON);</span>
+<span class="fc" id="L315">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01111
+<span class="fc" id="L319">        container.clear();</span>
+<span class="fc" id="L320">        container.add(new EmptyBlock(3.0, 4.0), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L321">        container.add(new EmptyBlock(5.0, 6.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L322">        container.add(new EmptyBlock(7.0, 8.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L323">        container.add(new EmptyBlock(9.0, 10.0));</span>
+<span class="fc" id="L324">        size = container.arrange(g2);</span>
+<span class="fc" id="L325">        assertEquals(21.0, size.width, EPSILON);</span>
+<span class="fc" id="L326">        assertEquals(14.0, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10000 - top item only
+<span class="fc" id="L330">        container.clear();</span>
+<span class="fc" id="L331">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.TOP);</span>
+<span class="fc" id="L332">        size = container.arrange(g2);</span>
+<span class="fc" id="L333">        assertEquals(12.3, size.width, EPSILON);</span>
+<span class="fc" id="L334">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10001 - top and center only
+<span class="fc" id="L338">        container.clear();</span>
+<span class="fc" id="L339">        container.add(new EmptyBlock(10.0, 20.0));</span>
+<span class="fc" id="L340">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.TOP);</span>
+<span class="fc" id="L341">        size = container.arrange(g2);</span>
+<span class="fc" id="L342">        assertEquals(12.3, size.width, EPSILON);</span>
+<span class="fc" id="L343">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10010 - right and top only
+<span class="fc" id="L347">        container.clear();</span>
+<span class="fc" id="L348">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L349">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.TOP);</span>
+<span class="fc" id="L350">        size = container.arrange(g2);</span>
+<span class="fc" id="L351">        assertEquals(12.3, size.width, EPSILON);</span>
+<span class="fc" id="L352">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10011 - top, right and center
+<span class="fc" id="L356">        container.clear();</span>
+<span class="fc" id="L357">        container.add(new EmptyBlock(21.0, 12.3));</span>
+<span class="fc" id="L358">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L359">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L360">        size = container.arrange(g2);</span>
+<span class="fc" id="L361">        assertEquals(33.3, size.width, EPSILON);</span>
+<span class="fc" id="L362">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10100 - top and left only
+<span class="fc" id="L366">        container.clear();</span>
+<span class="fc" id="L367">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L368">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.TOP);</span>
+<span class="fc" id="L369">        size = container.arrange(g2);</span>
+<span class="fc" id="L370">        assertEquals(12.3, size.width, EPSILON);</span>
+<span class="fc" id="L371">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10101 - top, left and center
+<span class="fc" id="L375">        container.clear();</span>
+<span class="fc" id="L376">        container.add(new EmptyBlock(21.0, 12.3));</span>
+<span class="fc" id="L377">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L378">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.LEFT);</span>
+<span class="fc" id="L379">        size = container.arrange(g2);</span>
+<span class="fc" id="L380">        assertEquals(33.3, size.width, EPSILON);</span>
+<span class="fc" id="L381">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10110 - top, left and right
+<span class="fc" id="L385">        container.clear();</span>
+<span class="fc" id="L386">        container.add(new EmptyBlock(21.0, 12.3), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L387">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L388">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.LEFT);</span>
+<span class="fc" id="L389">        size = container.arrange(g2);</span>
+<span class="fc" id="L390">        assertEquals(33.3, size.width, EPSILON);</span>
+<span class="fc" id="L391">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10111
+<span class="fc" id="L395">        container.clear();</span>
+<span class="fc" id="L396">        container.add(new EmptyBlock(1.0, 2.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L397">        container.add(new EmptyBlock(5.0, 6.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L398">        container.add(new EmptyBlock(7.0, 8.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L399">        container.add(new EmptyBlock(9.0, 10.0));</span>
+<span class="fc" id="L400">        size = container.arrange(g2);</span>
+<span class="fc" id="L401">        assertEquals(21.0, size.width, EPSILON);</span>
+<span class="fc" id="L402">        assertEquals(12.0, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11000 - top and bottom only
+<span class="fc" id="L406">        container.clear();</span>
+<span class="fc" id="L407">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L408">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L409">        size = container.arrange(g2);</span>
+<span class="fc" id="L410">        assertEquals(12.3, size.width, EPSILON);</span>
+<span class="fc" id="L411">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11001
+<span class="fc" id="L415">        container.clear();</span>
+<span class="fc" id="L416">        container.add(new EmptyBlock(21.0, 12.3));</span>
+<span class="fc" id="L417">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L418">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L419">        size = container.arrange(g2);</span>
+<span class="fc" id="L420">        assertEquals(21.0, size.width, EPSILON);</span>
+<span class="fc" id="L421">        assertEquals(77.9, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11010 - top, bottom and right
+<span class="fc" id="L425">        container.clear();</span>
+<span class="fc" id="L426">        container.add(new EmptyBlock(21.0, 12.3), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L427">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L428">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L429">        size = container.arrange(g2);</span>
+<span class="fc" id="L430">        assertEquals(21.0, size.width, EPSILON);</span>
+<span class="fc" id="L431">        assertEquals(77.9, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11011
+<span class="fc" id="L435">        container.clear();</span>
+<span class="fc" id="L436">        container.add(new EmptyBlock(1.0, 2.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L437">        container.add(new EmptyBlock(3.0, 4.0), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L438">        container.add(new EmptyBlock(7.0, 8.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L439">        container.add(new EmptyBlock(9.0, 10.0));</span>
+<span class="fc" id="L440">        size = container.arrange(g2);</span>
+<span class="fc" id="L441">        assertEquals(16.0, size.width, EPSILON);</span>
+<span class="fc" id="L442">        assertEquals(16.0, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11100
+<span class="fc" id="L446">        container.clear();</span>
+<span class="fc" id="L447">        container.add(new EmptyBlock(21.0, 12.3), RectangleEdge.LEFT);</span>
+<span class="fc" id="L448">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L449">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L450">        size = container.arrange(g2);</span>
+<span class="fc" id="L451">        assertEquals(21.0, size.width, EPSILON);</span>
+<span class="fc" id="L452">        assertEquals(77.9, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11101
+<span class="fc" id="L456">        container.clear();</span>
+<span class="fc" id="L457">        container.add(new EmptyBlock(1.0, 2.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L458">        container.add(new EmptyBlock(3.0, 4.0), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L459">        container.add(new EmptyBlock(5.0, 6.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L460">        container.add(new EmptyBlock(9.0, 10.0));</span>
+<span class="fc" id="L461">        size = container.arrange(g2);</span>
+<span class="fc" id="L462">        assertEquals(14.0, size.width, EPSILON);</span>
+<span class="fc" id="L463">        assertEquals(16.0, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11110
+<span class="fc" id="L467">        container.clear();</span>
+<span class="fc" id="L468">        container.add(new EmptyBlock(1.0, 2.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L469">        container.add(new EmptyBlock(3.0, 4.0), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L470">        container.add(new EmptyBlock(5.0, 6.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L471">        container.add(new EmptyBlock(7.0, 8.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L472">        size = container.arrange(g2);</span>
+<span class="fc" id="L473">        assertEquals(12.0, size.width, EPSILON);</span>
+<span class="fc" id="L474">        assertEquals(14.0, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11111 - all
+<span class="fc" id="L478">        container.clear();</span>
+<span class="fc" id="L479">        container.add(new EmptyBlock(1.0, 2.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L480">        container.add(new EmptyBlock(3.0, 4.0), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L481">        container.add(new EmptyBlock(5.0, 6.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L482">        container.add(new EmptyBlock(7.0, 8.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L483">        container.add(new EmptyBlock(9.0, 10.0));</span>
+<span class="fc" id="L484">        size = container.arrange(g2);</span>
+<span class="fc" id="L485">        assertEquals(21.0, size.width, EPSILON);</span>
+<span class="fc" id="L486">        assertEquals(16.0, size.height, EPSILON);</span>
+
+<span class="fc" id="L488">    }</span>
+
+    /**
+     * Run some checks on sizing when there is a fixed width constraint.
+     */
+    public void testSizingWithWidthConstraint() {
+<span class="fc" id="L494">        RectangleConstraint constraint = new RectangleConstraint(</span>
+                10.0, new Range(10.0, 10.0), LengthConstraintType.FIXED,
+                0.0, new Range(0.0, 0.0), LengthConstraintType.NONE);
+
+<span class="fc" id="L498">        BlockContainer container = new BlockContainer(new BorderArrangement());</span>
+<span class="fc" id="L499">        BufferedImage image = new BufferedImage(200, 100,</span>
+                BufferedImage.TYPE_INT_RGB);
+<span class="fc" id="L501">        Graphics2D g2 = image.createGraphics();</span>
+
+        // TBLRC
+        // 00001 - center item only
+<span class="fc" id="L505">        container.add(new EmptyBlock(5.0, 6.0));</span>
+<span class="fc" id="L506">        Size2D size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L507">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L508">        assertEquals(6.0, size.height, EPSILON);</span>
+
+<span class="fc" id="L510">        container.clear();</span>
+<span class="fc" id="L511">        container.add(new EmptyBlock(15.0, 16.0));</span>
+<span class="fc" id="L512">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L513">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L514">        assertEquals(16.0, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 00010 - right item only
+<span class="fc" id="L518">        container.clear();</span>
+<span class="fc" id="L519">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L520">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L521">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L522">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 00011 - right and center items
+<span class="fc" id="L526">        container.clear();</span>
+<span class="fc" id="L527">        container.add(new EmptyBlock(7.0, 20.0));</span>
+<span class="fc" id="L528">        container.add(new EmptyBlock(8.0, 45.6), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L529">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L530">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L531">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 00100 - left item only
+<span class="fc" id="L535">        container.clear();</span>
+<span class="fc" id="L536">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.LEFT);</span>
+<span class="fc" id="L537">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L538">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L539">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 00101 - left and center items
+<span class="fc" id="L543">        container.clear();</span>
+<span class="fc" id="L544">        container.add(new EmptyBlock(10.0, 20.0));</span>
+<span class="fc" id="L545">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.LEFT);</span>
+<span class="fc" id="L546">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L547">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L548">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 00110 - left and right items
+<span class="fc" id="L552">        container.clear();</span>
+<span class="fc" id="L553">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L554">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.LEFT);</span>
+<span class="fc" id="L555">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L556">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L557">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 00111 - left, right and center items
+<span class="fc" id="L561">        container.clear();</span>
+<span class="fc" id="L562">        container.add(new EmptyBlock(10.0, 20.0));</span>
+<span class="fc" id="L563">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.LEFT);</span>
+<span class="fc" id="L564">        container.add(new EmptyBlock(5.4, 3.2), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L565">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L566">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L567">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01000 - bottom item only
+<span class="fc" id="L571">        container.clear();</span>
+<span class="fc" id="L572">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L573">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L574">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L575">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01001 - bottom and center only
+<span class="fc" id="L579">        container.clear();</span>
+<span class="fc" id="L580">        container.add(new EmptyBlock(10.0, 20.0));</span>
+<span class="fc" id="L581">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L582">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L583">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L584">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01010 - bottom and right only
+<span class="fc" id="L588">        container.clear();</span>
+<span class="fc" id="L589">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L590">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L591">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L592">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L593">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01011 - bottom, right and center
+<span class="fc" id="L597">        container.clear();</span>
+<span class="fc" id="L598">        container.add(new EmptyBlock(21.0, 12.3));</span>
+<span class="fc" id="L599">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L600">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L601">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L602">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L603">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01100
+<span class="fc" id="L607">        container.clear();</span>
+<span class="fc" id="L608">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L609">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L610">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L611">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L612">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01101 - bottom, left and center
+<span class="fc" id="L616">        container.clear();</span>
+<span class="fc" id="L617">        container.add(new EmptyBlock(21.0, 12.3));</span>
+<span class="fc" id="L618">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L619">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L620">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L621">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L622">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01110 - bottom. left and right
+<span class="fc" id="L626">        container.clear();</span>
+<span class="fc" id="L627">        container.add(new EmptyBlock(21.0, 12.3), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L628">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L629">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L630">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L631">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L632">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 01111
+<span class="fc" id="L636">        container.clear();</span>
+<span class="fc" id="L637">        container.add(new EmptyBlock(3.0, 4.0), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L638">        container.add(new EmptyBlock(5.0, 6.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L639">        container.add(new EmptyBlock(7.0, 8.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L640">        container.add(new EmptyBlock(9.0, 10.0));</span>
+<span class="fc" id="L641">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L642">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L643">        assertEquals(14.0, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10000 - top item only
+<span class="fc" id="L647">        container.clear();</span>
+<span class="fc" id="L648">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.TOP);</span>
+<span class="fc" id="L649">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L650">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L651">        assertEquals(45.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10001 - top and center only
+<span class="fc" id="L655">        container.clear();</span>
+<span class="fc" id="L656">        container.add(new EmptyBlock(10.0, 20.0));</span>
+<span class="fc" id="L657">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.TOP);</span>
+<span class="fc" id="L658">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L659">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L660">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10010 - right and top only
+<span class="fc" id="L664">        container.clear();</span>
+<span class="fc" id="L665">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L666">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.TOP);</span>
+<span class="fc" id="L667">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L668">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L669">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10011 - top, right and center
+<span class="fc" id="L673">        container.clear();</span>
+<span class="fc" id="L674">        container.add(new EmptyBlock(21.0, 12.3));</span>
+<span class="fc" id="L675">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L676">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L677">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L678">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L679">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10100 - top and left only
+<span class="fc" id="L683">        container.clear();</span>
+<span class="fc" id="L684">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L685">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.TOP);</span>
+<span class="fc" id="L686">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L687">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L688">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10101 - top, left and center
+<span class="fc" id="L692">        container.clear();</span>
+<span class="fc" id="L693">        container.add(new EmptyBlock(21.0, 12.3));</span>
+<span class="fc" id="L694">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L695">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.LEFT);</span>
+<span class="fc" id="L696">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L697">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L698">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10110 - top, left and right
+<span class="fc" id="L702">        container.clear();</span>
+<span class="fc" id="L703">        container.add(new EmptyBlock(21.0, 12.3), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L704">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L705">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.LEFT);</span>
+<span class="fc" id="L706">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L707">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L708">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 10111
+<span class="fc" id="L712">        container.clear();</span>
+<span class="fc" id="L713">        container.add(new EmptyBlock(1.0, 2.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L714">        container.add(new EmptyBlock(5.0, 6.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L715">        container.add(new EmptyBlock(7.0, 8.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L716">        container.add(new EmptyBlock(9.0, 10.0));</span>
+<span class="fc" id="L717">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L718">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L719">        assertEquals(12.0, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11000 - top and bottom only
+<span class="fc" id="L723">        container.clear();</span>
+<span class="fc" id="L724">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L725">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L726">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L727">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L728">        assertEquals(65.6, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11001
+<span class="fc" id="L732">        container.clear();</span>
+<span class="fc" id="L733">        container.add(new EmptyBlock(21.0, 12.3));</span>
+<span class="fc" id="L734">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L735">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L736">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L737">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L738">        assertEquals(77.9, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11010 - top, bottom and right
+<span class="fc" id="L742">        container.clear();</span>
+<span class="fc" id="L743">        container.add(new EmptyBlock(21.0, 12.3), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L744">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L745">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L746">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L747">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L748">        assertEquals(77.9, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11011
+<span class="fc" id="L752">        container.clear();</span>
+<span class="fc" id="L753">        container.add(new EmptyBlock(1.0, 2.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L754">        container.add(new EmptyBlock(3.0, 4.0), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L755">        container.add(new EmptyBlock(7.0, 8.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L756">        container.add(new EmptyBlock(9.0, 10.0));</span>
+<span class="fc" id="L757">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L758">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L759">        assertEquals(16.0, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11100
+<span class="fc" id="L763">        container.clear();</span>
+<span class="fc" id="L764">        container.add(new EmptyBlock(21.0, 12.3), RectangleEdge.LEFT);</span>
+<span class="fc" id="L765">        container.add(new EmptyBlock(10.0, 20.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L766">        container.add(new EmptyBlock(12.3, 45.6), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L767">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L768">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L769">        assertEquals(77.9, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11101
+<span class="fc" id="L773">        container.clear();</span>
+<span class="fc" id="L774">        container.add(new EmptyBlock(1.0, 2.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L775">        container.add(new EmptyBlock(3.0, 4.0), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L776">        container.add(new EmptyBlock(5.0, 6.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L777">        container.add(new EmptyBlock(9.0, 10.0));</span>
+<span class="fc" id="L778">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L779">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L780">        assertEquals(16.0, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11110
+<span class="fc" id="L784">        container.clear();</span>
+<span class="fc" id="L785">        container.add(new EmptyBlock(1.0, 2.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L786">        container.add(new EmptyBlock(3.0, 4.0), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L787">        container.add(new EmptyBlock(5.0, 6.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L788">        container.add(new EmptyBlock(7.0, 8.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L789">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L790">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L791">        assertEquals(14.0, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 11111 - all
+<span class="fc" id="L795">        container.clear();</span>
+<span class="fc" id="L796">        container.add(new EmptyBlock(1.0, 2.0), RectangleEdge.TOP);</span>
+<span class="fc" id="L797">        container.add(new EmptyBlock(3.0, 4.0), RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L798">        container.add(new EmptyBlock(5.0, 6.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L799">        container.add(new EmptyBlock(7.0, 8.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L800">        container.add(new EmptyBlock(9.0, 10.0));</span>
+<span class="fc" id="L801">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L802">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L803">        assertEquals(16.0, size.height, EPSILON);</span>
+
+        // TBLRC
+        // 00000 - no items
+<span class="fc" id="L807">        container.clear();</span>
+<span class="fc" id="L808">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L809">        assertEquals(10.0, size.width, EPSILON);</span>
+<span class="fc" id="L810">        assertEquals(0.0, size.height, EPSILON);</span>
+
+<span class="fc" id="L812">    }</span>
+
+    /**
+     * This test is for a particular bug that arose just prior to the release
+     * of JFreeChart 1.0.10.  A BorderArrangement with LEFT, CENTRE and RIGHT
+     * blocks that is too wide, by default, for the available space, wasn't
+     * shrinking the centre block as expected.
+     */
+    public void testBugX() {
+<span class="fc" id="L821">        RectangleConstraint constraint = new RectangleConstraint(</span>
+                new Range(0.0, 200.0), new Range(0.0, 100.0));
+<span class="fc" id="L823">        BlockContainer container = new BlockContainer(new BorderArrangement());</span>
+<span class="fc" id="L824">        BufferedImage image = new BufferedImage(200, 100,</span>
+                BufferedImage.TYPE_INT_RGB);
+<span class="fc" id="L826">        Graphics2D g2 = image.createGraphics();</span>
+
+<span class="fc" id="L828">        container.add(new EmptyBlock(10.0, 6.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L829">        container.add(new EmptyBlock(20.0, 6.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L830">        container.add(new EmptyBlock(30.0, 6.0));</span>
+<span class="fc" id="L831">        Size2D size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L832">        assertEquals(60.0, size.width, EPSILON);</span>
+<span class="fc" id="L833">        assertEquals(6.0, size.height, EPSILON);</span>
+
+<span class="fc" id="L835">        container.clear();</span>
+<span class="fc" id="L836">        container.add(new EmptyBlock(10.0, 6.0), RectangleEdge.LEFT);</span>
+<span class="fc" id="L837">        container.add(new EmptyBlock(20.0, 6.0), RectangleEdge.RIGHT);</span>
+<span class="fc" id="L838">        container.add(new EmptyBlock(300.0, 6.0));</span>
+<span class="fc" id="L839">        size = container.arrange(g2, constraint);</span>
+<span class="fc" id="L840">        assertEquals(200.0, size.width, EPSILON);</span>
+<span class="fc" id="L841">        assertEquals(6.0, size.height, EPSILON);</span>
+
+
+<span class="fc" id="L844">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

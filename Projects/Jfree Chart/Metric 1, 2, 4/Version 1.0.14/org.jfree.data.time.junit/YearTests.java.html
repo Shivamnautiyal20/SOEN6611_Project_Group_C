@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>YearTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.time.junit</a> &gt; <span class="el_source">YearTests.java</span></div><h1>YearTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------
+ * YearTests.java
+ * --------------
+ * (C) Copyright 2001-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 16-Nov-2001 : Version 1 (DG);
+ * 19-Mar-2002 : Added tests for constructor that uses java.util.Date to ensure
+ *               it is consistent with the getStart() and getEnd() methods (DG);
+ * 17-Oct-2002 : Fixed errors reported by Checkstyle (DG);
+ * 13-Mar-2003 : Added serialization test (DG);
+ * 11-Jan-2005 : Added test for non-clonability (DG);
+ * 05-Oct-2006 : Added some new tests (DG);
+ * 11-Jul-2007 : Fixed bad time zone assumption (DG);
+ *
+ */
+
+package org.jfree.data.time.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.time.TimePeriodFormatException;
+import org.jfree.data.time.Year;
+
+/**
+ * Tests for the {@link Year} class.
+ */
+public class YearTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        return new TestSuite(YearTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public YearTests(String name) {
+<span class="fc" id="L89">        super(name);</span>
+<span class="fc" id="L90">    }</span>
+
+    /**
+     * Common test setup.
+     */
+    protected void setUp() {
+        // no setup
+<span class="fc" id="L97">    }</span>
+
+    /**
+     * Check that a Year instance is equal to itself.
+     *
+     * SourceForge Bug ID: 558850.
+     */
+    public void testEqualsSelf() {
+<span class="fc" id="L105">        Year year = new Year();</span>
+<span class="fc" id="L106">        assertTrue(year.equals(year));</span>
+<span class="fc" id="L107">    }</span>
+
+    /**
+     * Tests the equals method.
+     */
+    public void testEquals() {
+<span class="fc" id="L113">        Year year1 = new Year(2002);</span>
+<span class="fc" id="L114">        Year year2 = new Year(2002);</span>
+<span class="fc" id="L115">        assertTrue(year1.equals(year2));</span>
+
+<span class="fc" id="L117">        year1 = new Year(1999);</span>
+<span class="fc" id="L118">        assertFalse(year1.equals(year2));</span>
+<span class="fc" id="L119">        year2 = new Year(1999);</span>
+<span class="fc" id="L120">        assertTrue(year1.equals(year2));</span>
+<span class="fc" id="L121">    }</span>
+
+    /**
+     * In GMT, the end of 2001 is java.util.Date(1009843199999L).  Use this to
+     * check the year constructor.
+     */
+    public void testDateConstructor1() {
+
+<span class="fc" id="L129">        TimeZone zone = TimeZone.getTimeZone(&quot;GMT&quot;);</span>
+<span class="fc" id="L130">        Date d1 = new Date(1009843199999L);</span>
+<span class="fc" id="L131">        Date d2 = new Date(1009843200000L);</span>
+<span class="fc" id="L132">        Year y1 = new Year(d1, zone);</span>
+<span class="fc" id="L133">        Year y2 = new Year(d2, zone);</span>
+
+<span class="fc" id="L135">        assertEquals(2001, y1.getYear());</span>
+<span class="fc" id="L136">        assertEquals(1009843199999L, y1.getLastMillisecond(zone));</span>
+
+<span class="fc" id="L138">        assertEquals(2002, y2.getYear());</span>
+<span class="fc" id="L139">        assertEquals(1009843200000L, y2.getFirstMillisecond(zone));</span>
+
+<span class="fc" id="L141">    }</span>
+
+    /**
+     * In Los Angeles, the end of 2001 is java.util.Date(1009871999999L).  Use
+     * this to check the year constructor.
+     */
+    public void testDateConstructor2() {
+
+<span class="fc" id="L149">        TimeZone zone = TimeZone.getTimeZone(&quot;America/Los_Angeles&quot;);</span>
+<span class="fc" id="L150">        Year y1 = new Year(new Date(1009871999999L), zone);</span>
+<span class="fc" id="L151">        Year y2 = new Year(new Date(1009872000000L), zone);</span>
+
+<span class="fc" id="L153">        assertEquals(2001, y1.getYear());</span>
+<span class="fc" id="L154">        assertEquals(1009871999999L, y1.getLastMillisecond(zone));</span>
+
+<span class="fc" id="L156">        assertEquals(2002, y2.getYear());</span>
+<span class="fc" id="L157">        assertEquals(1009872000000L, y2.getFirstMillisecond(zone));</span>
+
+<span class="fc" id="L159">    }</span>
+
+    /**
+     * Set up a year equal to 1900.  Request the previous year, it should be
+     * null.
+     */
+    public void testMinuss9999Previous() {
+<span class="fc" id="L166">        Year current = new Year(-9999);</span>
+<span class="fc" id="L167">        Year previous = (Year) current.previous();</span>
+<span class="fc" id="L168">        assertNull(previous);</span>
+<span class="fc" id="L169">    }</span>
+
+    /**
+     * Set up a year equal to 1900.  Request the next year, it should be 1901.
+     */
+    public void test1900Next() {
+<span class="fc" id="L175">        Year current = new Year(1900);</span>
+<span class="fc" id="L176">        Year next = (Year) current.next();</span>
+<span class="fc" id="L177">        assertEquals(1901, next.getYear());</span>
+<span class="fc" id="L178">    }</span>
+
+    /**
+     * Set up a year equal to 9999.  Request the previous year, it should be
+     * 9998.
+     */
+    public void test9999Previous() {
+<span class="fc" id="L185">        Year current = new Year(9999);</span>
+<span class="fc" id="L186">        Year previous = (Year) current.previous();</span>
+<span class="fc" id="L187">        assertEquals(9998, previous.getYear());</span>
+<span class="fc" id="L188">    }</span>
+
+    /**
+     * Set up a year equal to 9999.  Request the next year, it should be null.
+     */
+    public void test9999Next() {
+<span class="fc" id="L194">        Year current = new Year(9999);</span>
+<span class="fc" id="L195">        Year next = (Year) current.next();</span>
+<span class="fc" id="L196">        assertNull(next);</span>
+<span class="fc" id="L197">    }</span>
+
+    /**
+     * Tests the year string parser.
+     */
+    public void testParseYear() {
+
+<span class="fc" id="L204">        Year year = null;</span>
+
+        // test 1...
+        try {
+<span class="fc" id="L208">            year = Year.parseYear(&quot;2000&quot;);</span>
+        }
+<span class="nc" id="L210">        catch (TimePeriodFormatException e) {</span>
+<span class="nc" id="L211">            year = new Year(1900);</span>
+<span class="fc" id="L212">        }</span>
+<span class="fc" id="L213">        assertEquals(2000, year.getYear());</span>
+
+        // test 2...
+        try {
+<span class="fc" id="L217">            year = Year.parseYear(&quot; 2001 &quot;);</span>
+        }
+<span class="nc" id="L219">        catch (TimePeriodFormatException e) {</span>
+<span class="nc" id="L220">            year = new Year(1900);</span>
+<span class="fc" id="L221">        }</span>
+<span class="fc" id="L222">        assertEquals(2001, year.getYear());</span>
+
+        // test 3...
+        try {
+<span class="fc" id="L226">            year = Year.parseYear(&quot;99&quot;);</span>
+        }
+<span class="nc" id="L228">        catch (TimePeriodFormatException e) {</span>
+<span class="nc" id="L229">            year = new Year(1900);</span>
+<span class="fc" id="L230">        }</span>
+<span class="fc" id="L231">        assertEquals(99, year.getYear());</span>
+
+<span class="fc" id="L233">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L240">        Year y1 = new Year(1999);</span>
+<span class="fc" id="L241">        Year y2 = null;</span>
+
+        try {
+<span class="fc" id="L244">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L245">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L246">            out.writeObject(y1);</span>
+<span class="fc" id="L247">            out.close();</span>
+
+<span class="fc" id="L249">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L250">                new ByteArrayInputStream(buffer.toByteArray())</span>
+            );
+<span class="fc" id="L252">            y2 = (Year) in.readObject();</span>
+<span class="fc" id="L253">            in.close();</span>
+        }
+<span class="nc" id="L255">        catch (Exception e) {</span>
+<span class="nc" id="L256">            System.out.println(e.toString());</span>
+<span class="fc" id="L257">        }</span>
+<span class="fc" id="L258">        assertEquals(y1, y2);</span>
+
+<span class="fc" id="L260">    }</span>
+
+    /**
+     * The {@link Year} class is immutable, so should not be {@link Cloneable}.
+     */
+    public void testNotCloneable() {
+<span class="fc" id="L266">        Year y = new Year(1999);</span>
+<span class="fc" id="L267">        assertFalse(y instanceof Cloneable);</span>
+<span class="fc" id="L268">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L274">        Year y1 = new Year(1988);</span>
+<span class="fc" id="L275">        Year y2 = new Year(1988);</span>
+<span class="fc" id="L276">        assertTrue(y1.equals(y2));</span>
+<span class="fc" id="L277">        int h1 = y1.hashCode();</span>
+<span class="fc" id="L278">        int h2 = y2.hashCode();</span>
+<span class="fc" id="L279">        assertEquals(h1, h2);</span>
+<span class="fc" id="L280">    }</span>
+
+    /**
+     * Some checks for the getFirstMillisecond() method.
+     */
+    public void testGetFirstMillisecond() {
+<span class="fc" id="L286">        Locale saved = Locale.getDefault();</span>
+<span class="fc" id="L287">        Locale.setDefault(Locale.UK);</span>
+<span class="fc" id="L288">        TimeZone savedZone = TimeZone.getDefault();</span>
+<span class="fc" id="L289">        TimeZone.setDefault(TimeZone.getTimeZone(&quot;Europe/London&quot;));</span>
+<span class="fc" id="L290">        Year y = new Year(1970);</span>
+        // TODO: Check this result...
+<span class="fc" id="L292">        assertEquals(-3600000L, y.getFirstMillisecond());</span>
+<span class="fc" id="L293">        Locale.setDefault(saved);</span>
+<span class="fc" id="L294">        TimeZone.setDefault(savedZone);</span>
+<span class="fc" id="L295">    }</span>
+
+    /**
+     * Some checks for the getFirstMillisecond(TimeZone) method.
+     */
+    public void testGetFirstMillisecondWithTimeZone() {
+<span class="fc" id="L301">        Year y = new Year(1950);</span>
+<span class="fc" id="L302">        TimeZone zone = TimeZone.getTimeZone(&quot;America/Los_Angeles&quot;);</span>
+<span class="fc" id="L303">        assertEquals(-631123200000L, y.getFirstMillisecond(zone));</span>
+
+        // try null calendar
+<span class="fc" id="L306">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L308">            y.getFirstMillisecond((TimeZone) null);</span>
+        }
+<span class="fc" id="L310">        catch (NullPointerException e) {</span>
+<span class="fc" id="L311">            pass = true;</span>
+<span class="nc" id="L312">        }</span>
+<span class="fc" id="L313">        assertTrue(pass);</span>
+<span class="fc" id="L314">    }</span>
+
+    /**
+     * Some checks for the getFirstMillisecond(TimeZone) method.
+     */
+    public void testGetFirstMillisecondWithCalendar() {
+<span class="fc" id="L320">        Year y = new Year(2001);</span>
+<span class="fc" id="L321">        GregorianCalendar calendar = new GregorianCalendar(Locale.GERMANY);</span>
+<span class="fc" id="L322">        calendar.setTimeZone(TimeZone.getTimeZone(&quot;Europe/Frankfurt&quot;));</span>
+<span class="fc" id="L323">        assertEquals(978307200000L, y.getFirstMillisecond(calendar));</span>
+
+        // try null calendar
+<span class="fc" id="L326">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L328">            y.getFirstMillisecond((Calendar) null);</span>
+        }
+<span class="fc" id="L330">        catch (NullPointerException e) {</span>
+<span class="fc" id="L331">            pass = true;</span>
+<span class="nc" id="L332">        }</span>
+<span class="fc" id="L333">        assertTrue(pass);</span>
+<span class="fc" id="L334">    }</span>
+
+    /**
+     * Some checks for the getLastMillisecond() method.
+     */
+    public void testGetLastMillisecond() {
+<span class="fc" id="L340">        Locale saved = Locale.getDefault();</span>
+<span class="fc" id="L341">        Locale.setDefault(Locale.UK);</span>
+<span class="fc" id="L342">        TimeZone savedZone = TimeZone.getDefault();</span>
+<span class="fc" id="L343">        TimeZone.setDefault(TimeZone.getTimeZone(&quot;Europe/London&quot;));</span>
+<span class="fc" id="L344">        Year y = new Year(1970);</span>
+        // TODO: Check this result...
+<span class="fc" id="L346">        assertEquals(31532399999L, y.getLastMillisecond());</span>
+<span class="fc" id="L347">        Locale.setDefault(saved);</span>
+<span class="fc" id="L348">        TimeZone.setDefault(savedZone);</span>
+<span class="fc" id="L349">    }</span>
+
+    /**
+     * Some checks for the getLastMillisecond(TimeZone) method.
+     */
+    public void testGetLastMillisecondWithTimeZone() {
+<span class="fc" id="L355">        Year y = new Year(1950);</span>
+<span class="fc" id="L356">        TimeZone zone = TimeZone.getTimeZone(&quot;America/Los_Angeles&quot;);</span>
+<span class="fc" id="L357">        assertEquals(-599587200001L, y.getLastMillisecond(zone));</span>
+
+        // try null calendar
+<span class="fc" id="L360">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L362">            y.getLastMillisecond((TimeZone) null);</span>
+        }
+<span class="fc" id="L364">        catch (NullPointerException e) {</span>
+<span class="fc" id="L365">            pass = true;</span>
+<span class="nc" id="L366">        }</span>
+<span class="fc" id="L367">        assertTrue(pass);</span>
+<span class="fc" id="L368">    }</span>
+
+    /**
+     * Some checks for the getLastMillisecond(TimeZone) method.
+     */
+    public void testGetLastMillisecondWithCalendar() {
+<span class="fc" id="L374">        Year y = new Year(2001);</span>
+<span class="fc" id="L375">        GregorianCalendar calendar = new GregorianCalendar(Locale.GERMANY);</span>
+<span class="fc" id="L376">        calendar.setTimeZone(TimeZone.getTimeZone(&quot;Europe/Frankfurt&quot;));</span>
+<span class="fc" id="L377">        assertEquals(1009843199999L, y.getLastMillisecond(calendar));</span>
+
+        // try null calendar
+<span class="fc" id="L380">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L382">            y.getLastMillisecond((Calendar) null);</span>
+        }
+<span class="fc" id="L384">        catch (NullPointerException e) {</span>
+<span class="fc" id="L385">            pass = true;</span>
+<span class="nc" id="L386">        }</span>
+<span class="fc" id="L387">        assertTrue(pass);</span>
+<span class="fc" id="L388">    }</span>
+
+    /**
+     * Some checks for the getSerialIndex() method.
+     */
+    public void testGetSerialIndex() {
+<span class="fc" id="L394">        Year y = new Year(2000);</span>
+<span class="fc" id="L395">        assertEquals(2000L, y.getSerialIndex());</span>
+<span class="fc" id="L396">    }</span>
+
+    /**
+     * Some checks for the testNext() method.
+     */
+    public void testNext() {
+<span class="fc" id="L402">        Year y = new Year(2000);</span>
+<span class="fc" id="L403">        y = (Year) y.next();</span>
+<span class="fc" id="L404">        assertEquals(2001, y.getYear());</span>
+<span class="fc" id="L405">        y = new Year(9999);</span>
+<span class="fc" id="L406">        assertNull(y.next());</span>
+<span class="fc" id="L407">    }</span>
+
+    /**
+     * Some checks for the getStart() method.
+     */
+    public void testGetStart() {
+<span class="fc" id="L413">        Locale saved = Locale.getDefault();</span>
+<span class="fc" id="L414">        Locale.setDefault(Locale.ITALY);</span>
+<span class="fc" id="L415">        Calendar cal = Calendar.getInstance(Locale.ITALY);</span>
+<span class="fc" id="L416">        cal.set(2006, Calendar.JANUARY, 1, 0, 0, 0);</span>
+<span class="fc" id="L417">        cal.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L418">        Year y = new Year(2006);</span>
+<span class="fc" id="L419">        assertEquals(cal.getTime(), y.getStart());</span>
+<span class="fc" id="L420">        Locale.setDefault(saved);</span>
+<span class="fc" id="L421">    }</span>
+
+    /**
+     * Some checks for the getEnd() method.
+     */
+    public void testGetEnd() {
+<span class="fc" id="L427">        Locale saved = Locale.getDefault();</span>
+<span class="fc" id="L428">        Locale.setDefault(Locale.ITALY);</span>
+<span class="fc" id="L429">        Calendar cal = Calendar.getInstance(Locale.ITALY);</span>
+<span class="fc" id="L430">        cal.set(2006, Calendar.DECEMBER, 31, 23, 59, 59);</span>
+<span class="fc" id="L431">        cal.set(Calendar.MILLISECOND, 999);</span>
+<span class="fc" id="L432">        Year y = new Year(2006);</span>
+<span class="fc" id="L433">        assertEquals(cal.getTime(), y.getEnd());</span>
+<span class="fc" id="L434">        Locale.setDefault(saved);</span>
+<span class="fc" id="L435">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

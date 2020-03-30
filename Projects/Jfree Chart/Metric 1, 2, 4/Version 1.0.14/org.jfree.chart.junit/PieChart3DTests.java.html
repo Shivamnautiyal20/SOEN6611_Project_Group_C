@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PieChart3DTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.junit</a> &gt; <span class="el_source">PieChart3DTests.java</span></div><h1>PieChart3DTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------
+ * PieChart3DTests.java
+ * --------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes:
+ * --------
+ * 21-May-2004 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.junit;
+
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.event.ChartChangeEvent;
+import org.jfree.chart.event.ChartChangeListener;
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.PieDataset;
+
+/**
+ * Tests for a pie chart with a 3D effect.
+ */
+public class PieChart3DTests extends TestCase {
+
+    /** A chart. */
+    private JFreeChart pieChart;
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        return new TestSuite(PieChart3DTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public PieChart3DTests(String name) {
+<span class="fc" id="L82">        super(name);</span>
+<span class="fc" id="L83">    }</span>
+
+    /**
+     * Common test setup.
+     */
+    protected void setUp() {
+        // create a dataset...
+<span class="fc" id="L90">        DefaultPieDataset dataset = new DefaultPieDataset();</span>
+<span class="fc" id="L91">        dataset.setValue(&quot;Java&quot;, new Double(43.2));</span>
+<span class="fc" id="L92">        dataset.setValue(&quot;Visual Basic&quot;, new Double(0.0));</span>
+<span class="fc" id="L93">        dataset.setValue(&quot;C/C++&quot;, new Double(17.5));</span>
+<span class="fc" id="L94">        this.pieChart = createPieChart3D(dataset);</span>
+<span class="fc" id="L95">    }</span>
+
+    /**
+     * Using a regular pie chart, we replace the dataset with null.  Expect to
+     * receive notification of a chart change event, and (of course) the
+     * dataset should be null.
+     */
+    public void testReplaceDatasetOnPieChart() {
+<span class="fc" id="L103">        LocalListener l = new LocalListener();</span>
+<span class="fc" id="L104">        this.pieChart.addChangeListener(l);</span>
+<span class="fc" id="L105">        PiePlot plot = (PiePlot) this.pieChart.getPlot();</span>
+<span class="fc" id="L106">        plot.setDataset(null);</span>
+<span class="fc" id="L107">        assertEquals(true, l.flag);</span>
+<span class="fc" id="L108">        assertNull(plot.getDataset());</span>
+<span class="fc" id="L109">    }</span>
+
+    /**
+     * Tests that no exceptions are thrown when there is a &lt;code&gt;null&lt;/code&gt;
+     * value in the dataset.
+     */
+    public void testNullValueInDataset() {
+<span class="fc" id="L116">        DefaultPieDataset dataset = new DefaultPieDataset();</span>
+<span class="fc" id="L117">        dataset.setValue(&quot;Section 1&quot;, 10.0);</span>
+<span class="fc" id="L118">        dataset.setValue(&quot;Section 2&quot;, 11.0);</span>
+<span class="fc" id="L119">        dataset.setValue(&quot;Section 3&quot;, null);</span>
+<span class="fc" id="L120">        JFreeChart chart = createPieChart3D(dataset);</span>
+<span class="fc" id="L121">        boolean success = false;</span>
+        try {
+<span class="fc" id="L123">            BufferedImage image = new BufferedImage(200 , 100,</span>
+                    BufferedImage.TYPE_INT_RGB);
+<span class="fc" id="L125">            Graphics2D g2 = image.createGraphics();</span>
+<span class="fc" id="L126">            chart.draw(g2, new Rectangle2D.Double(0, 0, 200, 100), null, null);</span>
+<span class="fc" id="L127">            g2.dispose();</span>
+<span class="fc" id="L128">            success = true;</span>
+        }
+<span class="nc" id="L130">        catch (Throwable t) {</span>
+<span class="nc" id="L131">            success = false;</span>
+<span class="fc" id="L132">        }</span>
+<span class="fc" id="L133">        assertTrue(success);</span>
+<span class="fc" id="L134">    }</span>
+
+    /**
+     * Creates a pie chart.
+     *
+     * @param dataset  the dataset.
+     *
+     * @return The pie chart.
+     */
+    private static JFreeChart createPieChart3D(PieDataset dataset) {
+
+<span class="fc" id="L145">        return ChartFactory.createPieChart3D(</span>
+            &quot;Pie Chart&quot;,  // chart title
+            dataset,      // data
+            true,         // include legend
+            true,
+            false
+        );
+    }
+
+    /**
+     * A chart change listener.
+     */
+<span class="fc" id="L157">    static class LocalListener implements ChartChangeListener {</span>
+
+        /** A flag. */
+<span class="fc" id="L160">        private boolean flag = false;</span>
+
+        /**
+         * Event handler.
+         *
+         * @param event  the event.
+         */
+        public void chartChanged(ChartChangeEvent event) {
+<span class="fc" id="L168">            this.flag = true;</span>
+<span class="fc" id="L169">        }</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

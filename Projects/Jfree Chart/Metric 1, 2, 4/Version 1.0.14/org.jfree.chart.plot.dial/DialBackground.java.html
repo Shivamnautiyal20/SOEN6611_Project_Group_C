@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DialBackground.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot.dial</a> &gt; <span class="el_source">DialBackground.java</span></div><h1>DialBackground.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------
+ * DialBackground.java
+ * -------------------
+ * (C) Copyright 2006-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 03-Nov-2006 : Version 1 (DG);
+ * 16-Oct-2007 : The equals() method needs to call super.equals() (DG);
+ *
+ */
+
+package org.jfree.chart.plot.dial;
+
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import org.jfree.chart.HashUtilities;
+import org.jfree.io.SerialUtilities;
+import org.jfree.ui.GradientPaintTransformer;
+import org.jfree.ui.StandardGradientPaintTransformer;
+import org.jfree.util.PaintUtilities;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * A regular dial layer that can be used to draw the background for a dial.
+ *
+ * @since 1.0.7
+ */
+public class DialBackground extends AbstractDialLayer implements DialLayer,
+        Cloneable, PublicCloneable, Serializable {
+
+    /** For serialization. */
+    static final long serialVersionUID = -9019069533317612375L;
+
+    /**
+     * The background paint.  This field is transient because serialization
+     * requires special handling.
+     */
+    private transient Paint paint;
+
+    /**
+     * The transformer used when the background paint is an instance of
+     * &lt;code&gt;GradientPaint&lt;/code&gt;.
+     */
+    private GradientPaintTransformer gradientPaintTransformer;
+
+    /**
+     * Creates a new instance of &lt;code&gt;DialBackground&lt;/code&gt;.  The
+     * default background paint is &lt;code&gt;Color.white&lt;/code&gt;.
+     */
+    public DialBackground() {
+<span class="fc" id="L89">        this(Color.white);</span>
+<span class="fc" id="L90">    }</span>
+
+    /**
+     * Creates a new instance of &lt;code&gt;DialBackground&lt;/code&gt;.  The
+     *
+     * @param paint  the paint (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @throws IllegalArgumentException if &lt;code&gt;paint&lt;/code&gt; is
+     *     &lt;code&gt;null&lt;/code&gt;.
+     */
+<span class="fc" id="L100">    public DialBackground(Paint paint) {</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">        if (paint == null) {</span>
+<span class="nc" id="L102">            throw new IllegalArgumentException(&quot;Null 'paint' argument.&quot;);</span>
+        }
+<span class="fc" id="L104">        this.paint = paint;</span>
+<span class="fc" id="L105">        this.gradientPaintTransformer = new StandardGradientPaintTransformer();</span>
+<span class="fc" id="L106">    }</span>
+
+    /**
+     * Returns the paint used to fill the background.
+     *
+     * @return The paint (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setPaint(Paint)
+     */
+    public Paint getPaint() {
+<span class="nc" id="L116">        return this.paint;</span>
+    }
+
+    /**
+     * Sets the paint for the dial background and sends a
+     * {@link DialLayerChangeEvent} to all registered listeners.
+     *
+     * @param paint  the paint (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #getPaint()
+     */
+    public void setPaint(Paint paint) {
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">        if (paint == null) {</span>
+<span class="nc" id="L129">            throw new IllegalArgumentException(&quot;Null 'paint' argument.&quot;);</span>
+        }
+<span class="fc" id="L131">        this.paint = paint;</span>
+<span class="fc" id="L132">        notifyListeners(new DialLayerChangeEvent(this));</span>
+<span class="fc" id="L133">    }</span>
+
+    /**
+     * Returns the transformer used to adjust the coordinates of any
+     * &lt;code&gt;GradientPaint&lt;/code&gt; instance used for the background paint.
+     *
+     * @return The transformer (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setGradientPaintTransformer(GradientPaintTransformer)
+     */
+    public GradientPaintTransformer getGradientPaintTransformer() {
+<span class="nc" id="L144">        return this.gradientPaintTransformer;</span>
+    }
+
+    /**
+     * Sets the transformer used to adjust the coordinates of any
+     * &lt;code&gt;GradientPaint&lt;/code&gt; instance used for the background paint, and
+     * sends a {@link DialLayerChangeEvent} to all registered listeners.
+     *
+     * @param t  the transformer (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #getGradientPaintTransformer()
+     */
+    public void setGradientPaintTransformer(GradientPaintTransformer t) {
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">        if (t == null) {</span>
+<span class="nc" id="L158">            throw new IllegalArgumentException(&quot;Null 't' argument.&quot;);</span>
+        }
+<span class="fc" id="L160">        this.gradientPaintTransformer = t;</span>
+<span class="fc" id="L161">        notifyListeners(new DialLayerChangeEvent(this));</span>
+<span class="fc" id="L162">    }</span>
+
+    /**
+     * Returns &lt;code&gt;true&lt;/code&gt; to indicate that this layer should be
+     * clipped within the dial window.
+     *
+     * @return &lt;code&gt;true&lt;/code&gt;.
+     */
+    public boolean isClippedToWindow() {
+<span class="nc" id="L171">        return true;</span>
+    }
+
+    /**
+     * Draws the background to the specified graphics device.  If the dial
+     * frame specifies a window, the clipping region will already have been
+     * set to this window before this method is called.
+     *
+     * @param g2  the graphics device (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param plot  the plot (ignored here).
+     * @param frame  the dial frame (ignored here).
+     * @param view  the view rectangle (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public void draw(Graphics2D g2, DialPlot plot, Rectangle2D frame,
+            Rectangle2D view) {
+
+<span class="nc" id="L187">        Paint p = this.paint;</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        if (p instanceof GradientPaint) {</span>
+<span class="nc" id="L189">            p = this.gradientPaintTransformer.transform((GradientPaint) p,</span>
+                    view);
+        }
+<span class="nc" id="L192">        g2.setPaint(p);</span>
+<span class="nc" id="L193">        g2.fill(view);</span>
+<span class="nc" id="L194">    }</span>
+
+    /**
+     * Tests this instance for equality with an arbitrary object.
+     *
+     * @param obj  the object (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    public boolean equals(Object obj) {
+<span class="fc bfc" id="L204" title="All 2 branches covered.">        if (obj == this) {</span>
+<span class="fc" id="L205">            return true;</span>
+        }
+<span class="fc bfc" id="L207" title="All 2 branches covered.">        if (!(obj instanceof DialBackground)) {</span>
+<span class="fc" id="L208">            return false;</span>
+        }
+<span class="fc" id="L210">        DialBackground that = (DialBackground) obj;</span>
+<span class="fc bfc" id="L211" title="All 2 branches covered.">        if (!PaintUtilities.equal(this.paint, that.paint)) {</span>
+<span class="fc" id="L212">            return false;</span>
+        }
+<span class="fc bfc" id="L214" title="All 2 branches covered.">        if (!this.gradientPaintTransformer.equals(</span>
+                that.gradientPaintTransformer)) {
+<span class="fc" id="L216">            return false;</span>
+        }
+<span class="fc" id="L218">        return super.equals(obj);</span>
+    }
+
+    /**
+     * Returns a hash code for this instance.
+     *
+     * @return The hash code.
+     */
+    public int hashCode() {
+<span class="fc" id="L227">        int result = 193;</span>
+<span class="fc" id="L228">        result = 37 * result + HashUtilities.hashCodeForPaint(this.paint);</span>
+<span class="fc" id="L229">        result = 37 * result + this.gradientPaintTransformer.hashCode();</span>
+<span class="fc" id="L230">        return result;</span>
+    }
+
+    /**
+     * Returns a clone of this instance.
+     *
+     * @return The clone.
+     *
+     * @throws CloneNotSupportedException if some attribute of this instance
+     *     cannot be cloned.
+     */
+    public Object clone() throws CloneNotSupportedException {
+<span class="fc" id="L242">        return super.clone();</span>
+    }
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the output stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     */
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+<span class="fc" id="L253">        stream.defaultWriteObject();</span>
+<span class="fc" id="L254">        SerialUtilities.writePaint(this.paint, stream);</span>
+<span class="fc" id="L255">    }</span>
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the input stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     * @throws ClassNotFoundException  if there is a classpath problem.
+     */
+    private void readObject(ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+<span class="fc" id="L267">        stream.defaultReadObject();</span>
+<span class="fc" id="L268">        this.paint = SerialUtilities.readPaint(stream);</span>
+<span class="fc" id="L269">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

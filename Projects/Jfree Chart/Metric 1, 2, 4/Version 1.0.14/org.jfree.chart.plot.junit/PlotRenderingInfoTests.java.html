@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlotRenderingInfoTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot.junit</a> &gt; <span class="el_source">PlotRenderingInfoTests.java</span></div><h1>PlotRenderingInfoTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------------
+ * PlotRenderingInfoTests.java
+ * ---------------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 20-May-2004 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.plot.junit;
+
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.ChartRenderingInfo;
+import org.jfree.chart.plot.PlotRenderingInfo;
+
+/**
+ * Tests for the {@link PlotRenderingInfo} class.
+ */
+public class PlotRenderingInfoTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        return new TestSuite(PlotRenderingInfoTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public PlotRenderingInfoTests(String name) {
+<span class="fc" id="L79">        super(name);</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Test the equals() method.
+     */
+    public void testEquals() {
+<span class="fc" id="L86">        PlotRenderingInfo p1 = new PlotRenderingInfo(new ChartRenderingInfo());</span>
+<span class="fc" id="L87">        PlotRenderingInfo p2 = new PlotRenderingInfo(new ChartRenderingInfo());</span>
+<span class="fc" id="L88">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L89">        assertTrue(p2.equals(p1));</span>
+
+<span class="fc" id="L91">        p1.setPlotArea(new Rectangle(2, 3, 4, 5));</span>
+<span class="fc" id="L92">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L93">        p2.setPlotArea(new Rectangle(2, 3, 4, 5));</span>
+<span class="fc" id="L94">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L96">        p1.setDataArea(new Rectangle(2, 4, 6, 8));</span>
+<span class="fc" id="L97">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L98">        p2.setDataArea(new Rectangle(2, 4, 6, 8));</span>
+<span class="fc" id="L99">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L101">        p1.addSubplotInfo(new PlotRenderingInfo(null));</span>
+<span class="fc" id="L102">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L103">        p2.addSubplotInfo(new PlotRenderingInfo(null));</span>
+<span class="fc" id="L104">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L106">        p1.getSubplotInfo(0).setDataArea(new Rectangle(1, 2, 3, 4));</span>
+<span class="fc" id="L107">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L108">        p2.getSubplotInfo(0).setDataArea(new Rectangle(1, 2, 3, 4));</span>
+<span class="fc" id="L109">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L116">        PlotRenderingInfo p1 = new PlotRenderingInfo(new ChartRenderingInfo());</span>
+<span class="fc" id="L117">        p1.setPlotArea(new Rectangle2D.Double());</span>
+<span class="fc" id="L118">        PlotRenderingInfo p2 = null;</span>
+        try {
+<span class="fc" id="L120">            p2 = (PlotRenderingInfo) p1.clone();</span>
+        }
+<span class="nc" id="L122">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L123">            e.printStackTrace();</span>
+<span class="fc" id="L124">        }</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L127">        assertTrue(p1.equals(p2));</span>
+
+        // check independence
+<span class="fc" id="L130">        p1.getPlotArea().setRect(1.0, 2.0, 3.0, 4.0);</span>
+<span class="fc" id="L131">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L132">        p2.getPlotArea().setRect(1.0, 2.0, 3.0, 4.0);</span>
+<span class="fc" id="L133">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L135">        p1.getDataArea().setRect(4.0, 3.0, 2.0, 1.0);</span>
+<span class="fc" id="L136">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L137">        p2.getDataArea().setRect(4.0, 3.0, 2.0, 1.0);</span>
+<span class="fc" id="L138">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L139">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L146">        PlotRenderingInfo p1 = new PlotRenderingInfo(new ChartRenderingInfo());</span>
+<span class="fc" id="L147">        PlotRenderingInfo p2 = null;</span>
+
+        try {
+<span class="fc" id="L150">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L151">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L152">            out.writeObject(p1);</span>
+<span class="fc" id="L153">            out.close();</span>
+
+<span class="fc" id="L155">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L156">                new ByteArrayInputStream(buffer.toByteArray())</span>
+            );
+<span class="fc" id="L158">            p2 = (PlotRenderingInfo) in.readObject();</span>
+<span class="fc" id="L159">            in.close();</span>
+        }
+<span class="nc" id="L161">        catch (Exception e) {</span>
+<span class="nc" id="L162">            System.out.println(e.toString());</span>
+<span class="fc" id="L163">        }</span>
+<span class="fc" id="L164">        assertEquals(p1, p2);</span>
+
+<span class="fc" id="L166">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

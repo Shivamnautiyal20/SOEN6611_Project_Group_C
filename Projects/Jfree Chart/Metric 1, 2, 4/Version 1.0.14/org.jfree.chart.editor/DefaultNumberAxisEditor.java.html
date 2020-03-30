@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultNumberAxisEditor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.editor</a> &gt; <span class="el_source">DefaultNumberAxisEditor.java</span></div><h1>DefaultNumberAxisEditor.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------------
+ * DefaultNumberAxisEditor.java
+ * ----------------------------
+ * (C) Copyright 2005-2009, Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Arnaud Lelievre;
+ *
+ * Changes:
+ * --------
+ * 24-Nov-2005 : Version 1, based on NumberAxisPropertyEditor (DG);
+ * 18-Dec-2008 : Use ResourceBundleWrapper - see patch 1607918 by
+ *               Jess Thrysoee (DG);
+ * 27-Feb-2009 : Fixed bug 2612649, NullPointerException (DG);
+ *
+ */
+
+package org.jfree.chart.editor;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.util.ResourceBundle;
+
+import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+
+import org.jfree.chart.axis.Axis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.util.ResourceBundleWrapper;
+import org.jfree.layout.LCBLayout;
+import org.jfree.ui.PaintSample;
+import org.jfree.ui.StrokeChooserPanel;
+import org.jfree.ui.StrokeSample;
+
+/**
+ * A panel for editing the properties of a value axis.
+ */
+class DefaultNumberAxisEditor extends DefaultAxisEditor
+        implements FocusListener {
+
+    /** A flag that indicates whether or not the axis range is determined
+     *  automatically.
+     */
+    private boolean autoRange;
+
+    /** The lowest value in the axis range. */
+    private double minimumValue;
+
+    /** The highest value in the axis range. */
+    private double maximumValue;
+
+    /** A checkbox that indicates whether or not the axis range is determined
+     *  automatically.
+     */
+    private JCheckBox autoRangeCheckBox;
+
+    /** A text field for entering the minimum value in the axis range. */
+    private JTextField minimumRangeValue;
+
+    /** A text field for entering the maximum value in the axis range. */
+    private JTextField maximumRangeValue;
+
+    /** The paint selected for drawing the gridlines. */
+    private PaintSample gridPaintSample;
+
+    /** The stroke selected for drawing the gridlines. */
+    private StrokeSample gridStrokeSample;
+
+    /** An array of stroke samples to choose from (since I haven't written a
+     *  decent StrokeChooser component yet).
+     */
+    private StrokeSample[] availableStrokeSamples;
+
+    /** The resourceBundle for the localization. */
+<span class="nc" id="L110">    protected static ResourceBundle localizationResources</span>
+<span class="nc" id="L111">            = ResourceBundleWrapper.getBundle(</span>
+                &quot;org.jfree.chart.editor.LocalizationBundle&quot;);
+
+    /**
+     * Standard constructor: builds a property panel for the specified axis.
+     *
+     * @param axis  the axis, which should be changed.
+     */
+    public DefaultNumberAxisEditor(NumberAxis axis) {
+
+<span class="nc" id="L121">        super(axis);</span>
+
+<span class="nc" id="L123">        this.autoRange = axis.isAutoRange();</span>
+<span class="nc" id="L124">        this.minimumValue = axis.getLowerBound();</span>
+<span class="nc" id="L125">        this.maximumValue = axis.getUpperBound();</span>
+
+<span class="nc" id="L127">        this.gridPaintSample = new PaintSample(Color.blue);</span>
+<span class="nc" id="L128">        this.gridStrokeSample = new StrokeSample(new BasicStroke(1.0f));</span>
+
+<span class="nc" id="L130">        this.availableStrokeSamples = new StrokeSample[3];</span>
+<span class="nc" id="L131">        this.availableStrokeSamples[0] = new StrokeSample(</span>
+                new BasicStroke(1.0f));
+<span class="nc" id="L133">        this.availableStrokeSamples[1] = new StrokeSample(</span>
+                new BasicStroke(2.0f));
+<span class="nc" id="L135">        this.availableStrokeSamples[2] = new StrokeSample(</span>
+                new BasicStroke(3.0f));
+
+<span class="nc" id="L138">        JTabbedPane other = getOtherTabs();</span>
+
+<span class="nc" id="L140">        JPanel range = new JPanel(new LCBLayout(3));</span>
+<span class="nc" id="L141">        range.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));</span>
+
+<span class="nc" id="L143">        range.add(new JPanel());</span>
+<span class="nc" id="L144">        this.autoRangeCheckBox = new JCheckBox(localizationResources.getString(</span>
+                &quot;Auto-adjust_range&quot;), this.autoRange);
+<span class="nc" id="L146">        this.autoRangeCheckBox.setActionCommand(&quot;AutoRangeOnOff&quot;);</span>
+<span class="nc" id="L147">        this.autoRangeCheckBox.addActionListener(this);</span>
+<span class="nc" id="L148">        range.add(this.autoRangeCheckBox);</span>
+<span class="nc" id="L149">        range.add(new JPanel());</span>
+
+<span class="nc" id="L151">        range.add(new JLabel(localizationResources.getString(</span>
+                &quot;Minimum_range_value&quot;)));
+<span class="nc" id="L153">        this.minimumRangeValue = new JTextField(Double.toString(</span>
+                this.minimumValue));
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        this.minimumRangeValue.setEnabled(!this.autoRange);</span>
+<span class="nc" id="L156">        this.minimumRangeValue.setActionCommand(&quot;MinimumRange&quot;);</span>
+<span class="nc" id="L157">        this.minimumRangeValue.addActionListener(this);</span>
+<span class="nc" id="L158">        this.minimumRangeValue.addFocusListener(this);</span>
+<span class="nc" id="L159">        range.add(this.minimumRangeValue);</span>
+<span class="nc" id="L160">        range.add(new JPanel());</span>
+
+<span class="nc" id="L162">        range.add(new JLabel(localizationResources.getString(</span>
+                &quot;Maximum_range_value&quot;)));
+<span class="nc" id="L164">        this.maximumRangeValue = new JTextField(Double.toString(</span>
+                this.maximumValue));
+<span class="nc bnc" id="L166" title="All 2 branches missed.">        this.maximumRangeValue.setEnabled(!this.autoRange);</span>
+<span class="nc" id="L167">        this.maximumRangeValue.setActionCommand(&quot;MaximumRange&quot;);</span>
+<span class="nc" id="L168">        this.maximumRangeValue.addActionListener(this);</span>
+<span class="nc" id="L169">        this.maximumRangeValue.addFocusListener(this);</span>
+<span class="nc" id="L170">        range.add(this.maximumRangeValue);</span>
+<span class="nc" id="L171">        range.add(new JPanel());</span>
+
+<span class="nc" id="L173">        other.add(localizationResources.getString(&quot;Range&quot;), range);</span>
+
+<span class="nc" id="L175">    }</span>
+
+    /**
+     * Returns the current setting of the auto-range property.
+     *
+     * @return &lt;code&gt;true&lt;/code&gt; if auto range is enabled.
+     */
+    public boolean isAutoRange() {
+<span class="nc" id="L183">        return this.autoRange;</span>
+    }
+
+    /**
+     * Returns the current setting of the minimum value in the axis range.
+     *
+     * @return The current setting of the minimum value in the axis range.
+     */
+    public double getMinimumValue() {
+<span class="nc" id="L192">        return this.minimumValue;</span>
+    }
+
+    /**
+     * Returns the current setting of the maximum value in the axis range.
+     *
+     * @return The current setting of the maximum value in the axis range.
+     */
+    public double getMaximumValue() {
+<span class="nc" id="L201">        return this.maximumValue;</span>
+    }
+
+    /**
+     * Handles actions from within the property panel.
+     * @param event an event.
+     */
+    public void actionPerformed(ActionEvent event) {
+<span class="nc" id="L209">        String command = event.getActionCommand();</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        if (command.equals(&quot;GridStroke&quot;)) {</span>
+<span class="nc" id="L211">            attemptGridStrokeSelection();</span>
+        }
+<span class="nc bnc" id="L213" title="All 2 branches missed.">        else if (command.equals(&quot;GridPaint&quot;)) {</span>
+<span class="nc" id="L214">            attemptGridPaintSelection();</span>
+        }
+<span class="nc bnc" id="L216" title="All 2 branches missed.">        else if (command.equals(&quot;AutoRangeOnOff&quot;)) {</span>
+<span class="nc" id="L217">            toggleAutoRange();</span>
+        }
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        else if (command.equals(&quot;MinimumRange&quot;)) {</span>
+<span class="nc" id="L220">            validateMinimum();</span>
+        }
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        else if (command.equals(&quot;MaximumRange&quot;)) {</span>
+<span class="nc" id="L223">            validateMaximum();</span>
+        }
+        else {
+            // pass to the super-class for handling
+<span class="nc" id="L227">            super.actionPerformed(event);</span>
+        }
+<span class="nc" id="L229">    }</span>
+
+    /**
+     * Handle a grid stroke selection.
+     */
+    private void attemptGridStrokeSelection() {
+<span class="nc" id="L235">        StrokeChooserPanel panel = new StrokeChooserPanel(this.gridStrokeSample,</span>
+                this.availableStrokeSamples);
+<span class="nc" id="L237">        int result = JOptionPane.showConfirmDialog(this, panel,</span>
+<span class="nc" id="L238">                localizationResources.getString(&quot;Stroke_Selection&quot;),</span>
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+<span class="nc bnc" id="L241" title="All 2 branches missed.">        if (result == JOptionPane.OK_OPTION) {</span>
+<span class="nc" id="L242">            this.gridStrokeSample.setStroke(panel.getSelectedStroke());</span>
+        }
+<span class="nc" id="L244">    }</span>
+
+    /**
+     * Handle a grid paint selection.
+     */
+    private void attemptGridPaintSelection() {
+        Color c;
+<span class="nc" id="L251">        c = JColorChooser.showDialog(this, localizationResources.getString(</span>
+                &quot;Grid_Color&quot;), Color.blue);
+<span class="nc bnc" id="L253" title="All 2 branches missed.">        if (c != null) {</span>
+<span class="nc" id="L254">            this.gridPaintSample.setPaint(c);</span>
+        }
+<span class="nc" id="L256">    }</span>
+
+    /**
+     * Does nothing.
+     *
+     * @param event  the event.
+     */
+    public void focusGained(FocusEvent event) {
+        // don't need to do anything
+<span class="nc" id="L265">    }</span>
+
+    /**
+     *  Revalidates minimum/maximum range.
+     *
+     *  @param event  the event.
+     */
+    public void focusLost(FocusEvent event) {
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        if (event.getSource() == this.minimumRangeValue) {</span>
+<span class="nc" id="L274">            validateMinimum();</span>
+        }
+<span class="nc bnc" id="L276" title="All 2 branches missed.">        else if (event.getSource() == this.maximumRangeValue) {</span>
+<span class="nc" id="L277">            validateMaximum();</span>
+        }
+<span class="nc" id="L279">    }</span>
+
+    /**
+     *  Toggle the auto range setting.
+     */
+    public void toggleAutoRange() {
+<span class="nc" id="L285">        this.autoRange = this.autoRangeCheckBox.isSelected();</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">        if (this.autoRange) {</span>
+<span class="nc" id="L287">            this.minimumRangeValue.setText(Double.toString(this.minimumValue));</span>
+<span class="nc" id="L288">            this.minimumRangeValue.setEnabled(false);</span>
+<span class="nc" id="L289">            this.maximumRangeValue.setText(Double.toString(this.maximumValue));</span>
+<span class="nc" id="L290">            this.maximumRangeValue.setEnabled(false);</span>
+        }
+        else {
+<span class="nc" id="L293">            this.minimumRangeValue.setEnabled(true);</span>
+<span class="nc" id="L294">            this.maximumRangeValue.setEnabled(true);</span>
+        }
+<span class="nc" id="L296">    }</span>
+
+    /**
+     * Revalidate the range minimum.
+     */
+    public void validateMinimum() {
+        double newMin;
+        try {
+<span class="nc" id="L304">            newMin = Double.parseDouble(this.minimumRangeValue.getText());</span>
+<span class="nc bnc" id="L305" title="All 2 branches missed.">            if (newMin &gt;= this.maximumValue) {</span>
+<span class="nc" id="L306">                newMin = this.minimumValue;</span>
+            }
+        }
+<span class="nc" id="L309">        catch (NumberFormatException e) {</span>
+<span class="nc" id="L310">            newMin = this.minimumValue;</span>
+<span class="nc" id="L311">        }</span>
+
+<span class="nc" id="L313">        this.minimumValue = newMin;</span>
+<span class="nc" id="L314">        this.minimumRangeValue.setText(Double.toString(this.minimumValue));</span>
+<span class="nc" id="L315">    }</span>
+
+    /**
+     * Revalidate the range maximum.
+     */
+    public void validateMaximum() {
+        double newMax;
+        try {
+<span class="nc" id="L323">            newMax = Double.parseDouble(this.maximumRangeValue.getText());</span>
+<span class="nc bnc" id="L324" title="All 2 branches missed.">            if (newMax &lt;= this.minimumValue) {</span>
+<span class="nc" id="L325">                newMax = this.maximumValue;</span>
+            }
+        }
+<span class="nc" id="L328">        catch (NumberFormatException e) {</span>
+<span class="nc" id="L329">            newMax = this.maximumValue;</span>
+<span class="nc" id="L330">        }</span>
+
+<span class="nc" id="L332">        this.maximumValue = newMax;</span>
+<span class="nc" id="L333">        this.maximumRangeValue.setText(Double.toString(this.maximumValue));</span>
+<span class="nc" id="L334">    }</span>
+
+    /**
+     * Sets the properties of the specified axis to match the properties
+     * defined on this panel.
+     *
+     * @param axis  the axis.
+     */
+    public void setAxisProperties(Axis axis) {
+<span class="nc" id="L343">        super.setAxisProperties(axis);</span>
+<span class="nc" id="L344">        NumberAxis numberAxis = (NumberAxis) axis;</span>
+<span class="nc" id="L345">        numberAxis.setAutoRange(this.autoRange);</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">        if (!this.autoRange) {</span>
+<span class="nc" id="L347">            numberAxis.setRange(this.minimumValue, this.maximumValue);</span>
+        }
+<span class="nc" id="L349">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

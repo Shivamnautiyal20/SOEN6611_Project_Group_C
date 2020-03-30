@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LabelBlock.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.block</a> &gt; <span class="el_source">LabelBlock.java</span></div><h1>LabelBlock.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------
+ * LabelBlock.java
+ * ---------------
+ * (C) Copyright 2004-2009, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Pierre-Marie Le Biot;
+ *
+ * Changes:
+ * --------
+ * 22-Oct-2004 : Version 1 (DG);
+ * 19-Apr-2005 : Added optional tooltip and URL text items,
+ *               draw() method now returns entities if
+ *               requested (DG);
+ * 13-May-2005 : Added methods to set the font (DG);
+ * 01-Sep-2005 : Added paint management (PMLB);
+ *               Implemented equals() and clone() (PublicCloneable) (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 20-Jul-2006 : Fixed entity area in draw() method (DG);
+ * 16-Mar-2007 : Fixed serialization when using GradientPaint (DG);
+ * 10-Feb-2009 : Added alignment fields (DG);
+ *
+ */
+
+package org.jfree.chart.block;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import org.jfree.chart.entity.ChartEntity;
+import org.jfree.chart.entity.StandardEntityCollection;
+import org.jfree.io.SerialUtilities;
+import org.jfree.text.TextBlock;
+import org.jfree.text.TextBlockAnchor;
+import org.jfree.text.TextUtilities;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.Size2D;
+import org.jfree.util.ObjectUtilities;
+import org.jfree.util.PaintUtilities;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * A block containing a label.
+ */
+public class LabelBlock extends AbstractBlock
+        implements Block, PublicCloneable {
+
+    /** For serialization. */
+    static final long serialVersionUID = 249626098864178017L;
+
+    /**
+     * The text for the label - retained in case the label needs
+     * regenerating (for example, to change the font).
+     */
+    private String text;
+
+    /** The label. */
+    private TextBlock label;
+
+    /** The font. */
+    private Font font;
+
+    /** The tool tip text (can be &lt;code&gt;null&lt;/code&gt;). */
+    private String toolTipText;
+
+    /** The URL text (can be &lt;code&gt;null&lt;/code&gt;). */
+    private String urlText;
+
+    /** The default color. */
+<span class="fc" id="L104">    public static final Paint DEFAULT_PAINT = Color.black;</span>
+
+    /** The paint. */
+    private transient Paint paint;
+
+    /**
+     * The content alignment point.
+     *
+     * @since 1.0.13
+     */
+    private TextBlockAnchor contentAlignmentPoint;
+
+    /**
+     * The anchor point for the text.
+     *
+     * @since 1.0.13
+     */
+    private RectangleAnchor textAnchor;
+
+    /**
+     * Creates a new label block.
+     *
+     * @param label  the label (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public LabelBlock(String label) {
+<span class="nc" id="L129">        this(label, new Font(&quot;SansSerif&quot;, Font.PLAIN, 10), DEFAULT_PAINT);</span>
+<span class="nc" id="L130">    }</span>
+
+    /**
+     * Creates a new label block.
+     *
+     * @param text  the text for the label (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param font  the font (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public LabelBlock(String text, Font font) {
+<span class="nc" id="L139">        this(text, font, DEFAULT_PAINT);</span>
+<span class="nc" id="L140">    }</span>
+
+    /**
+     * Creates a new label block.
+     *
+     * @param text  the text for the label (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param font  the font (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param paint the paint (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+<span class="fc" id="L149">    public LabelBlock(String text, Font font, Paint paint) {</span>
+<span class="fc" id="L150">        this.text = text;</span>
+<span class="fc" id="L151">        this.paint = paint;</span>
+<span class="fc" id="L152">        this.label = TextUtilities.createTextBlock(text, font, this.paint);</span>
+<span class="fc" id="L153">        this.font = font;</span>
+<span class="fc" id="L154">        this.toolTipText = null;</span>
+<span class="fc" id="L155">        this.urlText = null;</span>
+<span class="fc" id="L156">        this.contentAlignmentPoint = TextBlockAnchor.CENTER;</span>
+<span class="fc" id="L157">        this.textAnchor = RectangleAnchor.CENTER;</span>
+<span class="fc" id="L158">    }</span>
+
+    /**
+     * Returns the font.
+     *
+     * @return The font (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setFont(Font)
+     */
+    public Font getFont() {
+<span class="nc" id="L168">        return this.font;</span>
+    }
+
+    /**
+     * Sets the font and regenerates the label.
+     *
+     * @param font  the font (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #getFont()
+     */
+    public void setFont(Font font) {
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        if (font == null) {</span>
+<span class="nc" id="L180">            throw new IllegalArgumentException(&quot;Null 'font' argument.&quot;);</span>
+        }
+<span class="nc" id="L182">        this.font = font;</span>
+<span class="nc" id="L183">        this.label = TextUtilities.createTextBlock(this.text, font, this.paint);</span>
+<span class="nc" id="L184">    }</span>
+
+    /**
+     * Returns the paint.
+     *
+     * @return The paint (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setPaint(Paint)
+     */
+    public Paint getPaint() {
+<span class="nc" id="L194">        return this.paint;</span>
+    }
+
+    /**
+     * Sets the paint and regenerates the label.
+     *
+     * @param paint  the paint (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #getPaint()
+     */
+    public void setPaint(Paint paint) {
+<span class="nc bnc" id="L205" title="All 2 branches missed.">        if (paint == null) {</span>
+<span class="nc" id="L206">            throw new IllegalArgumentException(&quot;Null 'paint' argument.&quot;);</span>
+        }
+<span class="nc" id="L208">        this.paint = paint;</span>
+<span class="nc" id="L209">        this.label = TextUtilities.createTextBlock(this.text, this.font,</span>
+                this.paint);
+<span class="nc" id="L211">    }</span>
+
+    /**
+     * Returns the tool tip text.
+     *
+     * @return The tool tip text (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setToolTipText(String)
+     */
+    public String getToolTipText() {
+<span class="nc" id="L221">        return this.toolTipText;</span>
+    }
+
+    /**
+     * Sets the tool tip text.
+     *
+     * @param text  the text (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @see #getToolTipText()
+     */
+    public void setToolTipText(String text) {
+<span class="fc" id="L232">        this.toolTipText = text;</span>
+<span class="fc" id="L233">    }</span>
+
+    /**
+     * Returns the URL text.
+     *
+     * @return The URL text (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setURLText(String)
+     */
+    public String getURLText() {
+<span class="nc" id="L243">        return this.urlText;</span>
+    }
+
+    /**
+     * Sets the URL text.
+     *
+     * @param text  the text (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @see #getURLText()
+     */
+    public void setURLText(String text) {
+<span class="fc" id="L254">        this.urlText = text;</span>
+<span class="fc" id="L255">    }</span>
+
+    /**
+     * Returns the content alignment point.
+     *
+     * @return The content alignment point (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @since 1.0.13
+     */
+    public TextBlockAnchor getContentAlignmentPoint() {
+<span class="nc" id="L265">        return this.contentAlignmentPoint;</span>
+    }
+
+    /**
+     * Sets the content alignment point.
+     *
+     * @param anchor  the anchor used to determine the alignment point (never
+     *         &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @since 1.0.13
+     */
+    public void setContentAlignmentPoint(TextBlockAnchor anchor) {
+<span class="pc bpc" id="L277" title="1 of 2 branches missed.">        if (anchor == null) {</span>
+<span class="nc" id="L278">            throw new IllegalArgumentException(&quot;Null 'anchor' argument.&quot;);</span>
+        }
+<span class="fc" id="L280">        this.contentAlignmentPoint = anchor;</span>
+<span class="fc" id="L281">    }</span>
+
+    /**
+     * Returns the text anchor (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @return The text anchor.
+     *
+     * @since 1.0.13
+     */
+    public RectangleAnchor getTextAnchor() {
+<span class="nc" id="L291">        return this.textAnchor;</span>
+    }
+
+    /**
+     * Sets the text anchor.
+     *
+     * @param anchor  the anchor (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @since 1.0.13
+     */
+    public void setTextAnchor(RectangleAnchor anchor) {
+<span class="fc" id="L302">        this.textAnchor = anchor;</span>
+<span class="fc" id="L303">    }</span>
+
+    /**
+     * Arranges the contents of the block, within the given constraints, and
+     * returns the block size.
+     *
+     * @param g2  the graphics device.
+     * @param constraint  the constraint (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The block size (in Java2D units, never &lt;code&gt;null&lt;/code&gt;).
+     */
+    public Size2D arrange(Graphics2D g2, RectangleConstraint constraint) {
+<span class="fc" id="L315">        g2.setFont(this.font);</span>
+<span class="fc" id="L316">        Size2D s = this.label.calculateDimensions(g2);</span>
+<span class="fc" id="L317">        return new Size2D(calculateTotalWidth(s.getWidth()),</span>
+<span class="fc" id="L318">                calculateTotalHeight(s.getHeight()));</span>
+    }
+
+    /**
+     * Draws the block.
+     *
+     * @param g2  the graphics device.
+     * @param area  the area.
+     */
+    public void draw(Graphics2D g2, Rectangle2D area) {
+<span class="nc" id="L328">        draw(g2, area, null);</span>
+<span class="nc" id="L329">    }</span>
+
+    /**
+     * Draws the block within the specified area.
+     *
+     * @param g2  the graphics device.
+     * @param area  the area.
+     * @param params  ignored (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return Always &lt;code&gt;null&lt;/code&gt;.
+     */
+    public Object draw(Graphics2D g2, Rectangle2D area, Object params) {
+<span class="fc" id="L341">        area = trimMargin(area);</span>
+<span class="fc" id="L342">        drawBorder(g2, area);</span>
+<span class="fc" id="L343">        area = trimBorder(area);</span>
+<span class="fc" id="L344">        area = trimPadding(area);</span>
+
+        // check if we need to collect chart entities from the container
+<span class="fc" id="L347">        EntityBlockParams ebp = null;</span>
+<span class="fc" id="L348">        StandardEntityCollection sec = null;</span>
+<span class="fc" id="L349">        Shape entityArea = null;</span>
+<span class="pc bpc" id="L350" title="1 of 2 branches missed.">        if (params instanceof EntityBlockParams) {</span>
+<span class="nc" id="L351">            ebp = (EntityBlockParams) params;</span>
+<span class="nc bnc" id="L352" title="All 2 branches missed.">            if (ebp.getGenerateEntities()) {</span>
+<span class="nc" id="L353">                sec = new StandardEntityCollection();</span>
+<span class="nc" id="L354">                entityArea = (Shape) area.clone();</span>
+            }
+        }
+<span class="fc" id="L357">        g2.setPaint(this.paint);</span>
+<span class="fc" id="L358">        g2.setFont(this.font);</span>
+<span class="fc" id="L359">        Point2D pt = RectangleAnchor.coordinates(area, this.textAnchor);</span>
+<span class="fc" id="L360">        this.label.draw(g2, (float) pt.getX(), (float) pt.getY(),</span>
+                this.contentAlignmentPoint);
+<span class="fc" id="L362">        BlockResult result = null;</span>
+<span class="pc bpc" id="L363" title="3 of 4 branches missed.">        if (ebp != null &amp;&amp; sec != null) {</span>
+<span class="nc bnc" id="L364" title="All 4 branches missed.">            if (this.toolTipText != null || this.urlText != null) {</span>
+<span class="nc" id="L365">                ChartEntity entity = new ChartEntity(entityArea,</span>
+                        this.toolTipText, this.urlText);
+<span class="nc" id="L367">                sec.add(entity);</span>
+<span class="nc" id="L368">                result = new BlockResult();</span>
+<span class="nc" id="L369">                result.setEntityCollection(sec);</span>
+            }
+        }
+<span class="fc" id="L372">        return result;</span>
+    }
+
+    /**
+     * Tests this &lt;code&gt;LabelBlock&lt;/code&gt; for equality with an arbitrary
+     * object.
+     *
+     * @param obj  the object (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L384" title="1 of 2 branches missed.">        if (!(obj instanceof LabelBlock)) {</span>
+<span class="nc" id="L385">            return false;</span>
+        }
+<span class="fc" id="L387">        LabelBlock that = (LabelBlock) obj;</span>
+<span class="fc bfc" id="L388" title="All 2 branches covered.">        if (!this.text.equals(that.text)) {</span>
+<span class="fc" id="L389">            return false;</span>
+        }
+<span class="fc bfc" id="L391" title="All 2 branches covered.">        if (!this.font.equals(that.font)) {</span>
+<span class="fc" id="L392">            return false;</span>
+        }
+<span class="fc bfc" id="L394" title="All 2 branches covered.">        if (!PaintUtilities.equal(this.paint, that.paint)) {</span>
+<span class="fc" id="L395">            return false;</span>
+        }
+<span class="fc bfc" id="L397" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.toolTipText, that.toolTipText)) {</span>
+<span class="fc" id="L398">            return false;</span>
+        }
+<span class="fc bfc" id="L400" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.urlText, that.urlText)) {</span>
+<span class="fc" id="L401">            return false;</span>
+        }
+<span class="fc bfc" id="L403" title="All 2 branches covered.">        if (!this.contentAlignmentPoint.equals(that.contentAlignmentPoint)) {</span>
+<span class="fc" id="L404">            return false;</span>
+        }
+<span class="fc bfc" id="L406" title="All 2 branches covered.">        if (!this.textAnchor.equals(that.textAnchor)) {</span>
+<span class="fc" id="L407">            return false;</span>
+        }
+<span class="fc" id="L409">        return super.equals(obj);</span>
+    }
+
+    /**
+     * Returns a clone of this &lt;code&gt;LabelBlock&lt;/code&gt; instance.
+     *
+     * @return A clone.
+     *
+     * @throws CloneNotSupportedException if there is a problem cloning.
+     */
+    public Object clone() throws CloneNotSupportedException {
+<span class="fc" id="L420">        return super.clone();</span>
+    }
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the output stream.
+     *
+     * @throws IOException if there is an I/O error.
+     */
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+<span class="fc" id="L431">        stream.defaultWriteObject();</span>
+<span class="fc" id="L432">        SerialUtilities.writePaint(this.paint, stream);</span>
+<span class="fc" id="L433">    }</span>
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the input stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     * @throws ClassNotFoundException  if there is a classpath problem.
+     */
+    private void readObject(ObjectInputStream stream)
+        throws IOException, ClassNotFoundException {
+<span class="fc" id="L445">        stream.defaultReadObject();</span>
+<span class="fc" id="L446">        this.paint = SerialUtilities.readPaint(stream);</span>
+<span class="fc" id="L447">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DialPlotTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot.dial.junit</a> &gt; <span class="el_source">DialPlotTests.java</span></div><h1>DialPlotTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------
+ * DialPlotTests.java
+ * ------------------
+ * (C) Copyright 2006-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 03-Nov-2006 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.plot.dial.junit;
+
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.event.PlotChangeEvent;
+import org.jfree.chart.event.PlotChangeListener;
+import org.jfree.chart.plot.dial.ArcDialFrame;
+import org.jfree.chart.plot.dial.DialBackground;
+import org.jfree.chart.plot.dial.DialCap;
+import org.jfree.chart.plot.dial.DialPlot;
+import org.jfree.chart.plot.dial.StandardDialFrame;
+import org.jfree.chart.plot.dial.StandardDialScale;
+
+/**
+ * Tests for the {@link DialPlot} class.
+ */
+public class DialPlotTests extends TestCase implements PlotChangeListener {
+
+    /** The last plot change event received. */
+    private PlotChangeEvent lastEvent;
+
+    /**
+     * Records the last plot change event received.
+     *
+     * @param event  the event.
+     */
+    public void plotChanged(PlotChangeEvent event) {
+<span class="fc" id="L79">        this.lastEvent = event;</span>
+<span class="fc" id="L80">    }</span>
+
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        return new TestSuite(DialPlotTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DialPlotTests(String name) {
+<span class="fc" id="L98">        super(name);</span>
+<span class="fc" id="L99">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L105">        DialPlot p1 = new DialPlot();</span>
+<span class="fc" id="L106">        DialPlot p2 = new DialPlot();</span>
+<span class="fc" id="L107">        assertTrue(p1.equals(p2));</span>
+
+        // background
+<span class="fc" id="L110">        p1.setBackground(new DialBackground(Color.green));</span>
+<span class="fc" id="L111">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L112">        p2.setBackground(new DialBackground(Color.green));</span>
+<span class="fc" id="L113">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L115">        p1.setBackground(null);</span>
+<span class="fc" id="L116">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L117">        p2.setBackground(null);</span>
+<span class="fc" id="L118">        assertTrue(p1.equals(p2));</span>
+
+        // dial cap
+<span class="fc" id="L121">        DialCap cap1 = new DialCap();</span>
+<span class="fc" id="L122">        cap1.setFillPaint(Color.red);</span>
+<span class="fc" id="L123">        p1.setCap(cap1);</span>
+<span class="fc" id="L124">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L125">        DialCap cap2 = new DialCap();</span>
+<span class="fc" id="L126">        cap2.setFillPaint(Color.red);</span>
+<span class="fc" id="L127">        p2.setCap(cap2);</span>
+<span class="fc" id="L128">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L130">        p1.setCap(null);</span>
+<span class="fc" id="L131">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L132">        p2.setCap(null);</span>
+<span class="fc" id="L133">        assertTrue(p1.equals(p2));</span>
+
+        // frame
+<span class="fc" id="L136">        StandardDialFrame f1 = new StandardDialFrame();</span>
+<span class="fc" id="L137">        f1.setBackgroundPaint(new GradientPaint(1.0f, 2.0f, Color.red, 3.0f,</span>
+                4.0f, Color.white));
+<span class="fc" id="L139">        p1.setDialFrame(f1);</span>
+<span class="fc" id="L140">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L141">        StandardDialFrame f2 = new StandardDialFrame();</span>
+<span class="fc" id="L142">        f2.setBackgroundPaint(new GradientPaint(1.0f, 2.0f, Color.red, 3.0f,</span>
+                4.0f, Color.white));
+<span class="fc" id="L144">        p2.setDialFrame(f2);</span>
+<span class="fc" id="L145">        assertTrue(p1.equals(p2));</span>
+
+        // view
+<span class="fc" id="L148">        p1.setView(0.2, 0.0, 0.8, 1.0);</span>
+<span class="fc" id="L149">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L150">        p2.setView(0.2, 0.0, 0.8, 1.0);</span>
+<span class="fc" id="L151">        assertTrue(p1.equals(p2));</span>
+
+        // layer
+<span class="fc" id="L154">        p1.addLayer(new StandardDialScale());</span>
+<span class="fc" id="L155">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L156">        p2.addLayer(new StandardDialScale());</span>
+<span class="fc" id="L157">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L158">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashCode() {
+<span class="fc" id="L164">        DialPlot p1 = new DialPlot();</span>
+<span class="fc" id="L165">        DialPlot p2 = new DialPlot();</span>
+<span class="fc" id="L166">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L167">        int h1 = p1.hashCode();</span>
+<span class="fc" id="L168">        int h2 = p2.hashCode();</span>
+<span class="fc" id="L169">        assertEquals(h1, h2);</span>
+<span class="fc" id="L170">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L176">        DialPlot p1 = new DialPlot();</span>
+<span class="fc" id="L177">        DialPlot p2 = null;</span>
+        try {
+<span class="fc" id="L179">            p2 = (DialPlot) p1.clone();</span>
+        }
+<span class="nc" id="L181">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L182">            e.printStackTrace();</span>
+<span class="fc" id="L183">        }</span>
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L186">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L187">    }</span>
+
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L194">        DialPlot p1 = new DialPlot();</span>
+<span class="fc" id="L195">        DialPlot p2 = null;</span>
+
+        try {
+<span class="fc" id="L198">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L199">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L200">            out.writeObject(p1);</span>
+<span class="fc" id="L201">            out.close();</span>
+
+<span class="fc" id="L203">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L204">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L205">            p2 = (DialPlot) in.readObject();</span>
+<span class="fc" id="L206">            in.close();</span>
+        }
+<span class="nc" id="L208">        catch (Exception e) {</span>
+<span class="nc" id="L209">            e.printStackTrace();</span>
+<span class="fc" id="L210">        }</span>
+<span class="fc" id="L211">        assertEquals(p1, p2);</span>
+<span class="fc" id="L212">    }</span>
+
+    /**
+     * Check the notification event mechanism for the dial background.
+     */
+    public void testBackgroundListener() {
+<span class="fc" id="L218">        DialPlot p = new DialPlot();</span>
+<span class="fc" id="L219">        DialBackground b1 = new DialBackground(Color.red);</span>
+<span class="fc" id="L220">        p.setBackground(b1);</span>
+<span class="fc" id="L221">        p.addChangeListener(this);</span>
+<span class="fc" id="L222">        this.lastEvent = null;</span>
+<span class="fc" id="L223">        b1.setPaint(Color.blue);</span>
+<span class="fc" id="L224">        assertNotNull(this.lastEvent);</span>
+
+<span class="fc" id="L226">        DialBackground b2 = new DialBackground(Color.green);</span>
+<span class="fc" id="L227">        p.setBackground(b2);</span>
+<span class="fc" id="L228">        this.lastEvent = null;</span>
+<span class="fc" id="L229">        b1.setPaint(Color.red);</span>
+<span class="fc" id="L230">        assertNull(this.lastEvent);</span>
+<span class="fc" id="L231">        b2.setPaint(Color.red);</span>
+<span class="fc" id="L232">        assertNotNull(this.lastEvent);</span>
+<span class="fc" id="L233">    }</span>
+
+    /**
+     * Check the notification event mechanism for the dial cap.
+     */
+    public void testCapListener() {
+<span class="fc" id="L239">        DialPlot p = new DialPlot();</span>
+<span class="fc" id="L240">        DialCap c1 = new DialCap();</span>
+<span class="fc" id="L241">        p.setCap(c1);</span>
+<span class="fc" id="L242">        p.addChangeListener(this);</span>
+<span class="fc" id="L243">        this.lastEvent = null;</span>
+<span class="fc" id="L244">        c1.setFillPaint(Color.red);</span>
+<span class="fc" id="L245">        assertNotNull(this.lastEvent);</span>
+
+<span class="fc" id="L247">        DialCap c2 = new DialCap();</span>
+<span class="fc" id="L248">        p.setCap(c2);</span>
+<span class="fc" id="L249">        this.lastEvent = null;</span>
+<span class="fc" id="L250">        c1.setFillPaint(Color.blue);</span>
+<span class="fc" id="L251">        assertNull(this.lastEvent);</span>
+<span class="fc" id="L252">        c2.setFillPaint(Color.green);</span>
+<span class="fc" id="L253">        assertNotNull(this.lastEvent);</span>
+<span class="fc" id="L254">    }</span>
+
+    /**
+     * Check the notification event mechanism for the dial frame.
+     */
+    public void testFrameListener() {
+<span class="fc" id="L260">        DialPlot p = new DialPlot();</span>
+<span class="fc" id="L261">        ArcDialFrame f1 = new ArcDialFrame();</span>
+<span class="fc" id="L262">        p.setDialFrame(f1);</span>
+<span class="fc" id="L263">        p.addChangeListener(this);</span>
+<span class="fc" id="L264">        this.lastEvent = null;</span>
+<span class="fc" id="L265">        f1.setBackgroundPaint(Color.gray);</span>
+<span class="fc" id="L266">        assertNotNull(this.lastEvent);</span>
+
+<span class="fc" id="L268">        ArcDialFrame f2 = new ArcDialFrame();</span>
+<span class="fc" id="L269">        p.setDialFrame(f2);</span>
+<span class="fc" id="L270">        this.lastEvent = null;</span>
+<span class="fc" id="L271">        f1.setBackgroundPaint(Color.blue);</span>
+<span class="fc" id="L272">        assertNull(this.lastEvent);</span>
+<span class="fc" id="L273">        f2.setBackgroundPaint(Color.green);</span>
+<span class="fc" id="L274">        assertNotNull(this.lastEvent);</span>
+<span class="fc" id="L275">    }</span>
+
+    /**
+     * Check the notification event mechanism for the dial scales.
+     */
+    public void testScaleListener() {
+<span class="fc" id="L281">        DialPlot p = new DialPlot();</span>
+<span class="fc" id="L282">        StandardDialScale s1 = new StandardDialScale();</span>
+<span class="fc" id="L283">        p.addScale(0, s1);</span>
+<span class="fc" id="L284">        p.addChangeListener(this);</span>
+<span class="fc" id="L285">        this.lastEvent = null;</span>
+<span class="fc" id="L286">        s1.setStartAngle(22.0);</span>
+<span class="fc" id="L287">        assertNotNull(this.lastEvent);</span>
+
+<span class="fc" id="L289">        StandardDialScale s2 = new StandardDialScale();</span>
+<span class="fc" id="L290">        p.addScale(0, s2);</span>
+<span class="fc" id="L291">        this.lastEvent = null;</span>
+<span class="fc" id="L292">        s1.setStartAngle(33.0);</span>
+<span class="fc" id="L293">        assertNull(this.lastEvent);</span>
+<span class="fc" id="L294">        s2.setStartAngle(33.0);</span>
+<span class="fc" id="L295">        assertNotNull(this.lastEvent);</span>
+<span class="fc" id="L296">    }</span>
+
+    /**
+     * Check the notification event mechanism for a layer.
+     */
+    public void testLayerListener() {
+<span class="fc" id="L302">        DialPlot p = new DialPlot();</span>
+<span class="fc" id="L303">        DialBackground b1 = new DialBackground(Color.red);</span>
+<span class="fc" id="L304">        p.addLayer(b1);</span>
+<span class="fc" id="L305">        p.addChangeListener(this);</span>
+<span class="fc" id="L306">        this.lastEvent = null;</span>
+<span class="fc" id="L307">        b1.setPaint(Color.blue);</span>
+<span class="fc" id="L308">        assertNotNull(this.lastEvent);</span>
+
+<span class="fc" id="L310">        DialBackground b2 = new DialBackground(Color.green);</span>
+<span class="fc" id="L311">        p.addLayer(b2);</span>
+<span class="fc" id="L312">        this.lastEvent = null;</span>
+<span class="fc" id="L313">        b1.setPaint(Color.red);</span>
+<span class="fc" id="L314">        assertNotNull(this.lastEvent);</span>
+<span class="fc" id="L315">        b2.setPaint(Color.green);</span>
+<span class="fc" id="L316">        assertNotNull(this.lastEvent);</span>
+
+<span class="fc" id="L318">        p.removeLayer(b2);</span>
+<span class="fc" id="L319">        this.lastEvent = null;</span>
+<span class="fc" id="L320">        b2.setPaint(Color.red);</span>
+<span class="fc" id="L321">        assertNull(this.lastEvent);</span>
+<span class="fc" id="L322">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

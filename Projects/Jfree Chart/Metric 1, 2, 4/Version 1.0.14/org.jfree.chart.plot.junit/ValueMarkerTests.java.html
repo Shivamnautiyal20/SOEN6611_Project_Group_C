@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValueMarkerTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot.junit</a> &gt; <span class="el_source">ValueMarkerTests.java</span></div><h1>ValueMarkerTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------
+ * ValueMarkerTests.java
+ * ---------------------
+ * (C) Copyright 2003-2007, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 18-Aug-2003 : Version 1 (DG);
+ * 14-Jun-2004 : Renamed MarkerTests --&gt; ValueMarkerTests (DG);
+ * 01-Jun-2005 : Strengthened equals() test (DG);
+ * 05-Sep-2006 : Added checks for MarkerChangeEvent generation (DG);
+ * 26-Sep-2007 : Added test1802195() method (DG);
+ * 08-Oct-2007 : Added test1808376() method (DG);
+ *
+ */
+
+package org.jfree.chart.plot.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Stroke;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.event.MarkerChangeEvent;
+import org.jfree.chart.event.MarkerChangeListener;
+import org.jfree.chart.plot.Marker;
+import org.jfree.chart.plot.ValueMarker;
+import org.jfree.ui.LengthAdjustmentType;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.RectangleInsets;
+import org.jfree.ui.TextAnchor;
+
+/**
+ * Tests for the {@link ValueMarker} class.
+ */
+public class ValueMarkerTests
+    extends TestCase
+    implements MarkerChangeListener {
+
+
+    MarkerChangeEvent lastEvent;
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        return new TestSuite(ValueMarkerTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public ValueMarkerTests(String name) {
+<span class="fc" id="L98">        super(name);</span>
+<span class="fc" id="L99">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L106">        Marker m1 = new ValueMarker(45.0);</span>
+<span class="fc" id="L107">        Marker m2 = new ValueMarker(45.0);</span>
+<span class="fc" id="L108">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L109">        assertTrue(m2.equals(m1));</span>
+
+<span class="fc" id="L111">        m1.setPaint(new GradientPaint(1.0f, 2.0f, Color.green,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L113">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L114">        m2.setPaint(new GradientPaint(1.0f, 2.0f, Color.green,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L116">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L118">        BasicStroke stroke = new BasicStroke(2.2f);</span>
+<span class="fc" id="L119">        m1.setStroke(stroke);</span>
+<span class="fc" id="L120">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L121">        m2.setStroke(stroke);</span>
+<span class="fc" id="L122">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L124">        m1.setOutlinePaint(new GradientPaint(4.0f, 3.0f, Color.yellow,</span>
+                2.0f, 1.0f, Color.white));
+<span class="fc" id="L126">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L127">        m2.setOutlinePaint(new GradientPaint(4.0f, 3.0f, Color.yellow,</span>
+                2.0f, 1.0f, Color.white));
+<span class="fc" id="L129">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L131">        m1.setOutlineStroke(stroke);</span>
+<span class="fc" id="L132">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L133">        m2.setOutlineStroke(stroke);</span>
+<span class="fc" id="L134">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L136">        m1.setAlpha(0.1f);</span>
+<span class="fc" id="L137">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L138">        m2.setAlpha(0.1f);</span>
+<span class="fc" id="L139">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L141">        m1.setLabel(&quot;New Label&quot;);</span>
+<span class="fc" id="L142">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L143">        m2.setLabel(&quot;New Label&quot;);</span>
+<span class="fc" id="L144">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L146">        m1.setLabelFont(new Font(&quot;SansSerif&quot;, Font.PLAIN, 10));</span>
+<span class="fc" id="L147">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L148">        m2.setLabelFont(new Font(&quot;SansSerif&quot;, Font.PLAIN, 10));</span>
+<span class="fc" id="L149">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L151">        m1.setLabelPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L153">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L154">        m2.setLabelPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L156">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L158">        m1.setLabelAnchor(RectangleAnchor.TOP_RIGHT);</span>
+<span class="fc" id="L159">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L160">        m2.setLabelAnchor(RectangleAnchor.TOP_RIGHT);</span>
+<span class="fc" id="L161">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L163">        m1.setLabelTextAnchor(TextAnchor.BASELINE_RIGHT);</span>
+<span class="fc" id="L164">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L165">        m2.setLabelTextAnchor(TextAnchor.BASELINE_RIGHT);</span>
+<span class="fc" id="L166">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L168">        m1.setLabelOffset(new RectangleInsets(10.0, 10.0, 10.0, 10.0));</span>
+<span class="fc" id="L169">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L170">        m2.setLabelOffset(new RectangleInsets(10.0, 10.0, 10.0, 10.0));</span>
+<span class="fc" id="L171">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L173">        m1.setLabelOffsetType(LengthAdjustmentType.EXPAND);</span>
+<span class="fc" id="L174">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L175">        m2.setLabelOffsetType(LengthAdjustmentType.EXPAND);</span>
+<span class="fc" id="L176">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L178">        m1 = new ValueMarker(12.3);</span>
+<span class="fc" id="L179">        m2 = new ValueMarker(45.6);</span>
+<span class="fc" id="L180">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L181">        m2 = new ValueMarker(12.3);</span>
+<span class="fc" id="L182">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L184">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L190">        ValueMarker m1 = new ValueMarker(25.0);</span>
+<span class="fc" id="L191">        ValueMarker m2 = null;</span>
+        try {
+<span class="fc" id="L193">            m2 = (ValueMarker) m1.clone();</span>
+        }
+<span class="nc" id="L195">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L196">            e.printStackTrace();</span>
+<span class="fc" id="L197">        }</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">        assertTrue(m1 != m2);</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">        assertTrue(m1.getClass() == m2.getClass());</span>
+<span class="fc" id="L200">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L201">    }</span>
+
+   /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L208">        ValueMarker m1 = new ValueMarker(25.0);</span>
+<span class="fc" id="L209">        ValueMarker m2 = null;</span>
+
+        try {
+<span class="fc" id="L212">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L213">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L214">            out.writeObject(m1);</span>
+<span class="fc" id="L215">            out.close();</span>
+
+<span class="fc" id="L217">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L218">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L219">            m2 = (ValueMarker) in.readObject();</span>
+<span class="fc" id="L220">            in.close();</span>
+        }
+<span class="nc" id="L222">        catch (Exception e) {</span>
+<span class="nc" id="L223">            e.printStackTrace();</span>
+<span class="fc" id="L224">        }</span>
+<span class="fc" id="L225">        boolean b = m1.equals(m2);</span>
+<span class="fc" id="L226">        assertTrue(b);</span>
+
+<span class="fc" id="L228">    }</span>
+
+    private static final double EPSILON = 0.000000001;
+
+    /**
+     * Some checks for the getValue() and setValue() methods.
+     */
+    public void testGetSetValue() {
+<span class="fc" id="L236">        ValueMarker m = new ValueMarker(1.1);</span>
+<span class="fc" id="L237">        m.addChangeListener(this);</span>
+<span class="fc" id="L238">        this.lastEvent = null;</span>
+<span class="fc" id="L239">        assertEquals(1.1, m.getValue(), EPSILON);</span>
+<span class="fc" id="L240">        m.setValue(33.3);</span>
+<span class="fc" id="L241">        assertEquals(33.3, m.getValue(), EPSILON);</span>
+<span class="fc" id="L242">        assertEquals(m, this.lastEvent.getMarker());</span>
+<span class="fc" id="L243">    }</span>
+
+    /**
+     * Records the last event.
+     *
+     * @param event  the last event.
+     */
+    public void markerChanged(MarkerChangeEvent event) {
+<span class="fc" id="L251">        this.lastEvent = event;</span>
+<span class="fc" id="L252">    }</span>
+
+    /**
+     * A test for bug 1802195.
+     */
+    public void test1802195() {
+
+<span class="fc" id="L259">        ValueMarker m1 = new ValueMarker(25.0);</span>
+<span class="fc" id="L260">        ValueMarker m2 = null;</span>
+
+        try {
+<span class="fc" id="L263">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L264">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L265">            out.writeObject(m1);</span>
+<span class="fc" id="L266">            out.close();</span>
+
+<span class="fc" id="L268">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L269">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L270">            m2 = (ValueMarker) in.readObject();</span>
+<span class="fc" id="L271">            in.close();</span>
+        }
+<span class="nc" id="L273">        catch (Exception e) {</span>
+<span class="nc" id="L274">            e.printStackTrace();</span>
+<span class="fc" id="L275">        }</span>
+<span class="fc" id="L276">        boolean b = m1.equals(m2);</span>
+<span class="fc" id="L277">        assertTrue(b);</span>
+
+<span class="fc" id="L279">        boolean pass = true;</span>
+        try {
+<span class="fc" id="L281">            m2.setValue(-10.0);</span>
+        }
+<span class="nc" id="L283">        catch (NullPointerException e) {</span>
+<span class="nc" id="L284">            pass = false;</span>
+<span class="fc" id="L285">        }</span>
+<span class="fc" id="L286">        assertTrue(pass);</span>
+
+<span class="fc" id="L288">    }</span>
+
+    /**
+     * A test for bug report 1808376.
+     */
+    public void test1808376() {
+<span class="fc" id="L294">        Stroke stroke = new BasicStroke(1.0f);</span>
+<span class="fc" id="L295">        Stroke outlineStroke = new BasicStroke(2.0f);</span>
+<span class="fc" id="L296">        ValueMarker m = new ValueMarker(1.0, Color.red, stroke, Color.blue,</span>
+                outlineStroke, 0.5f);
+<span class="fc" id="L298">        assertEquals(1.0, m.getValue(), EPSILON);</span>
+<span class="fc" id="L299">        assertEquals(Color.red, m.getPaint());</span>
+<span class="fc" id="L300">        assertEquals(stroke, m.getStroke());</span>
+<span class="fc" id="L301">        assertEquals(Color.blue, m.getOutlinePaint());</span>
+<span class="fc" id="L302">        assertEquals(outlineStroke, m.getOutlineStroke());</span>
+<span class="fc" id="L303">        assertEquals(0.5f, m.getAlpha(), EPSILON);</span>
+<span class="fc" id="L304">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

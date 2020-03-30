@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MarkerTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot.junit</a> &gt; <span class="el_source">MarkerTests.java</span></div><h1>MarkerTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------
+ * MarkerTests.java
+ * ----------------
+ * (C) Copyright 2006, 2007, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 05-Sep-2006 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.plot.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.util.Arrays;
+import java.util.EventListener;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.event.MarkerChangeEvent;
+import org.jfree.chart.event.MarkerChangeListener;
+import org.jfree.chart.plot.CategoryMarker;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.Marker;
+import org.jfree.chart.plot.ValueMarker;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.ui.LengthAdjustmentType;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.RectangleInsets;
+import org.jfree.ui.TextAnchor;
+
+/**
+ * Tests for the {@link Marker} class.
+ */
+public class MarkerTests extends TestCase implements MarkerChangeListener {
+
+    MarkerChangeEvent lastEvent;
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        return new TestSuite(MarkerTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public MarkerTests(String name) {
+<span class="fc" id="L87">        super(name);</span>
+<span class="fc" id="L88">    }</span>
+
+    /**
+     * Some checks for the getPaint() and setPaint() methods.
+     */
+    public void testGetSetPaint() {
+        // we use ValueMarker for the tests, because we need a concrete
+        // subclass...
+<span class="fc" id="L96">        ValueMarker m = new ValueMarker(1.1);</span>
+<span class="fc" id="L97">        m.addChangeListener(this);</span>
+<span class="fc" id="L98">        this.lastEvent = null;</span>
+<span class="fc" id="L99">        assertEquals(Color.gray, m.getPaint());</span>
+<span class="fc" id="L100">        m.setPaint(Color.blue);</span>
+<span class="fc" id="L101">        assertEquals(Color.blue, m.getPaint());</span>
+<span class="fc" id="L102">        assertEquals(m, this.lastEvent.getMarker());</span>
+
+        // check null argument...
+        try {
+<span class="nc" id="L106">            m.setPaint(null);</span>
+<span class="nc" id="L107">            fail(&quot;Expected an IllegalArgumentException for null.&quot;);</span>
+        }
+<span class="fc" id="L109">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L110">            assertTrue(true);</span>
+<span class="nc" id="L111">        }</span>
+<span class="fc" id="L112">    }</span>
+
+    /**
+     * Some checks for the getStroke() and setStroke() methods.
+     */
+    public void testGetSetStroke() {
+        // we use ValueMarker for the tests, because we need a concrete
+        // subclass...
+<span class="fc" id="L120">        ValueMarker m = new ValueMarker(1.1);</span>
+<span class="fc" id="L121">        m.addChangeListener(this);</span>
+<span class="fc" id="L122">        this.lastEvent = null;</span>
+<span class="fc" id="L123">        assertEquals(new BasicStroke(0.5f), m.getStroke());</span>
+<span class="fc" id="L124">        m.setStroke(new BasicStroke(1.1f));</span>
+<span class="fc" id="L125">        assertEquals(new BasicStroke(1.1f), m.getStroke());</span>
+<span class="fc" id="L126">        assertEquals(m, this.lastEvent.getMarker());</span>
+
+        // check null argument...
+        try {
+<span class="nc" id="L130">            m.setStroke(null);</span>
+<span class="nc" id="L131">            fail(&quot;Expected an IllegalArgumentException for null.&quot;);</span>
+        }
+<span class="fc" id="L133">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L134">            assertTrue(true);</span>
+<span class="nc" id="L135">        }</span>
+<span class="fc" id="L136">    }</span>
+
+    /**
+     * Some checks for the getOutlinePaint() and setOutlinePaint() methods.
+     */
+    public void testGetSetOutlinePaint() {
+        // we use ValueMarker for the tests, because we need a concrete
+        // subclass...
+<span class="fc" id="L144">        ValueMarker m = new ValueMarker(1.1);</span>
+<span class="fc" id="L145">        m.addChangeListener(this);</span>
+<span class="fc" id="L146">        this.lastEvent = null;</span>
+<span class="fc" id="L147">        assertEquals(Color.gray, m.getOutlinePaint());</span>
+<span class="fc" id="L148">        m.setOutlinePaint(Color.yellow);</span>
+<span class="fc" id="L149">        assertEquals(Color.yellow, m.getOutlinePaint());</span>
+<span class="fc" id="L150">        assertEquals(m, this.lastEvent.getMarker());</span>
+
+        // check null argument...
+<span class="fc" id="L153">        m.setOutlinePaint(null);</span>
+<span class="fc" id="L154">        assertEquals(null, m.getOutlinePaint());</span>
+<span class="fc" id="L155">    }</span>
+
+    /**
+     * Some checks for the getOutlineStroke() and setOutlineStroke() methods.
+     */
+    public void testGetSetOutlineStroke() {
+        // we use ValueMarker for the tests, because we need a concrete
+        // subclass...
+<span class="fc" id="L163">        ValueMarker m = new ValueMarker(1.1);</span>
+<span class="fc" id="L164">        m.addChangeListener(this);</span>
+<span class="fc" id="L165">        this.lastEvent = null;</span>
+<span class="fc" id="L166">        assertEquals(new BasicStroke(0.5f), m.getOutlineStroke());</span>
+<span class="fc" id="L167">        m.setOutlineStroke(new BasicStroke(1.1f));</span>
+<span class="fc" id="L168">        assertEquals(new BasicStroke(1.1f), m.getOutlineStroke());</span>
+<span class="fc" id="L169">        assertEquals(m, this.lastEvent.getMarker());</span>
+
+        // check null argument...
+<span class="fc" id="L172">        m.setOutlineStroke(null);</span>
+<span class="fc" id="L173">        assertEquals(null, m.getOutlineStroke());</span>
+<span class="fc" id="L174">    }</span>
+
+    private static final float EPSILON = 0.000000001f;
+
+    /**
+     * Some checks for the getAlpha() and setAlpha() methods.
+     */
+    public void testGetSetAlpha() {
+        // we use ValueMarker for the tests, because we need a concrete
+        // subclass...
+<span class="fc" id="L184">        ValueMarker m = new ValueMarker(1.1);</span>
+<span class="fc" id="L185">        m.addChangeListener(this);</span>
+<span class="fc" id="L186">        this.lastEvent = null;</span>
+<span class="fc" id="L187">        assertEquals(0.8f, m.getAlpha(), EPSILON);</span>
+<span class="fc" id="L188">        m.setAlpha(0.5f);</span>
+<span class="fc" id="L189">        assertEquals(0.5f, m.getAlpha(), EPSILON);</span>
+<span class="fc" id="L190">        assertEquals(m, this.lastEvent.getMarker());</span>
+<span class="fc" id="L191">    }</span>
+
+    /**
+     * Some checks for the getLabel() and setLabel() methods.
+     */
+    public void testGetSetLabel() {
+        // we use ValueMarker for the tests, because we need a concrete
+        // subclass...
+<span class="fc" id="L199">        ValueMarker m = new ValueMarker(1.1);</span>
+<span class="fc" id="L200">        m.addChangeListener(this);</span>
+<span class="fc" id="L201">        this.lastEvent = null;</span>
+<span class="fc" id="L202">        assertEquals(null, m.getLabel());</span>
+<span class="fc" id="L203">        m.setLabel(&quot;XYZ&quot;);</span>
+<span class="fc" id="L204">        assertEquals(&quot;XYZ&quot;, m.getLabel());</span>
+<span class="fc" id="L205">        assertEquals(m, this.lastEvent.getMarker());</span>
+
+        // check null argument...
+<span class="fc" id="L208">        m.setLabel(null);</span>
+<span class="fc" id="L209">        assertEquals(null, m.getLabel());</span>
+<span class="fc" id="L210">    }</span>
+
+    /**
+     * Some checks for the getLabelFont() and setLabelFont() methods.
+     */
+    public void testGetSetLabelFont() {
+        // we use ValueMarker for the tests, because we need a concrete
+        // subclass...
+<span class="fc" id="L218">        ValueMarker m = new ValueMarker(1.1);</span>
+<span class="fc" id="L219">        m.addChangeListener(this);</span>
+<span class="fc" id="L220">        this.lastEvent = null;</span>
+<span class="fc" id="L221">        assertEquals(new Font(&quot;SansSerif&quot;, Font.PLAIN, 9), m.getLabelFont());</span>
+<span class="fc" id="L222">        m.setLabelFont(new Font(&quot;SansSerif&quot;, Font.BOLD, 10));</span>
+<span class="fc" id="L223">        assertEquals(new Font(&quot;SansSerif&quot;, Font.BOLD, 10), m.getLabelFont());</span>
+<span class="fc" id="L224">        assertEquals(m, this.lastEvent.getMarker());</span>
+
+        // check null argument...
+        try {
+<span class="nc" id="L228">            m.setLabelFont(null);</span>
+<span class="nc" id="L229">            fail(&quot;Expected an IllegalArgumentException for null.&quot;);</span>
+        }
+<span class="fc" id="L231">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L232">            assertTrue(true);</span>
+<span class="nc" id="L233">        }</span>
+<span class="fc" id="L234">    }</span>
+
+    /**
+     * Some checks for the getLabelPaint() and setLabelPaint() methods.
+     */
+    public void testGetSetLabelPaint() {
+        // we use ValueMarker for the tests, because we need a concrete
+        // subclass...
+<span class="fc" id="L242">        ValueMarker m = new ValueMarker(1.1);</span>
+<span class="fc" id="L243">        m.addChangeListener(this);</span>
+<span class="fc" id="L244">        this.lastEvent = null;</span>
+<span class="fc" id="L245">        assertEquals(Color.black, m.getLabelPaint());</span>
+<span class="fc" id="L246">        m.setLabelPaint(Color.red);</span>
+<span class="fc" id="L247">        assertEquals(Color.red, m.getLabelPaint());</span>
+<span class="fc" id="L248">        assertEquals(m, this.lastEvent.getMarker());</span>
+
+        // check null argument...
+        try {
+<span class="nc" id="L252">            m.setLabelPaint(null);</span>
+<span class="nc" id="L253">            fail(&quot;Expected an IllegalArgumentException for null.&quot;);</span>
+        }
+<span class="fc" id="L255">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L256">            assertTrue(true);</span>
+<span class="nc" id="L257">        }</span>
+<span class="fc" id="L258">    }</span>
+
+    /**
+     * Some checks for the getLabelAnchor() and setLabelAnchor() methods.
+     */
+    public void testGetSetLabelAnchor() {
+        // we use ValueMarker for the tests, because we need a concrete
+        // subclass...
+<span class="fc" id="L266">        ValueMarker m = new ValueMarker(1.1);</span>
+<span class="fc" id="L267">        m.addChangeListener(this);</span>
+<span class="fc" id="L268">        this.lastEvent = null;</span>
+<span class="fc" id="L269">        assertEquals(RectangleAnchor.TOP_LEFT, m.getLabelAnchor());</span>
+<span class="fc" id="L270">        m.setLabelAnchor(RectangleAnchor.TOP);</span>
+<span class="fc" id="L271">        assertEquals(RectangleAnchor.TOP, m.getLabelAnchor());</span>
+<span class="fc" id="L272">        assertEquals(m, this.lastEvent.getMarker());</span>
+
+        // check null argument...
+        try {
+<span class="nc" id="L276">            m.setLabelAnchor(null);</span>
+<span class="nc" id="L277">            fail(&quot;Expected an IllegalArgumentException for null.&quot;);</span>
+        }
+<span class="fc" id="L279">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L280">            assertTrue(true);</span>
+<span class="nc" id="L281">        }</span>
+<span class="fc" id="L282">    }</span>
+
+    /**
+     * Some checks for the getLabelOffset() and setLabelOffset() methods.
+     */
+    public void testGetSetLabelOffset() {
+        // we use ValueMarker for the tests, because we need a concrete
+        // subclass...
+<span class="fc" id="L290">        ValueMarker m = new ValueMarker(1.1);</span>
+<span class="fc" id="L291">        m.addChangeListener(this);</span>
+<span class="fc" id="L292">        this.lastEvent = null;</span>
+<span class="fc" id="L293">        assertEquals(new RectangleInsets(3, 3, 3, 3), m.getLabelOffset());</span>
+<span class="fc" id="L294">        m.setLabelOffset(new RectangleInsets(1, 2, 3, 4));</span>
+<span class="fc" id="L295">        assertEquals(new RectangleInsets(1, 2, 3, 4), m.getLabelOffset());</span>
+<span class="fc" id="L296">        assertEquals(m, this.lastEvent.getMarker());</span>
+
+        // check null argument...
+        try {
+<span class="nc" id="L300">            m.setLabelOffset(null);</span>
+<span class="nc" id="L301">            fail(&quot;Expected an IllegalArgumentException for null.&quot;);</span>
+        }
+<span class="fc" id="L303">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L304">            assertTrue(true);</span>
+<span class="nc" id="L305">        }</span>
+<span class="fc" id="L306">    }</span>
+
+    /**
+     * Some checks for the getLabelOffsetType() and setLabelOffsetType()
+     * methods.
+     */
+    public void testGetSetLabelOffsetType() {
+        // we use ValueMarker for the tests, because we need a concrete
+        // subclass...
+<span class="fc" id="L315">        ValueMarker m = new ValueMarker(1.1);</span>
+<span class="fc" id="L316">        m.addChangeListener(this);</span>
+<span class="fc" id="L317">        this.lastEvent = null;</span>
+<span class="fc" id="L318">        assertEquals(LengthAdjustmentType.CONTRACT, m.getLabelOffsetType());</span>
+<span class="fc" id="L319">        m.setLabelOffsetType(LengthAdjustmentType.EXPAND);</span>
+<span class="fc" id="L320">        assertEquals(LengthAdjustmentType.EXPAND, m.getLabelOffsetType());</span>
+<span class="fc" id="L321">        assertEquals(m, this.lastEvent.getMarker());</span>
+
+        // check null argument...
+        try {
+<span class="nc" id="L325">            m.setLabelOffsetType(null);</span>
+<span class="nc" id="L326">            fail(&quot;Expected an IllegalArgumentException for null.&quot;);</span>
+        }
+<span class="fc" id="L328">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L329">            assertTrue(true);</span>
+<span class="nc" id="L330">        }</span>
+<span class="fc" id="L331">    }</span>
+
+    /**
+     * Some checks for the getLabelTextAnchor() and setLabelTextAnchor()
+     * methods.
+     */
+    public void testGetSetLabelTextAnchor() {
+        // we use ValueMarker for the tests, because we need a concrete
+        // subclass...
+<span class="fc" id="L340">        ValueMarker m = new ValueMarker(1.1);</span>
+<span class="fc" id="L341">        m.addChangeListener(this);</span>
+<span class="fc" id="L342">        this.lastEvent = null;</span>
+<span class="fc" id="L343">        assertEquals(TextAnchor.CENTER, m.getLabelTextAnchor());</span>
+<span class="fc" id="L344">        m.setLabelTextAnchor(TextAnchor.BASELINE_LEFT);</span>
+<span class="fc" id="L345">        assertEquals(TextAnchor.BASELINE_LEFT, m.getLabelTextAnchor());</span>
+<span class="fc" id="L346">        assertEquals(m, this.lastEvent.getMarker());</span>
+
+        // check null argument...
+        try {
+<span class="nc" id="L350">            m.setLabelTextAnchor(null);</span>
+<span class="nc" id="L351">            fail(&quot;Expected an IllegalArgumentException for null.&quot;);</span>
+        }
+<span class="fc" id="L353">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L354">            assertTrue(true);</span>
+<span class="nc" id="L355">        }</span>
+<span class="fc" id="L356">    }</span>
+
+    /**
+     * Checks that a CategoryPlot deregisters listeners when clearing markers.
+     */
+    public void testListenersWithCategoryPlot() {
+<span class="fc" id="L362">        CategoryPlot plot = new CategoryPlot();</span>
+<span class="fc" id="L363">        CategoryMarker marker1 = new CategoryMarker(&quot;X&quot;);</span>
+<span class="fc" id="L364">        ValueMarker marker2 = new ValueMarker(1.0);</span>
+<span class="fc" id="L365">        plot.addDomainMarker(marker1);</span>
+<span class="fc" id="L366">        plot.addRangeMarker(marker2);</span>
+<span class="fc bfc" id="L367" title="All 2 branches covered.">        EventListener[] listeners1 = marker1.getListeners(</span>
+<span class="fc" id="L368">                MarkerChangeListener.class);</span>
+<span class="fc" id="L369">        assertTrue(Arrays.asList(listeners1).contains(plot));</span>
+<span class="pc bpc" id="L370" title="1 of 2 branches missed.">        EventListener[] listeners2 = marker1.getListeners(</span>
+<span class="pc" id="L371">                MarkerChangeListener.class);</span>
+<span class="fc" id="L372">        assertTrue(Arrays.asList(listeners2).contains(plot));</span>
+<span class="fc" id="L373">        plot.clearDomainMarkers();</span>
+<span class="fc" id="L374">        plot.clearRangeMarkers();</span>
+<span class="pc bpc" id="L375" title="1 of 2 branches missed.">        listeners1 = marker1.getListeners(MarkerChangeListener.class);</span>
+<span class="fc" id="L376">        assertFalse(Arrays.asList(listeners1).contains(plot));</span>
+<span class="pc bpc" id="L377" title="1 of 2 branches missed.">        listeners2 = marker1.getListeners(MarkerChangeListener.class);</span>
+<span class="fc" id="L378">        assertFalse(Arrays.asList(listeners2).contains(plot));</span>
+<span class="fc" id="L379">    }</span>
+
+    /**
+     * Checks that an XYPlot deregisters listeners when clearing markers.
+     */
+    public void testListenersWithXYPlot() {
+<span class="fc" id="L385">        XYPlot plot = new XYPlot();</span>
+<span class="fc" id="L386">        ValueMarker marker1 = new ValueMarker(1.0);</span>
+<span class="fc" id="L387">        ValueMarker marker2 = new ValueMarker(2.0);</span>
+<span class="fc" id="L388">        plot.addDomainMarker(marker1);</span>
+<span class="fc" id="L389">        plot.addRangeMarker(marker2);</span>
+<span class="pc bpc" id="L390" title="1 of 2 branches missed.">        EventListener[] listeners1 = marker1.getListeners(</span>
+<span class="pc" id="L391">                MarkerChangeListener.class);</span>
+<span class="fc" id="L392">        assertTrue(Arrays.asList(listeners1).contains(plot));</span>
+<span class="pc bpc" id="L393" title="1 of 2 branches missed.">        EventListener[] listeners2 = marker1.getListeners(</span>
+<span class="pc" id="L394">                MarkerChangeListener.class);</span>
+<span class="fc" id="L395">        assertTrue(Arrays.asList(listeners2).contains(plot));</span>
+<span class="fc" id="L396">        plot.clearDomainMarkers();</span>
+<span class="fc" id="L397">        plot.clearRangeMarkers();</span>
+<span class="pc bpc" id="L398" title="1 of 2 branches missed.">        listeners1 = marker1.getListeners(MarkerChangeListener.class);</span>
+<span class="fc" id="L399">        assertFalse(Arrays.asList(listeners1).contains(plot));</span>
+<span class="pc bpc" id="L400" title="1 of 2 branches missed.">        listeners2 = marker1.getListeners(MarkerChangeListener.class);</span>
+<span class="fc" id="L401">        assertFalse(Arrays.asList(listeners2).contains(plot));</span>
+<span class="fc" id="L402">    }</span>
+
+    /**
+     * Records the last event.
+     *
+     * @param event  the event.
+     */
+    public void markerChanged(MarkerChangeEvent event) {
+<span class="fc" id="L410">        this.lastEvent = event;</span>
+<span class="fc" id="L411">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

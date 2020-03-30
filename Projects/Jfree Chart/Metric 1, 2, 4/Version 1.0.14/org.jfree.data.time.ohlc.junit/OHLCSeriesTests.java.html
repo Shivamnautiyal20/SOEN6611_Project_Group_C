@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OHLCSeriesTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.time.ohlc.junit</a> &gt; <span class="el_source">OHLCSeriesTests.java</span></div><h1>OHLCSeriesTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------
+ * OHLCSeriesTests.java
+ * --------------------
+ * (C) Copyright 2006-2009, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 04-Dec-2006 : Version 1, based on XYSeriesTests (DG);
+ * 27-Nov-2007 : Added testClear() method (DG);
+ * 23-May-2009 : Added testHashCode() (DG);
+ * 17-Jun-2009 : Added testRemove_int() (DG);
+ *
+ */
+
+package org.jfree.data.time.ohlc.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.general.SeriesChangeEvent;
+import org.jfree.data.general.SeriesChangeListener;
+import org.jfree.data.general.SeriesException;
+import org.jfree.data.time.Year;
+import org.jfree.data.time.ohlc.OHLCSeries;
+
+/**
+ * Tests for the {@link OHLCSeries} class.
+ */
+public class OHLCSeriesTests extends TestCase
+        implements SeriesChangeListener {
+
+    SeriesChangeEvent lastEvent;
+
+    /**
+     * Records a change event.
+     *
+     * @param event  the event.
+     */
+    public void seriesChanged(SeriesChangeEvent event) {
+<span class="fc" id="L77">        this.lastEvent = event;</span>
+<span class="fc" id="L78">    }</span>
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        return new TestSuite(OHLCSeriesTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public OHLCSeriesTests(String name) {
+<span class="fc" id="L95">        super(name);</span>
+<span class="fc" id="L96">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L102">        OHLCSeries s1 = new OHLCSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L103">        OHLCSeries s2 = new OHLCSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L104">        assertTrue(s1.equals(s2));</span>
+
+        // seriesKey
+<span class="fc" id="L107">        s1 = new OHLCSeries(&quot;s2&quot;);</span>
+<span class="fc" id="L108">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L109">        s2 = new OHLCSeries(&quot;s2&quot;);</span>
+<span class="fc" id="L110">        assertTrue(s1.equals(s2));</span>
+
+        // add a value
+<span class="fc" id="L113">        s1.add(new Year(2006), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L114">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L115">        s2.add(new Year(2006), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L116">        assertTrue(s2.equals(s1));</span>
+
+        // add another value
+<span class="fc" id="L119">        s1.add(new Year(2008), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L120">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L121">        s2.add(new Year(2008), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L122">        assertTrue(s2.equals(s1));</span>
+
+        // remove a value
+<span class="fc" id="L125">        s1.remove(new Year(2008));</span>
+<span class="fc" id="L126">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L127">        s2.remove(new Year(2008));</span>
+<span class="fc" id="L128">        assertTrue(s2.equals(s1));</span>
+<span class="fc" id="L129">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L135">        OHLCSeries s1 = new OHLCSeries(&quot;Test&quot;);</span>
+<span class="fc" id="L136">        s1.add(new Year(2009), 1.0, 3.0, 2.0, 1.4);</span>
+<span class="fc" id="L137">        OHLCSeries s2 = new OHLCSeries(&quot;Test&quot;);</span>
+<span class="fc" id="L138">        s2.add(new Year(2009), 1.0, 3.0, 2.0, 1.4);</span>
+<span class="fc" id="L139">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L140">        int h1 = s1.hashCode();</span>
+<span class="fc" id="L141">        int h2 = s2.hashCode();</span>
+<span class="fc" id="L142">        assertEquals(h1, h2);</span>
+<span class="fc" id="L143">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L149">        OHLCSeries s1 = new OHLCSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L150">        s1.add(new Year(2006), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L151">        OHLCSeries s2 = null;</span>
+        try {
+<span class="fc" id="L153">            s2 = (OHLCSeries) s1.clone();</span>
+        }
+<span class="nc" id="L155">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L156">            e.printStackTrace();</span>
+<span class="fc" id="L157">        }</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">        assertTrue(s1 != s2);</span>
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">        assertTrue(s1.getClass() == s2.getClass());</span>
+<span class="fc" id="L160">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L161">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L168">        OHLCSeries s1 = new OHLCSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L169">        s1.add(new Year(2006), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L170">        OHLCSeries s2 = null;</span>
+
+        try {
+<span class="fc" id="L173">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L174">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L175">            out.writeObject(s1);</span>
+<span class="fc" id="L176">            out.close();</span>
+
+<span class="fc" id="L178">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L179">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L180">            s2 = (OHLCSeries) in.readObject();</span>
+<span class="fc" id="L181">            in.close();</span>
+        }
+<span class="nc" id="L183">        catch (Exception e) {</span>
+<span class="nc" id="L184">            e.printStackTrace();</span>
+<span class="fc" id="L185">        }</span>
+<span class="fc" id="L186">        assertEquals(s1, s2);</span>
+
+<span class="fc" id="L188">    }</span>
+
+    /**
+     * Simple test for the indexOf() method.
+     */
+    public void testIndexOf() {
+<span class="fc" id="L194">        OHLCSeries s1 = new OHLCSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L195">        s1.add(new Year(2006), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L196">        s1.add(new Year(2011), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L197">        s1.add(new Year(2010), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L198">        assertEquals(0, s1.indexOf(new Year(2006)));</span>
+<span class="fc" id="L199">        assertEquals(1, s1.indexOf(new Year(2010)));</span>
+<span class="fc" id="L200">        assertEquals(2, s1.indexOf(new Year(2011)));</span>
+<span class="fc" id="L201">    }</span>
+
+    /**
+     * Simple test for the remove() method.
+     */
+    public void testRemove() {
+<span class="fc" id="L207">        OHLCSeries s1 = new OHLCSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L208">        s1.add(new Year(2006), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L209">        s1.add(new Year(2011), 2.1, 4.1, 1.1, 3.1);</span>
+<span class="fc" id="L210">        s1.add(new Year(2010), 2.2, 4.2, 1.2, 3.2);</span>
+<span class="fc" id="L211">        assertEquals(3, s1.getItemCount());</span>
+
+<span class="fc" id="L213">        s1.remove(new Year(2010));</span>
+<span class="fc" id="L214">        assertEquals(new Year(2011), s1.getPeriod(1));</span>
+
+<span class="fc" id="L216">        s1.remove(new Year(2006));</span>
+<span class="fc" id="L217">        assertEquals(new Year(2011), s1.getPeriod(0));</span>
+<span class="fc" id="L218">    }</span>
+
+    /**
+     * A check for the remove(int) method.
+     */
+    public void testRemove_int() {
+<span class="fc" id="L224">        OHLCSeries s1 = new OHLCSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L225">        s1.add(new Year(2006), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L226">        s1.add(new Year(2011), 2.1, 4.1, 1.1, 3.1);</span>
+<span class="fc" id="L227">        s1.add(new Year(2010), 2.2, 4.2, 1.2, 3.2);</span>
+<span class="fc" id="L228">        assertEquals(3, s1.getItemCount());</span>
+
+<span class="fc" id="L230">        s1.remove(s1.getItemCount() - 1);</span>
+<span class="fc" id="L231">        assertEquals(2, s1.getItemCount());</span>
+<span class="fc" id="L232">        assertEquals(new Year(2010), s1.getPeriod(1));</span>
+<span class="fc" id="L233">    }</span>
+
+    /**
+     * If you add a duplicate period, an exception should be thrown.
+     */
+    public void testAdditionOfDuplicatePeriod() {
+<span class="fc" id="L239">        OHLCSeries s1 = new OHLCSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L240">        s1.add(new Year(2006), 1.0, 1.0, 1.0, 1.0);</span>
+<span class="fc" id="L241">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L243">            s1.add(new Year(2006), 1.0, 1.0, 1.0, 1.0);</span>
+        }
+<span class="fc" id="L245">        catch (SeriesException e) {</span>
+<span class="fc" id="L246">            pass = true;</span>
+<span class="nc" id="L247">        }</span>
+<span class="fc" id="L248">        assertTrue(pass);</span>
+<span class="fc" id="L249">    }</span>
+
+    /**
+     * A simple check that the maximumItemCount attribute is working.
+     */
+    public void testSetMaximumItemCount() {
+<span class="fc" id="L255">        OHLCSeries s1 = new OHLCSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L256">        assertEquals(Integer.MAX_VALUE, s1.getMaximumItemCount());</span>
+<span class="fc" id="L257">        s1.setMaximumItemCount(2);</span>
+<span class="fc" id="L258">        assertEquals(2, s1.getMaximumItemCount());</span>
+<span class="fc" id="L259">        s1.add(new Year(2006), 1.0, 1.1, 1.1, 1.1);</span>
+<span class="fc" id="L260">        s1.add(new Year(2007), 2.0, 2.2, 2.2, 2.2);</span>
+<span class="fc" id="L261">        s1.add(new Year(2008), 3.0, 3.3, 3.3, 3.3);</span>
+<span class="fc" id="L262">        assertEquals(new Year(2007), s1.getPeriod(0));</span>
+<span class="fc" id="L263">        assertEquals(new Year(2008), s1.getPeriod(1));</span>
+<span class="fc" id="L264">    }</span>
+
+    /**
+     * Check that the maximum item count can be applied retrospectively.
+     */
+    public void testSetMaximumItemCount2() {
+<span class="fc" id="L270">        OHLCSeries s1 = new OHLCSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L271">        s1.add(new Year(2006), 1.0, 1.1, 1.1, 1.1);</span>
+<span class="fc" id="L272">        s1.add(new Year(2007), 2.0, 2.2, 2.2, 2.2);</span>
+<span class="fc" id="L273">        s1.add(new Year(2008), 3.0, 3.3, 3.3, 3.3);</span>
+<span class="fc" id="L274">        s1.setMaximumItemCount(2);</span>
+<span class="fc" id="L275">        assertEquals(new Year(2007), s1.getPeriod(0));</span>
+<span class="fc" id="L276">        assertEquals(new Year(2008), s1.getPeriod(1));</span>
+<span class="fc" id="L277">    }</span>
+
+    /**
+     * Some checks for the clear() method.
+     */
+    public void testClear() {
+<span class="fc" id="L283">        OHLCSeries s1 = new OHLCSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L284">        s1.addChangeListener(this);</span>
+<span class="fc" id="L285">        s1.clear();</span>
+<span class="fc" id="L286">        assertNull(this.lastEvent);</span>
+<span class="fc" id="L287">        assertTrue(s1.isEmpty());</span>
+<span class="fc" id="L288">        s1.add(new Year(2006), 1.0, 1.1, 1.1, 1.1);</span>
+<span class="fc" id="L289">        assertFalse(s1.isEmpty());</span>
+<span class="fc" id="L290">        s1.clear();</span>
+<span class="fc" id="L291">        assertNotNull(this.lastEvent);</span>
+<span class="fc" id="L292">        assertTrue(s1.isEmpty());</span>
+<span class="fc" id="L293">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

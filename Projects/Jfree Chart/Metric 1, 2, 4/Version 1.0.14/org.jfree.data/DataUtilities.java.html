@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataUtilities.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data</a> &gt; <span class="el_source">DataUtilities.java</span></div><h1>DataUtilities.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------
+ * DataUtilities.java
+ * ------------------
+ * (C) Copyright 2003-2009, by Object Refinery Limited and contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Peter Kolb (patch 2511330);
+ *
+ * Changes
+ * -------
+ * 05-Mar-2003 : Version 1 (DG);
+ * 03-Mar-2005 : Moved createNumberArray() and createNumberArray2D() methods
+ *               from the DatasetUtilities class (DG);
+ * 17-May-2005 : Added calculateColumnTotal() and calculateRowTotal()
+ *               methods (DG);
+ * 28-Jan-2009 : Added equal(double[][], double[][]) method (DG);
+ * 28-Jan-2009 : Added clone(double[][]) method (DG);
+ * 04-Feb-2009 : Added calculateColumnTotal/RowTotal variants (PK);
+ *
+ */
+
+package org.jfree.data;
+
+import java.util.Arrays;
+import org.jfree.data.general.DatasetUtilities;
+
+/**
+ * Utility methods for use with some of the data classes (but not the datasets,
+ * see {@link DatasetUtilities}).
+ */
+<span class="nc" id="L57">public abstract class DataUtilities {</span>
+
+    /**
+     * Tests two arrays for equality.  To be considered equal, the arrays must
+     * have exactly the same dimensions, and the values in each array must also
+     * match (two values that qre both NaN or both INF are considered equal
+     * in this test).
+     *
+     * @param a  the first array (&lt;code&gt;null&lt;/code&gt; permitted).
+     * @param b  the second array (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     *
+     * @since 1.0.13
+     */
+    public static boolean equal(double[][] a, double[][] b) {
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        if (a == null) {</span>
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">            return (b == null);</span>
+        }
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        if (b == null) {</span>
+<span class="nc" id="L77">            return false;  // already know 'a' isn't null</span>
+        }
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (a.length != b.length) {</span>
+<span class="fc" id="L80">            return false;</span>
+        }
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        for (int i = 0; i &lt; a.length; i++) {</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">            if (!Arrays.equals(a[i], b[i])) {</span>
+<span class="fc" id="L84">                return false;</span>
+            }
+        }
+<span class="fc" id="L87">        return true;</span>
+    }
+
+    /**
+     * Returns a clone of the specified array.
+     *
+     * @param source  the source array (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return A clone of the array.
+     *
+     * @since 1.0.13
+     */
+    public static double[][] clone(double[][] source) {
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">        if (source == null) {</span>
+<span class="nc" id="L101">            throw new IllegalArgumentException(&quot;Null 'source' argument.&quot;);</span>
+        }
+<span class="fc" id="L103">        double[][] clone = new double[source.length][];</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        for (int i = 0; i &lt; source.length; i++) {</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">            if (source[i] != null) {</span>
+<span class="fc" id="L106">                double[] row = new double[source[i].length];</span>
+<span class="fc" id="L107">                System.arraycopy(source[i], 0, row, 0, source[i].length);</span>
+<span class="fc" id="L108">                clone[i] = row;</span>
+            }
+        }
+<span class="fc" id="L111">        return clone;</span>
+    }
+
+    /**
+     * Returns the total of the values in one column of the supplied data
+     * table.
+     *
+     * @param data  the table of values (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param column  the column index (zero-based).
+     *
+     * @return The total of the values in the specified column.
+     */
+    public static double calculateColumnTotal(Values2D data, int column) {
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L125">            throw new IllegalArgumentException(&quot;Null 'data' argument.&quot;);</span>
+        }
+<span class="fc" id="L127">        double total = 0.0;</span>
+<span class="fc" id="L128">        int rowCount = data.getRowCount();</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        for (int r = 0; r &lt; rowCount; r++) {</span>
+<span class="fc" id="L130">            Number n = data.getValue(r, column);</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">            if (n != null) {</span>
+<span class="fc" id="L132">                total += n.doubleValue();</span>
+            }
+        }
+<span class="fc" id="L135">        return total;</span>
+    }
+
+    /**
+     * Returns the total of the values in one column of the supplied data
+     * table by taking only the row numbers in the array into account.
+     *
+     * @param data  the table of values (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param column  the column index (zero-based).
+     * @param validRows the array with valid rows (zero-based).
+     *
+     * @return The total of the valid values in the specified column.
+     *
+     * @since 1.0.13
+     */
+     public static double calculateColumnTotal(Values2D data, int column,
+             int[] validRows) {
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L153">            throw new IllegalArgumentException(&quot;Null 'data' argument.&quot;);</span>
+        }
+<span class="fc" id="L155">        double total = 0.0;</span>
+<span class="fc" id="L156">        int rowCount = data.getRowCount();</span>
+<span class="fc bfc" id="L157" title="All 2 branches covered.">        for (int v = 0; v &lt; validRows.length; v++) {</span>
+<span class="fc" id="L158">            int row = validRows[v];</span>
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">            if (row &lt; rowCount) {</span>
+<span class="fc" id="L160">                Number n = data.getValue(row, column);</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">                if (n != null) {</span>
+<span class="fc" id="L162">                    total += n.doubleValue();</span>
+                }
+            }
+        }
+<span class="fc" id="L166">        return total;</span>
+    }
+
+    /**
+     * Returns the total of the values in one row of the supplied data
+     * table.
+     *
+     * @param data  the table of values (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param row  the row index (zero-based).
+     *
+     * @return The total of the values in the specified row.
+     */
+    public static double calculateRowTotal(Values2D data, int row) {
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L180">            throw new IllegalArgumentException(&quot;Null 'data' argument.&quot;);</span>
+        }
+<span class="fc" id="L182">        double total = 0.0;</span>
+<span class="fc" id="L183">        int columnCount = data.getColumnCount();</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">        for (int c = 0; c &lt; columnCount; c++) {</span>
+<span class="fc" id="L185">            Number n = data.getValue(row, c);</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">            if (n != null) {</span>
+<span class="fc" id="L187">                total += n.doubleValue();</span>
+            }
+        }
+<span class="fc" id="L190">        return total;</span>
+    }
+
+    /**
+     * Returns the total of the values in one row of the supplied data
+     * table by taking only the column numbers in the array into account.
+     *
+     * @param data  the table of values (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param row  the row index (zero-based).
+     * @param validCols the array with valid cols (zero-based).
+     *
+     * @return The total of the valid values in the specified row.
+     *
+     * @since 1.0.13
+     */
+     public static double calculateRowTotal(Values2D data, int row,
+             int[] validCols) {
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L208">            throw new IllegalArgumentException(&quot;Null 'data' argument.&quot;);</span>
+        }
+<span class="fc" id="L210">        double total = 0.0;</span>
+<span class="fc" id="L211">        int colCount = data.getColumnCount();</span>
+<span class="fc bfc" id="L212" title="All 2 branches covered.">        for (int v = 0; v &lt; validCols.length; v++) {</span>
+<span class="fc" id="L213">            int col = validCols[v];</span>
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">            if (col &lt; colCount) {</span>
+<span class="fc" id="L215">                Number n = data.getValue(row, col);</span>
+<span class="fc bfc" id="L216" title="All 2 branches covered.">                if (n != null) {</span>
+<span class="fc" id="L217">                    total += n.doubleValue();</span>
+                }
+            }
+        }
+<span class="fc" id="L221">        return total;</span>
+    }
+
+    /**
+     * Constructs an array of &lt;code&gt;Number&lt;/code&gt; objects from an array of
+     * &lt;code&gt;double&lt;/code&gt; primitives.
+     *
+     * @param data  the data (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return An array of &lt;code&gt;Double&lt;/code&gt;.
+     */
+    public static Number[] createNumberArray(double[] data) {
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L234">            throw new IllegalArgumentException(&quot;Null 'data' argument.&quot;);</span>
+        }
+<span class="fc" id="L236">        Number[] result = new Number[data.length];</span>
+<span class="fc bfc" id="L237" title="All 2 branches covered.">        for (int i = 0; i &lt; data.length; i++) {</span>
+<span class="fc" id="L238">            result[i] = new Double(data[i]);</span>
+        }
+<span class="fc" id="L240">        return result;</span>
+    }
+
+    /**
+     * Constructs an array of arrays of &lt;code&gt;Number&lt;/code&gt; objects from a
+     * corresponding structure containing &lt;code&gt;double&lt;/code&gt; primitives.
+     *
+     * @param data  the data (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return An array of &lt;code&gt;Double&lt;/code&gt;.
+     */
+    public static Number[][] createNumberArray2D(double[][] data) {
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L253">            throw new IllegalArgumentException(&quot;Null 'data' argument.&quot;);</span>
+        }
+<span class="fc" id="L255">        int l1 = data.length;</span>
+<span class="fc" id="L256">        Number[][] result = new Number[l1][];</span>
+<span class="fc bfc" id="L257" title="All 2 branches covered.">        for (int i = 0; i &lt; l1; i++) {</span>
+<span class="fc" id="L258">            result[i] = createNumberArray(data[i]);</span>
+        }
+<span class="fc" id="L260">        return result;</span>
+    }
+
+    /**
+     * Returns a {@link KeyedValues} instance that contains the cumulative
+     * percentage values for the data in another {@link KeyedValues} instance.
+     * &lt;p&gt;
+     * The percentages are values between 0.0 and 1.0 (where 1.0 = 100%).
+     *
+     * @param data  the data (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The cumulative percentages.
+     */
+    public static KeyedValues getCumulativePercentages(KeyedValues data) {
+<span class="nc bnc" id="L274" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L275">            throw new IllegalArgumentException(&quot;Null 'data' argument.&quot;);</span>
+        }
+<span class="nc" id="L277">        DefaultKeyedValues result = new DefaultKeyedValues();</span>
+<span class="nc" id="L278">        double total = 0.0;</span>
+<span class="nc bnc" id="L279" title="All 2 branches missed.">        for (int i = 0; i &lt; data.getItemCount(); i++) {</span>
+<span class="nc" id="L280">            Number v = data.getValue(i);</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">            if (v != null) {</span>
+<span class="nc" id="L282">                total = total + v.doubleValue();</span>
+            }
+        }
+<span class="nc" id="L285">        double runningTotal = 0.0;</span>
+<span class="nc bnc" id="L286" title="All 2 branches missed.">        for (int i = 0; i &lt; data.getItemCount(); i++) {</span>
+<span class="nc" id="L287">            Number v = data.getValue(i);</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">            if (v != null) {</span>
+<span class="nc" id="L289">                runningTotal = runningTotal + v.doubleValue();</span>
+            }
+<span class="nc" id="L291">            result.addValue(data.getKey(i), new Double(runningTotal / total));</span>
+        }
+<span class="nc" id="L293">        return result;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GridArrangementTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.block.junit</a> &gt; <span class="el_source">GridArrangementTests.java</span></div><h1>GridArrangementTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------
+ * GridArrangementTests.java
+ * -------------------------
+ * (C) Copyright 2005-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 08-Mar-2005 : Version 1 (DG);
+ * 03-Dec-2008 : Added more tests (DG);
+ *
+ */
+
+package org.jfree.chart.block.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.block.Block;
+import org.jfree.chart.block.BlockContainer;
+import org.jfree.chart.block.EmptyBlock;
+import org.jfree.chart.block.GridArrangement;
+import org.jfree.chart.block.LengthConstraintType;
+import org.jfree.chart.block.RectangleConstraint;
+import org.jfree.data.Range;
+import org.jfree.ui.Size2D;
+
+/**
+ * Tests for the {@link GridArrangement} class.
+ */
+public class GridArrangementTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        return new TestSuite(GridArrangementTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public GridArrangementTests(String name) {
+<span class="fc" id="L84">        super(name);</span>
+<span class="fc" id="L85">    }</span>
+
+    /**
+     * Confirm that the equals() method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L91">        GridArrangement f1 = new GridArrangement(11, 22);</span>
+<span class="fc" id="L92">        GridArrangement f2 = new GridArrangement(11, 22);</span>
+<span class="fc" id="L93">        assertTrue(f1.equals(f2));</span>
+<span class="fc" id="L94">        assertTrue(f2.equals(f1));</span>
+
+<span class="fc" id="L96">        f1 = new GridArrangement(33, 22);</span>
+<span class="fc" id="L97">        assertFalse(f1.equals(f2));</span>
+<span class="fc" id="L98">        f2 = new GridArrangement(33, 22);</span>
+<span class="fc" id="L99">        assertTrue(f1.equals(f2));</span>
+
+<span class="fc" id="L101">        f1 = new GridArrangement(33, 44);</span>
+<span class="fc" id="L102">        assertFalse(f1.equals(f2));</span>
+<span class="fc" id="L103">        f2 = new GridArrangement(33, 44);</span>
+<span class="fc" id="L104">        assertTrue(f1.equals(f2));</span>
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * Immutable - cloning is not necessary.
+     */
+    public void testCloning() {
+<span class="fc" id="L111">        GridArrangement f1 = new GridArrangement(1, 2);</span>
+<span class="fc" id="L112">        assertFalse(f1 instanceof Cloneable);</span>
+<span class="fc" id="L113">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L119">        GridArrangement f1 = new GridArrangement(33, 44);</span>
+<span class="fc" id="L120">        GridArrangement f2 = null;</span>
+        try {
+<span class="fc" id="L122">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L123">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L124">            out.writeObject(f1);</span>
+<span class="fc" id="L125">            out.close();</span>
+
+<span class="fc" id="L127">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L128">                    buffer.toByteArray()));</span>
+<span class="fc" id="L129">            f2 = (GridArrangement) in.readObject();</span>
+<span class="fc" id="L130">            in.close();</span>
+        }
+<span class="nc" id="L132">        catch (Exception e) {</span>
+<span class="nc" id="L133">            e.printStackTrace();</span>
+<span class="fc" id="L134">        }</span>
+<span class="fc" id="L135">        assertEquals(f1, f2);</span>
+<span class="fc" id="L136">    }</span>
+
+    private static final double EPSILON = 0.000000001;
+
+    /**
+     * Test arrangement with no constraints.
+     */
+    public void testNN() {
+<span class="fc" id="L144">        BlockContainer c = createTestContainer1();</span>
+<span class="fc" id="L145">        Size2D s = c.arrange(null, RectangleConstraint.NONE);</span>
+<span class="fc" id="L146">        assertEquals(90.0, s.width, EPSILON);</span>
+<span class="fc" id="L147">        assertEquals(33.0, s.height, EPSILON);</span>
+<span class="fc" id="L148">    }</span>
+
+    /**
+     * Test arrangement with a fixed width and no height constraint.
+     */
+    public void testFN() {
+<span class="fc" id="L154">        BlockContainer c = createTestContainer1();</span>
+<span class="fc" id="L155">        RectangleConstraint constraint = new RectangleConstraint(100.0, null,</span>
+                LengthConstraintType.FIXED, 0.0, null,
+                LengthConstraintType.NONE);
+<span class="fc" id="L158">        Size2D s = c.arrange(null, constraint);</span>
+<span class="fc" id="L159">        assertEquals(100.0, s.width, EPSILON);</span>
+<span class="fc" id="L160">        assertEquals(33.0, s.height, EPSILON);</span>
+<span class="fc" id="L161">    }</span>
+
+    /**
+     * Test arrangement with a fixed height and no width constraint.
+     */
+    public void testNF() {
+<span class="fc" id="L167">        BlockContainer c = createTestContainer1();</span>
+<span class="fc" id="L168">        RectangleConstraint constraint = RectangleConstraint.NONE.toFixedHeight(</span>
+                100.0);
+<span class="fc" id="L170">        Size2D s = c.arrange(null, constraint);</span>
+<span class="fc" id="L171">        assertEquals(90.0, s.width, EPSILON);</span>
+<span class="fc" id="L172">        assertEquals(100.0, s.height, EPSILON);</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Test arrangement with a range for the width and a fixed height.
+     */
+    public void testRF() {
+<span class="fc" id="L179">        BlockContainer c = createTestContainer1();</span>
+<span class="fc" id="L180">        RectangleConstraint constraint = new RectangleConstraint(new Range(40.0,</span>
+                60.0), 100.0);
+<span class="fc" id="L182">        Size2D s = c.arrange(null, constraint);</span>
+<span class="fc" id="L183">        assertEquals(60.0, s.width, EPSILON);</span>
+<span class="fc" id="L184">        assertEquals(100.0, s.height, EPSILON);</span>
+<span class="fc" id="L185">    }</span>
+
+    /**
+     * Test arrangement with a range for the width and height.
+     */
+    public void testRR() {
+<span class="fc" id="L191">        BlockContainer c = createTestContainer1();</span>
+<span class="fc" id="L192">        RectangleConstraint constraint = new RectangleConstraint(new Range(40.0,</span>
+                60.0), new Range(50.0, 70.0));
+<span class="fc" id="L194">        Size2D s = c.arrange(null, constraint);</span>
+<span class="fc" id="L195">        assertEquals(60.0, s.width, EPSILON);</span>
+<span class="fc" id="L196">        assertEquals(50.0, s.height, EPSILON);</span>
+<span class="fc" id="L197">    }</span>
+
+    /**
+     * Test arrangement with a range for the width and no height constraint.
+     */
+    public void testRN() {
+<span class="fc" id="L203">        BlockContainer c = createTestContainer1();</span>
+<span class="fc" id="L204">        RectangleConstraint constraint = RectangleConstraint.NONE.toRangeWidth(</span>
+                new Range(40.0, 60.0));
+<span class="fc" id="L206">        Size2D s = c.arrange(null, constraint);</span>
+<span class="fc" id="L207">        assertEquals(60.0, s.width, EPSILON);</span>
+<span class="fc" id="L208">        assertEquals(33.0, s.height, EPSILON);</span>
+<span class="fc" id="L209">    }</span>
+
+    /**
+     * Test arrangement with a range for the height and no width constraint.
+     */
+    public void testNR() {
+<span class="fc" id="L215">        BlockContainer c = createTestContainer1();</span>
+<span class="fc" id="L216">        RectangleConstraint constraint = RectangleConstraint.NONE.toRangeHeight(</span>
+                new Range(40.0, 60.0));
+<span class="fc" id="L218">        Size2D s = c.arrange(null, constraint);</span>
+<span class="fc" id="L219">        assertEquals(90.0, s.width, EPSILON);</span>
+<span class="fc" id="L220">        assertEquals(40.0, s.height, EPSILON);</span>
+<span class="fc" id="L221">    }</span>
+
+    private BlockContainer createTestContainer1() {
+<span class="fc" id="L224">        Block b1 = new EmptyBlock(10, 11);</span>
+<span class="fc" id="L225">        Block b2 = new EmptyBlock(20, 22);</span>
+<span class="fc" id="L226">        Block b3 = new EmptyBlock(30, 33);</span>
+<span class="fc" id="L227">        BlockContainer result = new BlockContainer(new GridArrangement(1, 3));</span>
+<span class="fc" id="L228">        result.add(b1);</span>
+<span class="fc" id="L229">        result.add(b2);</span>
+<span class="fc" id="L230">        result.add(b3);</span>
+<span class="fc" id="L231">        return result;</span>
+    }
+
+    /**
+     * The arrangement should be able to handle null blocks in the layout.
+     */
+    public void testNullBlock_FF() {
+<span class="fc" id="L238">        BlockContainer c = new BlockContainer(new GridArrangement(1, 1));</span>
+<span class="fc" id="L239">        c.add(null);</span>
+<span class="fc" id="L240">        Size2D s = c.arrange(null, new RectangleConstraint(20, 10));</span>
+<span class="fc" id="L241">        assertEquals(20.0, s.getWidth(), EPSILON);</span>
+<span class="fc" id="L242">        assertEquals(10.0, s.getHeight(), EPSILON);</span>
+<span class="fc" id="L243">    }</span>
+
+    /**
+     * The arrangement should be able to handle null blocks in the layout.
+     */
+    public void testNullBlock_FN() {
+<span class="fc" id="L249">        BlockContainer c = new BlockContainer(new GridArrangement(1, 1));</span>
+<span class="fc" id="L250">        c.add(null);</span>
+<span class="fc" id="L251">        Size2D s = c.arrange(null, RectangleConstraint.NONE.toFixedWidth(10));</span>
+<span class="fc" id="L252">        assertEquals(10.0, s.getWidth(), EPSILON);</span>
+<span class="fc" id="L253">        assertEquals(0.0, s.getHeight(), EPSILON);</span>
+<span class="fc" id="L254">    }</span>
+
+    /**
+     * The arrangement should be able to handle null blocks in the layout.
+     */
+    public void testNullBlock_FR() {
+<span class="fc" id="L260">        BlockContainer c = new BlockContainer(new GridArrangement(1, 1));</span>
+<span class="fc" id="L261">        c.add(null);</span>
+<span class="fc" id="L262">        Size2D s = c.arrange(null, new RectangleConstraint(30.0, new Range(5.0,</span>
+                10.0)));
+<span class="fc" id="L264">        assertEquals(30.0, s.getWidth(), EPSILON);</span>
+<span class="fc" id="L265">        assertEquals(5.0, s.getHeight(), EPSILON);</span>
+<span class="fc" id="L266">    }</span>
+
+    /**
+     * The arrangement should be able to handle null blocks in the layout.
+     */
+    public void testNullBlock_NN() {
+<span class="fc" id="L272">        BlockContainer c = new BlockContainer(new GridArrangement(1, 1));</span>
+<span class="fc" id="L273">        c.add(null);</span>
+<span class="fc" id="L274">        Size2D s = c.arrange(null, RectangleConstraint.NONE);</span>
+<span class="fc" id="L275">        assertEquals(0.0, s.getWidth(), EPSILON);</span>
+<span class="fc" id="L276">        assertEquals(0.0, s.getHeight(), EPSILON);</span>
+<span class="fc" id="L277">    }</span>
+
+    /**
+     * The arrangement should be able to handle less blocks than grid spaces.
+     */
+    public void testGridNotFull_FF() {
+<span class="fc" id="L283">        Block b1 = new EmptyBlock(5, 5);</span>
+<span class="fc" id="L284">        BlockContainer c = new BlockContainer(new GridArrangement(2, 3));</span>
+<span class="fc" id="L285">        c.add(b1);</span>
+<span class="fc" id="L286">        Size2D s = c.arrange(null, new RectangleConstraint(200, 100));</span>
+<span class="fc" id="L287">        assertEquals(200.0, s.getWidth(), EPSILON);</span>
+<span class="fc" id="L288">        assertEquals(100.0, s.getHeight(), EPSILON);</span>
+<span class="fc" id="L289">    }</span>
+
+    /**
+     * The arrangement should be able to handle less blocks than grid spaces.
+     */
+    public void testGridNotFull_FN() {
+<span class="fc" id="L295">        Block b1 = new EmptyBlock(5, 5);</span>
+<span class="fc" id="L296">        BlockContainer c = new BlockContainer(new GridArrangement(2, 3));</span>
+<span class="fc" id="L297">        c.add(b1);</span>
+<span class="fc" id="L298">        Size2D s = c.arrange(null, RectangleConstraint.NONE.toFixedWidth(30.0));</span>
+<span class="fc" id="L299">        assertEquals(30.0, s.getWidth(), EPSILON);</span>
+<span class="fc" id="L300">        assertEquals(10.0, s.getHeight(), EPSILON);</span>
+<span class="fc" id="L301">    }</span>
+
+    /**
+     * The arrangement should be able to handle less blocks than grid spaces.
+     */
+    public void testGridNotFull_FR() {
+<span class="fc" id="L307">        Block b1 = new EmptyBlock(5, 5);</span>
+<span class="fc" id="L308">        BlockContainer c = new BlockContainer(new GridArrangement(2, 3));</span>
+<span class="fc" id="L309">        c.add(b1);</span>
+<span class="fc" id="L310">        Size2D s = c.arrange(null, new RectangleConstraint(30.0, new Range(5.0,</span>
+                10.0)));
+<span class="fc" id="L312">        assertEquals(30.0, s.getWidth(), EPSILON);</span>
+<span class="fc" id="L313">        assertEquals(10.0, s.getHeight(), EPSILON);</span>
+<span class="fc" id="L314">    }</span>
+
+    /**
+     * The arrangement should be able to handle less blocks than grid spaces.
+     */
+    public void testGridNotFull_NN() {
+<span class="fc" id="L320">        Block b1 = new EmptyBlock(5, 5);</span>
+<span class="fc" id="L321">        BlockContainer c = new BlockContainer(new GridArrangement(2, 3));</span>
+<span class="fc" id="L322">        c.add(b1);</span>
+<span class="fc" id="L323">        Size2D s = c.arrange(null, RectangleConstraint.NONE);</span>
+<span class="fc" id="L324">        assertEquals(15.0, s.getWidth(), EPSILON);</span>
+<span class="fc" id="L325">        assertEquals(10.0, s.getHeight(), EPSILON);</span>
+<span class="fc" id="L326">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AxisTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.axis.junit</a> &gt; <span class="el_source">AxisTests.java</span></div><h1>AxisTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------
+ * AxisTests.java
+ * --------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 13-Aug-2003 : Version 1 (DG);
+ * 06-Jan-2004 : Added tests for axis line attributes (DG);
+ * 07-Jan-2005 : Added hashCode() test (DG);
+ * 25-Sep-2008 : Extended equals() to cover new fields (DG);
+ *
+ */
+
+package org.jfree.chart.axis.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GradientPaint;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.axis.Axis;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.ui.RectangleInsets;
+
+/**
+ * Tests for the {@link Axis} class.
+ */
+public class AxisTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        return new TestSuite(AxisTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public AxisTests(String name) {
+<span class="fc" id="L79">        super(name);</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L86">        CategoryAxis a1 = new CategoryAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L87">        a1.setAxisLinePaint(Color.red);</span>
+<span class="fc" id="L88">        CategoryAxis a2 = null;</span>
+        try {
+<span class="fc" id="L90">            a2 = (CategoryAxis) a1.clone();</span>
+        }
+<span class="nc" id="L92">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L93">            e.printStackTrace();</span>
+<span class="fc" id="L94">        }</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">        assertTrue(a1 != a2);</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">        assertTrue(a1.getClass() == a2.getClass());</span>
+<span class="fc" id="L97">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L98">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L105">        Axis a1 = new CategoryAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L106">        Axis a2 = new CategoryAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L107">        assertTrue(a1.equals(a2));</span>
+
+        // visible flag...
+<span class="fc" id="L110">        a1.setVisible(false);</span>
+<span class="fc" id="L111">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L112">        a2.setVisible(false);</span>
+<span class="fc" id="L113">        assertTrue(a1.equals(a2));</span>
+
+        // label...
+<span class="fc" id="L116">        a1.setLabel(&quot;New Label&quot;);</span>
+<span class="fc" id="L117">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L118">        a2.setLabel(&quot;New Label&quot;);</span>
+<span class="fc" id="L119">        assertTrue(a1.equals(a2));</span>
+
+        // label font...
+<span class="fc" id="L122">        a1.setLabelFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 8));</span>
+<span class="fc" id="L123">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L124">        a2.setLabelFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 8));</span>
+<span class="fc" id="L125">        assertTrue(a1.equals(a2));</span>
+
+        // label paint...
+<span class="fc" id="L128">        a1.setLabelPaint(new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.black));
+<span class="fc" id="L130">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L131">        a2.setLabelPaint(new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.black));
+<span class="fc" id="L133">        assertTrue(a1.equals(a2));</span>
+
+        // label insets...
+<span class="fc" id="L136">        a1.setLabelInsets(new RectangleInsets(10.0, 10.0, 10.0, 10.0));</span>
+<span class="fc" id="L137">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L138">        a2.setLabelInsets(new RectangleInsets(10.0, 10.0, 10.0, 10.0));</span>
+<span class="fc" id="L139">        assertTrue(a1.equals(a2));</span>
+
+        // label angle...
+<span class="fc" id="L142">        a1.setLabelAngle(1.23);</span>
+<span class="fc" id="L143">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L144">        a2.setLabelAngle(1.23);</span>
+<span class="fc" id="L145">        assertTrue(a1.equals(a2));</span>
+
+        // axis line visible...
+<span class="fc" id="L148">        a1.setAxisLineVisible(false);</span>
+<span class="fc" id="L149">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L150">        a2.setAxisLineVisible(false);</span>
+<span class="fc" id="L151">        assertTrue(a1.equals(a2));</span>
+
+        // axis line stroke...
+<span class="fc" id="L154">        BasicStroke s = new BasicStroke(1.1f);</span>
+<span class="fc" id="L155">        a1.setAxisLineStroke(s);</span>
+<span class="fc" id="L156">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L157">        a2.setAxisLineStroke(s);</span>
+<span class="fc" id="L158">        assertTrue(a1.equals(a2));</span>
+
+        // axis line paint...
+<span class="fc" id="L161">        a1.setAxisLinePaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.black));
+<span class="fc" id="L163">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L164">        a2.setAxisLinePaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.black));
+<span class="fc" id="L166">        assertTrue(a1.equals(a2));</span>
+
+        // tick labels visible flag...
+<span class="fc" id="L169">        a1.setTickLabelsVisible(false);</span>
+<span class="fc" id="L170">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L171">        a2.setTickLabelsVisible(false);</span>
+<span class="fc" id="L172">        assertTrue(a1.equals(a2));</span>
+
+        // tick label font...
+<span class="fc" id="L175">        a1.setTickLabelFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 12));</span>
+<span class="fc" id="L176">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L177">        a2.setTickLabelFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 12));</span>
+<span class="fc" id="L178">        assertTrue(a1.equals(a2));</span>
+
+        // tick label paint...
+<span class="fc" id="L181">        a1.setTickLabelPaint(new GradientPaint(1.0f, 2.0f, Color.yellow,</span>
+                3.0f, 4.0f, Color.black));
+<span class="fc" id="L183">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L184">        a2.setTickLabelPaint(new GradientPaint(1.0f, 2.0f, Color.yellow,</span>
+                3.0f, 4.0f, Color.black));
+<span class="fc" id="L186">        assertTrue(a1.equals(a2));</span>
+
+        // tick label insets...
+<span class="fc" id="L189">        a1.setTickLabelInsets(new RectangleInsets(10.0, 10.0, 10.0, 10.0));</span>
+<span class="fc" id="L190">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L191">        a2.setTickLabelInsets(new RectangleInsets(10.0, 10.0, 10.0, 10.0));</span>
+<span class="fc" id="L192">        assertTrue(a1.equals(a2));</span>
+
+        // tick marks visible flag...
+<span class="fc" id="L195">        a1.setTickMarksVisible(false);</span>
+<span class="fc" id="L196">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L197">        a2.setTickMarksVisible(false);</span>
+<span class="fc" id="L198">        assertTrue(a1.equals(a2));</span>
+
+        // tick mark inside length...
+<span class="fc" id="L201">        a1.setTickMarkInsideLength(1.23f);</span>
+<span class="fc" id="L202">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L203">        a2.setTickMarkInsideLength(1.23f);</span>
+<span class="fc" id="L204">        assertTrue(a1.equals(a2));</span>
+
+        // tick mark outside length...
+<span class="fc" id="L207">        a1.setTickMarkOutsideLength(1.23f);</span>
+<span class="fc" id="L208">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L209">        a2.setTickMarkOutsideLength(1.23f);</span>
+<span class="fc" id="L210">        assertTrue(a1.equals(a2));</span>
+
+        // tick mark stroke...
+<span class="fc" id="L213">        a1.setTickMarkStroke(new BasicStroke(2.0f));</span>
+<span class="fc" id="L214">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L215">        a2.setTickMarkStroke(new BasicStroke(2.0f));</span>
+<span class="fc" id="L216">        assertTrue(a1.equals(a2));</span>
+
+        // tick mark paint...
+<span class="fc" id="L219">        a1.setTickMarkPaint(new GradientPaint(1.0f, 2.0f, Color.cyan,</span>
+                3.0f, 4.0f, Color.black));
+<span class="fc" id="L221">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L222">        a2.setTickMarkPaint(new GradientPaint(1.0f, 2.0f, Color.cyan,</span>
+                3.0f, 4.0f, Color.black));
+<span class="fc" id="L224">        assertTrue(a1.equals(a2));</span>
+
+        // tick mark outside length...
+<span class="fc" id="L227">        a1.setFixedDimension(3.21f);</span>
+<span class="fc" id="L228">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L229">        a2.setFixedDimension(3.21f);</span>
+<span class="fc" id="L230">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L232">        a1.setMinorTickMarksVisible(true);</span>
+<span class="fc" id="L233">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L234">        a2.setMinorTickMarksVisible(true);</span>
+<span class="fc" id="L235">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L237">        a1.setMinorTickMarkInsideLength(1.23f);</span>
+<span class="fc" id="L238">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L239">        a2.setMinorTickMarkInsideLength(1.23f);</span>
+<span class="fc" id="L240">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L242">        a1.setMinorTickMarkOutsideLength(3.21f);</span>
+<span class="fc" id="L243">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L244">        a2.setMinorTickMarkOutsideLength(3.21f);</span>
+<span class="fc" id="L245">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L247">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashCode() {
+<span class="fc" id="L253">        Axis a1 = new CategoryAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L254">        Axis a2 = new CategoryAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L255">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L256">        int h1 = a1.hashCode();</span>
+<span class="fc" id="L257">        int h2 = a2.hashCode();</span>
+<span class="fc" id="L258">        assertEquals(h1, h2);</span>
+<span class="fc" id="L259">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

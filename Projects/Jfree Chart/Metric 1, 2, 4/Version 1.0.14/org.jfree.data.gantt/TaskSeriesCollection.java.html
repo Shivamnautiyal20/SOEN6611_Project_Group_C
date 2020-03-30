@@ -1,0 +1,681 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TaskSeriesCollection.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.gantt</a> &gt; <span class="el_source">TaskSeriesCollection.java</span></div><h1>TaskSeriesCollection.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------
+ * TaskSeriesCollection.java
+ * -------------------------
+ * (C) Copyright 2002-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Thomas Schuster;
+ *
+ * Changes
+ * -------
+ * 06-Jun-2002 : Version 1 (DG);
+ * 07-Oct-2002 : Fixed errors reported by Checkstyle (DG);
+ * 24-Oct-2002 : Amendments for changes in CategoryDataset interface and
+ *               CategoryToolTipGenerator interface (DG);
+ * 10-Jan-2003 : Renamed GanttSeriesCollection --&gt; TaskSeriesCollection (DG);
+ * 04-Sep-2003 : Fixed bug 800324 (DG);
+ * 16-Sep-2003 : Implemented GanttCategoryDataset (DG);
+ * 12-Jan-2005 : Fixed bug 1099331 (DG);
+ * 18-Jan-2006 : Added new methods getSeries(int) and
+ *               getSeries(Comparable) (DG);
+ * 09-May-2008 : Fixed cloning bug (DG);
+ *
+ */
+
+package org.jfree.data.gantt;
+
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.List;
+
+import org.jfree.data.general.AbstractSeriesDataset;
+import org.jfree.data.general.SeriesChangeEvent;
+import org.jfree.data.time.TimePeriod;
+import org.jfree.util.ObjectUtilities;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * A collection of {@link TaskSeries} objects.  This class provides one
+ * implementation of the {@link GanttCategoryDataset} interface.
+ */
+public class TaskSeriesCollection extends AbstractSeriesDataset
+        implements GanttCategoryDataset, Cloneable, PublicCloneable,
+                   Serializable {
+
+    /** For serialization. */
+    private static final long serialVersionUID = -2065799050738449903L;
+
+    /**
+     * Storage for aggregate task keys (the task description is used as the
+     * key).
+     */
+    private List keys;
+
+    /** Storage for the series. */
+    private List data;
+
+    /**
+     * Default constructor.
+     */
+<span class="fc" id="L86">    public TaskSeriesCollection() {</span>
+<span class="fc" id="L87">        this.keys = new java.util.ArrayList();</span>
+<span class="fc" id="L88">        this.data = new java.util.ArrayList();</span>
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * Returns a series from the collection.
+     *
+     * @param key  the series key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The series.
+     *
+     * @since 1.0.1
+     */
+    public TaskSeries getSeries(Comparable key) {
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        if (key == null) {</span>
+<span class="fc" id="L102">            throw new NullPointerException(&quot;Null 'key' argument.&quot;);</span>
+        }
+<span class="fc" id="L104">        TaskSeries result = null;</span>
+<span class="fc" id="L105">        int index = getRowIndex(key);</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        if (index &gt;= 0) {</span>
+<span class="fc" id="L107">            result = getSeries(index);</span>
+        }
+<span class="fc" id="L109">        return result;</span>
+    }
+
+    /**
+     * Returns a series from the collection.
+     *
+     * @param series  the series index (zero-based).
+     *
+     * @return The series.
+     *
+     * @since 1.0.1
+     */
+    public TaskSeries getSeries(int series) {
+<span class="pc bpc" id="L122" title="2 of 4 branches missed.">        if ((series &lt; 0) || (series &gt;= getSeriesCount())) {</span>
+<span class="nc" id="L123">            throw new IllegalArgumentException(&quot;Series index out of bounds&quot;);</span>
+        }
+<span class="fc" id="L125">        return (TaskSeries) this.data.get(series);</span>
+    }
+
+    /**
+     * Returns the number of series in the collection.
+     *
+     * @return The series count.
+     */
+    public int getSeriesCount() {
+<span class="fc" id="L134">        return getRowCount();</span>
+    }
+
+    /**
+     * Returns the name of a series.
+     *
+     * @param series  the series index (zero-based).
+     *
+     * @return The name of a series.
+     */
+    public Comparable getSeriesKey(int series) {
+<span class="fc" id="L145">        TaskSeries ts = (TaskSeries) this.data.get(series);</span>
+<span class="fc" id="L146">        return ts.getKey();</span>
+    }
+
+    /**
+     * Returns the number of rows (series) in the collection.
+     *
+     * @return The series count.
+     */
+    public int getRowCount() {
+<span class="fc" id="L155">        return this.data.size();</span>
+    }
+
+    /**
+     * Returns the row keys.  In this case, each series is a key.
+     *
+     * @return The row keys.
+     */
+    public List getRowKeys() {
+<span class="nc" id="L164">        return this.data;</span>
+    }
+
+    /**
+     * Returns the number of column in the dataset.
+     *
+     * @return The column count.
+     */
+    public int getColumnCount() {
+<span class="fc" id="L173">        return this.keys.size();</span>
+    }
+
+    /**
+     * Returns a list of the column keys in the dataset.
+     *
+     * @return The category list.
+     */
+    public List getColumnKeys() {
+<span class="nc" id="L182">        return this.keys;</span>
+    }
+
+    /**
+     * Returns a column key.
+     *
+     * @param index  the column index.
+     *
+     * @return The column key.
+     */
+    public Comparable getColumnKey(int index) {
+<span class="fc" id="L193">        return (Comparable) this.keys.get(index);</span>
+    }
+
+    /**
+     * Returns the column index for a column key.
+     *
+     * @param columnKey  the column key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The column index.
+     */
+    public int getColumnIndex(Comparable columnKey) {
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">        if (columnKey == null) {</span>
+<span class="nc" id="L205">            throw new IllegalArgumentException(&quot;Null 'columnKey' argument.&quot;);</span>
+        }
+<span class="fc" id="L207">        return this.keys.indexOf(columnKey);</span>
+    }
+
+    /**
+     * Returns the row index for the given row key.
+     *
+     * @param rowKey  the row key.
+     *
+     * @return The index.
+     */
+    public int getRowIndex(Comparable rowKey) {
+<span class="fc" id="L218">        int result = -1;</span>
+<span class="fc" id="L219">        int count = this.data.size();</span>
+<span class="fc bfc" id="L220" title="All 2 branches covered.">        for (int i = 0; i &lt; count; i++) {</span>
+<span class="fc" id="L221">            TaskSeries s = (TaskSeries) this.data.get(i);</span>
+<span class="fc bfc" id="L222" title="All 2 branches covered.">            if (s.getKey().equals(rowKey)) {</span>
+<span class="fc" id="L223">                result = i;</span>
+<span class="fc" id="L224">                break;</span>
+            }
+        }
+<span class="fc" id="L227">        return result;</span>
+    }
+
+    /**
+     * Returns the key for a row.
+     *
+     * @param index  the row index (zero-based).
+     *
+     * @return The key.
+     */
+    public Comparable getRowKey(int index) {
+<span class="fc" id="L238">        TaskSeries series = (TaskSeries) this.data.get(index);</span>
+<span class="fc" id="L239">        return series.getKey();</span>
+    }
+
+    /**
+     * Adds a series to the dataset and sends a
+     * {@link org.jfree.data.general.DatasetChangeEvent} to all registered
+     * listeners.
+     *
+     * @param series  the series (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public void add(TaskSeries series) {
+<span class="pc bpc" id="L250" title="1 of 2 branches missed.">        if (series == null) {</span>
+<span class="nc" id="L251">            throw new IllegalArgumentException(&quot;Null 'series' argument.&quot;);</span>
+        }
+<span class="fc" id="L253">        this.data.add(series);</span>
+<span class="fc" id="L254">        series.addChangeListener(this);</span>
+
+        // look for any keys that we don't already know about...
+<span class="fc" id="L257">        Iterator iterator = series.getTasks().iterator();</span>
+<span class="fc bfc" id="L258" title="All 2 branches covered.">        while (iterator.hasNext()) {</span>
+<span class="fc" id="L259">            Task task = (Task) iterator.next();</span>
+<span class="fc" id="L260">            String key = task.getDescription();</span>
+<span class="fc" id="L261">            int index = this.keys.indexOf(key);</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">            if (index &lt; 0) {</span>
+<span class="fc" id="L263">                this.keys.add(key);</span>
+            }
+<span class="fc" id="L265">        }</span>
+<span class="fc" id="L266">        fireDatasetChanged();</span>
+<span class="fc" id="L267">    }</span>
+
+    /**
+     * Removes a series from the collection and sends
+     * a {@link org.jfree.data.general.DatasetChangeEvent}
+     * to all registered listeners.
+     *
+     * @param series  the series.
+     */
+    public void remove(TaskSeries series) {
+<span class="nc bnc" id="L277" title="All 2 branches missed.">        if (series == null) {</span>
+<span class="nc" id="L278">            throw new IllegalArgumentException(&quot;Null 'series' argument.&quot;);</span>
+        }
+<span class="nc bnc" id="L280" title="All 2 branches missed.">        if (this.data.contains(series)) {</span>
+<span class="nc" id="L281">            series.removeChangeListener(this);</span>
+<span class="nc" id="L282">            this.data.remove(series);</span>
+<span class="nc" id="L283">            fireDatasetChanged();</span>
+        }
+<span class="nc" id="L285">    }</span>
+
+    /**
+     * Removes a series from the collection and sends
+     * a {@link org.jfree.data.general.DatasetChangeEvent}
+     * to all registered listeners.
+     *
+     * @param series  the series (zero based index).
+     */
+    public void remove(int series) {
+<span class="fc bfc" id="L295" title="All 4 branches covered.">        if ((series &lt; 0) || (series &gt;= getSeriesCount())) {</span>
+<span class="fc" id="L296">            throw new IllegalArgumentException(</span>
+                &quot;TaskSeriesCollection.remove(): index outside valid range.&quot;);
+        }
+
+        // fetch the series, remove the change listener, then remove the series.
+<span class="fc" id="L301">        TaskSeries ts = (TaskSeries) this.data.get(series);</span>
+<span class="fc" id="L302">        ts.removeChangeListener(this);</span>
+<span class="fc" id="L303">        this.data.remove(series);</span>
+<span class="fc" id="L304">        fireDatasetChanged();</span>
+
+<span class="fc" id="L306">    }</span>
+
+    /**
+     * Removes all the series from the collection and sends
+     * a {@link org.jfree.data.general.DatasetChangeEvent}
+     * to all registered listeners.
+     */
+    public void removeAll() {
+
+        // deregister the collection as a change listener to each series in
+        // the collection.
+<span class="nc" id="L317">        Iterator iterator = this.data.iterator();</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">        while (iterator.hasNext()) {</span>
+<span class="nc" id="L319">            TaskSeries series = (TaskSeries) iterator.next();</span>
+<span class="nc" id="L320">            series.removeChangeListener(this);</span>
+<span class="nc" id="L321">        }</span>
+
+        // remove all the series from the collection and notify listeners.
+<span class="nc" id="L324">        this.data.clear();</span>
+<span class="nc" id="L325">        fireDatasetChanged();</span>
+
+<span class="nc" id="L327">    }</span>
+
+    /**
+     * Returns the value for an item.
+     *
+     * @param rowKey  the row key.
+     * @param columnKey  the column key.
+     *
+     * @return The item value.
+     */
+    public Number getValue(Comparable rowKey, Comparable columnKey) {
+<span class="fc" id="L338">        return getStartValue(rowKey, columnKey);</span>
+    }
+
+    /**
+     * Returns the value for a task.
+     *
+     * @param row  the row index (zero-based).
+     * @param column  the column index (zero-based).
+     *
+     * @return The start value.
+     */
+    public Number getValue(int row, int column) {
+<span class="fc" id="L350">        return getStartValue(row, column);</span>
+    }
+
+    /**
+     * Returns the start value for a task.  This is a date/time value, measured
+     * in milliseconds since 1-Jan-1970.
+     *
+     * @param rowKey  the series.
+     * @param columnKey  the category.
+     *
+     * @return The start value (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public Number getStartValue(Comparable rowKey, Comparable columnKey) {
+<span class="fc" id="L363">        Number result = null;</span>
+<span class="fc" id="L364">        int row = getRowIndex(rowKey);</span>
+<span class="fc" id="L365">        TaskSeries series = (TaskSeries) this.data.get(row);</span>
+<span class="fc" id="L366">        Task task = series.get(columnKey.toString());</span>
+<span class="fc bfc" id="L367" title="All 2 branches covered.">        if (task != null) {</span>
+<span class="fc" id="L368">            TimePeriod duration = task.getDuration();</span>
+<span class="fc bfc" id="L369" title="All 2 branches covered.">            if (duration != null) {</span>
+<span class="fc" id="L370">                result = new Long(duration.getStart().getTime());</span>
+            }
+        }
+<span class="fc" id="L373">        return result;</span>
+    }
+
+    /**
+     * Returns the start value for a task.
+     *
+     * @param row  the row index (zero-based).
+     * @param column  the column index (zero-based).
+     *
+     * @return The start value.
+     */
+    public Number getStartValue(int row, int column) {
+<span class="fc" id="L385">        Comparable rowKey = getRowKey(row);</span>
+<span class="fc" id="L386">        Comparable columnKey = getColumnKey(column);</span>
+<span class="fc" id="L387">        return getStartValue(rowKey, columnKey);</span>
+    }
+
+    /**
+     * Returns the end value for a task.  This is a date/time value, measured
+     * in milliseconds since 1-Jan-1970.
+     *
+     * @param rowKey  the series.
+     * @param columnKey  the category.
+     *
+     * @return The end value (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public Number getEndValue(Comparable rowKey, Comparable columnKey) {
+<span class="fc" id="L400">        Number result = null;</span>
+<span class="fc" id="L401">        int row = getRowIndex(rowKey);</span>
+<span class="fc" id="L402">        TaskSeries series = (TaskSeries) this.data.get(row);</span>
+<span class="fc" id="L403">        Task task = series.get(columnKey.toString());</span>
+<span class="fc bfc" id="L404" title="All 2 branches covered.">        if (task != null) {</span>
+<span class="fc" id="L405">            TimePeriod duration = task.getDuration();</span>
+<span class="fc bfc" id="L406" title="All 2 branches covered.">            if (duration != null) {</span>
+<span class="fc" id="L407">                result = new Long(duration.getEnd().getTime());</span>
+            }
+        }
+<span class="fc" id="L410">        return result;</span>
+    }
+
+    /**
+     * Returns the end value for a task.
+     *
+     * @param row  the row index (zero-based).
+     * @param column  the column index (zero-based).
+     *
+     * @return The end value.
+     */
+    public Number getEndValue(int row, int column) {
+<span class="fc" id="L422">        Comparable rowKey = getRowKey(row);</span>
+<span class="fc" id="L423">        Comparable columnKey = getColumnKey(column);</span>
+<span class="fc" id="L424">        return getEndValue(rowKey, columnKey);</span>
+    }
+
+    /**
+     * Returns the percent complete for a given item.
+     *
+     * @param row  the row index (zero-based).
+     * @param column  the column index (zero-based).
+     *
+     * @return The percent complete (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public Number getPercentComplete(int row, int column) {
+<span class="fc" id="L436">        Comparable rowKey = getRowKey(row);</span>
+<span class="fc" id="L437">        Comparable columnKey = getColumnKey(column);</span>
+<span class="fc" id="L438">        return getPercentComplete(rowKey, columnKey);</span>
+    }
+
+    /**
+     * Returns the percent complete for a given item.
+     *
+     * @param rowKey  the row key.
+     * @param columnKey  the column key.
+     *
+     * @return The percent complete.
+     */
+    public Number getPercentComplete(Comparable rowKey, Comparable columnKey) {
+<span class="fc" id="L450">        Number result = null;</span>
+<span class="fc" id="L451">        int row = getRowIndex(rowKey);</span>
+<span class="fc" id="L452">        TaskSeries series = (TaskSeries) this.data.get(row);</span>
+<span class="fc" id="L453">        Task task = series.get(columnKey.toString());</span>
+<span class="fc bfc" id="L454" title="All 2 branches covered.">        if (task != null) {</span>
+<span class="fc" id="L455">            result = task.getPercentComplete();</span>
+        }
+<span class="fc" id="L457">        return result;</span>
+    }
+
+    /**
+     * Returns the number of sub-intervals for a given item.
+     *
+     * @param row  the row index (zero-based).
+     * @param column  the column index (zero-based).
+     *
+     * @return The sub-interval count.
+     */
+    public int getSubIntervalCount(int row, int column) {
+<span class="fc" id="L469">        Comparable rowKey = getRowKey(row);</span>
+<span class="fc" id="L470">        Comparable columnKey = getColumnKey(column);</span>
+<span class="fc" id="L471">        return getSubIntervalCount(rowKey, columnKey);</span>
+    }
+
+    /**
+     * Returns the number of sub-intervals for a given item.
+     *
+     * @param rowKey  the row key.
+     * @param columnKey  the column key.
+     *
+     * @return The sub-interval count.
+     */
+    public int getSubIntervalCount(Comparable rowKey, Comparable columnKey) {
+<span class="fc" id="L483">        int result = 0;</span>
+<span class="fc" id="L484">        int row = getRowIndex(rowKey);</span>
+<span class="fc" id="L485">        TaskSeries series = (TaskSeries) this.data.get(row);</span>
+<span class="fc" id="L486">        Task task = series.get(columnKey.toString());</span>
+<span class="fc bfc" id="L487" title="All 2 branches covered.">        if (task != null) {</span>
+<span class="fc" id="L488">            result = task.getSubtaskCount();</span>
+        }
+<span class="fc" id="L490">        return result;</span>
+    }
+
+    /**
+     * Returns the start value of a sub-interval for a given item.
+     *
+     * @param row  the row index (zero-based).
+     * @param column  the column index (zero-based).
+     * @param subinterval  the sub-interval index (zero-based).
+     *
+     * @return The start value (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public Number getStartValue(int row, int column, int subinterval) {
+<span class="fc" id="L503">        Comparable rowKey = getRowKey(row);</span>
+<span class="fc" id="L504">        Comparable columnKey = getColumnKey(column);</span>
+<span class="fc" id="L505">        return getStartValue(rowKey, columnKey, subinterval);</span>
+    }
+
+    /**
+     * Returns the start value of a sub-interval for a given item.
+     *
+     * @param rowKey  the row key.
+     * @param columnKey  the column key.
+     * @param subinterval  the subinterval.
+     *
+     * @return The start value (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public Number getStartValue(Comparable rowKey, Comparable columnKey,
+                                int subinterval) {
+<span class="fc" id="L519">        Number result = null;</span>
+<span class="fc" id="L520">        int row = getRowIndex(rowKey);</span>
+<span class="fc" id="L521">        TaskSeries series = (TaskSeries) this.data.get(row);</span>
+<span class="fc" id="L522">        Task task = series.get(columnKey.toString());</span>
+<span class="fc bfc" id="L523" title="All 2 branches covered.">        if (task != null) {</span>
+<span class="fc" id="L524">            Task sub = task.getSubtask(subinterval);</span>
+<span class="pc bpc" id="L525" title="1 of 2 branches missed.">            if (sub != null) {</span>
+<span class="fc" id="L526">                TimePeriod duration = sub.getDuration();</span>
+<span class="fc" id="L527">                result = new Long(duration.getStart().getTime());</span>
+            }
+        }
+<span class="fc" id="L530">        return result;</span>
+    }
+
+    /**
+     * Returns the end value of a sub-interval for a given item.
+     *
+     * @param row  the row index (zero-based).
+     * @param column  the column index (zero-based).
+     * @param subinterval  the subinterval.
+     *
+     * @return The end value (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public Number getEndValue(int row, int column, int subinterval) {
+<span class="fc" id="L543">        Comparable rowKey = getRowKey(row);</span>
+<span class="fc" id="L544">        Comparable columnKey = getColumnKey(column);</span>
+<span class="fc" id="L545">        return getEndValue(rowKey, columnKey, subinterval);</span>
+    }
+
+    /**
+     * Returns the end value of a sub-interval for a given item.
+     *
+     * @param rowKey  the row key.
+     * @param columnKey  the column key.
+     * @param subinterval  the subinterval.
+     *
+     * @return The end value (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public Number getEndValue(Comparable rowKey, Comparable columnKey,
+                              int subinterval) {
+<span class="fc" id="L559">        Number result = null;</span>
+<span class="fc" id="L560">        int row = getRowIndex(rowKey);</span>
+<span class="fc" id="L561">        TaskSeries series = (TaskSeries) this.data.get(row);</span>
+<span class="fc" id="L562">        Task task = series.get(columnKey.toString());</span>
+<span class="fc bfc" id="L563" title="All 2 branches covered.">        if (task != null) {</span>
+<span class="fc" id="L564">            Task sub = task.getSubtask(subinterval);</span>
+<span class="pc bpc" id="L565" title="1 of 2 branches missed.">            if (sub != null) {</span>
+<span class="fc" id="L566">                TimePeriod duration = sub.getDuration();</span>
+<span class="fc" id="L567">                result = new Long(duration.getEnd().getTime());</span>
+            }
+        }
+<span class="fc" id="L570">        return result;</span>
+    }
+
+    /**
+     * Returns the percentage complete value of a sub-interval for a given item.
+     *
+     * @param row  the row index (zero-based).
+     * @param column  the column index (zero-based).
+     * @param subinterval  the sub-interval.
+     *
+     * @return The percent complete value (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public Number getPercentComplete(int row, int column, int subinterval) {
+<span class="fc" id="L583">        Comparable rowKey = getRowKey(row);</span>
+<span class="fc" id="L584">        Comparable columnKey = getColumnKey(column);</span>
+<span class="fc" id="L585">        return getPercentComplete(rowKey, columnKey, subinterval);</span>
+    }
+
+    /**
+     * Returns the percentage complete value of a sub-interval for a given item.
+     *
+     * @param rowKey  the row key.
+     * @param columnKey  the column key.
+     * @param subinterval  the sub-interval.
+     *
+     * @return The percent complete value (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public Number getPercentComplete(Comparable rowKey, Comparable columnKey,
+                                     int subinterval) {
+<span class="fc" id="L599">        Number result = null;</span>
+<span class="fc" id="L600">        int row = getRowIndex(rowKey);</span>
+<span class="fc" id="L601">        TaskSeries series = (TaskSeries) this.data.get(row);</span>
+<span class="fc" id="L602">        Task task = series.get(columnKey.toString());</span>
+<span class="pc bpc" id="L603" title="1 of 2 branches missed.">        if (task != null) {</span>
+<span class="fc" id="L604">            Task sub = task.getSubtask(subinterval);</span>
+<span class="pc bpc" id="L605" title="1 of 2 branches missed.">            if (sub != null) {</span>
+<span class="fc" id="L606">                result = sub.getPercentComplete();</span>
+            }
+        }
+<span class="fc" id="L609">        return result;</span>
+    }
+
+    /**
+     * Called when a series belonging to the dataset changes.
+     *
+     * @param event  information about the change.
+     */
+    public void seriesChanged(SeriesChangeEvent event) {
+<span class="fc" id="L618">        refreshKeys();</span>
+<span class="fc" id="L619">        fireDatasetChanged();</span>
+<span class="fc" id="L620">    }</span>
+
+    /**
+     * Refreshes the keys.
+     */
+    private void refreshKeys() {
+
+<span class="fc" id="L627">        this.keys.clear();</span>
+<span class="fc bfc" id="L628" title="All 2 branches covered.">        for (int i = 0; i &lt; getSeriesCount(); i++) {</span>
+<span class="fc" id="L629">            TaskSeries series = (TaskSeries) this.data.get(i);</span>
+            // look for any keys that we don't already know about...
+<span class="fc" id="L631">            Iterator iterator = series.getTasks().iterator();</span>
+<span class="fc bfc" id="L632" title="All 2 branches covered.">            while (iterator.hasNext()) {</span>
+<span class="fc" id="L633">                Task task = (Task) iterator.next();</span>
+<span class="fc" id="L634">                String key = task.getDescription();</span>
+<span class="fc" id="L635">                int index = this.keys.indexOf(key);</span>
+<span class="fc bfc" id="L636" title="All 2 branches covered.">                if (index &lt; 0) {</span>
+<span class="fc" id="L637">                    this.keys.add(key);</span>
+                }
+<span class="fc" id="L639">            }</span>
+        }
+
+<span class="fc" id="L642">    }</span>
+
+    /**
+     * Tests this instance for equality with an arbitrary object.
+     *
+     * @param obj  the object (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    public boolean equals(Object obj) {
+<span class="fc bfc" id="L652" title="All 2 branches covered.">        if (obj == this) {</span>
+<span class="fc" id="L653">            return true;</span>
+        }
+<span class="pc bpc" id="L655" title="1 of 2 branches missed.">        if (!(obj instanceof TaskSeriesCollection)) {</span>
+<span class="nc" id="L656">            return false;</span>
+        }
+<span class="fc" id="L658">        TaskSeriesCollection that = (TaskSeriesCollection) obj;</span>
+<span class="fc bfc" id="L659" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.data, that.data)) {</span>
+<span class="fc" id="L660">            return false;</span>
+        }
+<span class="fc" id="L662">        return true;</span>
+    }
+
+    /**
+     * Returns an independent copy of this dataset.
+     *
+     * @return A clone of the dataset.
+     *
+     * @throws CloneNotSupportedException if there is some problem cloning
+     *     the dataset.
+     */
+    public Object clone() throws CloneNotSupportedException {
+<span class="fc" id="L674">        TaskSeriesCollection clone = (TaskSeriesCollection) super.clone();</span>
+<span class="fc" id="L675">        clone.data = (List) ObjectUtilities.deepClone(this.data);</span>
+<span class="fc" id="L676">        clone.keys = new java.util.ArrayList(this.keys);</span>
+<span class="fc" id="L677">        return clone;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

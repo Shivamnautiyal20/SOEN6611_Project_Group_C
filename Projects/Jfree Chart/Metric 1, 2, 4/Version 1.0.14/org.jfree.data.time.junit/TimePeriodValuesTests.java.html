@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TimePeriodValuesTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.time.junit</a> &gt; <span class="el_source">TimePeriodValuesTests.java</span></div><h1>TimePeriodValuesTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU Lesser General Public License as published by 
+ * the Free Software Foundation; either version 2.1 of the License, or 
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public 
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, 
+ * USA.  
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------
+ * TimePeriodValueTests.java
+ * -------------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 30-Jul-2003 : Version 1 (DG);
+ * 07-Apr-2008 : Added new tests for min/max-start/middle/end
+ *               index updates (DG);
+ *
+ */
+
+package org.jfree.data.time.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.Date;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.general.SeriesChangeEvent;
+import org.jfree.data.general.SeriesChangeListener;
+import org.jfree.data.general.SeriesException;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.RegularTimePeriod;
+import org.jfree.data.time.SimpleTimePeriod;
+import org.jfree.data.time.TimePeriodValue;
+import org.jfree.data.time.TimePeriodValues;
+import org.jfree.data.time.Year;
+import org.jfree.date.MonthConstants;
+
+/**
+ * A collection of test cases for the {@link TimePeriodValues} class.
+ */
+public class TimePeriodValuesTests extends TestCase {
+
+    /** Series A. */
+    private TimePeriodValues seriesA;
+
+    /** Series B. */
+    private TimePeriodValues seriesB;
+
+    /** Series C. */
+    private TimePeriodValues seriesC;
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        return new TestSuite(TimePeriodValuesTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public TimePeriodValuesTests(String name) {
+<span class="fc" id="L97">        super(name);</span>
+<span class="fc" id="L98">    }</span>
+
+    /**
+     * Common test setup.
+     */
+    protected void setUp() {
+
+<span class="fc" id="L105">        this.seriesA = new TimePeriodValues(&quot;Series A&quot;);</span>
+        try {
+<span class="fc" id="L107">            this.seriesA.add(new Year(2000), new Integer(102000));</span>
+<span class="fc" id="L108">            this.seriesA.add(new Year(2001), new Integer(102001));</span>
+<span class="fc" id="L109">            this.seriesA.add(new Year(2002), new Integer(102002));</span>
+<span class="fc" id="L110">            this.seriesA.add(new Year(2003), new Integer(102003));</span>
+<span class="fc" id="L111">            this.seriesA.add(new Year(2004), new Integer(102004));</span>
+<span class="fc" id="L112">            this.seriesA.add(new Year(2005), new Integer(102005));</span>
+        }
+<span class="nc" id="L114">        catch (SeriesException e) {</span>
+<span class="nc" id="L115">            System.err.println(&quot;Problem creating series.&quot;);</span>
+<span class="fc" id="L116">        }</span>
+
+<span class="fc" id="L118">        this.seriesB = new TimePeriodValues(&quot;Series B&quot;);</span>
+        try {
+<span class="fc" id="L120">            this.seriesB.add(new Year(2006), new Integer(202006));</span>
+<span class="fc" id="L121">            this.seriesB.add(new Year(2007), new Integer(202007));</span>
+<span class="fc" id="L122">            this.seriesB.add(new Year(2008), new Integer(202008));</span>
+        }
+<span class="nc" id="L124">        catch (SeriesException e) {</span>
+<span class="nc" id="L125">            System.err.println(&quot;Problem creating series.&quot;);</span>
+<span class="fc" id="L126">        }</span>
+
+<span class="fc" id="L128">        this.seriesC = new TimePeriodValues(&quot;Series C&quot;);</span>
+        try {
+<span class="fc" id="L130">            this.seriesC.add(new Year(1999), new Integer(301999));</span>
+<span class="fc" id="L131">            this.seriesC.add(new Year(2000), new Integer(302000));</span>
+<span class="fc" id="L132">            this.seriesC.add(new Year(2002), new Integer(302002));</span>
+        }
+<span class="nc" id="L134">        catch (SeriesException e) {</span>
+<span class="nc" id="L135">            System.err.println(&quot;Problem creating series.&quot;);</span>
+<span class="fc" id="L136">        }</span>
+
+<span class="fc" id="L138">    }</span>
+
+    /**
+     * Set up a quarter equal to Q1 1900.  Request the previous quarter, it 
+     * should be null.
+     */
+    public void testClone() {
+
+<span class="fc" id="L146">        TimePeriodValues series = new TimePeriodValues(&quot;Test Series&quot;);</span>
+
+<span class="fc" id="L148">        RegularTimePeriod jan1st2002 = new Day(1, MonthConstants.JANUARY, 2002);</span>
+        try {
+<span class="fc" id="L150">            series.add(jan1st2002, new Integer(42));</span>
+        }
+<span class="nc" id="L152">        catch (SeriesException e) {</span>
+<span class="nc" id="L153">            System.err.println(&quot;Problem adding to collection.&quot;);</span>
+<span class="fc" id="L154">        }</span>
+
+<span class="fc" id="L156">        TimePeriodValues clone = null;</span>
+        try {
+<span class="fc" id="L158">            clone = (TimePeriodValues) series.clone();</span>
+<span class="fc" id="L159">            clone.setKey(&quot;Clone Series&quot;);</span>
+            try {
+<span class="fc" id="L161">                clone.update(0, new Integer(10));</span>
+            }
+<span class="nc" id="L163">            catch (SeriesException e) {</span>
+<span class="nc" id="L164">                System.err.println(&quot;Problem updating series.&quot;);</span>
+<span class="fc" id="L165">            }</span>
+        }
+<span class="nc" id="L167">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L168">            assertTrue(false);</span>
+<span class="fc" id="L169">        }</span>
+
+<span class="fc" id="L171">        int seriesValue = series.getValue(0).intValue();</span>
+<span class="fc" id="L172">        int cloneValue = clone.getValue(0).intValue();</span>
+
+<span class="fc" id="L174">        assertEquals(42, seriesValue);</span>
+<span class="fc" id="L175">        assertEquals(10, cloneValue);</span>
+<span class="fc" id="L176">        assertEquals(&quot;Test Series&quot;, series.getKey());</span>
+<span class="fc" id="L177">        assertEquals(&quot;Clone Series&quot;, clone.getKey());</span>
+
+<span class="fc" id="L179">    }</span>
+
+    /**
+     * Add a value to series A for 1999.  It should be added at index 0.
+     */
+    public void testAddValue() {
+
+<span class="fc" id="L186">        TimePeriodValues tpvs = new TimePeriodValues(&quot;Test&quot;);</span>
+        try {
+<span class="fc" id="L188">            tpvs.add(new Year(1999), new Integer(1));</span>
+        }
+<span class="nc" id="L190">        catch (SeriesException e) {</span>
+<span class="nc" id="L191">            System.err.println(&quot;Problem adding to series.&quot;);</span>
+<span class="fc" id="L192">        }</span>
+
+<span class="fc" id="L194">        int value = tpvs.getValue(0).intValue();</span>
+<span class="fc" id="L195">        assertEquals(1, value);</span>
+
+<span class="fc" id="L197">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L204">        TimePeriodValues s1 = new TimePeriodValues(&quot;A test&quot;);</span>
+<span class="fc" id="L205">        s1.add(new Year(2000), 13.75);</span>
+<span class="fc" id="L206">        s1.add(new Year(2001), 11.90);</span>
+<span class="fc" id="L207">        s1.add(new Year(2002), null);</span>
+<span class="fc" id="L208">        s1.add(new Year(2005), 19.32);</span>
+<span class="fc" id="L209">        s1.add(new Year(2007), 16.89);</span>
+<span class="fc" id="L210">        TimePeriodValues s2 = null;</span>
+
+        try {
+<span class="fc" id="L213">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L214">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L215">            out.writeObject(s1);</span>
+<span class="fc" id="L216">            out.close();</span>
+
+<span class="fc" id="L218">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L219">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L220">            s2 = (TimePeriodValues) in.readObject();</span>
+<span class="fc" id="L221">            in.close();</span>
+        }
+<span class="nc" id="L223">        catch (Exception e) {</span>
+<span class="nc" id="L224">            e.printStackTrace();</span>
+<span class="fc" id="L225">        }</span>
+<span class="fc" id="L226">        assertTrue(s1.equals(s2));</span>
+
+<span class="fc" id="L228">    }</span>
+
+    /**
+     * Tests the equals method.
+     */
+    public void testEquals() {
+<span class="fc" id="L234">        TimePeriodValues s1 = new TimePeriodValues(&quot;Time Series 1&quot;);</span>
+<span class="fc" id="L235">        TimePeriodValues s2 = new TimePeriodValues(&quot;Time Series 2&quot;);</span>
+<span class="fc" id="L236">        boolean b1 = s1.equals(s2);</span>
+<span class="fc" id="L237">        assertFalse(&quot;b1&quot;, b1);</span>
+
+<span class="fc" id="L239">        s2.setKey(&quot;Time Series 1&quot;);</span>
+<span class="fc" id="L240">        boolean b2 = s1.equals(s2);</span>
+<span class="fc" id="L241">        assertTrue(&quot;b2&quot;, b2);</span>
+
+        // domain description
+<span class="fc" id="L244">        s1.setDomainDescription(&quot;XYZ&quot;);</span>
+<span class="fc" id="L245">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L246">        s2.setDomainDescription(&quot;XYZ&quot;);</span>
+<span class="fc" id="L247">        assertTrue(s1.equals(s2));</span>
+        
+        // domain description - null
+<span class="fc" id="L250">        s1.setDomainDescription(null);</span>
+<span class="fc" id="L251">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L252">        s2.setDomainDescription(null);</span>
+<span class="fc" id="L253">        assertTrue(s1.equals(s2));</span>
+        
+        // range description
+<span class="fc" id="L256">        s1.setRangeDescription(&quot;XYZ&quot;);</span>
+<span class="fc" id="L257">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L258">        s2.setRangeDescription(&quot;XYZ&quot;);</span>
+<span class="fc" id="L259">        assertTrue(s1.equals(s2));</span>
+        
+        // range description - null
+<span class="fc" id="L262">        s1.setRangeDescription(null);</span>
+<span class="fc" id="L263">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L264">        s2.setRangeDescription(null);</span>
+<span class="fc" id="L265">        assertTrue(s1.equals(s2));</span>
+
+<span class="fc" id="L267">        RegularTimePeriod p1 = new Day();</span>
+<span class="fc" id="L268">        RegularTimePeriod p2 = p1.next();</span>
+<span class="fc" id="L269">        s1.add(p1, 100.0);</span>
+<span class="fc" id="L270">        s1.add(p2, 200.0);</span>
+<span class="fc" id="L271">        boolean b3 = s1.equals(s2);</span>
+<span class="fc" id="L272">        assertFalse(&quot;b3&quot;, b3);</span>
+
+<span class="fc" id="L274">        s2.add(p1, 100.0);</span>
+<span class="fc" id="L275">        s2.add(p2, 200.0);</span>
+<span class="fc" id="L276">        boolean b4 = s1.equals(s2);</span>
+<span class="fc" id="L277">        assertTrue(&quot;b4&quot;, b4);</span>
+
+<span class="fc" id="L279">    }</span>
+    
+    /**
+     * A test for bug report 1161329.
+     */
+    public void test1161329() {
+<span class="fc" id="L285">        TimePeriodValues tpv = new TimePeriodValues(&quot;Test&quot;);</span>
+<span class="fc" id="L286">        RegularTimePeriod t = new Day();</span>
+<span class="fc" id="L287">        tpv.add(t, 1.0);</span>
+<span class="fc" id="L288">        t = t.next();</span>
+<span class="fc" id="L289">        tpv.add(t, 2.0);</span>
+<span class="fc" id="L290">        tpv.delete(0, 1);</span>
+<span class="fc" id="L291">        assertEquals(0, tpv.getItemCount());</span>
+<span class="fc" id="L292">        tpv.add(t, 2.0);</span>
+<span class="fc" id="L293">        assertEquals(1, tpv.getItemCount());</span>
+<span class="fc" id="L294">    }</span>
+    
+    static final double EPSILON = 0.0000000001;
+    
+    /**
+     * Some checks for the add() methods.
+     */
+    public void testAdd() {
+<span class="fc" id="L302">        TimePeriodValues tpv = new TimePeriodValues(&quot;Test&quot;);</span>
+<span class="fc" id="L303">        MySeriesChangeListener listener = new MySeriesChangeListener();</span>
+<span class="fc" id="L304">        tpv.addChangeListener(listener);</span>
+<span class="fc" id="L305">        tpv.add(new TimePeriodValue(new SimpleTimePeriod(new Date(1L), </span>
+                new Date(3L)), 99.0));
+<span class="fc" id="L307">        assertEquals(99.0, tpv.getValue(0).doubleValue(), EPSILON);</span>
+<span class="fc" id="L308">        assertEquals(tpv, listener.getLastEvent().getSource());</span>
+        
+        // a null item should throw an IllegalArgumentException
+<span class="fc" id="L311">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L313">            tpv.add((TimePeriodValue) null);</span>
+        }
+<span class="fc" id="L315">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L316">            pass = true;</span>
+<span class="nc" id="L317">        }</span>
+<span class="fc" id="L318">        assertTrue(pass);</span>
+<span class="fc" id="L319">    }</span>
+    
+    /**
+     * Some tests for the getMinStartIndex() method.
+     */
+    public void testGetMinStartIndex() {
+<span class="fc" id="L325">        TimePeriodValues s = new TimePeriodValues(&quot;Test&quot;);</span>
+<span class="fc" id="L326">        assertEquals(-1, s.getMinStartIndex());</span>
+<span class="fc" id="L327">        s.add(new SimpleTimePeriod(100L, 200L), 1.0);</span>
+<span class="fc" id="L328">        assertEquals(0, s.getMinStartIndex());</span>
+<span class="fc" id="L329">        s.add(new SimpleTimePeriod(300L, 400L), 2.0);</span>
+<span class="fc" id="L330">        assertEquals(0, s.getMinStartIndex());</span>
+<span class="fc" id="L331">        s.add(new SimpleTimePeriod(0L, 50L), 3.0);</span>
+<span class="fc" id="L332">        assertEquals(2, s.getMinStartIndex());</span>
+<span class="fc" id="L333">    }</span>
+    
+    /**
+     * Some tests for the getMaxStartIndex() method.
+     */
+    public void testGetMaxStartIndex() {
+<span class="fc" id="L339">        TimePeriodValues s = new TimePeriodValues(&quot;Test&quot;);</span>
+<span class="fc" id="L340">        assertEquals(-1, s.getMaxStartIndex());</span>
+<span class="fc" id="L341">        s.add(new SimpleTimePeriod(100L, 200L), 1.0);</span>
+<span class="fc" id="L342">        assertEquals(0, s.getMaxStartIndex());</span>
+<span class="fc" id="L343">        s.add(new SimpleTimePeriod(300L, 400L), 2.0);</span>
+<span class="fc" id="L344">        assertEquals(1, s.getMaxStartIndex());</span>
+<span class="fc" id="L345">        s.add(new SimpleTimePeriod(0L, 50L), 3.0);</span>
+<span class="fc" id="L346">        assertEquals(1, s.getMaxStartIndex());</span>
+<span class="fc" id="L347">    }</span>
+
+    /**
+     * Some tests for the getMinMiddleIndex() method.
+     */
+    public void testGetMinMiddleIndex() {
+<span class="fc" id="L353">        TimePeriodValues s = new TimePeriodValues(&quot;Test&quot;);</span>
+<span class="fc" id="L354">        assertEquals(-1, s.getMinMiddleIndex());</span>
+<span class="fc" id="L355">        s.add(new SimpleTimePeriod(100L, 200L), 1.0);</span>
+<span class="fc" id="L356">        assertEquals(0, s.getMinMiddleIndex());</span>
+<span class="fc" id="L357">        s.add(new SimpleTimePeriod(300L, 400L), 2.0);</span>
+<span class="fc" id="L358">        assertEquals(0, s.getMinMiddleIndex());</span>
+<span class="fc" id="L359">        s.add(new SimpleTimePeriod(0L, 50L), 3.0);</span>
+<span class="fc" id="L360">        assertEquals(2, s.getMinMiddleIndex());</span>
+<span class="fc" id="L361">    }</span>
+    
+    /**
+     * Some tests for the getMaxMiddleIndex() method.
+     */
+    public void testGetMaxMiddleIndex() {
+<span class="fc" id="L367">        TimePeriodValues s = new TimePeriodValues(&quot;Test&quot;);</span>
+<span class="fc" id="L368">        assertEquals(-1, s.getMaxMiddleIndex());</span>
+<span class="fc" id="L369">        s.add(new SimpleTimePeriod(100L, 200L), 1.0);</span>
+<span class="fc" id="L370">        assertEquals(0, s.getMaxMiddleIndex());</span>
+<span class="fc" id="L371">        s.add(new SimpleTimePeriod(300L, 400L), 2.0);</span>
+<span class="fc" id="L372">        assertEquals(1, s.getMaxMiddleIndex());</span>
+<span class="fc" id="L373">        s.add(new SimpleTimePeriod(0L, 50L), 3.0);</span>
+<span class="fc" id="L374">        assertEquals(1, s.getMaxMiddleIndex());</span>
+<span class="fc" id="L375">        s.add(new SimpleTimePeriod(150L, 200L), 4.0);</span>
+<span class="fc" id="L376">        assertEquals(1, s.getMaxMiddleIndex());</span>
+<span class="fc" id="L377">    }</span>
+
+    /**
+     * Some tests for the getMinEndIndex() method.
+     */
+    public void getMinEndIndex() {
+<span class="nc" id="L383">        TimePeriodValues s = new TimePeriodValues(&quot;Test&quot;);</span>
+<span class="nc" id="L384">        assertEquals(-1, s.getMinEndIndex());</span>
+<span class="nc" id="L385">        s.add(new SimpleTimePeriod(100L, 200L), 1.0);</span>
+<span class="nc" id="L386">        assertEquals(0, s.getMinEndIndex());</span>
+<span class="nc" id="L387">        s.add(new SimpleTimePeriod(300L, 400L), 2.0);</span>
+<span class="nc" id="L388">        assertEquals(0, s.getMinEndIndex());</span>
+<span class="nc" id="L389">        s.add(new SimpleTimePeriod(0L, 50L), 3.0);</span>
+<span class="nc" id="L390">        assertEquals(2, s.getMinEndIndex());</span>
+<span class="nc" id="L391">    }</span>
+    
+    /**
+     * Some tests for the getMaxEndIndex() method.
+     */
+    public void getMaxEndIndex() {
+<span class="nc" id="L397">        TimePeriodValues s = new TimePeriodValues(&quot;Test&quot;);</span>
+<span class="nc" id="L398">        assertEquals(-1, s.getMaxEndIndex());</span>
+<span class="nc" id="L399">        s.add(new SimpleTimePeriod(100L, 200L), 1.0);</span>
+<span class="nc" id="L400">        assertEquals(0, s.getMaxEndIndex());</span>
+<span class="nc" id="L401">        s.add(new SimpleTimePeriod(300L, 400L), 2.0);</span>
+<span class="nc" id="L402">        assertEquals(1, s.getMaxEndIndex());</span>
+<span class="nc" id="L403">        s.add(new SimpleTimePeriod(0L, 50L), 3.0);</span>
+<span class="nc" id="L404">        assertEquals(1, s.getMaxEndIndex());</span>
+<span class="nc" id="L405">    }</span>
+
+    /**
+     * A listener used for detecting series change events.
+     */
+    static class MySeriesChangeListener implements SeriesChangeListener {
+        
+        SeriesChangeEvent lastEvent;
+        
+        /**
+         * Creates a new listener.
+         */
+<span class="fc" id="L417">        public MySeriesChangeListener() {</span>
+<span class="fc" id="L418">            this.lastEvent = null;</span>
+<span class="fc" id="L419">        }</span>
+        
+        /**
+         * Returns the last event.
+         * 
+         * @return The last event (possibly &lt;code&gt;null&lt;/code&gt;).
+         */
+        public SeriesChangeEvent getLastEvent() {
+<span class="fc" id="L427">            return this.lastEvent;</span>
+        }
+        
+        /**
+         * Clears the last event (sets it to &lt;code&gt;null&lt;/code&gt;).
+         */
+        public void clearLastEvent() {
+<span class="nc" id="L434">            this.lastEvent = null;</span>
+<span class="nc" id="L435">        }</span>
+        
+        /**
+         * Callback method for series change events.
+         * 
+         * @param event  the event.
+         */
+        public void seriesChanged(SeriesChangeEvent event) {
+<span class="fc" id="L443">            this.lastEvent = event;</span>
+<span class="fc" id="L444">        }</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

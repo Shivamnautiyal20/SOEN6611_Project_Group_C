@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MovingAverageTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.time.junit</a> &gt; <span class="el_source">MovingAverageTests.java</span></div><h1>MovingAverageTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------------
+ * MovingAverageTests.java
+ * -----------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 14-Aug-2003 : Version 1 (DG);
+ * 04-Oct-2004 : Eliminated NumberUtils usage (DG);
+ *
+ */
+
+package org.jfree.data.time.junit;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.time.Day;
+import org.jfree.data.time.MovingAverage;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.date.MonthConstants;
+
+/**
+ * Tests for the {@link MovingAverage} class.
+ */
+public class MovingAverageTests extends TestCase {
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        return new TestSuite(MovingAverageTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public MovingAverageTests(String name) {
+<span class="fc" id="L75">        super(name);</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * A test for the values calculated from a time series.
+     */
+    public void test1() {
+<span class="fc" id="L82">        TimeSeries source = createDailyTimeSeries1();</span>
+<span class="fc" id="L83">        TimeSeries maverage = MovingAverage.createMovingAverage(</span>
+            source, &quot;Moving Average&quot;, 3, 3
+        );
+
+        // the moving average series has 7 items, the first three
+        // days (11, 12, 13 August are skipped)
+<span class="fc" id="L89">        assertEquals(7, maverage.getItemCount());</span>
+<span class="fc" id="L90">        double value = maverage.getValue(0).doubleValue();</span>
+<span class="fc" id="L91">        assertEquals(14.1, value, EPSILON);</span>
+<span class="fc" id="L92">        value = maverage.getValue(1).doubleValue();</span>
+<span class="fc" id="L93">        assertEquals(13.4, value, EPSILON);</span>
+<span class="fc" id="L94">        value = maverage.getValue(2).doubleValue();</span>
+<span class="fc" id="L95">        assertEquals(14.433333333333, value, EPSILON);</span>
+<span class="fc" id="L96">        value = maverage.getValue(3).doubleValue();</span>
+<span class="fc" id="L97">        assertEquals(14.933333333333, value, EPSILON);</span>
+<span class="fc" id="L98">        value = maverage.getValue(4).doubleValue();</span>
+<span class="fc" id="L99">        assertEquals(19.8, value, EPSILON);</span>
+<span class="fc" id="L100">        value = maverage.getValue(5).doubleValue();</span>
+<span class="fc" id="L101">        assertEquals(15.25, value, EPSILON);</span>
+<span class="fc" id="L102">        value = maverage.getValue(6).doubleValue();</span>
+<span class="fc" id="L103">        assertEquals(12.5, value, EPSILON);</span>
+<span class="fc" id="L104">    }</span>
+
+    /**
+     * Creates a sample series.
+     *
+     * @return A sample series.
+     */
+    private TimeSeries createDailyTimeSeries1() {
+
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        TimeSeries series = new TimeSeries(&quot;Series 1&quot;, Day.class);</span>
+<span class="fc" id="L114">        series.add(new Day(11, MonthConstants.AUGUST, 2003), 11.2);</span>
+<span class="fc" id="L115">        series.add(new Day(13, MonthConstants.AUGUST, 2003), 13.8);</span>
+<span class="fc" id="L116">        series.add(new Day(17, MonthConstants.AUGUST, 2003), 14.1);</span>
+<span class="fc" id="L117">        series.add(new Day(18, MonthConstants.AUGUST, 2003), 12.7);</span>
+<span class="fc" id="L118">        series.add(new Day(19, MonthConstants.AUGUST, 2003), 16.5);</span>
+<span class="fc" id="L119">        series.add(new Day(20, MonthConstants.AUGUST, 2003), 15.6);</span>
+<span class="fc" id="L120">        series.add(new Day(25, MonthConstants.AUGUST, 2003), 19.8);</span>
+<span class="fc" id="L121">        series.add(new Day(27, MonthConstants.AUGUST, 2003), 10.7);</span>
+<span class="fc" id="L122">        series.add(new Day(28, MonthConstants.AUGUST, 2003), 14.3);</span>
+<span class="fc" id="L123">        return series;</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

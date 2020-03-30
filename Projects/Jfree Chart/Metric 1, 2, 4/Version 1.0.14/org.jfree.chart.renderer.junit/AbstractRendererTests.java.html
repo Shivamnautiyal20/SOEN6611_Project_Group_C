@@ -1,0 +1,1024 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractRendererTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.junit</a> &gt; <span class="el_source">AbstractRendererTests.java</span></div><h1>AbstractRendererTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------------
+ * AbstractRendererTests.java
+ * --------------------------
+ * (C) Copyright 2003-2009, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 23-Oct-2003 : Version 1 (DG);
+ * 01-Mar-2004 : Added serialization test (DG);
+ * 19-Feb-2007 : Added testCloning (DG);
+ * 28-Feb-2007 : Added checks for cloning (DG);
+ * 17-Jun-2008 : Added new fields to testEquals() and testCloning() (DG);
+ * 28-Jan-2009 : Updated testEquals() (DG);
+ * 28-Apr-2009 : Updated testEquals() (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.Stroke;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.event.RendererChangeEvent;
+import org.jfree.chart.event.RendererChangeListener;
+import org.jfree.chart.labels.ItemLabelAnchor;
+import org.jfree.chart.labels.ItemLabelPosition;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.DefaultDrawingSupplier;
+import org.jfree.chart.renderer.AbstractRenderer;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.ui.TextAnchor;
+
+/**
+ * Tests for the {@link AbstractRenderer} class.
+ */
+public class AbstractRendererTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        return new TestSuite(AbstractRendererTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public AbstractRendererTests(String name) {
+<span class="fc" id="L105">        super(name);</span>
+<span class="fc" id="L106">    }</span>
+
+    /**
+     * Test that the equals() method distinguishes all fields.
+     */
+    public void testEquals() {
+        // have to use a concrete subclass...
+<span class="fc" id="L113">        BarRenderer r1 = new BarRenderer();</span>
+<span class="fc" id="L114">        BarRenderer r2 = new BarRenderer();</span>
+<span class="fc" id="L115">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L116">        assertTrue(r2.equals(r1));</span>
+
+        // seriesVisible
+<span class="fc" id="L119">        r1.setSeriesVisible(Boolean.TRUE);</span>
+<span class="fc" id="L120">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L121">        r2.setSeriesVisible(Boolean.TRUE);</span>
+<span class="fc" id="L122">        assertTrue(r1.equals(r2));</span>
+
+        // seriesVisibleList
+<span class="fc" id="L125">        r1.setSeriesVisible(2, Boolean.TRUE);</span>
+<span class="fc" id="L126">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L127">        r2.setSeriesVisible(2, Boolean.TRUE);</span>
+<span class="fc" id="L128">        assertTrue(r1.equals(r2));</span>
+
+        // baseSeriesVisible
+<span class="fc" id="L131">        r1.setBaseSeriesVisible(false);</span>
+<span class="fc" id="L132">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L133">        r2.setBaseSeriesVisible(false);</span>
+<span class="fc" id="L134">        assertTrue(r1.equals(r2));</span>
+
+        // seriesVisibleInLegend
+<span class="fc" id="L137">        r1.setSeriesVisibleInLegend(Boolean.TRUE);</span>
+<span class="fc" id="L138">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L139">        r2.setSeriesVisibleInLegend(Boolean.TRUE);</span>
+<span class="fc" id="L140">        assertTrue(r1.equals(r2));</span>
+
+        // seriesVisibleInLegendList
+<span class="fc" id="L143">        r1.setSeriesVisibleInLegend(1, Boolean.TRUE);</span>
+<span class="fc" id="L144">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L145">        r2.setSeriesVisibleInLegend(1, Boolean.TRUE);</span>
+<span class="fc" id="L146">        assertTrue(r1.equals(r2));</span>
+
+        // baseSeriesVisibleInLegend
+<span class="fc" id="L149">        r1.setBaseSeriesVisibleInLegend(false);</span>
+<span class="fc" id="L150">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L151">        r2.setBaseSeriesVisibleInLegend(false);</span>
+<span class="fc" id="L152">        assertTrue(r1.equals(r2));</span>
+
+        // paint
+<span class="fc" id="L155">        r1.setPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L157">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L158">        r2.setPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L160">        assertTrue(r1.equals(r2));</span>
+
+        // paintList
+<span class="fc" id="L163">        r1.setSeriesPaint(0, new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L165">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L166">        r2.setSeriesPaint(0, new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.white));
+<span class="fc" id="L168">        assertTrue(r1.equals(r2));</span>
+
+        // basePaint
+<span class="fc" id="L171">        r1.setBasePaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L173">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L174">        r2.setBasePaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L176">        assertTrue(r1.equals(r2));</span>
+
+        // fillPaint
+<span class="fc" id="L179">        r1.setFillPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L181">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L182">        r2.setFillPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L184">        assertTrue(r1.equals(r2));</span>
+
+        // fillPaintList
+<span class="fc" id="L187">        r1.setSeriesFillPaint(0, new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L189">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L190">        r2.setSeriesFillPaint(0, new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L192">        assertTrue(r1.equals(r2));</span>
+
+        // baseFillPaint
+<span class="fc" id="L195">        r1.setBaseFillPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L197">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L198">        r2.setBaseFillPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L200">        assertTrue(r1.equals(r2));</span>
+
+        // outlinePaint
+<span class="fc" id="L203">        r1.setOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L205">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L206">        r2.setOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L208">        assertTrue(r1.equals(r2));</span>
+
+        // outlinePaintList
+<span class="fc" id="L211">        r1.setSeriesOutlinePaint(0, new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L213">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L214">        r2.setSeriesOutlinePaint(0, new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L216">        assertTrue(r1.equals(r2));</span>
+
+        // baseOutlinePaint
+<span class="fc" id="L219">        r1.setBaseOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L221">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L222">        r2.setBaseOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L224">        assertTrue(r1.equals(r2));</span>
+
+        // stroke
+<span class="fc" id="L227">        Stroke s = new BasicStroke(3.21f);</span>
+<span class="fc" id="L228">        r1.setStroke(s);</span>
+<span class="fc" id="L229">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L230">        r2.setStroke(s);</span>
+<span class="fc" id="L231">        assertTrue(r1.equals(r2));</span>
+
+        // strokeList
+<span class="fc" id="L234">        r1.setSeriesStroke(1, s);</span>
+<span class="fc" id="L235">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L236">        r2.setSeriesStroke(1, s);</span>
+<span class="fc" id="L237">        assertTrue(r1.equals(r2));</span>
+
+        // baseStroke
+<span class="fc" id="L240">        r1.setBaseStroke(s);</span>
+<span class="fc" id="L241">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L242">        r2.setBaseStroke(s);</span>
+<span class="fc" id="L243">        assertTrue(r1.equals(r2));</span>
+
+        // outlineStroke
+<span class="fc" id="L246">        r1.setOutlineStroke(s);</span>
+<span class="fc" id="L247">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L248">        r2.setOutlineStroke(s);</span>
+<span class="fc" id="L249">        assertTrue(r1.equals(r2));</span>
+
+        // outlineStrokeList
+<span class="fc" id="L252">        r1.setSeriesOutlineStroke(0, s);</span>
+<span class="fc" id="L253">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L254">        r2.setSeriesOutlineStroke(0, s);</span>
+<span class="fc" id="L255">        assertTrue(r1.equals(r2));</span>
+
+        // baseOutlineStroke
+<span class="fc" id="L258">        r1.setBaseOutlineStroke(s);</span>
+<span class="fc" id="L259">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L260">        r2.setBaseOutlineStroke(s);</span>
+<span class="fc" id="L261">        assertTrue(r1.equals(r2));</span>
+
+        // shape
+<span class="fc" id="L264">        r1.setShape(new Ellipse2D.Double(1, 2, 3, 4));</span>
+<span class="fc" id="L265">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L266">        r2.setShape(new Ellipse2D.Double(1, 2, 3, 4));</span>
+<span class="fc" id="L267">        assertTrue(r1.equals(r2));</span>
+
+        // shapeList
+<span class="fc" id="L270">        r1.setSeriesShape(1, new Ellipse2D.Double(1, 2, 3, 4));</span>
+<span class="fc" id="L271">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L272">        r2.setSeriesShape(1, new Ellipse2D.Double(1, 2, 3, 4));</span>
+<span class="fc" id="L273">        assertTrue(r1.equals(r2));</span>
+
+        // baseShape
+<span class="fc" id="L276">        r1.setBaseShape(new Ellipse2D.Double(1, 2, 3, 4));</span>
+<span class="fc" id="L277">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L278">        r2.setBaseShape(new Ellipse2D.Double(1, 2, 3, 4));</span>
+<span class="fc" id="L279">        assertTrue(r1.equals(r2));</span>
+
+        // itemLabelsVisible
+<span class="fc" id="L282">        r1.setItemLabelsVisible(true);</span>
+<span class="fc" id="L283">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L284">        r2.setItemLabelsVisible(true);</span>
+<span class="fc" id="L285">        assertTrue(r1.equals(r2));</span>
+
+        // itemLabelsVisibleList
+<span class="fc" id="L288">        r1.setSeriesItemLabelsVisible(1, Boolean.TRUE);</span>
+<span class="fc" id="L289">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L290">        r2.setSeriesItemLabelsVisible(1, Boolean.TRUE);</span>
+<span class="fc" id="L291">        assertTrue(r1.equals(r2));</span>
+
+        // baseItemLabelsVisible
+<span class="fc" id="L294">        r1.setBaseItemLabelsVisible(true);</span>
+<span class="fc" id="L295">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L296">        r2.setBaseItemLabelsVisible(true);</span>
+<span class="fc" id="L297">        assertTrue(r1.equals(r2));</span>
+
+        // itemLabelFont
+<span class="fc" id="L300">        r1.setItemLabelFont(new Font(&quot;Serif&quot;, Font.PLAIN, 10));</span>
+<span class="fc" id="L301">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L302">        r2.setItemLabelFont(new Font(&quot;Serif&quot;, Font.PLAIN, 10));</span>
+<span class="fc" id="L303">        assertTrue(r1.equals(r2));</span>
+
+        // itemLabelFontList
+<span class="fc" id="L306">        r1.setSeriesItemLabelFont(1, new Font(&quot;Serif&quot;, Font.BOLD, 9));</span>
+<span class="fc" id="L307">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L308">        r2.setSeriesItemLabelFont(1, new Font(&quot;Serif&quot;, Font.BOLD, 9));</span>
+<span class="fc" id="L309">        assertTrue(r1.equals(r2));</span>
+
+        // baseItemLabelFont
+<span class="fc" id="L312">        r1.setBaseItemLabelFont(new Font(&quot;Serif&quot;, Font.PLAIN, 10));</span>
+<span class="fc" id="L313">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L314">        r2.setBaseItemLabelFont(new Font(&quot;Serif&quot;, Font.PLAIN, 10));</span>
+<span class="fc" id="L315">        assertTrue(r1.equals(r2));</span>
+
+        // itemLabelPaint
+<span class="fc" id="L318">        r1.setItemLabelPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.gray));
+<span class="fc" id="L320">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L321">        r2.setItemLabelPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.gray));
+<span class="fc" id="L323">        assertTrue(r1.equals(r2));</span>
+
+        // itemLabelPaintList
+<span class="fc" id="L326">        r1.setSeriesItemLabelPaint(0, new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.gray));
+<span class="fc" id="L328">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L329">        r2.setSeriesItemLabelPaint(0, new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.gray));
+<span class="fc" id="L331">        assertTrue(r1.equals(r2));</span>
+
+        // baseItemLabelPaint
+<span class="fc" id="L334">        r1.setBaseItemLabelPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.gray));
+<span class="fc" id="L336">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L337">        r2.setBaseItemLabelPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.gray));
+<span class="fc" id="L339">        assertTrue(r1.equals(r2));</span>
+
+        // positiveItemLabelPosition;
+<span class="fc" id="L342">        r1.setPositiveItemLabelPosition(new ItemLabelPosition());</span>
+<span class="fc" id="L343">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L344">        r2.setPositiveItemLabelPosition(new ItemLabelPosition());</span>
+<span class="fc" id="L345">        assertTrue(r1.equals(r2));</span>
+
+        // positiveItemLabelPositionList;
+<span class="fc" id="L348">        r1.setSeriesPositiveItemLabelPosition(0, new ItemLabelPosition());</span>
+<span class="fc" id="L349">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L350">        r2.setSeriesPositiveItemLabelPosition(0, new ItemLabelPosition());</span>
+<span class="fc" id="L351">        assertTrue(r1.equals(r2));</span>
+
+        // basePositiveItemLabelPosition;
+<span class="fc" id="L354">        r1.setBasePositiveItemLabelPosition(new ItemLabelPosition(</span>
+                ItemLabelAnchor.INSIDE10, TextAnchor.BASELINE_RIGHT));
+<span class="fc" id="L356">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L357">        r2.setBasePositiveItemLabelPosition(new ItemLabelPosition(</span>
+                ItemLabelAnchor.INSIDE10, TextAnchor.BASELINE_RIGHT));
+<span class="fc" id="L359">        assertTrue(r1.equals(r2));</span>
+
+        // negativeItemLabelPosition;
+<span class="fc" id="L362">        r1.setNegativeItemLabelPosition(new ItemLabelPosition(</span>
+                ItemLabelAnchor.INSIDE10, TextAnchor.BASELINE_RIGHT));
+<span class="fc" id="L364">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L365">        r2.setNegativeItemLabelPosition(new ItemLabelPosition(</span>
+                ItemLabelAnchor.INSIDE10, TextAnchor.BASELINE_RIGHT));
+<span class="fc" id="L367">        assertTrue(r1.equals(r2));</span>
+
+        // negativeItemLabelPositionList;
+<span class="fc" id="L370">        r1.setSeriesNegativeItemLabelPosition(1, new ItemLabelPosition(</span>
+                ItemLabelAnchor.INSIDE10, TextAnchor.BASELINE_RIGHT));
+<span class="fc" id="L372">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L373">        r2.setSeriesNegativeItemLabelPosition(1, new ItemLabelPosition(</span>
+                ItemLabelAnchor.INSIDE10, TextAnchor.BASELINE_RIGHT));
+<span class="fc" id="L375">        assertTrue(r1.equals(r2));</span>
+
+        // baseNegativeItemLabelPosition;
+<span class="fc" id="L378">        r1.setBaseNegativeItemLabelPosition(new ItemLabelPosition(</span>
+                ItemLabelAnchor.INSIDE10, TextAnchor.BASELINE_RIGHT));
+<span class="fc" id="L380">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L381">        r2.setBaseNegativeItemLabelPosition(new ItemLabelPosition(</span>
+                ItemLabelAnchor.INSIDE10, TextAnchor.BASELINE_RIGHT));
+<span class="fc" id="L383">        assertTrue(r1.equals(r2));</span>
+
+        // itemLabelAnchorOffset
+<span class="fc" id="L386">        r1.setItemLabelAnchorOffset(3.0);</span>
+<span class="fc" id="L387">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L388">        r2.setItemLabelAnchorOffset(3.0);</span>
+<span class="fc" id="L389">        assertTrue(r1.equals(r2));</span>
+
+        // createEntities;
+<span class="fc" id="L392">        r1.setCreateEntities(Boolean.TRUE);</span>
+<span class="fc" id="L393">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L394">        r2.setCreateEntities(Boolean.TRUE);</span>
+<span class="fc" id="L395">        assertTrue(r1.equals(r2));</span>
+
+        // createEntitiesList;
+<span class="fc" id="L398">        r1.setSeriesCreateEntities(0, Boolean.TRUE);</span>
+<span class="fc" id="L399">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L400">        r2.setSeriesCreateEntities(0, Boolean.TRUE);</span>
+<span class="fc" id="L401">        assertTrue(r1.equals(r2));</span>
+
+        // baseCreateEntities;
+<span class="fc" id="L404">        r1.setBaseCreateEntities(false);</span>
+<span class="fc" id="L405">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L406">        r2.setBaseCreateEntities(false);</span>
+<span class="fc" id="L407">        assertTrue(r1.equals(r2));</span>
+
+        // legendShape
+<span class="fc" id="L410">        r1.setLegendShape(0, new Ellipse2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L411">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L412">        r2.setLegendShape(0, new Ellipse2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L413">        assertTrue(r1.equals(r2));</span>
+
+        // baseLegendShape
+<span class="fc" id="L416">        r1.setBaseLegendShape(new Ellipse2D.Double(5.0, 6.0, 7.0, 8.0));</span>
+<span class="fc" id="L417">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L418">        r2.setBaseLegendShape(new Ellipse2D.Double(5.0, 6.0, 7.0, 8.0));</span>
+<span class="fc" id="L419">        assertTrue(r1.equals(r2));</span>
+
+        // legendTextFont
+<span class="fc" id="L422">        r1.setLegendTextFont(0, new Font(&quot;Dialog&quot;, Font.PLAIN, 7));</span>
+<span class="fc" id="L423">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L424">        r2.setLegendTextFont(0, new Font(&quot;Dialog&quot;, Font.PLAIN, 7));</span>
+<span class="fc" id="L425">        assertTrue(r1.equals(r2));</span>
+
+        // baseLegendTextFont
+<span class="fc" id="L428">        r1.setBaseLegendTextFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 7));</span>
+<span class="fc" id="L429">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L430">        r2.setBaseLegendTextFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 7));</span>
+<span class="fc" id="L431">        assertTrue(r1.equals(r2));</span>
+
+        // legendTextPaint
+<span class="fc" id="L434">        r1.setLegendTextPaint(0, new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L436">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L437">        r2.setLegendTextPaint(0, new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L439">        assertTrue(r1.equals(r2));</span>
+
+        // baseOutlinePaint
+<span class="fc" id="L442">        r1.setBaseLegendTextPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L444">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L445">        r2.setBaseLegendTextPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L447">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L449">    }</span>
+
+    private static class TestRenderer extends XYLineAndShapeRenderer {
+        public void setTreatLegendShapeAsLine(boolean flag) {
+<span class="fc" id="L453">            super.setTreatLegendShapeAsLine(flag);</span>
+<span class="fc" id="L454">        }</span>
+    }
+
+    /**
+     * Check that the treatLegendShapeAsLine flag is included in the equals()
+     * comparison.
+     */
+    public void testEquals2() {
+<span class="fc" id="L462">        TestRenderer r1 = new TestRenderer();</span>
+<span class="fc" id="L463">        TestRenderer r2 = new TestRenderer();</span>
+<span class="fc" id="L464">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L465">        r1.setTreatLegendShapeAsLine(true);</span>
+<span class="fc" id="L466">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L467">        r2.setTreatLegendShapeAsLine(true);</span>
+<span class="fc" id="L468">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L469">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L475">        LineAndShapeRenderer r1 = new LineAndShapeRenderer();</span>
+<span class="fc" id="L476">        Rectangle2D shape = new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0);</span>
+<span class="fc" id="L477">        Rectangle2D baseShape = new Rectangle2D.Double(11.0, 12.0, 13.0, 14.0);</span>
+<span class="fc" id="L478">        r1.setShape(shape);</span>
+<span class="fc" id="L479">        r1.setBaseShape(baseShape);</span>
+<span class="fc" id="L480">        r1.setBaseLegendShape(new Rectangle(4, 3, 2, 1));</span>
+<span class="fc" id="L481">        r1.setBaseLegendTextFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 3));</span>
+<span class="fc" id="L482">        r1.setBaseLegendTextPaint(new Color(1, 2, 3));</span>
+
+<span class="fc" id="L484">        LineAndShapeRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L486">            r2 = (LineAndShapeRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L488">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L489">            e.printStackTrace();</span>
+<span class="fc" id="L490">        }</span>
+<span class="pc bpc" id="L491" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L492" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L493">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L495">        r1.setSeriesVisible(0, Boolean.FALSE);</span>
+<span class="fc" id="L496">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L497">        r2.setSeriesVisible(0, Boolean.FALSE);</span>
+<span class="fc" id="L498">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L500">        r1.setSeriesVisibleInLegend(0, Boolean.FALSE);</span>
+<span class="fc" id="L501">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L502">        r2.setSeriesVisibleInLegend(0, Boolean.FALSE);</span>
+<span class="fc" id="L503">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L505">        r1.setSeriesPaint(0, Color.black);</span>
+<span class="fc" id="L506">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L507">        r2.setSeriesPaint(0, Color.black);</span>
+<span class="fc" id="L508">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L510">        r1.setSeriesFillPaint(0, Color.yellow);</span>
+<span class="fc" id="L511">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L512">        r2.setSeriesFillPaint(0, Color.yellow);</span>
+<span class="fc" id="L513">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L515">        r1.setSeriesOutlinePaint(0, Color.yellow);</span>
+<span class="fc" id="L516">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L517">        r2.setSeriesOutlinePaint(0, Color.yellow);</span>
+<span class="fc" id="L518">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L520">        r1.setSeriesStroke(0, new BasicStroke(2.2f));</span>
+<span class="fc" id="L521">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L522">        r2.setSeriesStroke(0, new BasicStroke(2.2f));</span>
+<span class="fc" id="L523">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L525">        r1.setSeriesOutlineStroke(0, new BasicStroke(2.2f));</span>
+<span class="fc" id="L526">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L527">        r2.setSeriesOutlineStroke(0, new BasicStroke(2.2f));</span>
+<span class="fc" id="L528">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L530">        shape.setRect(4.0, 3.0, 2.0, 1.0);</span>
+<span class="fc" id="L531">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L532">        r2.setShape(new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0));</span>
+<span class="fc" id="L533">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L535">        baseShape.setRect(4.0, 3.0, 2.0, 1.0);</span>
+<span class="fc" id="L536">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L537">        r2.setBaseShape(new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0));</span>
+<span class="fc" id="L538">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L540">        r1.setSeriesShape(0, new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L541">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L542">        r2.setSeriesShape(0, new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L543">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L545">        r1.setSeriesItemLabelsVisible(0, Boolean.TRUE);</span>
+<span class="fc" id="L546">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L547">        r2.setSeriesItemLabelsVisible(0, Boolean.TRUE);</span>
+<span class="fc" id="L548">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L550">        r1.setSeriesItemLabelPaint(0, Color.red);</span>
+<span class="fc" id="L551">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L552">        r2.setSeriesItemLabelPaint(0, Color.red);</span>
+<span class="fc" id="L553">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L555">        r1.setSeriesPositiveItemLabelPosition(0, new ItemLabelPosition());</span>
+<span class="fc" id="L556">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L557">        r2.setSeriesPositiveItemLabelPosition(0, new ItemLabelPosition());</span>
+<span class="fc" id="L558">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L560">        r1.setSeriesNegativeItemLabelPosition(0, new ItemLabelPosition());</span>
+<span class="fc" id="L561">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L562">        r2.setSeriesNegativeItemLabelPosition(0, new ItemLabelPosition());</span>
+<span class="fc" id="L563">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L565">        r1.setSeriesCreateEntities(0, Boolean.FALSE);</span>
+<span class="fc" id="L566">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L567">        r2.setSeriesCreateEntities(0, Boolean.FALSE);</span>
+<span class="fc" id="L568">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L570">        r1.setLegendShape(0, new Rectangle(9, 7, 3, 4));</span>
+<span class="fc" id="L571">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L572">        r2.setLegendShape(0, new Rectangle(9, 7, 3, 4));</span>
+<span class="fc" id="L573">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L575">        r1.setBaseLegendShape(new Rectangle(3, 4, 1, 5));</span>
+<span class="fc" id="L576">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L577">        r2.setBaseLegendShape(new Rectangle(3, 4, 1, 5));</span>
+<span class="fc" id="L578">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L580">        r1.setLegendTextFont(1, new Font(&quot;Dialog&quot;, Font.PLAIN, 33));</span>
+<span class="fc" id="L581">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L582">        r2.setLegendTextFont(1, new Font(&quot;Dialog&quot;, Font.PLAIN, 33));</span>
+<span class="fc" id="L583">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L585">        r1.setBaseLegendTextFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 11));</span>
+<span class="fc" id="L586">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L587">        r2.setBaseLegendTextFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 11));</span>
+<span class="fc" id="L588">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L590">        r1.setLegendTextPaint(3, Color.red);</span>
+<span class="fc" id="L591">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L592">        r2.setLegendTextPaint(3, Color.red);</span>
+<span class="fc" id="L593">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L595">        r1.setBaseLegendTextPaint(Color.green);</span>
+<span class="fc" id="L596">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L597">        r2.setBaseLegendTextPaint(Color.green);</span>
+<span class="fc" id="L598">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L599">    }</span>
+
+    /**
+     * A utility class for listening to changes to a renderer.
+     */
+    static class MyRendererChangeListener implements RendererChangeListener {
+
+        /** The last event received. */
+        public RendererChangeEvent lastEvent;
+
+        /**
+         * Creates a new instance.
+         */
+<span class="fc" id="L612">        public MyRendererChangeListener() {</span>
+<span class="fc" id="L613">            this.lastEvent = null;</span>
+<span class="fc" id="L614">        }</span>
+        public void rendererChanged(RendererChangeEvent event) {
+<span class="fc" id="L616">            this.lastEvent = event;</span>
+<span class="fc" id="L617">        }</span>
+    }
+
+    /**
+     * A check for cloning.
+     */
+    public void testCloning2() {
+<span class="fc" id="L624">        LineAndShapeRenderer r1 = new LineAndShapeRenderer();</span>
+<span class="fc" id="L625">        r1.setBasePaint(Color.blue);</span>
+<span class="fc" id="L626">        r1.setBaseLegendTextPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L628">        LineAndShapeRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L630">            r2 = (LineAndShapeRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L632">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L633">            e.printStackTrace();</span>
+<span class="fc" id="L634">        }</span>
+<span class="pc bpc" id="L635" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L636" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L637">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L639">        MyRendererChangeListener listener = new MyRendererChangeListener();</span>
+<span class="fc" id="L640">        r2.addChangeListener(listener);</span>
+<span class="fc" id="L641">        r2.setBasePaint(Color.red);</span>
+<span class="pc bpc" id="L642" title="1 of 2 branches missed.">        assertTrue(listener.lastEvent.getRenderer() == r2);</span>
+<span class="fc" id="L643">        assertFalse(r1.hasListener(listener));</span>
+<span class="fc" id="L644">    }</span>
+
+    /**
+     * Test that setting the series visibility for ALL series does in fact work.
+     */
+    public void testSetSeriesVisible() {
+<span class="fc" id="L650">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L651">        r.setSeriesVisible(Boolean.TRUE);</span>
+<span class="fc" id="L652">        assertTrue(r.getItemVisible(0, 0));</span>
+<span class="fc" id="L653">    }</span>
+
+    /**
+     * Test that setting the paint for ALL series does in fact work.
+     */
+    public void testSetPaint() {
+<span class="fc" id="L659">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L660">        r.setPaint(Color.orange);</span>
+<span class="fc" id="L661">        assertEquals(Color.orange, r.getItemPaint(0, 0));</span>
+<span class="fc" id="L662">    }</span>
+
+    /**
+     * Test that setting the outline paint for ALL series does in fact work.
+     */
+    public void testSetOutlinePaint() {
+<span class="fc" id="L668">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L669">        r.setOutlinePaint(Color.orange);</span>
+<span class="fc" id="L670">        assertEquals(Color.orange, r.getItemOutlinePaint(0, 0));</span>
+<span class="fc" id="L671">    }</span>
+
+    /**
+     * Test that setting the stroke for ALL series does in fact work.
+     */
+    public void testSetStroke() {
+<span class="fc" id="L677">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L678">        Stroke s = new BasicStroke(10.0f);</span>
+<span class="fc" id="L679">        r.setStroke(s);</span>
+<span class="fc" id="L680">        assertEquals(s, r.getItemStroke(0, 0));</span>
+<span class="fc" id="L681">    }</span>
+
+    /**
+     * Test that setting the outline stroke for ALL series does in fact work.
+     */
+    public void testSetOutlineStroke() {
+<span class="fc" id="L687">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L688">        Stroke s = new BasicStroke(10.0f);</span>
+<span class="fc" id="L689">        r.setOutlineStroke(s);</span>
+<span class="fc" id="L690">        assertEquals(s, r.getItemOutlineStroke(0, 0));</span>
+<span class="fc" id="L691">    }</span>
+
+    /**
+     * Test that setting the shape for ALL series does in fact work.
+     */
+    public void testSetShape() {
+<span class="fc" id="L697">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L698">        Shape s = new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0);</span>
+<span class="fc" id="L699">        r.setShape(s);</span>
+<span class="fc" id="L700">        assertEquals(s, r.getItemShape(0, 0));</span>
+<span class="fc" id="L701">    }</span>
+
+    /**
+     * Test that setting the item label visibility for ALL series does in fact
+     * work.
+     */
+    public void testSetItemLabelsVisible() {
+<span class="fc" id="L708">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L709">        r.setItemLabelsVisible(true);</span>
+<span class="fc" id="L710">        assertTrue(r.isItemLabelVisible(0, 0));</span>
+<span class="fc" id="L711">    }</span>
+
+    /**
+     * Test that setting the font for ALL series does in fact work (it was
+     * broken at one point).
+     */
+    public void testSetItemLabelFont() {
+<span class="fc" id="L718">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L719">        r.setItemLabelFont(new Font(&quot;SansSerif&quot;, Font.PLAIN, 33));</span>
+<span class="fc" id="L720">        assertEquals(new Font(&quot;SansSerif&quot;, Font.PLAIN, 33),</span>
+<span class="fc" id="L721">                r.getItemLabelFont(0, 0));</span>
+<span class="fc" id="L722">    }</span>
+
+    /**
+     * Test that setting the paint for ALL series does in fact work (it was
+     * broken at one point).
+     */
+    public void testSetItemLabelPaint() {
+<span class="fc" id="L729">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L730">        r.setItemLabelPaint(Color.green);</span>
+<span class="fc" id="L731">        assertEquals(Color.green, r.getItemLabelPaint(0, 0));</span>
+<span class="fc" id="L732">    }</span>
+
+    /**
+     * Test that setting the positive item label position for ALL series does
+     * in fact work.
+     */
+    public void testSetPositiveItemLabelPosition() {
+<span class="fc" id="L739">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L740">        r.setPositiveItemLabelPosition(new ItemLabelPosition(</span>
+                ItemLabelAnchor.INSIDE1, TextAnchor.BASELINE_LEFT));
+<span class="fc" id="L742">        assertEquals(new ItemLabelPosition(</span>
+                ItemLabelAnchor.INSIDE1, TextAnchor.BASELINE_LEFT),
+<span class="fc" id="L744">                r.getPositiveItemLabelPosition(0, 0));</span>
+<span class="fc" id="L745">    }</span>
+
+    /**
+     * Test that setting the negative item label position for ALL series does
+     * in fact work.
+     */
+    public void testSetNegativeItemLabelPosition() {
+<span class="fc" id="L752">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L753">        r.setNegativeItemLabelPosition(new ItemLabelPosition(</span>
+                ItemLabelAnchor.INSIDE1, TextAnchor.BASELINE_LEFT));
+<span class="fc" id="L755">        assertEquals(new ItemLabelPosition(</span>
+                ItemLabelAnchor.INSIDE1, TextAnchor.BASELINE_LEFT),
+<span class="fc" id="L757">                r.getNegativeItemLabelPosition(0, 0));</span>
+<span class="fc" id="L758">    }</span>
+
+    /**
+     * Tests each setter method to ensure that it sends an event notification.
+     */
+    public void testEventNotification() {
+
+<span class="fc" id="L765">        RendererChangeDetector detector = new RendererChangeDetector();</span>
+<span class="fc" id="L766">        BarRenderer r1 = new BarRenderer();  // have to use a subclass of</span>
+                                             // AbstractRenderer
+<span class="fc" id="L768">        r1.addChangeListener(detector);</span>
+
+        // PAINT
+<span class="fc" id="L771">        detector.setNotified(false);</span>
+<span class="fc" id="L772">        r1.setPaint(Color.red);</span>
+<span class="fc" id="L773">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L775">        detector.setNotified(false);</span>
+<span class="fc" id="L776">        r1.setSeriesPaint(0, Color.red);</span>
+<span class="fc" id="L777">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L779">        detector.setNotified(false);</span>
+<span class="fc" id="L780">        r1.setBasePaint(Color.red);</span>
+<span class="fc" id="L781">        assertTrue(detector.getNotified());</span>
+
+        // OUTLINE PAINT
+<span class="fc" id="L784">        detector.setNotified(false);</span>
+<span class="fc" id="L785">        r1.setOutlinePaint(Color.red);</span>
+<span class="fc" id="L786">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L788">        detector.setNotified(false);</span>
+<span class="fc" id="L789">        r1.setSeriesOutlinePaint(0, Color.red);</span>
+<span class="fc" id="L790">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L792">        detector.setNotified(false);</span>
+<span class="fc" id="L793">        r1.setBaseOutlinePaint(Color.red);</span>
+<span class="fc" id="L794">        assertTrue(detector.getNotified());</span>
+
+        // STROKE
+<span class="fc" id="L797">        detector.setNotified(false);</span>
+<span class="fc" id="L798">        r1.setStroke(new BasicStroke(1.0f));</span>
+<span class="fc" id="L799">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L801">        detector.setNotified(false);</span>
+<span class="fc" id="L802">        r1.setSeriesStroke(0, new BasicStroke(1.0f));</span>
+<span class="fc" id="L803">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L805">        detector.setNotified(false);</span>
+<span class="fc" id="L806">        r1.setBaseStroke(new BasicStroke(1.0f));</span>
+<span class="fc" id="L807">        assertTrue(detector.getNotified());</span>
+
+        // OUTLINE STROKE
+<span class="fc" id="L810">        detector.setNotified(false);</span>
+<span class="fc" id="L811">        r1.setOutlineStroke(new BasicStroke(1.0f));</span>
+<span class="fc" id="L812">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L814">        detector.setNotified(false);</span>
+<span class="fc" id="L815">        r1.setSeriesOutlineStroke(0, new BasicStroke(1.0f));</span>
+<span class="fc" id="L816">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L818">        detector.setNotified(false);</span>
+<span class="fc" id="L819">        r1.setBaseOutlineStroke(new BasicStroke(1.0f));</span>
+<span class="fc" id="L820">        assertTrue(detector.getNotified());</span>
+
+        // SHAPE
+<span class="fc" id="L823">        detector.setNotified(false);</span>
+<span class="fc" id="L824">        r1.setShape(new Rectangle2D.Float());</span>
+<span class="fc" id="L825">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L827">        detector.setNotified(false);</span>
+<span class="fc" id="L828">        r1.setSeriesShape(0, new Rectangle2D.Float());</span>
+<span class="fc" id="L829">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L831">        detector.setNotified(false);</span>
+<span class="fc" id="L832">        r1.setBaseShape(new Rectangle2D.Float());</span>
+<span class="fc" id="L833">        assertTrue(detector.getNotified());</span>
+
+        // ITEM_LABELS_VISIBLE
+<span class="fc" id="L836">        detector.setNotified(false);</span>
+<span class="fc" id="L837">        r1.setItemLabelsVisible(Boolean.TRUE);</span>
+<span class="fc" id="L838">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L840">        detector.setNotified(false);</span>
+<span class="fc" id="L841">        r1.setSeriesItemLabelsVisible(0, Boolean.TRUE);</span>
+<span class="fc" id="L842">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L844">        detector.setNotified(false);</span>
+<span class="fc" id="L845">        r1.setBaseItemLabelsVisible(Boolean.TRUE);</span>
+<span class="fc" id="L846">        assertTrue(detector.getNotified());</span>
+
+        // ITEM_LABEL_FONT
+<span class="fc" id="L849">        detector.setNotified(false);</span>
+<span class="fc" id="L850">        r1.setItemLabelFont(new Font(&quot;Serif&quot;, Font.PLAIN, 12));</span>
+<span class="fc" id="L851">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L853">        detector.setNotified(false);</span>
+<span class="fc" id="L854">        r1.setSeriesItemLabelFont(0, new Font(&quot;Serif&quot;, Font.PLAIN, 12));</span>
+<span class="fc" id="L855">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L857">        detector.setNotified(false);</span>
+<span class="fc" id="L858">        r1.setBaseItemLabelFont(new Font(&quot;Serif&quot;, Font.PLAIN, 12));</span>
+<span class="fc" id="L859">        assertTrue(detector.getNotified());</span>
+
+        // ITEM_LABEL_PAINT
+<span class="fc" id="L862">        detector.setNotified(false);</span>
+<span class="fc" id="L863">        r1.setItemLabelPaint(Color.blue);</span>
+<span class="fc" id="L864">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L866">        detector.setNotified(false);</span>
+<span class="fc" id="L867">        r1.setSeriesItemLabelPaint(0, Color.blue);</span>
+<span class="fc" id="L868">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L870">        detector.setNotified(false);</span>
+<span class="fc" id="L871">        r1.setBaseItemLabelPaint(Color.blue);</span>
+<span class="fc" id="L872">        assertTrue(detector.getNotified());</span>
+
+        // POSITIVE ITEM LABEL POSITION
+<span class="fc" id="L875">        detector.setNotified(false);</span>
+<span class="fc" id="L876">        r1.setPositiveItemLabelPosition(new ItemLabelPosition(</span>
+                ItemLabelAnchor.CENTER, TextAnchor.CENTER));
+<span class="fc" id="L878">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L880">        detector.setNotified(false);</span>
+<span class="fc" id="L881">        r1.setSeriesPositiveItemLabelPosition(0, new ItemLabelPosition(</span>
+                ItemLabelAnchor.CENTER, TextAnchor.CENTER));
+<span class="fc" id="L883">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L885">        detector.setNotified(false);</span>
+<span class="fc" id="L886">        r1.setBasePositiveItemLabelPosition(new ItemLabelPosition(</span>
+                ItemLabelAnchor.CENTER, TextAnchor.CENTER));
+<span class="fc" id="L888">        assertTrue(detector.getNotified());</span>
+
+        // NEGATIVE ITEM LABEL ANCHOR
+<span class="fc" id="L891">        detector.setNotified(false);</span>
+<span class="fc" id="L892">        r1.setNegativeItemLabelPosition(</span>
+            new ItemLabelPosition(ItemLabelAnchor.CENTER, TextAnchor.CENTER)
+        );
+<span class="fc" id="L895">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L897">        detector.setNotified(false);</span>
+<span class="fc" id="L898">        r1.setSeriesNegativeItemLabelPosition(0, new ItemLabelPosition(</span>
+                ItemLabelAnchor.CENTER, TextAnchor.CENTER));
+<span class="fc" id="L900">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L902">        detector.setNotified(false);</span>
+<span class="fc" id="L903">        r1.setBaseNegativeItemLabelPosition(new ItemLabelPosition(</span>
+                ItemLabelAnchor.CENTER, TextAnchor.CENTER));
+<span class="fc" id="L905">        assertTrue(detector.getNotified());</span>
+
+<span class="fc" id="L907">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.  In addition,
+     * test for a bug that was reported where the listener list is 'null' after
+     * deserialization.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L916">        BarRenderer r1 = new BarRenderer();</span>
+<span class="fc" id="L917">        r1.setBaseLegendTextFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 4));</span>
+<span class="fc" id="L918">        r1.setBaseLegendTextPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.green));
+<span class="fc" id="L920">        r1.setBaseLegendShape(new Line2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L921">        BarRenderer r2 = null;</span>
+
+        try {
+<span class="fc" id="L924">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L925">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L926">            out.writeObject(r1);</span>
+<span class="fc" id="L927">            out.close();</span>
+
+<span class="fc" id="L929">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L930">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L931">            r2 = (BarRenderer) in.readObject();</span>
+<span class="fc" id="L932">            in.close();</span>
+        }
+<span class="nc" id="L934">        catch (Exception e) {</span>
+<span class="nc" id="L935">            e.printStackTrace();</span>
+<span class="fc" id="L936">        }</span>
+<span class="fc" id="L937">        assertEquals(r1, r2);</span>
+        try {
+<span class="fc" id="L939">            r2.notifyListeners(new RendererChangeEvent(r2));</span>
+        }
+<span class="nc" id="L941">        catch (NullPointerException e) {</span>
+<span class="nc" id="L942">            assertTrue(false);  // failed</span>
+<span class="fc" id="L943">        }</span>
+
+<span class="fc" id="L945">    }</span>
+
+    /**
+     * Some checks for the autoPopulate flag default values.
+     */
+    public void testAutoPopulateFlagDefaults() {
+<span class="fc" id="L951">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L952">        assertEquals(true, r.getAutoPopulateSeriesPaint());</span>
+<span class="fc" id="L953">        assertEquals(false, r.getAutoPopulateSeriesFillPaint());</span>
+<span class="fc" id="L954">        assertEquals(false, r.getAutoPopulateSeriesOutlinePaint());</span>
+<span class="fc" id="L955">        assertEquals(true, r.getAutoPopulateSeriesStroke());</span>
+<span class="fc" id="L956">        assertEquals(false, r.getAutoPopulateSeriesOutlineStroke());</span>
+<span class="fc" id="L957">        assertEquals(true, r.getAutoPopulateSeriesShape());</span>
+<span class="fc" id="L958">    }</span>
+
+    /**
+     * Some checks for the paint lookup mechanism.
+     */
+    public void testPaintLookup() {
+<span class="fc" id="L964">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L965">        assertEquals(Color.blue, r.getBasePaint());</span>
+
+        // first check that autoPopulate==false works as expected
+<span class="fc" id="L968">        r.setAutoPopulateSeriesPaint(false);</span>
+<span class="fc" id="L969">        assertEquals(Color.blue, r.lookupSeriesPaint(0));</span>
+<span class="fc" id="L970">        assertNull(r.getSeriesPaint(0));</span>
+
+        // now check autoPopulate==true
+<span class="fc" id="L973">        r.setAutoPopulateSeriesPaint(true);</span>
+<span class="fc" id="L974">        /*CategoryPlot plot =*/ new CategoryPlot(null, new CategoryAxis(</span>
+                &quot;Category&quot;), new NumberAxis(&quot;Value&quot;), r);
+<span class="fc" id="L976">        assertEquals(DefaultDrawingSupplier.DEFAULT_PAINT_SEQUENCE[0],</span>
+<span class="fc" id="L977">                r.lookupSeriesPaint(0));</span>
+<span class="fc" id="L978">        assertNotNull(r.getSeriesPaint(0));</span>
+<span class="fc" id="L979">    }</span>
+
+    /**
+     * Some checks for the fill paint lookup mechanism.
+     */
+    public void testFillPaintLookup() {
+<span class="fc" id="L985">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L986">        assertEquals(Color.white, r.getBaseFillPaint());</span>
+
+        // first check that autoPopulate==false works as expected
+<span class="fc" id="L989">        r.setAutoPopulateSeriesFillPaint(false);</span>
+<span class="fc" id="L990">        assertEquals(Color.white, r.lookupSeriesFillPaint(0));</span>
+<span class="fc" id="L991">        assertNull(r.getSeriesFillPaint(0));</span>
+
+        // now check autoPopulate==true
+<span class="fc" id="L994">        r.setAutoPopulateSeriesFillPaint(true);</span>
+<span class="fc" id="L995">        /*CategoryPlot plot =*/ new CategoryPlot(null, new CategoryAxis(</span>
+                &quot;Category&quot;), new NumberAxis(&quot;Value&quot;), r);
+<span class="fc" id="L997">        assertEquals(DefaultDrawingSupplier.DEFAULT_FILL_PAINT_SEQUENCE[0],</span>
+<span class="fc" id="L998">                r.lookupSeriesFillPaint(0));</span>
+<span class="fc" id="L999">        assertNotNull(r.getSeriesFillPaint(0));</span>
+<span class="fc" id="L1000">    }</span>
+
+    /**
+     * Some checks for the outline paint lookup mechanism.
+     */
+    public void testOutlinePaintLookup() {
+<span class="fc" id="L1006">        BarRenderer r = new BarRenderer();</span>
+<span class="fc" id="L1007">        assertEquals(Color.gray, r.getBaseOutlinePaint());</span>
+
+        // first check that autoPopulate==false works as expected
+<span class="fc" id="L1010">        r.setAutoPopulateSeriesOutlinePaint(false);</span>
+<span class="fc" id="L1011">        assertEquals(Color.gray, r.lookupSeriesOutlinePaint(0));</span>
+<span class="fc" id="L1012">        assertNull(r.getSeriesOutlinePaint(0));</span>
+
+        // now check autoPopulate==true
+<span class="fc" id="L1015">        r.setAutoPopulateSeriesOutlinePaint(true);</span>
+<span class="fc" id="L1016">        /*CategoryPlot plot =*/ new CategoryPlot(null, new CategoryAxis(</span>
+                &quot;Category&quot;), new NumberAxis(&quot;Value&quot;), r);
+<span class="fc" id="L1018">        assertEquals(DefaultDrawingSupplier.DEFAULT_OUTLINE_PAINT_SEQUENCE[0],</span>
+<span class="fc" id="L1019">                r.lookupSeriesOutlinePaint(0));</span>
+<span class="fc" id="L1020">        assertNotNull(r.getSeriesOutlinePaint(0));</span>
+<span class="fc" id="L1021">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

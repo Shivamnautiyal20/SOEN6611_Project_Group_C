@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultKeyedValuesTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.junit</a> &gt; <span class="el_source">DefaultKeyedValuesTests.java</span></div><h1>DefaultKeyedValuesTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------------
+ * DefaultKeyedValuesTests.java
+ * ----------------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 05-Mar-2003 : Version 1 (DG);
+ * 27-Aug-2003 : Moved SortOrder from org.jfree.data --&gt; org.jfree.util (DG);
+ * 31-Jul-2006 : Added test for new clear() method (DG);
+ * 01-Aug-2006 : Extended testGetIndex() method (DG);
+ * 30-Apr-2007 : Added some new tests (DG);
+ * 03-Oct-2007 : Updated testRemoveValue() (DG);
+ * 21-Nov-2007 : Added testGetIndex2() method (DG);
+ *
+ */
+
+package org.jfree.data.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.List;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.DefaultKeyedValues;
+import org.jfree.data.UnknownKeyException;
+import org.jfree.util.SortOrder;
+
+/**
+ * Tests for the {@link DefaultKeyedValues} class.
+ */
+public class DefaultKeyedValuesTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        return new TestSuite(DefaultKeyedValuesTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DefaultKeyedValuesTests(String name) {
+<span class="fc" id="L85">        super(name);</span>
+<span class="fc" id="L86">    }</span>
+
+    /**
+     * Common test setup.
+     */
+    protected void setUp() {
+        // no setup required
+<span class="fc" id="L93">    }</span>
+
+    /**
+     * Checks that a new instance is empty.
+     */
+    public void testConstructor() {
+<span class="fc" id="L99">        DefaultKeyedValues d = new DefaultKeyedValues();</span>
+<span class="fc" id="L100">        assertEquals(0, d.getItemCount());</span>
+<span class="fc" id="L101">    }</span>
+
+    /**
+     * Some checks for the getItemCount() method.
+     */
+    public void testGetItemCount() {
+<span class="fc" id="L107">        DefaultKeyedValues d = new DefaultKeyedValues();</span>
+<span class="fc" id="L108">        assertEquals(0, d.getItemCount());</span>
+<span class="fc" id="L109">        d.addValue(&quot;A&quot;, 1.0);</span>
+<span class="fc" id="L110">        assertEquals(1, d.getItemCount());</span>
+<span class="fc" id="L111">        d.addValue(&quot;B&quot;, 2.0);</span>
+<span class="fc" id="L112">        assertEquals(2, d.getItemCount());</span>
+<span class="fc" id="L113">        d.clear();</span>
+<span class="fc" id="L114">        assertEquals(0, d.getItemCount());</span>
+<span class="fc" id="L115">    }</span>
+
+    /**
+     * Some checks for the getKeys() method.
+     */
+    public void testGetKeys() {
+<span class="fc" id="L121">        DefaultKeyedValues d = new DefaultKeyedValues();</span>
+<span class="fc" id="L122">        List keys = d.getKeys();</span>
+<span class="fc" id="L123">        assertTrue(keys.isEmpty());</span>
+<span class="fc" id="L124">        d.addValue(&quot;A&quot;, 1.0);</span>
+<span class="fc" id="L125">        keys = d.getKeys();</span>
+<span class="fc" id="L126">        assertEquals(1, keys.size());</span>
+<span class="fc" id="L127">        assertTrue(keys.contains(&quot;A&quot;));</span>
+<span class="fc" id="L128">        d.addValue(&quot;B&quot;, 2.0);</span>
+<span class="fc" id="L129">        keys = d.getKeys();</span>
+<span class="fc" id="L130">        assertEquals(2, keys.size());</span>
+<span class="fc" id="L131">        assertTrue(keys.contains(&quot;A&quot;));</span>
+<span class="fc" id="L132">        assertTrue(keys.contains(&quot;B&quot;));</span>
+<span class="fc" id="L133">        d.clear();</span>
+<span class="fc" id="L134">        keys = d.getKeys();</span>
+<span class="fc" id="L135">        assertEquals(0, keys.size());</span>
+<span class="fc" id="L136">    }</span>
+
+    /**
+     * A simple test for the clear() method.
+     */
+    public void testClear() {
+<span class="fc" id="L142">        DefaultKeyedValues v1 = new DefaultKeyedValues();</span>
+<span class="fc" id="L143">        v1.addValue(&quot;A&quot;, 1.0);</span>
+<span class="fc" id="L144">        v1.addValue(&quot;B&quot;, 2.0);</span>
+<span class="fc" id="L145">        assertEquals(2, v1.getItemCount());</span>
+<span class="fc" id="L146">        v1.clear();</span>
+<span class="fc" id="L147">        assertEquals(0, v1.getItemCount());</span>
+<span class="fc" id="L148">    }</span>
+
+    /**
+     * Some checks for the getValue() methods.
+     */
+    public void testGetValue() {
+<span class="fc" id="L154">        DefaultKeyedValues v1 = new DefaultKeyedValues();</span>
+        try {
+<span class="nc" id="L156">            /* Number n = */ v1.getValue(-1);</span>
+<span class="nc" id="L157">            assertTrue(false);</span>
+        }
+<span class="fc" id="L159">        catch (IndexOutOfBoundsException e) {</span>
+            // expected
+<span class="nc" id="L161">        }</span>
+        try {
+<span class="nc" id="L163">            /* Number n = */ v1.getValue(0);</span>
+<span class="nc" id="L164">            assertTrue(false);</span>
+        }
+<span class="fc" id="L166">        catch (IndexOutOfBoundsException e) {</span>
+            // expected
+<span class="nc" id="L168">        }</span>
+<span class="fc" id="L169">        DefaultKeyedValues v2 = new DefaultKeyedValues();</span>
+<span class="fc" id="L170">        v2.addValue(&quot;K1&quot;, new Integer(1));</span>
+<span class="fc" id="L171">        v2.addValue(&quot;K2&quot;, new Integer(2));</span>
+<span class="fc" id="L172">        v2.addValue(&quot;K3&quot;, new Integer(3));</span>
+<span class="fc" id="L173">        assertEquals(new Integer(3), v2.getValue(2));</span>
+
+<span class="fc" id="L175">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L177">            /* Number n = */ v2.getValue(&quot;KK&quot;);</span>
+        }
+<span class="fc" id="L179">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L180">            pass = true;</span>
+<span class="nc" id="L181">        }</span>
+<span class="fc" id="L182">        assertTrue(pass);</span>
+<span class="fc" id="L183">    }</span>
+
+    /**
+     * Some checks for the getKey() methods.
+     */
+    public void testGetKey() {
+<span class="fc" id="L189">        DefaultKeyedValues v1 = new DefaultKeyedValues();</span>
+        try {
+<span class="nc" id="L191">            /* Comparable k = */ v1.getKey(-1);</span>
+<span class="nc" id="L192">            assertTrue(false);</span>
+        }
+<span class="fc" id="L194">        catch (IndexOutOfBoundsException e) {</span>
+            // expected
+<span class="nc" id="L196">        }</span>
+        try {
+<span class="nc" id="L198">            /* Comparable k = */ v1.getKey(0);</span>
+<span class="nc" id="L199">            assertTrue(false);</span>
+        }
+<span class="fc" id="L201">        catch (IndexOutOfBoundsException e) {</span>
+            // expected
+<span class="nc" id="L203">        }</span>
+<span class="fc" id="L204">        DefaultKeyedValues v2 = new DefaultKeyedValues();</span>
+<span class="fc" id="L205">        v2.addValue(&quot;K1&quot;, new Integer(1));</span>
+<span class="fc" id="L206">        v2.addValue(&quot;K2&quot;, new Integer(2));</span>
+<span class="fc" id="L207">        v2.addValue(&quot;K3&quot;, new Integer(3));</span>
+<span class="fc" id="L208">        assertEquals(&quot;K2&quot;, v2.getKey(1));</span>
+<span class="fc" id="L209">    }</span>
+
+    /**
+     * Some checks for the getIndex() methods.
+     */
+    public void testGetIndex() {
+<span class="fc" id="L215">        DefaultKeyedValues v1 = new DefaultKeyedValues();</span>
+<span class="fc" id="L216">        assertEquals(-1, v1.getIndex(&quot;K1&quot;));</span>
+
+<span class="fc" id="L218">        DefaultKeyedValues v2 = new DefaultKeyedValues();</span>
+<span class="fc" id="L219">        v2.addValue(&quot;K1&quot;, new Integer(1));</span>
+<span class="fc" id="L220">        v2.addValue(&quot;K2&quot;, new Integer(2));</span>
+<span class="fc" id="L221">        v2.addValue(&quot;K3&quot;, new Integer(3));</span>
+<span class="fc" id="L222">        assertEquals(2, v2.getIndex(&quot;K3&quot;));</span>
+
+        // try null
+<span class="fc" id="L225">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L227">            v2.getIndex(null);</span>
+        }
+<span class="fc" id="L229">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L230">            pass = true;</span>
+<span class="nc" id="L231">        }</span>
+<span class="fc" id="L232">        assertTrue(pass);</span>
+<span class="fc" id="L233">    }</span>
+
+    /**
+     * Another check for the getIndex(Comparable) method.
+     */
+    public void testGetIndex2() {
+<span class="fc" id="L239">        DefaultKeyedValues v = new DefaultKeyedValues();</span>
+<span class="fc" id="L240">        assertEquals(-1, v.getIndex(&quot;K1&quot;));</span>
+<span class="fc" id="L241">        v.addValue(&quot;K1&quot;, 1.0);</span>
+<span class="fc" id="L242">        assertEquals(0, v.getIndex(&quot;K1&quot;));</span>
+<span class="fc" id="L243">        v.removeValue(&quot;K1&quot;);</span>
+<span class="fc" id="L244">        assertEquals(-1, v.getIndex(&quot;K1&quot;));</span>
+<span class="fc" id="L245">    }</span>
+    /**
+     * Some checks for the addValue() method.
+     */
+    public void testAddValue() {
+<span class="fc" id="L250">        DefaultKeyedValues v1 = new DefaultKeyedValues();</span>
+<span class="fc" id="L251">        v1.addValue(&quot;A&quot;, 1.0);</span>
+<span class="fc" id="L252">        assertEquals(new Double(1.0), v1.getValue(&quot;A&quot;));</span>
+<span class="fc" id="L253">        v1.addValue(&quot;B&quot;, 2.0);</span>
+<span class="fc" id="L254">        assertEquals(new Double(2.0), v1.getValue(&quot;B&quot;));</span>
+<span class="fc" id="L255">        v1.addValue(&quot;B&quot;, 3.0);</span>
+<span class="fc" id="L256">        assertEquals(new Double(3.0), v1.getValue(&quot;B&quot;));</span>
+<span class="fc" id="L257">        assertEquals(2, v1.getItemCount());</span>
+<span class="fc" id="L258">        v1.addValue(&quot;A&quot;, null);</span>
+<span class="fc" id="L259">        assertNull(v1.getValue(&quot;A&quot;));</span>
+<span class="fc" id="L260">        assertEquals(2, v1.getItemCount());</span>
+
+<span class="fc" id="L262">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L264">            v1.addValue(null, 99.9);</span>
+        }
+<span class="fc" id="L266">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L267">            pass = true;</span>
+<span class="nc" id="L268">        }</span>
+<span class="fc" id="L269">        assertTrue(pass);</span>
+<span class="fc" id="L270">    }</span>
+
+    /**
+     * Some checks for the insertValue() method.
+     */
+    public void testInsertValue() {
+<span class="fc" id="L276">        DefaultKeyedValues v1 = new DefaultKeyedValues();</span>
+<span class="fc" id="L277">        v1.insertValue(0, &quot;A&quot;, 1.0);</span>
+<span class="fc" id="L278">        assertEquals(new Double(1.0), v1.getValue(0));</span>
+<span class="fc" id="L279">        v1.insertValue(0, &quot;B&quot;, 2.0);</span>
+<span class="fc" id="L280">        assertEquals(new Double(2.0), v1.getValue(0));</span>
+<span class="fc" id="L281">        assertEquals(new Double(1.0), v1.getValue(1));</span>
+
+        // it's OK to use an index equal to the size of the list
+<span class="fc" id="L284">        v1.insertValue(2, &quot;C&quot;, 3.0);</span>
+<span class="fc" id="L285">        assertEquals(new Double(2.0), v1.getValue(0));</span>
+<span class="fc" id="L286">        assertEquals(new Double(1.0), v1.getValue(1));</span>
+<span class="fc" id="L287">        assertEquals(new Double(3.0), v1.getValue(2));</span>
+
+        // try replacing an existing value
+<span class="fc" id="L290">        v1.insertValue(2, &quot;B&quot;, 4.0);</span>
+<span class="fc" id="L291">        assertEquals(new Double(1.0), v1.getValue(0));</span>
+<span class="fc" id="L292">        assertEquals(new Double(3.0), v1.getValue(1));</span>
+<span class="fc" id="L293">        assertEquals(new Double(4.0), v1.getValue(2));</span>
+<span class="fc" id="L294">    }</span>
+
+    /**
+     * Some checks for the clone() method.
+     */
+    public void testCloning() {
+<span class="fc" id="L300">        DefaultKeyedValues v1 = new DefaultKeyedValues();</span>
+<span class="fc" id="L301">        v1.addValue(&quot;V1&quot;, new Integer(1));</span>
+<span class="fc" id="L302">        v1.addValue(&quot;V2&quot;, null);</span>
+<span class="fc" id="L303">        v1.addValue(&quot;V3&quot;, new Integer(3));</span>
+<span class="fc" id="L304">        DefaultKeyedValues v2 = null;</span>
+        try {
+<span class="fc" id="L306">            v2 = (DefaultKeyedValues) v1.clone();</span>
+        }
+<span class="nc" id="L308">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L309">            System.err.println(&quot;Failed to clone.&quot;);</span>
+<span class="fc" id="L310">        }</span>
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">        assertTrue(v1 != v2);</span>
+<span class="pc bpc" id="L312" title="1 of 2 branches missed.">        assertTrue(v1.getClass() == v2.getClass());</span>
+<span class="fc" id="L313">        assertTrue(v1.equals(v2));</span>
+
+        // confirm that the clone is independent of the original
+<span class="fc" id="L316">        v2.setValue(&quot;V1&quot;, new Integer(44));</span>
+<span class="fc" id="L317">        assertFalse(v1.equals(v2));</span>
+<span class="fc" id="L318">    }</span>
+
+    /**
+     * Check that inserting and retrieving values works as expected.
+     */
+    public void testInsertAndRetrieve() {
+
+<span class="fc" id="L325">        DefaultKeyedValues data = new DefaultKeyedValues();</span>
+<span class="fc" id="L326">        data.addValue(&quot;A&quot;, new Double(1.0));</span>
+<span class="fc" id="L327">        data.addValue(&quot;B&quot;, new Double(2.0));</span>
+<span class="fc" id="L328">        data.addValue(&quot;C&quot;, new Double(3.0));</span>
+<span class="fc" id="L329">        data.addValue(&quot;D&quot;, null);</span>
+
+        // check key order
+<span class="fc" id="L332">        assertEquals(data.getKey(0), &quot;A&quot;);</span>
+<span class="fc" id="L333">        assertEquals(data.getKey(1), &quot;B&quot;);</span>
+<span class="fc" id="L334">        assertEquals(data.getKey(2), &quot;C&quot;);</span>
+<span class="fc" id="L335">        assertEquals(data.getKey(3), &quot;D&quot;);</span>
+
+        // check retrieve value by key
+<span class="fc" id="L338">        assertEquals(data.getValue(&quot;A&quot;), new Double(1.0));</span>
+<span class="fc" id="L339">        assertEquals(data.getValue(&quot;B&quot;), new Double(2.0));</span>
+<span class="fc" id="L340">        assertEquals(data.getValue(&quot;C&quot;), new Double(3.0));</span>
+<span class="fc" id="L341">        assertEquals(data.getValue(&quot;D&quot;), null);</span>
+
+        // check retrieve value by index
+<span class="fc" id="L344">        assertEquals(data.getValue(0), new Double(1.0));</span>
+<span class="fc" id="L345">        assertEquals(data.getValue(1), new Double(2.0));</span>
+<span class="fc" id="L346">        assertEquals(data.getValue(2), new Double(3.0));</span>
+<span class="fc" id="L347">        assertEquals(data.getValue(3), null);</span>
+
+<span class="fc" id="L349">    }</span>
+
+    /**
+     * Some tests for the removeValue() method.
+     */
+    public void testRemoveValue() {
+<span class="fc" id="L355">        DefaultKeyedValues data = new DefaultKeyedValues();</span>
+<span class="fc" id="L356">        data.addValue(&quot;A&quot;, new Double(1.0));</span>
+<span class="fc" id="L357">        data.addValue(&quot;B&quot;, null);</span>
+<span class="fc" id="L358">        data.addValue(&quot;C&quot;, new Double(3.0));</span>
+<span class="fc" id="L359">        data.addValue(&quot;D&quot;, new Double(2.0));</span>
+<span class="fc" id="L360">        assertEquals(1, data.getIndex(&quot;B&quot;));</span>
+<span class="fc" id="L361">        data.removeValue(&quot;B&quot;);</span>
+<span class="fc" id="L362">        assertEquals(-1, data.getIndex(&quot;B&quot;));</span>
+
+<span class="fc" id="L364">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L366">            data.removeValue(&quot;XXX&quot;);</span>
+        }
+<span class="fc" id="L368">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L369">            pass = true;</span>
+<span class="nc" id="L370">        }</span>
+<span class="fc" id="L371">        assertTrue(pass);</span>
+<span class="fc" id="L372">    }</span>
+
+    /**
+     * Tests sorting of data by key (ascending).
+     */
+    public void testSortByKeyAscending() {
+
+<span class="fc" id="L379">        DefaultKeyedValues data = new DefaultKeyedValues();</span>
+<span class="fc" id="L380">        data.addValue(&quot;C&quot;, new Double(1.0));</span>
+<span class="fc" id="L381">        data.addValue(&quot;B&quot;, null);</span>
+<span class="fc" id="L382">        data.addValue(&quot;D&quot;, new Double(3.0));</span>
+<span class="fc" id="L383">        data.addValue(&quot;A&quot;, new Double(2.0));</span>
+
+<span class="fc" id="L385">        data.sortByKeys(SortOrder.ASCENDING);</span>
+
+        // check key order
+<span class="fc" id="L388">        assertEquals(data.getKey(0), &quot;A&quot;);</span>
+<span class="fc" id="L389">        assertEquals(data.getKey(1), &quot;B&quot;);</span>
+<span class="fc" id="L390">        assertEquals(data.getKey(2), &quot;C&quot;);</span>
+<span class="fc" id="L391">        assertEquals(data.getKey(3), &quot;D&quot;);</span>
+
+        // check retrieve value by key
+<span class="fc" id="L394">        assertEquals(data.getValue(&quot;A&quot;), new Double(2.0));</span>
+<span class="fc" id="L395">        assertEquals(data.getValue(&quot;B&quot;), null);</span>
+<span class="fc" id="L396">        assertEquals(data.getValue(&quot;C&quot;), new Double(1.0));</span>
+<span class="fc" id="L397">        assertEquals(data.getValue(&quot;D&quot;), new Double(3.0));</span>
+
+        // check retrieve value by index
+<span class="fc" id="L400">        assertEquals(data.getValue(0), new Double(2.0));</span>
+<span class="fc" id="L401">        assertEquals(data.getValue(1), null);</span>
+<span class="fc" id="L402">        assertEquals(data.getValue(2), new Double(1.0));</span>
+<span class="fc" id="L403">        assertEquals(data.getValue(3), new Double(3.0));</span>
+
+<span class="fc" id="L405">    }</span>
+
+    /**
+     * Tests sorting of data by key (descending).
+     */
+    public void testSortByKeyDescending() {
+
+<span class="fc" id="L412">        DefaultKeyedValues data = new DefaultKeyedValues();</span>
+<span class="fc" id="L413">        data.addValue(&quot;C&quot;, new Double(1.0));</span>
+<span class="fc" id="L414">        data.addValue(&quot;B&quot;, null);</span>
+<span class="fc" id="L415">        data.addValue(&quot;D&quot;, new Double(3.0));</span>
+<span class="fc" id="L416">        data.addValue(&quot;A&quot;, new Double(2.0));</span>
+
+<span class="fc" id="L418">        data.sortByKeys(SortOrder.DESCENDING);</span>
+
+        // check key order
+<span class="fc" id="L421">        assertEquals(data.getKey(0), &quot;D&quot;);</span>
+<span class="fc" id="L422">        assertEquals(data.getKey(1), &quot;C&quot;);</span>
+<span class="fc" id="L423">        assertEquals(data.getKey(2), &quot;B&quot;);</span>
+<span class="fc" id="L424">        assertEquals(data.getKey(3), &quot;A&quot;);</span>
+
+        // check retrieve value by key
+<span class="fc" id="L427">        assertEquals(data.getValue(&quot;A&quot;), new Double(2.0));</span>
+<span class="fc" id="L428">        assertEquals(data.getValue(&quot;B&quot;), null);</span>
+<span class="fc" id="L429">        assertEquals(data.getValue(&quot;C&quot;), new Double(1.0));</span>
+<span class="fc" id="L430">        assertEquals(data.getValue(&quot;D&quot;), new Double(3.0));</span>
+
+        // check retrieve value by index
+<span class="fc" id="L433">        assertEquals(data.getValue(0), new Double(3.0));</span>
+<span class="fc" id="L434">        assertEquals(data.getValue(1), new Double(1.0));</span>
+<span class="fc" id="L435">        assertEquals(data.getValue(2), null);</span>
+<span class="fc" id="L436">        assertEquals(data.getValue(3), new Double(2.0));</span>
+
+<span class="fc" id="L438">    }</span>
+
+    /**
+     * Tests sorting of data by value (ascending).
+     */
+    public void testSortByValueAscending() {
+
+<span class="fc" id="L445">        DefaultKeyedValues data = new DefaultKeyedValues();</span>
+<span class="fc" id="L446">        data.addValue(&quot;C&quot;, new Double(1.0));</span>
+<span class="fc" id="L447">        data.addValue(&quot;B&quot;, null);</span>
+<span class="fc" id="L448">        data.addValue(&quot;D&quot;, new Double(3.0));</span>
+<span class="fc" id="L449">        data.addValue(&quot;A&quot;, new Double(2.0));</span>
+
+<span class="fc" id="L451">        data.sortByValues(SortOrder.ASCENDING);</span>
+
+        // check key order
+<span class="fc" id="L454">        assertEquals(data.getKey(0), &quot;C&quot;);</span>
+<span class="fc" id="L455">        assertEquals(data.getKey(1), &quot;A&quot;);</span>
+<span class="fc" id="L456">        assertEquals(data.getKey(2), &quot;D&quot;);</span>
+<span class="fc" id="L457">        assertEquals(data.getKey(3), &quot;B&quot;);</span>
+
+        // check retrieve value by key
+<span class="fc" id="L460">        assertEquals(data.getValue(&quot;A&quot;), new Double(2.0));</span>
+<span class="fc" id="L461">        assertEquals(data.getValue(&quot;B&quot;), null);</span>
+<span class="fc" id="L462">        assertEquals(data.getValue(&quot;C&quot;), new Double(1.0));</span>
+<span class="fc" id="L463">        assertEquals(data.getValue(&quot;D&quot;), new Double(3.0));</span>
+
+        // check retrieve value by index
+<span class="fc" id="L466">        assertEquals(data.getValue(0), new Double(1.0));</span>
+<span class="fc" id="L467">        assertEquals(data.getValue(1), new Double(2.0));</span>
+<span class="fc" id="L468">        assertEquals(data.getValue(2), new Double(3.0));</span>
+<span class="fc" id="L469">        assertEquals(data.getValue(3), null);</span>
+
+<span class="fc" id="L471">    }</span>
+
+    /**
+     * Tests sorting of data by key (descending).
+     */
+    public void testSortByValueDescending() {
+
+<span class="fc" id="L478">        DefaultKeyedValues data = new DefaultKeyedValues();</span>
+<span class="fc" id="L479">        data.addValue(&quot;C&quot;, new Double(1.0));</span>
+<span class="fc" id="L480">        data.addValue(&quot;B&quot;, null);</span>
+<span class="fc" id="L481">        data.addValue(&quot;D&quot;, new Double(3.0));</span>
+<span class="fc" id="L482">        data.addValue(&quot;A&quot;, new Double(2.0));</span>
+
+<span class="fc" id="L484">        data.sortByValues(SortOrder.DESCENDING);</span>
+
+        // check key order
+<span class="fc" id="L487">        assertEquals(data.getKey(0), &quot;D&quot;);</span>
+<span class="fc" id="L488">        assertEquals(data.getKey(1), &quot;A&quot;);</span>
+<span class="fc" id="L489">        assertEquals(data.getKey(2), &quot;C&quot;);</span>
+<span class="fc" id="L490">        assertEquals(data.getKey(3), &quot;B&quot;);</span>
+
+        // check retrieve value by key
+<span class="fc" id="L493">        assertEquals(data.getValue(&quot;A&quot;), new Double(2.0));</span>
+<span class="fc" id="L494">        assertEquals(data.getValue(&quot;B&quot;), null);</span>
+<span class="fc" id="L495">        assertEquals(data.getValue(&quot;C&quot;), new Double(1.0));</span>
+<span class="fc" id="L496">        assertEquals(data.getValue(&quot;D&quot;), new Double(3.0));</span>
+
+        // check retrieve value by index
+<span class="fc" id="L499">        assertEquals(data.getValue(0), new Double(3.0));</span>
+<span class="fc" id="L500">        assertEquals(data.getValue(1), new Double(2.0));</span>
+<span class="fc" id="L501">        assertEquals(data.getValue(2), new Double(1.0));</span>
+<span class="fc" id="L502">        assertEquals(data.getValue(3), null);</span>
+
+<span class="fc" id="L504">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L511">        DefaultKeyedValues v1 = new DefaultKeyedValues();</span>
+<span class="fc" id="L512">        v1.addValue(&quot;Key 1&quot;, new Double(23));</span>
+<span class="fc" id="L513">        v1.addValue(&quot;Key 2&quot;, null);</span>
+<span class="fc" id="L514">        v1.addValue(&quot;Key 3&quot;, new Double(42));</span>
+
+<span class="fc" id="L516">        DefaultKeyedValues v2 = null;</span>
+
+        try {
+<span class="fc" id="L519">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L520">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L521">            out.writeObject(v1);</span>
+<span class="fc" id="L522">            out.close();</span>
+
+<span class="fc" id="L524">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L525">                new ByteArrayInputStream(buffer.toByteArray())</span>
+            );
+<span class="fc" id="L527">            v2 = (DefaultKeyedValues) in.readObject();</span>
+<span class="fc" id="L528">            in.close();</span>
+        }
+<span class="nc" id="L530">        catch (Exception e) {</span>
+<span class="nc" id="L531">            System.out.println(e.toString());</span>
+<span class="fc" id="L532">        }</span>
+<span class="fc" id="L533">        assertEquals(v1, v2);</span>
+
+<span class="fc" id="L535">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

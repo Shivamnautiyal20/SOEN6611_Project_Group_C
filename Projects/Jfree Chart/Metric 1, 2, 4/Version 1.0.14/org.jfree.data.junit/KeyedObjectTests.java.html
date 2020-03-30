@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KeyedObjectTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.junit</a> &gt; <span class="el_source">KeyedObjectTests.java</span></div><h1>KeyedObjectTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------
+ * KeyedObjectTests.java
+ * ---------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 27-Jan-2004 : Version 1 (DG);
+ * 28-Sep-2007 : Added testCloning2() (DG);
+ *
+ */
+
+package org.jfree.data.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.KeyedObject;
+import org.jfree.data.general.DefaultPieDataset;
+
+/**
+ * Tests for the {@link KeyedObject} class.
+ */
+public class KeyedObjectTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        return new TestSuite(KeyedObjectTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public KeyedObjectTests(String name) {
+<span class="fc" id="L79">        super(name);</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L87">        KeyedObject ko1 = new KeyedObject(&quot;Test&quot;, &quot;Object&quot;);</span>
+<span class="fc" id="L88">        KeyedObject ko2 = new KeyedObject(&quot;Test&quot;, &quot;Object&quot;);</span>
+<span class="fc" id="L89">        assertTrue(ko1.equals(ko2));</span>
+<span class="fc" id="L90">        assertTrue(ko2.equals(ko1));</span>
+
+<span class="fc" id="L92">        ko1 = new KeyedObject(&quot;Test 1&quot;, &quot;Object&quot;);</span>
+<span class="fc" id="L93">        ko2 = new KeyedObject(&quot;Test 2&quot;, &quot;Object&quot;);</span>
+<span class="fc" id="L94">        assertFalse(ko1.equals(ko2));</span>
+
+<span class="fc" id="L96">        ko1 = new KeyedObject(&quot;Test&quot;, &quot;Object 1&quot;);</span>
+<span class="fc" id="L97">        ko2 = new KeyedObject(&quot;Test&quot;, &quot;Object 2&quot;);</span>
+<span class="fc" id="L98">        assertFalse(ko1.equals(ko2));</span>
+
+<span class="fc" id="L100">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L106">        KeyedObject ko1 = new KeyedObject(&quot;Test&quot;, &quot;Object&quot;);</span>
+<span class="fc" id="L107">        KeyedObject ko2 = null;</span>
+        try {
+<span class="fc" id="L109">            ko2 = (KeyedObject) ko1.clone();</span>
+        }
+<span class="nc" id="L111">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L112">            e.printStackTrace();</span>
+<span class="fc" id="L113">        }</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">        assertTrue(ko1 != ko2);</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">        assertTrue(ko1.getClass() == ko2.getClass());</span>
+<span class="fc" id="L116">        assertTrue(ko1.equals(ko2));</span>
+<span class="fc" id="L117">    }</span>
+
+    /**
+     * Confirm special features of cloning.
+     */
+    public void testCloning2() {
+        // case 1 - object is mutable but not PublicCloneable
+<span class="fc" id="L124">        Object obj1 = new ArrayList();</span>
+<span class="fc" id="L125">        KeyedObject ko1 = new KeyedObject(&quot;Test&quot;, obj1);</span>
+<span class="fc" id="L126">        KeyedObject ko2 = null;</span>
+        try {
+<span class="fc" id="L128">            ko2 = (KeyedObject) ko1.clone();</span>
+        }
+<span class="nc" id="L130">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L131">            e.printStackTrace();</span>
+<span class="fc" id="L132">        }</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">        assertTrue(ko1 != ko2);</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">        assertTrue(ko1.getClass() == ko2.getClass());</span>
+<span class="fc" id="L135">        assertTrue(ko1.equals(ko2));</span>
+
+        // the clone contains a reference to the original object
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">        assertTrue(ko2.getObject() == obj1);</span>
+
+        // CASE 2 - object is mutable AND PublicCloneable
+<span class="fc" id="L141">        obj1 = new DefaultPieDataset();</span>
+<span class="fc" id="L142">        ko1 = new KeyedObject(&quot;Test&quot;, obj1);</span>
+<span class="fc" id="L143">        ko2 = null;</span>
+        try {
+<span class="fc" id="L145">            ko2 = (KeyedObject) ko1.clone();</span>
+        }
+<span class="nc" id="L147">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L148">            e.printStackTrace();</span>
+<span class="fc" id="L149">        }</span>
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">        assertTrue(ko1 != ko2);</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">        assertTrue(ko1.getClass() == ko2.getClass());</span>
+<span class="fc" id="L152">        assertTrue(ko1.equals(ko2));</span>
+
+        // the clone contains a reference to a CLONE of the original object
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        assertTrue(ko2.getObject() != obj1);</span>
+<span class="fc" id="L156">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L163">        KeyedObject ko1 = new KeyedObject(&quot;Test&quot;, &quot;Object&quot;);</span>
+<span class="fc" id="L164">        KeyedObject ko2 = null;</span>
+
+        try {
+<span class="fc" id="L167">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L168">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L169">            out.writeObject(ko1);</span>
+<span class="fc" id="L170">            out.close();</span>
+
+<span class="fc" id="L172">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L173">                new ByteArrayInputStream(buffer.toByteArray())</span>
+            );
+<span class="fc" id="L175">            ko2 = (KeyedObject) in.readObject();</span>
+<span class="fc" id="L176">            in.close();</span>
+        }
+<span class="nc" id="L178">        catch (Exception e) {</span>
+<span class="nc" id="L179">            e.printStackTrace();</span>
+<span class="fc" id="L180">        }</span>
+<span class="fc" id="L181">        assertEquals(ko1, ko2);</span>
+
+<span class="fc" id="L183">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MultiplePiePlotTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot.junit</a> &gt; <span class="el_source">MultiplePiePlotTests.java</span></div><h1>MultiplePiePlotTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------
+ * MultiplePiePlotTests.java
+ * -------------------------
+ * (C) Copyright 2005-2009, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 16-Jun-2005 : Version 1 (DG);
+ * 06-Apr-2006 : Added tests for new fields (DG);
+ * 18-Apr-2008 : Added testConstructor() (DG);
+ * 30-Dec-2008 : Updated for new legendItemShape field (DG);
+ * 01-Jun-2009 : Added test for getLegendItems() bug, series key is not
+ *               set (DG);
+ *
+ */
+
+package org.jfree.chart.plot.junit;
+
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.geom.Rectangle2D;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.LegendItemCollection;
+import org.jfree.chart.event.PlotChangeEvent;
+import org.jfree.chart.event.PlotChangeListener;
+import org.jfree.chart.plot.MultiplePiePlot;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.util.TableOrder;
+
+/**
+ * Some tests for the {@link MultiplePiePlot} class.
+ */
+public class MultiplePiePlotTests extends TestCase
+        implements PlotChangeListener {
+
+    /** The last event received. */
+    PlotChangeEvent lastEvent;
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        return new TestSuite(MultiplePiePlotTests.class);</span>
+    }
+
+    /**
+     * Receives a plot change event and records it.  Some tests will use this
+     * to check that events have been generated (or not) when required.
+     *
+     * @param event  the event.
+     */
+    public void plotChanged(PlotChangeEvent event) {
+<span class="nc" id="L97">        this.lastEvent = event;</span>
+<span class="nc" id="L98">    }</span>
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public MultiplePiePlotTests(String name) {
+<span class="fc" id="L106">        super(name);</span>
+<span class="fc" id="L107">    }</span>
+
+    /**
+     * Some checks for the constructors.
+     */
+    public void testConstructor() {
+<span class="fc" id="L113">        MultiplePiePlot plot = new MultiplePiePlot();</span>
+<span class="fc" id="L114">        assertNull(plot.getDataset());</span>
+
+        // the following checks that the plot registers itself as a listener
+        // with the dataset passed to the constructor - see patch 1943021
+<span class="fc" id="L118">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L119">        plot = new MultiplePiePlot(dataset);</span>
+<span class="fc" id="L120">        assertTrue(dataset.hasListener(plot));</span>
+<span class="fc" id="L121">    }</span>
+
+    /**
+     * Check that the equals() method distinguishes the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L127">        MultiplePiePlot p1 = new MultiplePiePlot();</span>
+<span class="fc" id="L128">        MultiplePiePlot p2 = new MultiplePiePlot();</span>
+<span class="fc" id="L129">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L130">        assertTrue(p2.equals(p1));</span>
+
+<span class="fc" id="L132">        p1.setDataExtractOrder(TableOrder.BY_ROW);</span>
+<span class="fc" id="L133">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L134">        p2.setDataExtractOrder(TableOrder.BY_ROW);</span>
+<span class="fc" id="L135">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L137">        p1.setLimit(1.23);</span>
+<span class="fc" id="L138">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L139">        p2.setLimit(1.23);</span>
+<span class="fc" id="L140">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L142">        p1.setAggregatedItemsKey(&quot;Aggregated Items&quot;);</span>
+<span class="fc" id="L143">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L144">        p2.setAggregatedItemsKey(&quot;Aggregated Items&quot;);</span>
+<span class="fc" id="L145">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L147">        p1.setAggregatedItemsPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L149">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L150">        p2.setAggregatedItemsPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L152">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L154">        p1.setPieChart(ChartFactory.createPieChart(&quot;Title&quot;, null, true, true,</span>
+                true));
+<span class="fc" id="L156">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L157">        p2.setPieChart(ChartFactory.createPieChart(&quot;Title&quot;, null, true, true,</span>
+                true));
+<span class="fc" id="L159">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L161">        p1.setLegendItemShape(new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L162">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L163">        p2.setLegendItemShape(new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L164">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L165">    }</span>
+
+    /**
+     * Some basic checks for the clone() method.
+     */
+    public void testCloning() {
+<span class="fc" id="L171">        MultiplePiePlot p1 = new MultiplePiePlot();</span>
+<span class="fc" id="L172">        Rectangle2D rect = new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0);</span>
+<span class="fc" id="L173">        p1.setLegendItemShape(rect);</span>
+<span class="fc" id="L174">        MultiplePiePlot p2 = null;</span>
+        try {
+<span class="fc" id="L176">            p2 = (MultiplePiePlot) p1.clone();</span>
+        }
+<span class="nc" id="L178">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L179">            e.printStackTrace();</span>
+<span class="fc" id="L180">        }</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L183">        assertTrue(p1.equals(p2));</span>
+
+        // check independence
+<span class="fc" id="L186">        rect.setRect(2.0, 3.0, 4.0, 5.0);</span>
+<span class="fc" id="L187">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L188">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L194">        MultiplePiePlot p1 = new MultiplePiePlot(null);</span>
+<span class="fc" id="L195">        p1.setAggregatedItemsPaint(new GradientPaint(1.0f, 2.0f, Color.yellow,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L197">        MultiplePiePlot p2 = null;</span>
+        try {
+<span class="fc" id="L199">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L200">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L201">            out.writeObject(p1);</span>
+<span class="fc" id="L202">            out.close();</span>
+
+<span class="fc" id="L204">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L205">                    buffer.toByteArray()));</span>
+<span class="fc" id="L206">            p2 = (MultiplePiePlot) in.readObject();</span>
+<span class="fc" id="L207">            in.close();</span>
+        }
+<span class="nc" id="L209">        catch (Exception e) {</span>
+<span class="nc" id="L210">            e.printStackTrace();</span>
+<span class="fc" id="L211">        }</span>
+<span class="fc" id="L212">        assertEquals(p1, p2);</span>
+<span class="fc" id="L213">    }</span>
+
+    /**
+     * Fetches the legend items and checks the values.
+     */
+    public void testGetLegendItems() {
+<span class="fc" id="L219">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L220">        dataset.addValue(35.0, &quot;S1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L221">        dataset.addValue(45.0, &quot;S1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L222">        dataset.addValue(55.0, &quot;S2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L223">        dataset.addValue(15.0, &quot;S2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L224">        MultiplePiePlot plot = new MultiplePiePlot(dataset);</span>
+<span class="fc" id="L225">        JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L226">        LegendItemCollection legendItems = plot.getLegendItems();</span>
+<span class="fc" id="L227">        assertEquals(2, legendItems.getItemCount());</span>
+<span class="fc" id="L228">        LegendItem item1 = legendItems.get(0);</span>
+<span class="fc" id="L229">        assertEquals(&quot;S1&quot;, item1.getLabel());</span>
+<span class="fc" id="L230">        assertEquals(&quot;S1&quot;, item1.getSeriesKey());</span>
+<span class="fc" id="L231">        assertEquals(0, item1.getSeriesIndex());</span>
+<span class="fc" id="L232">        assertEquals(dataset, item1.getDataset());</span>
+<span class="fc" id="L233">        assertEquals(0, item1.getDatasetIndex());</span>
+
+<span class="fc" id="L235">        LegendItem item2 = legendItems.get(1);</span>
+<span class="fc" id="L236">        assertEquals(&quot;S2&quot;, item2.getLabel());</span>
+<span class="fc" id="L237">        assertEquals(&quot;S2&quot;, item2.getSeriesKey());</span>
+<span class="fc" id="L238">        assertEquals(1, item2.getSeriesIndex());</span>
+<span class="fc" id="L239">        assertEquals(dataset, item2.getDataset());</span>
+<span class="fc" id="L240">        assertEquals(0, item2.getDatasetIndex());</span>
+<span class="fc" id="L241">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

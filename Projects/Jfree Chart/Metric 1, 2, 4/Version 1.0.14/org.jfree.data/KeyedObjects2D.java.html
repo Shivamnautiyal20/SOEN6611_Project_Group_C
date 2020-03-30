@@ -1,0 +1,523 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KeyedObjects2D.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data</a> &gt; <span class="el_source">KeyedObjects2D.java</span></div><h1>KeyedObjects2D.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------
+ * KeyedObject2D.java
+ * ------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 05-Feb-2003 : Version 1 (DG);
+ * 01-Mar-2004 : Added equals() and clone() methods and implemented
+ *               Serializable (DG);
+ * 03-Oct-2007 : Updated getObject() to handle modified behaviour in
+ *               KeyedObjects class, added clear() method (DG);
+ *
+ */
+
+package org.jfree.data;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+/**
+ * A data structure that stores zero, one or many objects, where each object is
+ * associated with two keys (a 'row' key and a 'column' key).
+ */
+public class KeyedObjects2D implements Cloneable, Serializable {
+
+    /** For serialization. */
+    private static final long serialVersionUID = -1015873563138522374L;
+
+    /** The row keys. */
+    private List rowKeys;
+
+    /** The column keys. */
+    private List columnKeys;
+
+    /** The row data. */
+    private List rows;
+
+    /**
+     * Creates a new instance (initially empty).
+     */
+<span class="fc" id="L73">    public KeyedObjects2D() {</span>
+<span class="fc" id="L74">        this.rowKeys = new java.util.ArrayList();</span>
+<span class="fc" id="L75">        this.columnKeys = new java.util.ArrayList();</span>
+<span class="fc" id="L76">        this.rows = new java.util.ArrayList();</span>
+<span class="fc" id="L77">    }</span>
+
+    /**
+     * Returns the row count.
+     *
+     * @return The row count.
+     *
+     * @see #getColumnCount()
+     */
+    public int getRowCount() {
+<span class="fc" id="L87">        return this.rowKeys.size();</span>
+    }
+
+    /**
+     * Returns the column count.
+     *
+     * @return The column count.
+     *
+     * @see #getRowCount()
+     */
+    public int getColumnCount() {
+<span class="fc" id="L98">        return this.columnKeys.size();</span>
+    }
+
+    /**
+     * Returns the object for a given row and column.
+     *
+     * @param row  the row index (in the range 0 to getRowCount() - 1).
+     * @param column  the column index (in the range 0 to getColumnCount() - 1).
+     *
+     * @return The object (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #getObject(Comparable, Comparable)
+     */
+    public Object getObject(int row, int column) {
+<span class="fc" id="L112">        Object result = null;</span>
+<span class="fc" id="L113">        KeyedObjects rowData = (KeyedObjects) this.rows.get(row);</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">        if (rowData != null) {</span>
+<span class="fc" id="L115">            Comparable columnKey = (Comparable) this.columnKeys.get(column);</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">            if (columnKey != null) {</span>
+<span class="fc" id="L117">                int index = rowData.getIndex(columnKey);</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">                if (index &gt;= 0) {</span>
+<span class="fc" id="L119">                    result = rowData.getObject(columnKey);</span>
+                }
+            }
+        }
+<span class="fc" id="L123">        return result;</span>
+    }
+
+    /**
+     * Returns the key for a given row.
+     *
+     * @param row  the row index (zero based).
+     *
+     * @return The row index.
+     *
+     * @see #getRowIndex(Comparable)
+     */
+    public Comparable getRowKey(int row) {
+<span class="fc" id="L136">        return (Comparable) this.rowKeys.get(row);</span>
+    }
+
+    /**
+     * Returns the row index for a given key, or &lt;code&gt;-1&lt;/code&gt; if the key
+     * is not recognised.
+     *
+     * @param key  the key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The row index.
+     *
+     * @see #getRowKey(int)
+     */
+    public int getRowIndex(Comparable key) {
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        if (key == null) {</span>
+<span class="fc" id="L151">            throw new IllegalArgumentException(&quot;Null 'key' argument.&quot;);</span>
+        }
+<span class="fc" id="L153">        return this.rowKeys.indexOf(key);</span>
+    }
+
+    /**
+     * Returns the row keys.
+     *
+     * @return The row keys (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #getRowKeys()
+     */
+    public List getRowKeys() {
+<span class="fc" id="L164">        return Collections.unmodifiableList(this.rowKeys);</span>
+    }
+
+    /**
+     * Returns the key for a given column.
+     *
+     * @param column  the column.
+     *
+     * @return The key.
+     *
+     * @see #getColumnIndex(Comparable)
+     */
+    public Comparable getColumnKey(int column) {
+<span class="fc" id="L177">        return (Comparable) this.columnKeys.get(column);</span>
+    }
+
+    /**
+     * Returns the column index for a given key, or &lt;code&gt;-1&lt;/code&gt; if the key
+     * is not recognised.
+     *
+     * @param key  the key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The column index.
+     *
+     * @see #getColumnKey(int)
+     */
+    public int getColumnIndex(Comparable key) {
+<span class="fc bfc" id="L191" title="All 2 branches covered.">        if (key == null) {</span>
+<span class="fc" id="L192">            throw new IllegalArgumentException(&quot;Null 'key' argument.&quot;);</span>
+        }
+<span class="fc" id="L194">        return this.columnKeys.indexOf(key);</span>
+    }
+
+    /**
+     * Returns the column keys.
+     *
+     * @return The column keys (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #getRowKeys()
+     */
+    public List getColumnKeys() {
+<span class="fc" id="L205">        return Collections.unmodifiableList(this.columnKeys);</span>
+    }
+
+    /**
+     * Returns the object for the given row and column keys.
+     *
+     * @param rowKey  the row key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param columnKey  the column key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The object (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @throws IllegalArgumentException if &lt;code&gt;rowKey&lt;/code&gt; or
+     *         &lt;code&gt;columnKey&lt;/code&gt; is &lt;code&gt;null&lt;/code&gt;.
+     * @throws UnknownKeyException if &lt;code&gt;rowKey&lt;/code&gt; or
+     *         &lt;code&gt;columnKey&lt;/code&gt; is not recognised.
+     */
+    public Object getObject(Comparable rowKey, Comparable columnKey) {
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">        if (rowKey == null) {</span>
+<span class="nc" id="L223">            throw new IllegalArgumentException(&quot;Null 'rowKey' argument.&quot;);</span>
+        }
+<span class="pc bpc" id="L225" title="1 of 2 branches missed.">        if (columnKey == null) {</span>
+<span class="nc" id="L226">            throw new IllegalArgumentException(&quot;Null 'columnKey' argument.&quot;);</span>
+        }
+<span class="fc" id="L228">        int row = this.rowKeys.indexOf(rowKey);</span>
+<span class="fc bfc" id="L229" title="All 2 branches covered.">        if (row &lt; 0) {</span>
+<span class="fc" id="L230">            throw new UnknownKeyException(&quot;Row key (&quot; + rowKey</span>
+                    + &quot;) not recognised.&quot;);
+        }
+<span class="fc" id="L233">        int column = this.columnKeys.indexOf(columnKey);</span>
+<span class="fc bfc" id="L234" title="All 2 branches covered.">        if (column &lt; 0) {</span>
+<span class="fc" id="L235">            throw new UnknownKeyException(&quot;Column key (&quot; + columnKey</span>
+                    + &quot;) not recognised.&quot;);
+        }
+<span class="fc" id="L238">        KeyedObjects rowData = (KeyedObjects) this.rows.get(row);</span>
+<span class="fc" id="L239">        int index = rowData.getIndex(columnKey);</span>
+<span class="fc bfc" id="L240" title="All 2 branches covered.">        if (index &gt;= 0) {</span>
+<span class="fc" id="L241">            return rowData.getObject(index);</span>
+        }
+        else {
+<span class="fc" id="L244">            return null;</span>
+        }
+    }
+
+    /**
+     * Adds an object to the table.  Performs the same function as setObject().
+     *
+     * @param object  the object.
+     * @param rowKey  the row key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param columnKey  the column key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public void addObject(Object object, Comparable rowKey,
+            Comparable columnKey) {
+<span class="fc" id="L257">        setObject(object, rowKey, columnKey);</span>
+<span class="fc" id="L258">    }</span>
+
+    /**
+     * Adds or updates an object.
+     *
+     * @param object  the object.
+     * @param rowKey  the row key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param columnKey  the column key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public void setObject(Object object, Comparable rowKey,
+            Comparable columnKey) {
+
+<span class="fc bfc" id="L270" title="All 2 branches covered.">        if (rowKey == null) {</span>
+<span class="fc" id="L271">            throw new IllegalArgumentException(&quot;Null 'rowKey' argument.&quot;);</span>
+        }
+<span class="fc bfc" id="L273" title="All 2 branches covered.">        if (columnKey == null) {</span>
+<span class="fc" id="L274">            throw new IllegalArgumentException(&quot;Null 'columnKey' argument.&quot;);</span>
+        }
+        KeyedObjects row;
+<span class="fc" id="L277">        int rowIndex = this.rowKeys.indexOf(rowKey);</span>
+<span class="fc bfc" id="L278" title="All 2 branches covered.">        if (rowIndex &gt;= 0) {</span>
+<span class="fc" id="L279">            row = (KeyedObjects) this.rows.get(rowIndex);</span>
+        }
+        else {
+<span class="fc" id="L282">            this.rowKeys.add(rowKey);</span>
+<span class="fc" id="L283">            row = new KeyedObjects();</span>
+<span class="fc" id="L284">            this.rows.add(row);</span>
+        }
+<span class="fc" id="L286">        row.setObject(columnKey, object);</span>
+<span class="fc" id="L287">        int columnIndex = this.columnKeys.indexOf(columnKey);</span>
+<span class="fc bfc" id="L288" title="All 2 branches covered.">        if (columnIndex &lt; 0) {</span>
+<span class="fc" id="L289">            this.columnKeys.add(columnKey);</span>
+        }
+
+<span class="fc" id="L292">    }</span>
+
+    /**
+     * Removes an object from the table by setting it to &lt;code&gt;null&lt;/code&gt;.  If
+     * all the objects in the specified row and/or column are now
+     * &lt;code&gt;null&lt;/code&gt;, the row and/or column is removed from the table.
+     *
+     * @param rowKey  the row key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param columnKey  the column key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #addObject(Object, Comparable, Comparable)
+     */
+    public void removeObject(Comparable rowKey, Comparable columnKey) {
+<span class="fc" id="L305">        int rowIndex = getRowIndex(rowKey);</span>
+<span class="fc bfc" id="L306" title="All 2 branches covered.">        if (rowIndex &lt; 0) {</span>
+<span class="fc" id="L307">            throw new UnknownKeyException(&quot;Row key (&quot; + rowKey</span>
+                    + &quot;) not recognised.&quot;);
+        }
+<span class="fc" id="L310">        int columnIndex = getColumnIndex(columnKey);</span>
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">        if (columnIndex &lt; 0) {</span>
+<span class="nc" id="L312">            throw new UnknownKeyException(&quot;Column key (&quot; + columnKey</span>
+                    + &quot;) not recognised.&quot;);
+        }
+<span class="fc" id="L315">        setObject(null, rowKey, columnKey);</span>
+
+        // 1. check whether the row is now empty.
+<span class="fc" id="L318">        boolean allNull = true;</span>
+<span class="fc" id="L319">        KeyedObjects row = (KeyedObjects) this.rows.get(rowIndex);</span>
+
+<span class="fc bfc" id="L321" title="All 2 branches covered.">        for (int item = 0, itemCount = row.getItemCount(); item &lt; itemCount;</span>
+<span class="fc" id="L322">             item++) {</span>
+<span class="pc bpc" id="L323" title="1 of 2 branches missed.">            if (row.getObject(item) != null) {</span>
+<span class="nc" id="L324">                allNull = false;</span>
+<span class="nc" id="L325">                break;</span>
+            }
+        }
+
+<span class="pc bpc" id="L329" title="1 of 2 branches missed.">        if (allNull) {</span>
+<span class="fc" id="L330">            this.rowKeys.remove(rowIndex);</span>
+<span class="fc" id="L331">            this.rows.remove(rowIndex);</span>
+        }
+
+        // 2. check whether the column is now empty.
+<span class="fc" id="L335">        allNull = true;</span>
+
+<span class="fc bfc" id="L337" title="All 2 branches covered.">        for (int item = 0, itemCount = this.rows.size(); item &lt; itemCount;</span>
+<span class="fc" id="L338">             item++) {</span>
+<span class="fc" id="L339">            row = (KeyedObjects) this.rows.get(item);</span>
+<span class="fc" id="L340">            int colIndex = row.getIndex(columnKey);</span>
+<span class="pc bpc" id="L341" title="1 of 4 branches missed.">            if (colIndex &gt;= 0 &amp;&amp; row.getObject(colIndex) != null) {</span>
+<span class="fc" id="L342">                allNull = false;</span>
+<span class="fc" id="L343">                break;</span>
+            }
+        }
+
+<span class="fc bfc" id="L347" title="All 2 branches covered.">        if (allNull) {</span>
+<span class="fc bfc" id="L348" title="All 2 branches covered.">            for (int item = 0, itemCount = this.rows.size(); item &lt; itemCount;</span>
+<span class="fc" id="L349">                 item++) {</span>
+<span class="fc" id="L350">                row = (KeyedObjects) this.rows.get(item);</span>
+<span class="fc" id="L351">                int colIndex = row.getIndex(columnKey);</span>
+<span class="pc bpc" id="L352" title="1 of 2 branches missed.">                if (colIndex &gt;= 0) {</span>
+<span class="nc" id="L353">                    row.removeValue(colIndex);</span>
+                }
+            }
+<span class="fc" id="L356">            this.columnKeys.remove(columnKey);</span>
+        }
+<span class="fc" id="L358">    }</span>
+
+    /**
+     * Removes an entire row from the table.
+     *
+     * @param rowIndex  the row index.
+     *
+     * @see #removeColumn(int)
+     */
+    public void removeRow(int rowIndex) {
+<span class="fc" id="L368">        this.rowKeys.remove(rowIndex);</span>
+<span class="fc" id="L369">        this.rows.remove(rowIndex);</span>
+<span class="fc" id="L370">    }</span>
+
+    /**
+     * Removes an entire row from the table.
+     *
+     * @param rowKey  the row key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @throws UnknownKeyException if &lt;code&gt;rowKey&lt;/code&gt; is not recognised.
+     *
+     * @see #removeColumn(Comparable)
+     */
+    public void removeRow(Comparable rowKey) {
+<span class="fc" id="L382">        int index = getRowIndex(rowKey);</span>
+<span class="fc bfc" id="L383" title="All 2 branches covered.">        if (index &lt; 0) {</span>
+<span class="fc" id="L384">            throw new UnknownKeyException(&quot;Row key (&quot; + rowKey</span>
+                    + &quot;) not recognised.&quot;);
+        }
+<span class="fc" id="L387">        removeRow(index);</span>
+<span class="fc" id="L388">    }</span>
+
+    /**
+     * Removes an entire column from the table.
+     *
+     * @param columnIndex  the column index.
+     *
+     * @see #removeRow(int)
+     */
+    public void removeColumn(int columnIndex) {
+<span class="fc" id="L398">        Comparable columnKey = getColumnKey(columnIndex);</span>
+<span class="fc" id="L399">        removeColumn(columnKey);</span>
+<span class="fc" id="L400">    }</span>
+
+    /**
+     * Removes an entire column from the table.
+     *
+     * @param columnKey  the column key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @throws UnknownKeyException if &lt;code&gt;rowKey&lt;/code&gt; is not recognised.
+     *
+     * @see #removeRow(Comparable)
+     */
+    public void removeColumn(Comparable columnKey) {
+<span class="fc" id="L412">        int index = getColumnIndex(columnKey);</span>
+<span class="fc bfc" id="L413" title="All 2 branches covered.">        if (index &lt; 0) {</span>
+<span class="fc" id="L414">            throw new UnknownKeyException(&quot;Column key (&quot; + columnKey</span>
+                    + &quot;) not recognised.&quot;);
+        }
+<span class="fc" id="L417">        Iterator iterator = this.rows.iterator();</span>
+<span class="fc bfc" id="L418" title="All 2 branches covered.">        while (iterator.hasNext()) {</span>
+<span class="fc" id="L419">            KeyedObjects rowData = (KeyedObjects) iterator.next();</span>
+<span class="fc" id="L420">            int i = rowData.getIndex(columnKey);</span>
+<span class="fc bfc" id="L421" title="All 2 branches covered.">            if (i &gt;= 0) {</span>
+<span class="fc" id="L422">                rowData.removeValue(i);</span>
+            }
+<span class="fc" id="L424">        }</span>
+<span class="fc" id="L425">        this.columnKeys.remove(columnKey);</span>
+<span class="fc" id="L426">    }</span>
+
+    /**
+     * Clears all the data and associated keys.
+     *
+     * @since 1.0.7
+     */
+    public void clear() {
+<span class="nc" id="L434">        this.rowKeys.clear();</span>
+<span class="nc" id="L435">        this.columnKeys.clear();</span>
+<span class="nc" id="L436">        this.rows.clear();</span>
+<span class="nc" id="L437">    }</span>
+
+    /**
+     * Tests this object for equality with an arbitrary object.
+     *
+     * @param obj  the object to test (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L447" title="1 of 2 branches missed.">        if (obj == this) {</span>
+<span class="nc" id="L448">            return true;</span>
+        }
+<span class="pc bpc" id="L450" title="1 of 2 branches missed.">        if (!(obj instanceof KeyedObjects2D)) {</span>
+<span class="nc" id="L451">            return false;</span>
+        }
+
+<span class="fc" id="L454">        KeyedObjects2D that = (KeyedObjects2D) obj;</span>
+<span class="fc bfc" id="L455" title="All 2 branches covered.">        if (!getRowKeys().equals(that.getRowKeys())) {</span>
+<span class="fc" id="L456">            return false;</span>
+        }
+<span class="fc bfc" id="L458" title="All 2 branches covered.">        if (!getColumnKeys().equals(that.getColumnKeys())) {</span>
+<span class="fc" id="L459">            return false;</span>
+        }
+<span class="fc" id="L461">        int rowCount = getRowCount();</span>
+<span class="pc bpc" id="L462" title="1 of 2 branches missed.">        if (rowCount != that.getRowCount()) {</span>
+<span class="nc" id="L463">            return false;</span>
+        }
+<span class="fc" id="L465">        int colCount = getColumnCount();</span>
+<span class="pc bpc" id="L466" title="1 of 2 branches missed.">        if (colCount != that.getColumnCount()) {</span>
+<span class="nc" id="L467">            return false;</span>
+        }
+<span class="fc bfc" id="L469" title="All 2 branches covered.">        for (int r = 0; r &lt; rowCount; r++) {</span>
+<span class="fc bfc" id="L470" title="All 2 branches covered.">            for (int c = 0; c &lt; colCount; c++) {</span>
+<span class="fc" id="L471">                Object v1 = getObject(r, c);</span>
+<span class="fc" id="L472">                Object v2 = that.getObject(r, c);</span>
+<span class="fc bfc" id="L473" title="All 2 branches covered.">                if (v1 == null) {</span>
+<span class="pc bpc" id="L474" title="1 of 2 branches missed.">                    if (v2 != null) {</span>
+<span class="nc" id="L475">                        return false;</span>
+                    }
+                }
+                else {
+<span class="fc bfc" id="L479" title="All 2 branches covered.">                    if (!v1.equals(v2)) {</span>
+<span class="fc" id="L480">                        return false;</span>
+                    }
+                }
+            }
+        }
+<span class="fc" id="L485">        return true;</span>
+    }
+
+    /**
+     * Returns a hashcode for this object.
+     *
+     * @return A hashcode.
+     */
+    public int hashCode() {
+        int result;
+<span class="nc" id="L495">        result = this.rowKeys.hashCode();</span>
+<span class="nc" id="L496">        result = 29 * result + this.columnKeys.hashCode();</span>
+<span class="nc" id="L497">        result = 29 * result + this.rows.hashCode();</span>
+<span class="nc" id="L498">        return result;</span>
+    }
+
+    /**
+     * Returns a clone.
+     *
+     * @return A clone.
+     *
+     * @throws CloneNotSupportedException  this class will not throw this
+     *         exception, but subclasses (if any) might.
+     */
+    public Object clone() throws CloneNotSupportedException {
+<span class="fc" id="L510">        KeyedObjects2D clone = (KeyedObjects2D) super.clone();</span>
+<span class="fc" id="L511">        clone.columnKeys = new java.util.ArrayList(this.columnKeys);</span>
+<span class="fc" id="L512">        clone.rowKeys = new java.util.ArrayList(this.rowKeys);</span>
+<span class="fc" id="L513">        clone.rows = new java.util.ArrayList(this.rows.size());</span>
+<span class="fc" id="L514">        Iterator iterator = this.rows.iterator();</span>
+<span class="fc bfc" id="L515" title="All 2 branches covered.">        while (iterator.hasNext()) {</span>
+<span class="fc" id="L516">            KeyedObjects row = (KeyedObjects) iterator.next();</span>
+<span class="fc" id="L517">            clone.rows.add(row.clone());</span>
+<span class="fc" id="L518">        }</span>
+<span class="fc" id="L519">        return clone;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XYBarDataset.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.xy</a> &gt; <span class="el_source">XYBarDataset.java</span></div><h1>XYBarDataset.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------
+ * XYBarDataset.java
+ * -----------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 02-Mar-2004 : Version 1 (DG);
+ * 05-May-2004 : Now extends AbstractIntervalXYDataset (DG);
+ * 15-Jul-2004 : Switched getX() with getXValue() and getY() with
+ *               getYValue() (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 25-Jan-2007 : Added some accessor methods, plus new equals() and clone()
+ *               overrides (DG);
+ * 30-Jan-2007 : Added method overrides to prevent unnecessary object
+ *               creation (DG);
+ * 22-Apr-2008 : Implemented PublicCloneable (DG);
+ *
+ */
+
+package org.jfree.data.xy;
+
+import org.jfree.data.general.DatasetChangeEvent;
+import org.jfree.data.general.DatasetChangeListener;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * A dataset wrapper class that converts a standard {@link XYDataset} into an
+ * {@link IntervalXYDataset} suitable for use in creating XY bar charts.
+ */
+public class XYBarDataset extends AbstractIntervalXYDataset
+        implements IntervalXYDataset, DatasetChangeListener, PublicCloneable {
+
+    /** The underlying dataset. */
+    private XYDataset underlying;
+
+    /** The bar width. */
+    private double barWidth;
+
+    /**
+     * Creates a new dataset.
+     *
+     * @param underlying  the underlying dataset (&lt;code&gt;null&lt;/code&gt; not
+     *     permitted).
+     * @param barWidth  the width of the bars.
+     */
+<span class="fc" id="L76">    public XYBarDataset(XYDataset underlying, double barWidth) {</span>
+<span class="fc" id="L77">        this.underlying = underlying;</span>
+<span class="fc" id="L78">        this.underlying.addChangeListener(this);</span>
+<span class="fc" id="L79">        this.barWidth = barWidth;</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Returns the underlying dataset that was specified via the constructor.
+     *
+     * @return The underlying dataset (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @since 1.0.4
+     */
+    public XYDataset getUnderlyingDataset() {
+<span class="fc" id="L90">        return this.underlying;</span>
+    }
+
+    /**
+     * Returns the bar width.
+     *
+     * @return The bar width.
+     *
+     * @see #setBarWidth(double)
+     * @since 1.0.4
+     */
+    public double getBarWidth() {
+<span class="nc" id="L102">        return this.barWidth;</span>
+    }
+
+    /**
+     * Sets the bar width and sends a {@link DatasetChangeEvent} to all
+     * registered listeners.
+     *
+     * @param barWidth  the bar width.
+     *
+     * @see #getBarWidth()
+     * @since 1.0.4
+     */
+    public void setBarWidth(double barWidth) {
+<span class="nc" id="L115">        this.barWidth = barWidth;</span>
+<span class="nc" id="L116">        notifyListeners(new DatasetChangeEvent(this, this));</span>
+<span class="nc" id="L117">    }</span>
+
+    /**
+     * Returns the number of series in the dataset.
+     *
+     * @return The series count.
+     */
+    public int getSeriesCount() {
+<span class="fc" id="L125">        return this.underlying.getSeriesCount();</span>
+    }
+
+    /**
+     * Returns the key for a series.
+     *
+     * @param series  the series index (in the range &lt;code&gt;0&lt;/code&gt; to
+     *     &lt;code&gt;getSeriesCount() - 1&lt;/code&gt;).
+     *
+     * @return The series key.
+     */
+    public Comparable getSeriesKey(int series) {
+<span class="fc" id="L137">        return this.underlying.getSeriesKey(series);</span>
+    }
+
+    /**
+     * Returns the number of items in a series.
+     *
+     * @param series  the series index (zero-based).
+     *
+     * @return The item count.
+     */
+    public int getItemCount(int series) {
+<span class="fc" id="L148">        return this.underlying.getItemCount(series);</span>
+    }
+
+    /**
+     * Returns the x-value for an item within a series.
+     *
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     *
+     * @return The x-value.
+     *
+     * @see #getXValue(int, int)
+     */
+    public Number getX(int series, int item) {
+<span class="nc" id="L162">        return this.underlying.getX(series, item);</span>
+    }
+
+    /**
+     * Returns the x-value (as a double primitive) for an item within a series.
+     *
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     *
+     * @return The value.
+     *
+     * @see #getX(int, int)
+     */
+    public double getXValue(int series, int item) {
+<span class="fc" id="L176">        return this.underlying.getXValue(series, item);</span>
+    }
+
+    /**
+     * Returns the y-value for an item within a series.
+     *
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     *
+     * @return The y-value (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #getYValue(int, int)
+     */
+    public Number getY(int series, int item) {
+<span class="nc" id="L190">        return this.underlying.getY(series, item);</span>
+    }
+
+    /**
+     * Returns the y-value (as a double primitive) for an item within a series.
+     *
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     *
+     * @return The value.
+     *
+     * @see #getY(int, int)
+     */
+    public double getYValue(int series, int item) {
+<span class="fc" id="L204">        return this.underlying.getYValue(series, item);</span>
+    }
+
+    /**
+     * Returns the starting X value for the specified series and item.
+     *
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     *
+     * @return The value.
+     */
+    public Number getStartX(int series, int item) {
+<span class="nc" id="L216">        Number result = null;</span>
+<span class="nc" id="L217">        Number xnum = this.underlying.getX(series, item);</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">        if (xnum != null) {</span>
+<span class="nc" id="L219">             result = new Double(xnum.doubleValue() - this.barWidth / 2.0);</span>
+        }
+<span class="nc" id="L221">        return result;</span>
+    }
+
+    /**
+     * Returns the starting x-value (as a double primitive) for an item within
+     * a series.
+     *
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     *
+     * @return The value.
+     *
+     * @see #getXValue(int, int)
+     */
+    public double getStartXValue(int series, int item) {
+<span class="fc" id="L236">        return getXValue(series, item) - this.barWidth / 2.0;</span>
+    }
+
+    /**
+     * Returns the ending X value for the specified series and item.
+     *
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     *
+     * @return The value.
+     */
+    public Number getEndX(int series, int item) {
+<span class="nc" id="L248">        Number result = null;</span>
+<span class="nc" id="L249">        Number xnum = this.underlying.getX(series, item);</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        if (xnum != null) {</span>
+<span class="nc" id="L251">             result = new Double(xnum.doubleValue() + this.barWidth / 2.0);</span>
+        }
+<span class="nc" id="L253">        return result;</span>
+    }
+
+    /**
+     * Returns the ending x-value (as a double primitive) for an item within
+     * a series.
+     *
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     *
+     * @return The value.
+     *
+     * @see #getXValue(int, int)
+     */
+    public double getEndXValue(int series, int item) {
+<span class="fc" id="L268">        return getXValue(series, item) + this.barWidth / 2.0;</span>
+    }
+
+    /**
+     * Returns the starting Y value for the specified series and item.
+     *
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     *
+     * @return The value.
+     */
+    public Number getStartY(int series, int item) {
+<span class="nc" id="L280">        return this.underlying.getY(series, item);</span>
+    }
+
+    /**
+     * Returns the starting y-value (as a double primitive) for an item within
+     * a series.
+     *
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     *
+     * @return The value.
+     *
+     * @see #getYValue(int, int)
+     */
+    public double getStartYValue(int series, int item) {
+<span class="nc" id="L295">        return getYValue(series, item);</span>
+    }
+
+    /**
+     * Returns the ending Y value for the specified series and item.
+     *
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     *
+     * @return The value.
+     */
+    public Number getEndY(int series, int item) {
+<span class="nc" id="L307">        return this.underlying.getY(series, item);</span>
+    }
+
+    /**
+     * Returns the ending y-value (as a double primitive) for an item within
+     * a series.
+     *
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     *
+     * @return The value.
+     *
+     * @see #getYValue(int, int)
+     */
+    public double getEndYValue(int series, int item) {
+<span class="nc" id="L322">        return getYValue(series, item);</span>
+    }
+
+    /**
+     * Receives notification of an dataset change event.
+     *
+     * @param event  information about the event.
+     */
+    public void datasetChanged(DatasetChangeEvent event) {
+<span class="fc" id="L331">        notifyListeners(event);</span>
+<span class="fc" id="L332">    }</span>
+
+    /**
+     * Tests this dataset for equality with an arbitrary object.
+     *
+     * @param obj  the object (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L342" title="1 of 2 branches missed.">        if (obj == this) {</span>
+<span class="nc" id="L343">            return true;</span>
+        }
+<span class="pc bpc" id="L345" title="1 of 2 branches missed.">        if (!(obj instanceof XYBarDataset)) {</span>
+<span class="nc" id="L346">            return false;</span>
+        }
+<span class="fc" id="L348">        XYBarDataset that = (XYBarDataset) obj;</span>
+<span class="fc bfc" id="L349" title="All 2 branches covered.">        if (!this.underlying.equals(that.underlying)) {</span>
+<span class="fc" id="L350">            return false;</span>
+        }
+<span class="pc bpc" id="L352" title="1 of 2 branches missed.">        if (this.barWidth != that.barWidth) {</span>
+<span class="nc" id="L353">            return false;</span>
+        }
+<span class="fc" id="L355">        return true;</span>
+    }
+
+    /**
+     * Returns an independent copy of the dataset.  Note that:
+     * &lt;ul&gt;
+     * &lt;li&gt;the underlying dataset is only cloned if it implements the
+     * {@link PublicCloneable} interface;&lt;/li&gt;
+     * &lt;li&gt;the listeners registered with this dataset are not carried over to
+     * the cloned dataset.&lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @return An independent copy of the dataset.
+     *
+     * @throws CloneNotSupportedException if the dataset cannot be cloned for
+     *         any reason.
+     */
+    public Object clone() throws CloneNotSupportedException {
+<span class="fc" id="L373">        XYBarDataset clone = (XYBarDataset) super.clone();</span>
+<span class="pc bpc" id="L374" title="1 of 2 branches missed.">        if (this.underlying instanceof PublicCloneable) {</span>
+<span class="fc" id="L375">            PublicCloneable pc = (PublicCloneable) this.underlying;</span>
+<span class="fc" id="L376">            clone.underlying = (XYDataset) pc.clone();</span>
+        }
+<span class="fc" id="L378">        return clone;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

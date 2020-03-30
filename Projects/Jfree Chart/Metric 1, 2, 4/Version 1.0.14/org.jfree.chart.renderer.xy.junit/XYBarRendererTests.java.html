@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XYBarRendererTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.xy.junit</a> &gt; <span class="el_source">XYBarRendererTests.java</span></div><h1>XYBarRendererTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------------
+ * XYBarRendererTests.java
+ * -----------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 25-Mar-2003 : Version 1 (DG);
+ * 22-Oct-2003 : Added hashCode test (DG);
+ * 09-Feb-2007 : Added to testCloning() (DG);
+ * 17-May-2007 : Added testGetLegendItemSeriesIndex() (DG);
+ * 22-Apr-2008 : Added testPublicCloneable (DG);
+ * 19-Jun-2008 : Added testFindRangeBounds() (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.xy.junit;
+
+import java.awt.geom.Rectangle2D;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.ItemLabelPosition;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.GradientXYBarPainter;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.data.Range;
+import org.jfree.data.xy.DefaultIntervalXYDataset;
+import org.jfree.data.xy.XYBarDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.GradientPaintTransformType;
+import org.jfree.ui.StandardGradientPaintTransformer;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link XYBarRenderer} class.
+ */
+public class XYBarRendererTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        return new TestSuite(XYBarRendererTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public XYBarRendererTests(String name) {
+<span class="fc" id="L98">        super(name);</span>
+<span class="fc" id="L99">    }</span>
+
+    /**
+     * Test that the equals() method distinguishes all fields.
+     */
+    public void testEquals() {
+
+        // default instances
+<span class="fc" id="L107">        XYBarRenderer r1 = new XYBarRenderer();</span>
+<span class="fc" id="L108">        XYBarRenderer r2 = new XYBarRenderer();</span>
+<span class="fc" id="L109">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L110">        assertTrue(r2.equals(r1));</span>
+
+        // setBase()
+<span class="fc" id="L113">        r1.setBase(1.0);</span>
+<span class="fc" id="L114">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L115">        r2.setBase(1.0);</span>
+<span class="fc" id="L116">        assertTrue(r1.equals(r2));</span>
+
+        // setUseYInterval
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">        r1.setUseYInterval(!r1.getUseYInterval());</span>
+<span class="fc" id="L120">        assertFalse(r1.equals(r2));</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">        r2.setUseYInterval(!r2.getUseYInterval());</span>
+<span class="fc" id="L122">        assertTrue(r1.equals(r2));</span>
+
+        // setMargin()
+<span class="fc" id="L125">        r1.setMargin(0.10);</span>
+<span class="fc" id="L126">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L127">        r2.setMargin(0.10);</span>
+<span class="fc" id="L128">        assertTrue(r1.equals(r2));</span>
+
+        // setDrawBarOutline()
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        r1.setDrawBarOutline(!r1.isDrawBarOutline());</span>
+<span class="fc" id="L132">        assertFalse(r1.equals(r2));</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">        r2.setDrawBarOutline(!r2.isDrawBarOutline());</span>
+<span class="fc" id="L134">        assertTrue(r1.equals(r2));</span>
+
+        // setGradientPaintTransformer()
+<span class="fc" id="L137">        r1.setGradientPaintTransformer(new StandardGradientPaintTransformer(</span>
+                GradientPaintTransformType.CENTER_HORIZONTAL));
+<span class="fc" id="L139">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L140">        r2.setGradientPaintTransformer(new StandardGradientPaintTransformer(</span>
+                GradientPaintTransformType.CENTER_HORIZONTAL));
+<span class="fc" id="L142">        assertTrue(r1.equals(r2));</span>
+
+        // legendBar
+<span class="fc" id="L145">        r1.setLegendBar(new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L146">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L147">        r2.setLegendBar(new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L148">        assertTrue(r1.equals(r2));</span>
+
+        // positiveItemLabelFallbackPosition
+<span class="fc" id="L151">        r1.setPositiveItemLabelPositionFallback(new ItemLabelPosition());</span>
+<span class="fc" id="L152">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L153">        r2.setPositiveItemLabelPositionFallback(new ItemLabelPosition());</span>
+<span class="fc" id="L154">        assertTrue(r1.equals(r2));</span>
+
+        // negativeItemLabelFallbackPosition
+<span class="fc" id="L157">        r1.setNegativeItemLabelPositionFallback(new ItemLabelPosition());</span>
+<span class="fc" id="L158">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L159">        r2.setNegativeItemLabelPositionFallback(new ItemLabelPosition());</span>
+<span class="fc" id="L160">        assertTrue(r1.equals(r2));</span>
+
+        // barPainter
+<span class="fc" id="L163">        r1.setBarPainter(new GradientXYBarPainter(0.11, 0.22, 0.33));</span>
+<span class="fc" id="L164">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L165">        r2.setBarPainter(new GradientXYBarPainter(0.11, 0.22, 0.33));</span>
+<span class="fc" id="L166">        assertTrue(r1.equals(r2));</span>
+
+        // shadowsVisible
+<span class="fc" id="L169">        r1.setShadowVisible(false);</span>
+<span class="fc" id="L170">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L171">        r2.setShadowVisible(false);</span>
+<span class="fc" id="L172">        assertTrue(r1.equals(r2));</span>
+
+        // shadowXOffset
+<span class="fc" id="L175">        r1.setShadowXOffset(3.3);</span>
+<span class="fc" id="L176">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L177">        r2.setShadowXOffset(3.3);</span>
+<span class="fc" id="L178">        assertTrue(r1.equals(r2));</span>
+
+        // shadowYOffset
+<span class="fc" id="L181">        r1.setShadowYOffset(3.3);</span>
+<span class="fc" id="L182">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L183">        r2.setShadowYOffset(3.3);</span>
+<span class="fc" id="L184">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L186">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L192">        XYBarRenderer r1 = new XYBarRenderer();</span>
+<span class="fc" id="L193">        XYBarRenderer r2 = new XYBarRenderer();</span>
+<span class="fc" id="L194">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L195">        int h1 = r1.hashCode();</span>
+<span class="fc" id="L196">        int h2 = r2.hashCode();</span>
+<span class="fc" id="L197">        assertEquals(h1, h2);</span>
+<span class="fc" id="L198">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L204">        XYBarRenderer r1 = new XYBarRenderer();</span>
+<span class="fc" id="L205">        Rectangle2D rect = new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0);</span>
+<span class="fc" id="L206">        r1.setLegendBar(rect);</span>
+<span class="fc" id="L207">        XYBarRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L209">            r2 = (XYBarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L211">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L212">            e.printStackTrace();</span>
+<span class="fc" id="L213">        }</span>
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L215" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L216">        assertTrue(r1.equals(r2));</span>
+
+        // check independence
+<span class="fc" id="L219">        rect.setRect(4.0, 3.0, 2.0, 1.0);</span>
+<span class="fc" id="L220">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L221">        r2.setLegendBar(new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0));</span>
+<span class="fc" id="L222">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L223">    }</span>
+
+    /**
+     * Verify that this class implements {@link PublicCloneable}.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L229">        XYBarRenderer r1 = new XYBarRenderer();</span>
+<span class="fc" id="L230">        assertTrue(r1 instanceof PublicCloneable);</span>
+<span class="fc" id="L231">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L238">        XYBarRenderer r1 = new XYBarRenderer();</span>
+<span class="fc" id="L239">        XYBarRenderer r2 = null;</span>
+
+        try {
+<span class="fc" id="L242">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L243">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L244">            out.writeObject(r1);</span>
+<span class="fc" id="L245">            out.close();</span>
+
+<span class="fc" id="L247">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L248">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L249">            r2 = (XYBarRenderer) in.readObject();</span>
+<span class="fc" id="L250">            in.close();</span>
+        }
+<span class="nc" id="L252">        catch (Exception e) {</span>
+<span class="nc" id="L253">            e.printStackTrace();</span>
+<span class="fc" id="L254">        }</span>
+<span class="fc" id="L255">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L257">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization2() {
+
+<span class="fc" id="L264">        XYBarRenderer r1 = new XYBarRenderer();</span>
+<span class="fc" id="L265">        r1.setPositiveItemLabelPositionFallback(new ItemLabelPosition());</span>
+<span class="fc" id="L266">        XYBarRenderer r2 = null;</span>
+
+        try {
+<span class="fc" id="L269">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L270">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L271">            out.writeObject(r1);</span>
+<span class="fc" id="L272">            out.close();</span>
+
+<span class="fc" id="L274">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L275">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L276">            r2 = (XYBarRenderer) in.readObject();</span>
+<span class="fc" id="L277">            in.close();</span>
+        }
+<span class="nc" id="L279">        catch (Exception e) {</span>
+<span class="nc" id="L280">            e.printStackTrace();</span>
+<span class="fc" id="L281">        }</span>
+<span class="fc" id="L282">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L284">    }</span>
+
+    /**
+     * Check that the renderer is calculating the domain bounds correctly.
+     */
+    public void testFindDomainBounds() {
+        XYSeriesCollection dataset
+<span class="fc" id="L291">                = RendererXYPackageTests.createTestXYSeriesCollection();</span>
+<span class="fc" id="L292">        JFreeChart chart = ChartFactory.createXYBarChart(&quot;Test Chart&quot;, &quot;X&quot;,</span>
+                false, &quot;Y&quot;, dataset, PlotOrientation.VERTICAL, false, false,
+                false);
+<span class="fc" id="L295">        XYPlot plot = (XYPlot) chart.getPlot();</span>
+<span class="fc" id="L296">        NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();</span>
+<span class="fc" id="L297">        domainAxis.setAutoRangeIncludesZero(false);</span>
+<span class="fc" id="L298">        Range bounds = domainAxis.getRange();</span>
+<span class="fc" id="L299">        assertFalse(bounds.contains(0.3));</span>
+<span class="fc" id="L300">        assertTrue(bounds.contains(0.5));</span>
+<span class="fc" id="L301">        assertTrue(bounds.contains(2.5));</span>
+<span class="fc" id="L302">        assertFalse(bounds.contains(2.8));</span>
+<span class="fc" id="L303">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * A simple test for the findRangeBounds() method.
+     */
+    public void testFindRangeBounds() {
+<span class="fc" id="L311">        DefaultIntervalXYDataset dataset = new DefaultIntervalXYDataset();</span>
+<span class="fc" id="L312">        double[] x = {1.0, 2.0, 3.0, 4.0};</span>
+<span class="fc" id="L313">        double[] startx = {0.9, 1.8, 2.7, 3.6};</span>
+<span class="fc" id="L314">        double[] endx = {1.1, 2.2, 3.3, 4.4};</span>
+<span class="fc" id="L315">        double[] y = {1.0, 2.0, 3.0, 4.0};</span>
+<span class="fc" id="L316">        double[] starty = {0.9, 1.8, 2.7, 3.6};</span>
+<span class="fc" id="L317">        double[] endy = {1.1, 2.2, 3.3, 4.4};</span>
+<span class="fc" id="L318">        double[][] data = new double[][] {x, startx, endx, y, starty, endy};</span>
+<span class="fc" id="L319">        dataset.addSeries(&quot;Series 1&quot;, data);</span>
+<span class="fc" id="L320">        XYBarRenderer renderer = new XYBarRenderer();</span>
+<span class="fc" id="L321">        renderer.setUseYInterval(true);</span>
+<span class="fc" id="L322">        Range r = renderer.findRangeBounds(dataset);</span>
+<span class="fc" id="L323">        assertEquals(0.9, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L324">        assertEquals(4.4, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L326">        renderer.setUseYInterval(false);</span>
+<span class="fc" id="L327">        r = renderer.findRangeBounds(dataset);</span>
+<span class="fc" id="L328">        assertEquals(1.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L329">        assertEquals(4.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L330">    }</span>
+
+    /**
+     * A check for the datasetIndex and seriesIndex fields in the LegendItem
+     * returned by the getLegendItem() method.
+     */
+    public void testGetLegendItemSeriesIndex() {
+<span class="fc" id="L337">        XYSeriesCollection d1 = new XYSeriesCollection();</span>
+<span class="fc" id="L338">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L339">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L340">        XYSeries s2 = new XYSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L341">        s2.add(1.0, 1.1);</span>
+<span class="fc" id="L342">        d1.addSeries(s1);</span>
+<span class="fc" id="L343">        d1.addSeries(s2);</span>
+
+<span class="fc" id="L345">        XYSeriesCollection d2 = new XYSeriesCollection();</span>
+<span class="fc" id="L346">        XYSeries s3 = new XYSeries(&quot;S3&quot;);</span>
+<span class="fc" id="L347">        s3.add(1.0, 1.1);</span>
+<span class="fc" id="L348">        XYSeries s4 = new XYSeries(&quot;S4&quot;);</span>
+<span class="fc" id="L349">        s4.add(1.0, 1.1);</span>
+<span class="fc" id="L350">        XYSeries s5 = new XYSeries(&quot;S5&quot;);</span>
+<span class="fc" id="L351">        s5.add(1.0, 1.1);</span>
+<span class="fc" id="L352">        d2.addSeries(s3);</span>
+<span class="fc" id="L353">        d2.addSeries(s4);</span>
+<span class="fc" id="L354">        d2.addSeries(s5);</span>
+
+<span class="fc" id="L356">        XYBarRenderer r = new XYBarRenderer();</span>
+<span class="fc" id="L357">        XYPlot plot = new XYPlot(new XYBarDataset(d1, 1.0), new NumberAxis(&quot;x&quot;),</span>
+                new NumberAxis(&quot;y&quot;), r);
+<span class="fc" id="L359">        plot.setDataset(1, new XYBarDataset(d2, 2.0));</span>
+<span class="fc" id="L360">        /*JFreeChart chart =*/ new JFreeChart(plot);</span>
+<span class="fc" id="L361">        LegendItem li = r.getLegendItem(1, 2);</span>
+<span class="fc" id="L362">        assertEquals(&quot;S5&quot;, li.getLabel());</span>
+<span class="fc" id="L363">        assertEquals(1, li.getDatasetIndex());</span>
+<span class="fc" id="L364">        assertEquals(2, li.getSeriesIndex());</span>
+<span class="fc" id="L365">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

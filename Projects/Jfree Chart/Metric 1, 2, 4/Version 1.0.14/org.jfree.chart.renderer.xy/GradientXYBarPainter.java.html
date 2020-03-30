@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GradientXYBarPainter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.xy</a> &gt; <span class="el_source">GradientXYBarPainter.java</span></div><h1>GradientXYBarPainter.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------
+ * GradientXYBarPainter.java
+ * -------------------------
+ * (C) Copyright 2008, 2009, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes:
+ * --------
+ * 19-Jun-2008 : Version 1 (DG);
+ * 22-Feb-2009 : Fixed bug drawing outlines (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.xy;
+
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Stroke;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RectangularShape;
+import java.io.Serializable;
+
+import org.jfree.chart.HashUtilities;
+import org.jfree.ui.RectangleEdge;
+
+/**
+ * An implementation of the {@link XYBarPainter} interface that uses several
+ * gradient fills to enrich the appearance of the bars.
+ *
+ * @since 1.0.11
+ */
+public class GradientXYBarPainter implements XYBarPainter, Serializable {
+
+    /** The division point between the first and second gradient regions. */
+    private double g1;
+
+    /** The division point between the second and third gradient regions. */
+    private double g2;
+
+    /** The division point between the third and fourth gradient regions. */
+    private double g3;
+
+    /**
+     * Creates a new instance.
+     */
+    public GradientXYBarPainter() {
+<span class="fc" id="L77">        this(0.10, 0.20, 0.80);</span>
+<span class="fc" id="L78">    }</span>
+
+    /**
+     * Creates a new instance.
+     *
+     * @param g1  the division between regions 1 and 2.
+     * @param g2  the division between regions 2 and 3.
+     * @param g3  the division between regions 3 and 4.
+     */
+<span class="fc" id="L87">    public GradientXYBarPainter(double g1, double g2, double g3) {</span>
+<span class="fc" id="L88">        this.g1 = g1;</span>
+<span class="fc" id="L89">        this.g2 = g2;</span>
+<span class="fc" id="L90">        this.g3 = g3;</span>
+<span class="fc" id="L91">    }</span>
+
+    /**
+     * Paints a single bar instance.
+     *
+     * @param g2  the graphics target.
+     * @param renderer  the renderer.
+     * @param row  the row index.
+     * @param column  the column index.
+     * @param bar  the bar
+     * @param base  indicates which side of the rectangle is the base of the
+     *              bar.
+     */
+    public void paintBar(Graphics2D g2, XYBarRenderer renderer, int row,
+            int column, RectangularShape bar, RectangleEdge base) {
+
+<span class="nc" id="L107">        Paint itemPaint = renderer.getItemPaint(row, column);</span>
+
+        Color c0, c1;
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (itemPaint instanceof Color) {</span>
+<span class="nc" id="L111">            c0 = (Color) itemPaint;</span>
+<span class="nc" id="L112">            c1 = c0.brighter();</span>
+        }
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        else if (itemPaint instanceof GradientPaint) {</span>
+<span class="nc" id="L115">            GradientPaint gp = (GradientPaint) itemPaint;</span>
+<span class="nc" id="L116">            c0 = gp.getColor1();</span>
+<span class="nc" id="L117">            c1 = gp.getColor2();</span>
+<span class="nc" id="L118">        }</span>
+        else {
+<span class="nc" id="L120">            c0 = Color.blue;</span>
+<span class="nc" id="L121">            c1 = Color.blue.brighter();</span>
+        }
+
+        // as a special case, if the bar colour has alpha == 0, we draw
+        // nothing.
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (c0.getAlpha() == 0) {</span>
+<span class="nc" id="L127">            return;</span>
+        }
+
+<span class="nc bnc" id="L130" title="All 4 branches missed.">        if (base == RectangleEdge.TOP || base == RectangleEdge.BOTTOM) {</span>
+<span class="nc" id="L131">            Rectangle2D[] regions = splitVerticalBar(bar, this.g1, this.g2,</span>
+                    this.g3);
+<span class="nc" id="L133">            GradientPaint gp = new GradientPaint((float) regions[0].getMinX(),</span>
+<span class="nc" id="L134">                    0.0f, c0, (float) regions[0].getMaxX(), 0.0f, Color.white);</span>
+<span class="nc" id="L135">            g2.setPaint(gp);</span>
+<span class="nc" id="L136">            g2.fill(regions[0]);</span>
+
+<span class="nc" id="L138">            gp = new GradientPaint((float) regions[1].getMinX(), 0.0f,</span>
+<span class="nc" id="L139">                    Color.white, (float) regions[1].getMaxX(), 0.0f, c0);</span>
+<span class="nc" id="L140">            g2.setPaint(gp);</span>
+<span class="nc" id="L141">            g2.fill(regions[1]);</span>
+
+<span class="nc" id="L143">            gp = new GradientPaint((float) regions[2].getMinX(), 0.0f, c0,</span>
+<span class="nc" id="L144">                    (float) regions[2].getMaxX(), 0.0f, c1);</span>
+<span class="nc" id="L145">            g2.setPaint(gp);</span>
+<span class="nc" id="L146">            g2.fill(regions[2]);</span>
+
+<span class="nc" id="L148">            gp = new GradientPaint((float) regions[3].getMinX(), 0.0f, c1,</span>
+<span class="nc" id="L149">                     (float) regions[3].getMaxX(), 0.0f, c0);</span>
+<span class="nc" id="L150">            g2.setPaint(gp);</span>
+<span class="nc" id="L151">            g2.fill(regions[3]);</span>
+<span class="nc" id="L152">        }</span>
+<span class="nc bnc" id="L153" title="All 4 branches missed.">        else if (base == RectangleEdge.LEFT || base == RectangleEdge.RIGHT) {</span>
+<span class="nc" id="L154">            Rectangle2D[] regions = splitHorizontalBar(bar, this.g1, this.g2,</span>
+                    this.g3);
+<span class="nc" id="L156">            GradientPaint gp = new GradientPaint(0.0f,</span>
+<span class="nc" id="L157">                    (float) regions[0].getMinY(), c0, 0.0f,</span>
+<span class="nc" id="L158">                    (float) regions[0].getMaxX(), Color.white);</span>
+<span class="nc" id="L159">            g2.setPaint(gp);</span>
+<span class="nc" id="L160">            g2.fill(regions[0]);</span>
+
+<span class="nc" id="L162">            gp = new GradientPaint(0.0f, (float) regions[1].getMinY(),</span>
+<span class="nc" id="L163">                    Color.white, 0.0f, (float) regions[1].getMaxY(), c0);</span>
+<span class="nc" id="L164">            g2.setPaint(gp);</span>
+<span class="nc" id="L165">            g2.fill(regions[1]);</span>
+
+<span class="nc" id="L167">            gp = new GradientPaint(0.0f, (float) regions[2].getMinY(), c0,</span>
+<span class="nc" id="L168">                    0.0f, (float) regions[2].getMaxY(), c1);</span>
+<span class="nc" id="L169">            g2.setPaint(gp);</span>
+<span class="nc" id="L170">            g2.fill(regions[2]);</span>
+
+<span class="nc" id="L172">            gp = new GradientPaint(0.0f, (float) regions[3].getMinY(), c1,</span>
+<span class="nc" id="L173">                     0.0f, (float) regions[3].getMaxY(), c0);</span>
+<span class="nc" id="L174">            g2.setPaint(gp);</span>
+<span class="nc" id="L175">            g2.fill(regions[3]);</span>
+
+        }
+
+        // draw the outline...
+<span class="nc bnc" id="L180" title="All 2 branches missed.">        if (renderer.isDrawBarOutline()) {</span>
+<span class="nc" id="L181">            Stroke stroke = renderer.getItemOutlineStroke(row, column);</span>
+<span class="nc" id="L182">            Paint paint = renderer.getItemOutlinePaint(row, column);</span>
+<span class="nc bnc" id="L183" title="All 4 branches missed.">            if (stroke != null &amp;&amp; paint != null) {</span>
+<span class="nc" id="L184">                g2.setStroke(stroke);</span>
+<span class="nc" id="L185">                g2.setPaint(paint);</span>
+<span class="nc" id="L186">                g2.draw(bar);</span>
+            }
+        }
+
+<span class="nc" id="L190">    }</span>
+
+    /**
+     * Paints a single bar instance.
+     *
+     * @param g2  the graphics target.
+     * @param renderer  the renderer.
+     * @param row  the row index.
+     * @param column  the column index.
+     * @param bar  the bar
+     * @param base  indicates which side of the rectangle is the base of the
+     *              bar.
+     * @param pegShadow  peg the shadow to the base of the bar?
+     */
+    public void paintBarShadow(Graphics2D g2, XYBarRenderer renderer, int row,
+            int column, RectangularShape bar, RectangleEdge base,
+            boolean pegShadow) {
+
+        // handle a special case - if the bar colour has alpha == 0, it is
+        // invisible so we shouldn't draw any shadow
+<span class="nc" id="L210">        Paint itemPaint = renderer.getItemPaint(row, column);</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">        if (itemPaint instanceof Color) {</span>
+<span class="nc" id="L212">            Color c = (Color) itemPaint;</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">            if (c.getAlpha() == 0) {</span>
+<span class="nc" id="L214">                return;</span>
+            }
+        }
+
+<span class="nc" id="L218">        RectangularShape shadow = createShadow(bar, renderer.getShadowXOffset(),</span>
+<span class="nc" id="L219">                renderer.getShadowYOffset(), base, pegShadow);</span>
+<span class="nc" id="L220">        g2.setPaint(Color.gray);</span>
+<span class="nc" id="L221">        g2.fill(shadow);</span>
+
+<span class="nc" id="L223">    }</span>
+
+    /**
+     * Creates a shadow for the bar.
+     *
+     * @param bar  the bar shape.
+     * @param xOffset  the x-offset for the shadow.
+     * @param yOffset  the y-offset for the shadow.
+     * @param base  the edge that is the base of the bar.
+     * @param pegShadow  peg the shadow to the base?
+     *
+     * @return A rectangle for the shadow.
+     */
+    private Rectangle2D createShadow(RectangularShape bar, double xOffset,
+            double yOffset, RectangleEdge base, boolean pegShadow) {
+<span class="nc" id="L238">        double x0 = bar.getMinX();</span>
+<span class="nc" id="L239">        double x1 = bar.getMaxX();</span>
+<span class="nc" id="L240">        double y0 = bar.getMinY();</span>
+<span class="nc" id="L241">        double y1 = bar.getMaxY();</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">        if (base == RectangleEdge.TOP) {</span>
+<span class="nc" id="L243">            x0 += xOffset;</span>
+<span class="nc" id="L244">            x1 += xOffset;</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">            if (!pegShadow) {</span>
+<span class="nc" id="L246">                y0 += yOffset;</span>
+            }
+<span class="nc" id="L248">            y1 += yOffset;</span>
+        }
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        else if (base == RectangleEdge.BOTTOM) {</span>
+<span class="nc" id="L251">            x0 += xOffset;</span>
+<span class="nc" id="L252">            x1 += xOffset;</span>
+<span class="nc" id="L253">            y0 += yOffset;</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">            if (!pegShadow) {</span>
+<span class="nc" id="L255">                y1 += yOffset;</span>
+            }
+        }
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        else if (base == RectangleEdge.LEFT) {</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">            if (!pegShadow) {</span>
+<span class="nc" id="L260">                x0 += xOffset;</span>
+            }
+<span class="nc" id="L262">            x1 += xOffset;</span>
+<span class="nc" id="L263">            y0 += yOffset;</span>
+<span class="nc" id="L264">            y1 += yOffset;</span>
+        }
+<span class="nc bnc" id="L266" title="All 2 branches missed.">        else if (base == RectangleEdge.RIGHT) {</span>
+<span class="nc" id="L267">            x0 += xOffset;</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">            if (!pegShadow) {</span>
+<span class="nc" id="L269">                x1 += xOffset;</span>
+            }
+<span class="nc" id="L271">            y0 += yOffset;</span>
+<span class="nc" id="L272">            y1 += yOffset;</span>
+        }
+<span class="nc" id="L274">        return new Rectangle2D.Double(x0, y0, (x1 - x0), (y1 - y0));</span>
+    }
+
+    /**
+     * Splits a bar into subregions (elsewhere, these subregions will have
+     * different gradients applied to them).
+     *
+     * @param bar  the bar shape.
+     * @param a  the first division.
+     * @param b  the second division.
+     * @param c  the third division.
+     *
+     * @return An array containing four subregions.
+     */
+    private Rectangle2D[] splitVerticalBar(RectangularShape bar, double a,
+            double b, double c) {
+<span class="nc" id="L290">        Rectangle2D[] result = new Rectangle2D[4];</span>
+<span class="nc" id="L291">        double x0 = bar.getMinX();</span>
+<span class="nc" id="L292">        double x1 = Math.rint(x0 + (bar.getWidth() * a));</span>
+<span class="nc" id="L293">        double x2 = Math.rint(x0 + (bar.getWidth() * b));</span>
+<span class="nc" id="L294">        double x3 = Math.rint(x0 + (bar.getWidth() * c));</span>
+<span class="nc" id="L295">        result[0] = new Rectangle2D.Double(bar.getMinX(), bar.getMinY(),</span>
+<span class="nc" id="L296">                x1 - x0, bar.getHeight());</span>
+<span class="nc" id="L297">        result[1] = new Rectangle2D.Double(x1, bar.getMinY(), x2 - x1,</span>
+<span class="nc" id="L298">                bar.getHeight());</span>
+<span class="nc" id="L299">        result[2] = new Rectangle2D.Double(x2, bar.getMinY(), x3 - x2,</span>
+<span class="nc" id="L300">                bar.getHeight());</span>
+<span class="nc" id="L301">        result[3] = new Rectangle2D.Double(x3, bar.getMinY(),</span>
+<span class="nc" id="L302">                bar.getMaxX() - x3, bar.getHeight());</span>
+<span class="nc" id="L303">        return result;</span>
+    }
+
+    /**
+     * Splits a bar into subregions (elsewhere, these subregions will have
+     * different gradients applied to them).
+     *
+     * @param bar  the bar shape.
+     * @param a  the first division.
+     * @param b  the second division.
+     * @param c  the third division.
+     *
+     * @return An array containing four subregions.
+     */
+    private Rectangle2D[] splitHorizontalBar(RectangularShape bar, double a,
+            double b, double c) {
+<span class="nc" id="L319">        Rectangle2D[] result = new Rectangle2D[4];</span>
+<span class="nc" id="L320">        double y0 = bar.getMinY();</span>
+<span class="nc" id="L321">        double y1 = Math.rint(y0 + (bar.getHeight() * a));</span>
+<span class="nc" id="L322">        double y2 = Math.rint(y0 + (bar.getHeight() * b));</span>
+<span class="nc" id="L323">        double y3 = Math.rint(y0 + (bar.getHeight() * c));</span>
+<span class="nc" id="L324">        result[0] = new Rectangle2D.Double(bar.getMinX(), bar.getMinY(),</span>
+<span class="nc" id="L325">                bar.getWidth(), y1 - y0);</span>
+<span class="nc" id="L326">        result[1] = new Rectangle2D.Double(bar.getMinX(), y1, bar.getWidth(),</span>
+                y2 - y1);
+<span class="nc" id="L328">        result[2] = new Rectangle2D.Double(bar.getMinX(), y2, bar.getWidth(),</span>
+                y3 - y2);
+<span class="nc" id="L330">        result[3] = new Rectangle2D.Double(bar.getMinX(), y3, bar.getWidth(),</span>
+<span class="nc" id="L331">                bar.getMaxY() - y3);</span>
+<span class="nc" id="L332">        return result;</span>
+    }
+
+    /**
+     * Tests this instance for equality with an arbitrary object.
+     *
+     * @param obj  the obj (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    public boolean equals(Object obj) {
+<span class="fc bfc" id="L343" title="All 2 branches covered.">        if (obj == this) {</span>
+<span class="fc" id="L344">            return true;</span>
+        }
+<span class="pc bpc" id="L346" title="1 of 2 branches missed.">        if (!(obj instanceof GradientXYBarPainter)) {</span>
+<span class="nc" id="L347">            return false;</span>
+        }
+<span class="fc" id="L349">        GradientXYBarPainter that = (GradientXYBarPainter) obj;</span>
+<span class="fc bfc" id="L350" title="All 2 branches covered.">        if (this.g1 != that.g1) {</span>
+<span class="fc" id="L351">            return false;</span>
+        }
+<span class="fc bfc" id="L353" title="All 2 branches covered.">        if (this.g2 != that.g2) {</span>
+<span class="fc" id="L354">            return false;</span>
+        }
+<span class="fc bfc" id="L356" title="All 2 branches covered.">        if (this.g3 != that.g3) {</span>
+<span class="fc" id="L357">            return false;</span>
+        }
+<span class="fc" id="L359">        return true;</span>
+    }
+
+    /**
+     * Returns a hash code for this instance.
+     *
+     * @return A hash code.
+     */
+    public int hashCode() {
+<span class="fc" id="L368">        int hash = 37;</span>
+<span class="fc" id="L369">        hash = HashUtilities.hashCode(hash, this.g1);</span>
+<span class="fc" id="L370">        hash = HashUtilities.hashCode(hash, this.g2);</span>
+<span class="fc" id="L371">        hash = HashUtilities.hashCode(hash, this.g3);</span>
+<span class="fc" id="L372">        return hash;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

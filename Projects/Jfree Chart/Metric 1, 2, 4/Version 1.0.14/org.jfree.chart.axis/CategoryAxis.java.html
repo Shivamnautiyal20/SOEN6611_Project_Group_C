@@ -1,0 +1,1499 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryAxis.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.axis</a> &gt; <span class="el_source">CategoryAxis.java</span></div><h1>CategoryAxis.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------
+ * CategoryAxis.java
+ * -----------------
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert;
+ * Contributor(s):   Pady Srinivasan (patch 1217634);
+ *                   Peter Kolb (patches 2497611 and 2603321);
+ *
+ * Changes
+ * -------
+ * 21-Aug-2001 : Added standard header. Fixed DOS encoding problem (DG);
+ * 18-Sep-2001 : Updated header (DG);
+ * 04-Dec-2001 : Changed constructors to protected, and tidied up default
+ *               values (DG);
+ * 19-Apr-2002 : Updated import statements (DG);
+ * 05-Sep-2002 : Updated constructor for changes in Axis class (DG);
+ * 06-Nov-2002 : Moved margins from the CategoryPlot class (DG);
+ * 08-Nov-2002 : Moved to new package com.jrefinery.chart.axis (DG);
+ * 22-Jan-2002 : Removed monolithic constructor (DG);
+ * 26-Mar-2003 : Implemented Serializable (DG);
+ * 09-May-2003 : Merged HorizontalCategoryAxis and VerticalCategoryAxis into
+ *               this class (DG);
+ * 13-Aug-2003 : Implemented Cloneable (DG);
+ * 29-Oct-2003 : Added workaround for font alignment in PDF output (DG);
+ * 05-Nov-2003 : Fixed serialization bug (DG);
+ * 26-Nov-2003 : Added category label offset (DG);
+ * 06-Jan-2004 : Moved axis line attributes to Axis class, rationalised
+ *               category label position attributes (DG);
+ * 07-Jan-2004 : Added new implementation for linewrapping of category
+ *               labels (DG);
+ * 17-Feb-2004 : Moved deprecated code to bottom of source file (DG);
+ * 10-Mar-2004 : Changed Dimension --&gt; Dimension2D in text classes (DG);
+ * 16-Mar-2004 : Added support for tooltips on category labels (DG);
+ * 01-Apr-2004 : Changed java.awt.geom.Dimension2D to org.jfree.ui.Size2D
+ *               because of JDK bug 4976448 which persists on JDK 1.3.1 (DG);
+ * 03-Sep-2004 : Added 'maxCategoryLabelLines' attribute (DG);
+ * 04-Oct-2004 : Renamed ShapeUtils --&gt; ShapeUtilities (DG);
+ * 11-Jan-2005 : Removed deprecated methods in preparation for 1.0.0
+ *               release (DG);
+ * 21-Jan-2005 : Modified return type for RectangleAnchor.coordinates()
+ *               method (DG);
+ * 21-Apr-2005 : Replaced Insets with RectangleInsets (DG);
+ * 26-Apr-2005 : Removed LOGGER (DG);
+ * 08-Jun-2005 : Fixed bug in axis layout (DG);
+ * 22-Nov-2005 : Added a method to access the tool tip text for a category
+ *               label (DG);
+ * 23-Nov-2005 : Added per-category font and paint options - see patch
+ *               1217634 (DG);
+ * ------------- JFreeChart 1.0.x ---------------------------------------------
+ * 11-Jan-2006 : Fixed null pointer exception in drawCategoryLabels - see bug
+ *               1403043 (DG);
+ * 18-Aug-2006 : Fix for bug drawing category labels, thanks to Adriaan
+ *               Joubert (1277726) (DG);
+ * 02-Oct-2006 : Updated category label entity (DG);
+ * 30-Oct-2006 : Updated refreshTicks() method to account for possibility of
+ *               multiple domain axes (DG);
+ * 07-Mar-2007 : Fixed bug in axis label positioning (DG);
+ * 27-Sep-2007 : Added getCategorySeriesMiddle() method (DG);
+ * 21-Nov-2007 : Fixed performance bug noted by FindBugs in the
+ *               equalPaintMaps() method (DG);
+ * 23-Apr-2008 : Fixed bug 1942059, bad use of insets in
+ *               calculateTextBlockWidth() (DG);
+ * 26-Jun-2008 : Added new getCategoryMiddle() method (DG);
+ * 27-Oct-2008 : Set font on Graphics2D when creating category labels (DG);
+ * 14-Jan-2009 : Added new variant of getCategorySeriesMiddle() to make it
+ *               simpler for renderers with hidden series (PK);
+ * 19-Mar-2009 : Added entity support - see patch 2603321 by Peter Kolb (DG);
+ * 16-Apr-2009 : Added tick mark drawing (DG);
+ * 29-Jun-2009 : Fixed bug where axis entity is hiding label entities (DG);
+ * 
+ */
+
+package org.jfree.chart.axis;
+
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.jfree.chart.entity.CategoryLabelEntity;
+import org.jfree.chart.entity.EntityCollection;
+import org.jfree.chart.event.AxisChangeEvent;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.Plot;
+import org.jfree.chart.plot.PlotRenderingInfo;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.io.SerialUtilities;
+import org.jfree.text.G2TextMeasurer;
+import org.jfree.text.TextBlock;
+import org.jfree.text.TextUtilities;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.RectangleEdge;
+import org.jfree.ui.RectangleInsets;
+import org.jfree.ui.Size2D;
+import org.jfree.util.ObjectUtilities;
+import org.jfree.util.PaintUtilities;
+import org.jfree.util.ShapeUtilities;
+
+/**
+ * An axis that displays categories.
+ */
+public class CategoryAxis extends Axis implements Cloneable, Serializable {
+
+    /** For serialization. */
+    private static final long serialVersionUID = 5886554608114265863L;
+
+    /**
+     * The default margin for the axis (used for both lower and upper margins).
+     */
+    public static final double DEFAULT_AXIS_MARGIN = 0.05;
+
+    /**
+     * The default margin between categories (a percentage of the overall axis
+     * length).
+     */
+    public static final double DEFAULT_CATEGORY_MARGIN = 0.20;
+
+    /** The amount of space reserved at the start of the axis. */
+    private double lowerMargin;
+
+    /** The amount of space reserved at the end of the axis. */
+    private double upperMargin;
+
+    /** The amount of space reserved between categories. */
+    private double categoryMargin;
+
+    /** The maximum number of lines for category labels. */
+    private int maximumCategoryLabelLines;
+
+    /**
+     * A ratio that is multiplied by the width of one category to determine the
+     * maximum label width.
+     */
+    private float maximumCategoryLabelWidthRatio;
+
+    /** The category label offset. */
+    private int categoryLabelPositionOffset;
+
+    /**
+     * A structure defining the category label positions for each axis
+     * location.
+     */
+    private CategoryLabelPositions categoryLabelPositions;
+
+    /** Storage for tick label font overrides (if any). */
+    private Map tickLabelFontMap;
+
+    /** Storage for tick label paint overrides (if any). */
+    private transient Map tickLabelPaintMap;
+
+    /** Storage for the category label tooltips (if any). */
+    private Map categoryLabelToolTips;
+
+    /**
+     * Creates a new category axis with no label.
+     */
+    public CategoryAxis() {
+<span class="fc" id="L197">        this(null);</span>
+<span class="fc" id="L198">    }</span>
+
+    /**
+     * Constructs a category axis, using default values where necessary.
+     *
+     * @param label  the axis label (&lt;code&gt;null&lt;/code&gt; permitted).
+     */
+    public CategoryAxis(String label) {
+
+<span class="fc" id="L207">        super(label);</span>
+
+<span class="fc" id="L209">        this.lowerMargin = DEFAULT_AXIS_MARGIN;</span>
+<span class="fc" id="L210">        this.upperMargin = DEFAULT_AXIS_MARGIN;</span>
+<span class="fc" id="L211">        this.categoryMargin = DEFAULT_CATEGORY_MARGIN;</span>
+<span class="fc" id="L212">        this.maximumCategoryLabelLines = 1;</span>
+<span class="fc" id="L213">        this.maximumCategoryLabelWidthRatio = 0.0f;</span>
+
+<span class="fc" id="L215">        this.categoryLabelPositionOffset = 4;</span>
+<span class="fc" id="L216">        this.categoryLabelPositions = CategoryLabelPositions.STANDARD;</span>
+<span class="fc" id="L217">        this.tickLabelFontMap = new HashMap();</span>
+<span class="fc" id="L218">        this.tickLabelPaintMap = new HashMap();</span>
+<span class="fc" id="L219">        this.categoryLabelToolTips = new HashMap();</span>
+
+<span class="fc" id="L221">    }</span>
+
+    /**
+     * Returns the lower margin for the axis.
+     *
+     * @return The margin.
+     *
+     * @see #getUpperMargin()
+     * @see #setLowerMargin(double)
+     */
+    public double getLowerMargin() {
+<span class="fc" id="L232">        return this.lowerMargin;</span>
+    }
+
+    /**
+     * Sets the lower margin for the axis and sends an {@link AxisChangeEvent}
+     * to all registered listeners.
+     *
+     * @param margin  the margin as a percentage of the axis length (for
+     *                example, 0.05 is five percent).
+     *
+     * @see #getLowerMargin()
+     */
+    public void setLowerMargin(double margin) {
+<span class="fc" id="L245">        this.lowerMargin = margin;</span>
+<span class="fc" id="L246">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="fc" id="L247">    }</span>
+
+    /**
+     * Returns the upper margin for the axis.
+     *
+     * @return The margin.
+     *
+     * @see #getLowerMargin()
+     * @see #setUpperMargin(double)
+     */
+    public double getUpperMargin() {
+<span class="fc" id="L258">        return this.upperMargin;</span>
+    }
+
+    /**
+     * Sets the upper margin for the axis and sends an {@link AxisChangeEvent}
+     * to all registered listeners.
+     *
+     * @param margin  the margin as a percentage of the axis length (for
+     *                example, 0.05 is five percent).
+     *
+     * @see #getUpperMargin()
+     */
+    public void setUpperMargin(double margin) {
+<span class="fc" id="L271">        this.upperMargin = margin;</span>
+<span class="fc" id="L272">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="fc" id="L273">    }</span>
+
+    /**
+     * Returns the category margin.
+     *
+     * @return The margin.
+     *
+     * @see #setCategoryMargin(double)
+     */
+    public double getCategoryMargin() {
+<span class="fc" id="L283">        return this.categoryMargin;</span>
+    }
+
+    /**
+     * Sets the category margin and sends an {@link AxisChangeEvent} to all
+     * registered listeners.  The overall category margin is distributed over
+     * N-1 gaps, where N is the number of categories on the axis.
+     *
+     * @param margin  the margin as a percentage of the axis length (for
+     *                example, 0.05 is five percent).
+     *
+     * @see #getCategoryMargin()
+     */
+    public void setCategoryMargin(double margin) {
+<span class="fc" id="L297">        this.categoryMargin = margin;</span>
+<span class="fc" id="L298">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="fc" id="L299">    }</span>
+
+    /**
+     * Returns the maximum number of lines to use for each category label.
+     *
+     * @return The maximum number of lines.
+     *
+     * @see #setMaximumCategoryLabelLines(int)
+     */
+    public int getMaximumCategoryLabelLines() {
+<span class="nc" id="L309">        return this.maximumCategoryLabelLines;</span>
+    }
+
+    /**
+     * Sets the maximum number of lines to use for each category label and
+     * sends an {@link AxisChangeEvent} to all registered listeners.
+     *
+     * @param lines  the maximum number of lines.
+     *
+     * @see #getMaximumCategoryLabelLines()
+     */
+    public void setMaximumCategoryLabelLines(int lines) {
+<span class="nc" id="L321">        this.maximumCategoryLabelLines = lines;</span>
+<span class="nc" id="L322">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="nc" id="L323">    }</span>
+
+    /**
+     * Returns the category label width ratio.
+     *
+     * @return The ratio.
+     *
+     * @see #setMaximumCategoryLabelWidthRatio(float)
+     */
+    public float getMaximumCategoryLabelWidthRatio() {
+<span class="nc" id="L333">        return this.maximumCategoryLabelWidthRatio;</span>
+    }
+
+    /**
+     * Sets the maximum category label width ratio and sends an
+     * {@link AxisChangeEvent} to all registered listeners.
+     *
+     * @param ratio  the ratio.
+     *
+     * @see #getMaximumCategoryLabelWidthRatio()
+     */
+    public void setMaximumCategoryLabelWidthRatio(float ratio) {
+<span class="fc" id="L345">        this.maximumCategoryLabelWidthRatio = ratio;</span>
+<span class="fc" id="L346">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="fc" id="L347">    }</span>
+
+    /**
+     * Returns the offset between the axis and the category labels (before
+     * label positioning is taken into account).
+     *
+     * @return The offset (in Java2D units).
+     *
+     * @see #setCategoryLabelPositionOffset(int)
+     */
+    public int getCategoryLabelPositionOffset() {
+<span class="nc" id="L358">        return this.categoryLabelPositionOffset;</span>
+    }
+
+    /**
+     * Sets the offset between the axis and the category labels (before label
+     * positioning is taken into account).
+     *
+     * @param offset  the offset (in Java2D units).
+     *
+     * @see #getCategoryLabelPositionOffset()
+     */
+    public void setCategoryLabelPositionOffset(int offset) {
+<span class="fc" id="L370">        this.categoryLabelPositionOffset = offset;</span>
+<span class="fc" id="L371">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="fc" id="L372">    }</span>
+
+    /**
+     * Returns the category label position specification (this contains label
+     * positioning info for all four possible axis locations).
+     *
+     * @return The positions (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setCategoryLabelPositions(CategoryLabelPositions)
+     */
+    public CategoryLabelPositions getCategoryLabelPositions() {
+<span class="nc" id="L383">        return this.categoryLabelPositions;</span>
+    }
+
+    /**
+     * Sets the category label position specification for the axis and sends an
+     * {@link AxisChangeEvent} to all registered listeners.
+     *
+     * @param positions  the positions (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #getCategoryLabelPositions()
+     */
+    public void setCategoryLabelPositions(CategoryLabelPositions positions) {
+<span class="pc bpc" id="L395" title="1 of 2 branches missed.">        if (positions == null) {</span>
+<span class="nc" id="L396">            throw new IllegalArgumentException(&quot;Null 'positions' argument.&quot;);</span>
+        }
+<span class="fc" id="L398">        this.categoryLabelPositions = positions;</span>
+<span class="fc" id="L399">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="fc" id="L400">    }</span>
+
+    /**
+     * Returns the font for the tick label for the given category.
+     *
+     * @param category  the category (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The font (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setTickLabelFont(Comparable, Font)
+     */
+    public Font getTickLabelFont(Comparable category) {
+<span class="pc bpc" id="L412" title="1 of 2 branches missed.">        if (category == null) {</span>
+<span class="nc" id="L413">            throw new IllegalArgumentException(&quot;Null 'category' argument.&quot;);</span>
+        }
+<span class="fc" id="L415">        Font result = (Font) this.tickLabelFontMap.get(category);</span>
+        // if there is no specific font, use the general one...
+<span class="pc bpc" id="L417" title="1 of 2 branches missed.">        if (result == null) {</span>
+<span class="fc" id="L418">            result = getTickLabelFont();</span>
+        }
+<span class="fc" id="L420">        return result;</span>
+    }
+
+    /**
+     * Sets the font for the tick label for the specified category and sends
+     * an {@link AxisChangeEvent} to all registered listeners.
+     *
+     * @param category  the category (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param font  the font (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @see #getTickLabelFont(Comparable)
+     */
+    public void setTickLabelFont(Comparable category, Font font) {
+<span class="pc bpc" id="L433" title="1 of 2 branches missed.">        if (category == null) {</span>
+<span class="nc" id="L434">            throw new IllegalArgumentException(&quot;Null 'category' argument.&quot;);</span>
+        }
+<span class="fc bfc" id="L436" title="All 2 branches covered.">        if (font == null) {</span>
+<span class="fc" id="L437">            this.tickLabelFontMap.remove(category);</span>
+        }
+        else {
+<span class="fc" id="L440">            this.tickLabelFontMap.put(category, font);</span>
+        }
+<span class="fc" id="L442">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="fc" id="L443">    }</span>
+
+    /**
+     * Returns the paint for the tick label for the given category.
+     *
+     * @param category  the category (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The paint (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setTickLabelPaint(Paint)
+     */
+    public Paint getTickLabelPaint(Comparable category) {
+<span class="pc bpc" id="L455" title="1 of 2 branches missed.">        if (category == null) {</span>
+<span class="nc" id="L456">            throw new IllegalArgumentException(&quot;Null 'category' argument.&quot;);</span>
+        }
+<span class="fc" id="L458">        Paint result = (Paint) this.tickLabelPaintMap.get(category);</span>
+        // if there is no specific paint, use the general one...
+<span class="pc bpc" id="L460" title="1 of 2 branches missed.">        if (result == null) {</span>
+<span class="fc" id="L461">            result = getTickLabelPaint();</span>
+        }
+<span class="fc" id="L463">        return result;</span>
+    }
+
+    /**
+     * Sets the paint for the tick label for the specified category and sends
+     * an {@link AxisChangeEvent} to all registered listeners.
+     *
+     * @param category  the category (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param paint  the paint (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @see #getTickLabelPaint(Comparable)
+     */
+    public void setTickLabelPaint(Comparable category, Paint paint) {
+<span class="pc bpc" id="L476" title="1 of 2 branches missed.">        if (category == null) {</span>
+<span class="nc" id="L477">            throw new IllegalArgumentException(&quot;Null 'category' argument.&quot;);</span>
+        }
+<span class="pc bpc" id="L479" title="1 of 2 branches missed.">        if (paint == null) {</span>
+<span class="nc" id="L480">            this.tickLabelPaintMap.remove(category);</span>
+        }
+        else {
+<span class="fc" id="L483">            this.tickLabelPaintMap.put(category, paint);</span>
+        }
+<span class="fc" id="L485">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="fc" id="L486">    }</span>
+
+    /**
+     * Adds a tooltip to the specified category and sends an
+     * {@link AxisChangeEvent} to all registered listeners.
+     *
+     * @param category  the category (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param tooltip  the tooltip text (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @see #removeCategoryLabelToolTip(Comparable)
+     */
+    public void addCategoryLabelToolTip(Comparable category, String tooltip) {
+<span class="pc bpc" id="L498" title="1 of 2 branches missed.">        if (category == null) {</span>
+<span class="nc" id="L499">            throw new IllegalArgumentException(&quot;Null 'category' argument.&quot;);</span>
+        }
+<span class="fc" id="L501">        this.categoryLabelToolTips.put(category, tooltip);</span>
+<span class="fc" id="L502">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="fc" id="L503">    }</span>
+
+    /**
+     * Returns the tool tip text for the label belonging to the specified
+     * category.
+     *
+     * @param category  the category (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The tool tip text (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #addCategoryLabelToolTip(Comparable, String)
+     * @see #removeCategoryLabelToolTip(Comparable)
+     */
+    public String getCategoryLabelToolTip(Comparable category) {
+<span class="pc bpc" id="L517" title="1 of 2 branches missed.">        if (category == null) {</span>
+<span class="nc" id="L518">            throw new IllegalArgumentException(&quot;Null 'category' argument.&quot;);</span>
+        }
+<span class="fc" id="L520">        return (String) this.categoryLabelToolTips.get(category);</span>
+    }
+
+    /**
+     * Removes the tooltip for the specified category and sends an
+     * {@link AxisChangeEvent} to all registered listeners.
+     *
+     * @param category  the category (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #addCategoryLabelToolTip(Comparable, String)
+     * @see #clearCategoryLabelToolTips()
+     */
+    public void removeCategoryLabelToolTip(Comparable category) {
+<span class="nc bnc" id="L533" title="All 2 branches missed.">        if (category == null) {</span>
+<span class="nc" id="L534">            throw new IllegalArgumentException(&quot;Null 'category' argument.&quot;);</span>
+        }
+<span class="nc" id="L536">        this.categoryLabelToolTips.remove(category);</span>
+<span class="nc" id="L537">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="nc" id="L538">    }</span>
+
+    /**
+     * Clears the category label tooltips and sends an {@link AxisChangeEvent}
+     * to all registered listeners.
+     *
+     * @see #addCategoryLabelToolTip(Comparable, String)
+     * @see #removeCategoryLabelToolTip(Comparable)
+     */
+    public void clearCategoryLabelToolTips() {
+<span class="nc" id="L548">        this.categoryLabelToolTips.clear();</span>
+<span class="nc" id="L549">        notifyListeners(new AxisChangeEvent(this));</span>
+<span class="nc" id="L550">    }</span>
+
+    /**
+     * Returns the Java 2D coordinate for a category.
+     *
+     * @param anchor  the anchor point.
+     * @param category  the category index.
+     * @param categoryCount  the category count.
+     * @param area  the data area.
+     * @param edge  the location of the axis.
+     *
+     * @return The coordinate.
+     */
+    public double getCategoryJava2DCoordinate(CategoryAnchor anchor,
+                                              int category,
+                                              int categoryCount,
+                                              Rectangle2D area,
+                                              RectangleEdge edge) {
+
+<span class="fc" id="L569">        double result = 0.0;</span>
+<span class="pc bpc" id="L570" title="1 of 2 branches missed.">        if (anchor == CategoryAnchor.START) {</span>
+<span class="nc" id="L571">            result = getCategoryStart(category, categoryCount, area, edge);</span>
+        }
+<span class="pc bpc" id="L573" title="1 of 2 branches missed.">        else if (anchor == CategoryAnchor.MIDDLE) {</span>
+<span class="fc" id="L574">            result = getCategoryMiddle(category, categoryCount, area, edge);</span>
+        }
+<span class="nc bnc" id="L576" title="All 2 branches missed.">        else if (anchor == CategoryAnchor.END) {</span>
+<span class="nc" id="L577">            result = getCategoryEnd(category, categoryCount, area, edge);</span>
+        }
+<span class="fc" id="L579">        return result;</span>
+
+    }
+
+    /**
+     * Returns the starting coordinate for the specified category.
+     *
+     * @param category  the category.
+     * @param categoryCount  the number of categories.
+     * @param area  the data area.
+     * @param edge  the axis location.
+     *
+     * @return The coordinate.
+     *
+     * @see #getCategoryMiddle(int, int, Rectangle2D, RectangleEdge)
+     * @see #getCategoryEnd(int, int, Rectangle2D, RectangleEdge)
+     */
+    public double getCategoryStart(int category, int categoryCount,
+                                   Rectangle2D area,
+                                   RectangleEdge edge) {
+
+<span class="fc" id="L600">        double result = 0.0;</span>
+<span class="pc bpc" id="L601" title="1 of 4 branches missed.">        if ((edge == RectangleEdge.TOP) || (edge == RectangleEdge.BOTTOM)) {</span>
+<span class="fc" id="L602">            result = area.getX() + area.getWidth() * getLowerMargin();</span>
+        }
+<span class="pc bpc" id="L604" title="3 of 4 branches missed.">        else if ((edge == RectangleEdge.LEFT)</span>
+                || (edge == RectangleEdge.RIGHT)) {
+<span class="fc" id="L606">            result = area.getMinY() + area.getHeight() * getLowerMargin();</span>
+        }
+
+<span class="fc" id="L609">        double categorySize = calculateCategorySize(categoryCount, area, edge);</span>
+<span class="fc" id="L610">        double categoryGapWidth = calculateCategoryGapSize(categoryCount, area,</span>
+                edge);
+
+<span class="fc" id="L613">        result = result + category * (categorySize + categoryGapWidth);</span>
+<span class="fc" id="L614">        return result;</span>
+
+    }
+
+    /**
+     * Returns the middle coordinate for the specified category.
+     *
+     * @param category  the category.
+     * @param categoryCount  the number of categories.
+     * @param area  the data area.
+     * @param edge  the axis location.
+     *
+     * @return The coordinate.
+     *
+     * @see #getCategoryStart(int, int, Rectangle2D, RectangleEdge)
+     * @see #getCategoryEnd(int, int, Rectangle2D, RectangleEdge)
+     */
+    public double getCategoryMiddle(int category, int categoryCount,
+                                    Rectangle2D area, RectangleEdge edge) {
+
+<span class="pc bpc" id="L634" title="2 of 4 branches missed.">        if (category &lt; 0 || category &gt;= categoryCount) {</span>
+<span class="nc" id="L635">            throw new IllegalArgumentException(&quot;Invalid category index: &quot;</span>
+                    + category);
+        }
+<span class="fc" id="L638">        return getCategoryStart(category, categoryCount, area, edge)</span>
+<span class="fc" id="L639">               + calculateCategorySize(categoryCount, area, edge) / 2;</span>
+
+    }
+
+    /**
+     * Returns the end coordinate for the specified category.
+     *
+     * @param category  the category.
+     * @param categoryCount  the number of categories.
+     * @param area  the data area.
+     * @param edge  the axis location.
+     *
+     * @return The coordinate.
+     *
+     * @see #getCategoryStart(int, int, Rectangle2D, RectangleEdge)
+     * @see #getCategoryMiddle(int, int, Rectangle2D, RectangleEdge)
+     */
+    public double getCategoryEnd(int category, int categoryCount,
+                                 Rectangle2D area, RectangleEdge edge) {
+
+<span class="fc" id="L659">        return getCategoryStart(category, categoryCount, area, edge)</span>
+<span class="fc" id="L660">               + calculateCategorySize(categoryCount, area, edge);</span>
+
+    }
+
+    /**
+     * A convenience method that returns the axis coordinate for the centre of
+     * a category.
+     *
+     * @param category  the category key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param categories  the categories (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param area  the data area (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param edge  the edge along which the axis lies (&lt;code&gt;null&lt;/code&gt; not
+     *     permitted).
+     *
+     * @return The centre coordinate.
+     *
+     * @since 1.0.11
+     *
+     * @see #getCategorySeriesMiddle(Comparable, Comparable, CategoryDataset,
+     *     double, Rectangle2D, RectangleEdge)
+     */
+    public double getCategoryMiddle(Comparable category,
+            List categories, Rectangle2D area, RectangleEdge edge) {
+<span class="pc bpc" id="L683" title="1 of 2 branches missed.">        if (categories == null) {</span>
+<span class="nc" id="L684">            throw new IllegalArgumentException(&quot;Null 'categories' argument.&quot;);</span>
+        }
+<span class="fc" id="L686">        int categoryIndex = categories.indexOf(category);</span>
+<span class="fc" id="L687">        int categoryCount = categories.size();</span>
+<span class="fc" id="L688">        return getCategoryMiddle(categoryIndex, categoryCount, area, edge);</span>
+    }
+
+    /**
+     * Returns the middle coordinate (in Java2D space) for a series within a
+     * category.
+     *
+     * @param category  the category (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param seriesKey  the series key (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param dataset  the dataset (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param itemMargin  the item margin (0.0 &lt;= itemMargin &lt; 1.0);
+     * @param area  the area (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param edge  the edge (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The coordinate in Java2D space.
+     *
+     * @since 1.0.7
+     */
+    public double getCategorySeriesMiddle(Comparable category,
+            Comparable seriesKey, CategoryDataset dataset, double itemMargin,
+            Rectangle2D area, RectangleEdge edge) {
+
+<span class="fc" id="L710">        int categoryIndex = dataset.getColumnIndex(category);</span>
+<span class="fc" id="L711">        int categoryCount = dataset.getColumnCount();</span>
+<span class="fc" id="L712">        int seriesIndex = dataset.getRowIndex(seriesKey);</span>
+<span class="fc" id="L713">        int seriesCount = dataset.getRowCount();</span>
+<span class="fc" id="L714">        double start = getCategoryStart(categoryIndex, categoryCount, area,</span>
+                edge);
+<span class="fc" id="L716">        double end = getCategoryEnd(categoryIndex, categoryCount, area, edge);</span>
+<span class="fc" id="L717">        double width = end - start;</span>
+<span class="pc bpc" id="L718" title="1 of 2 branches missed.">        if (seriesCount == 1) {</span>
+<span class="nc" id="L719">            return start + width / 2.0;</span>
+        }
+        else {
+<span class="fc" id="L722">            double gap = (width * itemMargin) / (seriesCount - 1);</span>
+<span class="fc" id="L723">            double ww = (width * (1 - itemMargin)) / seriesCount;</span>
+<span class="fc" id="L724">            return start + (seriesIndex * (ww + gap)) + ww / 2.0;</span>
+        }
+    }
+
+    /**
+     * Returns the middle coordinate (in Java2D space) for a series within a
+     * category.
+     *
+     * @param categoryIndex  the category index.
+     * @param categoryCount  the category count.
+     * @param seriesIndex the series index.
+     * @param seriesCount the series count.
+     * @param itemMargin  the item margin (0.0 &lt;= itemMargin &lt; 1.0);
+     * @param area  the area (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param edge  the edge (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The coordinate in Java2D space.
+     *
+     * @since 1.0.13
+     */
+    public double getCategorySeriesMiddle(int categoryIndex, int categoryCount,
+            int seriesIndex, int seriesCount, double itemMargin,
+            Rectangle2D area, RectangleEdge edge) {
+
+<span class="nc" id="L748">        double start = getCategoryStart(categoryIndex, categoryCount, area,</span>
+                edge);
+<span class="nc" id="L750">        double end = getCategoryEnd(categoryIndex, categoryCount, area, edge);</span>
+<span class="nc" id="L751">        double width = end - start;</span>
+<span class="nc bnc" id="L752" title="All 2 branches missed.">        if (seriesCount == 1) {</span>
+<span class="nc" id="L753">            return start + width / 2.0;</span>
+        }
+        else {
+<span class="nc" id="L756">            double gap = (width * itemMargin) / (seriesCount - 1);</span>
+<span class="nc" id="L757">            double ww = (width * (1 - itemMargin)) / seriesCount;</span>
+<span class="nc" id="L758">            return start + (seriesIndex * (ww + gap)) + ww / 2.0;</span>
+        }
+    }
+
+    /**
+     * Calculates the size (width or height, depending on the location of the
+     * axis) of a category.
+     *
+     * @param categoryCount  the number of categories.
+     * @param area  the area within which the categories will be drawn.
+     * @param edge  the axis location.
+     *
+     * @return The category size.
+     */
+    protected double calculateCategorySize(int categoryCount, Rectangle2D area,
+                                           RectangleEdge edge) {
+
+<span class="fc" id="L775">        double result = 0.0;</span>
+<span class="fc" id="L776">        double available = 0.0;</span>
+
+<span class="pc bpc" id="L778" title="1 of 4 branches missed.">        if ((edge == RectangleEdge.TOP) || (edge == RectangleEdge.BOTTOM)) {</span>
+<span class="fc" id="L779">            available = area.getWidth();</span>
+        }
+<span class="pc bpc" id="L781" title="3 of 4 branches missed.">        else if ((edge == RectangleEdge.LEFT)</span>
+                || (edge == RectangleEdge.RIGHT)) {
+<span class="fc" id="L783">            available = area.getHeight();</span>
+        }
+<span class="fc bfc" id="L785" title="All 2 branches covered.">        if (categoryCount &gt; 1) {</span>
+<span class="fc" id="L786">            result = available * (1 - getLowerMargin() - getUpperMargin()</span>
+<span class="fc" id="L787">                     - getCategoryMargin());</span>
+<span class="fc" id="L788">            result = result / categoryCount;</span>
+        }
+        else {
+<span class="fc" id="L791">            result = available * (1 - getLowerMargin() - getUpperMargin());</span>
+        }
+<span class="fc" id="L793">        return result;</span>
+
+    }
+
+    /**
+     * Calculates the size (width or height, depending on the location of the
+     * axis) of a category gap.
+     *
+     * @param categoryCount  the number of categories.
+     * @param area  the area within which the categories will be drawn.
+     * @param edge  the axis location.
+     *
+     * @return The category gap width.
+     */
+    protected double calculateCategoryGapSize(int categoryCount,
+                                              Rectangle2D area,
+                                              RectangleEdge edge) {
+
+<span class="fc" id="L811">        double result = 0.0;</span>
+<span class="fc" id="L812">        double available = 0.0;</span>
+
+<span class="pc bpc" id="L814" title="1 of 4 branches missed.">        if ((edge == RectangleEdge.TOP) || (edge == RectangleEdge.BOTTOM)) {</span>
+<span class="fc" id="L815">            available = area.getWidth();</span>
+        }
+<span class="pc bpc" id="L817" title="3 of 4 branches missed.">        else if ((edge == RectangleEdge.LEFT)</span>
+                || (edge == RectangleEdge.RIGHT)) {
+<span class="fc" id="L819">            available = area.getHeight();</span>
+        }
+
+<span class="fc bfc" id="L822" title="All 2 branches covered.">        if (categoryCount &gt; 1) {</span>
+<span class="fc" id="L823">            result = available * getCategoryMargin() / (categoryCount - 1);</span>
+        }
+
+<span class="fc" id="L826">        return result;</span>
+
+    }
+
+    /**
+     * Estimates the space required for the axis, given a specific drawing area.
+     *
+     * @param g2  the graphics device (used to obtain font information).
+     * @param plot  the plot that the axis belongs to.
+     * @param plotArea  the area within which the axis should be drawn.
+     * @param edge  the axis location (top or bottom).
+     * @param space  the space already reserved.
+     *
+     * @return The space required to draw the axis.
+     */
+    public AxisSpace reserveSpace(Graphics2D g2, Plot plot,
+                                  Rectangle2D plotArea,
+                                  RectangleEdge edge, AxisSpace space) {
+
+        // create a new space object if one wasn't supplied...
+<span class="pc bpc" id="L846" title="1 of 2 branches missed.">        if (space == null) {</span>
+<span class="nc" id="L847">            space = new AxisSpace();</span>
+        }
+
+        // if the axis is not visible, no additional space is required...
+<span class="pc bpc" id="L851" title="1 of 2 branches missed.">        if (!isVisible()) {</span>
+<span class="nc" id="L852">            return space;</span>
+        }
+
+        // calculate the max size of the tick labels (if visible)...
+<span class="fc" id="L856">        double tickLabelHeight = 0.0;</span>
+<span class="fc" id="L857">        double tickLabelWidth = 0.0;</span>
+<span class="pc bpc" id="L858" title="1 of 2 branches missed.">        if (isTickLabelsVisible()) {</span>
+<span class="fc" id="L859">            g2.setFont(getTickLabelFont());</span>
+<span class="fc" id="L860">            AxisState state = new AxisState();</span>
+            // we call refresh ticks just to get the maximum width or height
+<span class="fc" id="L862">            refreshTicks(g2, state, plotArea, edge);</span>
+<span class="pc bpc" id="L863" title="1 of 2 branches missed.">            if (edge == RectangleEdge.TOP) {</span>
+<span class="nc" id="L864">                tickLabelHeight = state.getMax();</span>
+            }
+<span class="fc bfc" id="L866" title="All 2 branches covered.">            else if (edge == RectangleEdge.BOTTOM) {</span>
+<span class="fc" id="L867">                tickLabelHeight = state.getMax();</span>
+            }
+<span class="pc bpc" id="L869" title="1 of 2 branches missed.">            else if (edge == RectangleEdge.LEFT) {</span>
+<span class="fc" id="L870">                tickLabelWidth = state.getMax();</span>
+            }
+<span class="nc bnc" id="L872" title="All 2 branches missed.">            else if (edge == RectangleEdge.RIGHT) {</span>
+<span class="nc" id="L873">                tickLabelWidth = state.getMax();</span>
+            }
+        }
+
+        // get the axis label size and update the space object...
+<span class="fc" id="L878">        Rectangle2D labelEnclosure = getLabelEnclosure(g2, edge);</span>
+<span class="fc" id="L879">        double labelHeight = 0.0;</span>
+<span class="fc" id="L880">        double labelWidth = 0.0;</span>
+<span class="fc bfc" id="L881" title="All 2 branches covered.">        if (RectangleEdge.isTopOrBottom(edge)) {</span>
+<span class="fc" id="L882">            labelHeight = labelEnclosure.getHeight();</span>
+<span class="fc" id="L883">            space.add(labelHeight + tickLabelHeight</span>
+                    + this.categoryLabelPositionOffset, edge);
+        }
+<span class="pc bpc" id="L886" title="1 of 2 branches missed.">        else if (RectangleEdge.isLeftOrRight(edge)) {</span>
+<span class="fc" id="L887">            labelWidth = labelEnclosure.getWidth();</span>
+<span class="fc" id="L888">            space.add(labelWidth + tickLabelWidth</span>
+                    + this.categoryLabelPositionOffset, edge);
+        }
+<span class="fc" id="L891">        return space;</span>
+
+    }
+
+    /**
+     * Configures the axis against the current plot.
+     */
+    public void configure() {
+        // nothing required
+<span class="fc" id="L900">    }</span>
+
+    /**
+     * Draws the axis on a Java 2D graphics device (such as the screen or a
+     * printer).
+     *
+     * @param g2  the graphics device (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param cursor  the cursor location.
+     * @param plotArea  the area within which the axis should be drawn
+     *                  (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param dataArea  the area within which the plot is being drawn
+     *                  (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param edge  the location of the axis (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param plotState  collects information about the plot
+     *                   (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return The axis state (never &lt;code&gt;null&lt;/code&gt;).
+     */
+    public AxisState draw(Graphics2D g2, double cursor, Rectangle2D plotArea,
+            Rectangle2D dataArea, RectangleEdge edge,
+            PlotRenderingInfo plotState) {
+
+        // if the axis is not visible, don't draw it...
+<span class="pc bpc" id="L923" title="1 of 2 branches missed.">        if (!isVisible()) {</span>
+<span class="nc" id="L924">            return new AxisState(cursor);</span>
+        }
+
+<span class="pc bpc" id="L927" title="1 of 2 branches missed.">        if (isAxisLineVisible()) {</span>
+<span class="fc" id="L928">            drawAxisLine(g2, cursor, dataArea, edge);</span>
+        }
+<span class="fc" id="L930">        AxisState state = new AxisState(cursor);</span>
+<span class="pc bpc" id="L931" title="1 of 2 branches missed.">        if (isTickMarksVisible()) {</span>
+<span class="fc" id="L932">            drawTickMarks(g2, cursor, dataArea, edge, state);</span>
+        }
+
+<span class="fc" id="L935">        createAndAddEntity(cursor, state, dataArea, edge, plotState);</span>
+
+        // draw the category labels and axis label
+<span class="fc" id="L938">        state = drawCategoryLabels(g2, plotArea, dataArea, edge, state,</span>
+                plotState);
+<span class="fc" id="L940">        state = drawLabel(getLabel(), g2, plotArea, dataArea, edge, state);</span>
+<span class="fc" id="L941">        return state;</span>
+
+    }
+
+    /**
+     * Draws the category labels and returns the updated axis state.
+     *
+     * @param g2  the graphics device (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param dataArea  the area inside the axes (&lt;code&gt;null&lt;/code&gt; not
+     *                  permitted).
+     * @param edge  the axis location (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param state  the axis state (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param plotState  collects information about the plot (&lt;code&gt;null&lt;/code&gt;
+     *                   permitted).
+     *
+     * @return The updated axis state (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @deprecated Use {@link #drawCategoryLabels(Graphics2D, Rectangle2D,
+     *     Rectangle2D, RectangleEdge, AxisState, PlotRenderingInfo)}.
+     */
+    protected AxisState drawCategoryLabels(Graphics2D g2,
+                                           Rectangle2D dataArea,
+                                           RectangleEdge edge,
+                                           AxisState state,
+                                           PlotRenderingInfo plotState) {
+
+        // this method is deprecated because we really need the plotArea
+        // when drawing the labels - see bug 1277726
+<span class="nc" id="L969">        return drawCategoryLabels(g2, dataArea, dataArea, edge, state,</span>
+                plotState);
+    }
+
+    /**
+     * Draws the category labels and returns the updated axis state.
+     *
+     * @param g2  the graphics device (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param plotArea  the plot area (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param dataArea  the area inside the axes (&lt;code&gt;null&lt;/code&gt; not
+     *                  permitted).
+     * @param edge  the axis location (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param state  the axis state (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param plotState  collects information about the plot (&lt;code&gt;null&lt;/code&gt;
+     *                   permitted).
+     *
+     * @return The updated axis state (never &lt;code&gt;null&lt;/code&gt;).
+     */
+    protected AxisState drawCategoryLabels(Graphics2D g2,
+                                           Rectangle2D plotArea,
+                                           Rectangle2D dataArea,
+                                           RectangleEdge edge,
+                                           AxisState state,
+                                           PlotRenderingInfo plotState) {
+
+<span class="pc bpc" id="L994" title="1 of 2 branches missed.">        if (state == null) {</span>
+<span class="nc" id="L995">            throw new IllegalArgumentException(&quot;Null 'state' argument.&quot;);</span>
+        }
+
+<span class="pc bpc" id="L998" title="1 of 2 branches missed.">        if (isTickLabelsVisible()) {</span>
+<span class="fc" id="L999">            List ticks = refreshTicks(g2, state, plotArea, edge);</span>
+<span class="fc" id="L1000">            state.setTicks(ticks);</span>
+
+<span class="fc" id="L1002">            int categoryIndex = 0;</span>
+<span class="fc" id="L1003">            Iterator iterator = ticks.iterator();</span>
+<span class="fc bfc" id="L1004" title="All 2 branches covered.">            while (iterator.hasNext()) {</span>
+
+<span class="fc" id="L1006">                CategoryTick tick = (CategoryTick) iterator.next();</span>
+<span class="fc" id="L1007">                g2.setFont(getTickLabelFont(tick.getCategory()));</span>
+<span class="fc" id="L1008">                g2.setPaint(getTickLabelPaint(tick.getCategory()));</span>
+
+<span class="fc" id="L1010">                CategoryLabelPosition position</span>
+<span class="fc" id="L1011">                        = this.categoryLabelPositions.getLabelPosition(edge);</span>
+<span class="fc" id="L1012">                double x0 = 0.0;</span>
+<span class="fc" id="L1013">                double x1 = 0.0;</span>
+<span class="fc" id="L1014">                double y0 = 0.0;</span>
+<span class="fc" id="L1015">                double y1 = 0.0;</span>
+<span class="pc bpc" id="L1016" title="1 of 2 branches missed.">                if (edge == RectangleEdge.TOP) {</span>
+<span class="nc" id="L1017">                    x0 = getCategoryStart(categoryIndex, ticks.size(),</span>
+                            dataArea, edge);
+<span class="nc" id="L1019">                    x1 = getCategoryEnd(categoryIndex, ticks.size(), dataArea,</span>
+                            edge);
+<span class="nc" id="L1021">                    y1 = state.getCursor() - this.categoryLabelPositionOffset;</span>
+<span class="nc" id="L1022">                    y0 = y1 - state.getMax();</span>
+                }
+<span class="fc bfc" id="L1024" title="All 2 branches covered.">                else if (edge == RectangleEdge.BOTTOM) {</span>
+<span class="fc" id="L1025">                    x0 = getCategoryStart(categoryIndex, ticks.size(),</span>
+                            dataArea, edge);
+<span class="fc" id="L1027">                    x1 = getCategoryEnd(categoryIndex, ticks.size(), dataArea,</span>
+                            edge);
+<span class="fc" id="L1029">                    y0 = state.getCursor() + this.categoryLabelPositionOffset;</span>
+<span class="fc" id="L1030">                    y1 = y0 + state.getMax();</span>
+                }
+<span class="pc bpc" id="L1032" title="1 of 2 branches missed.">                else if (edge == RectangleEdge.LEFT) {</span>
+<span class="fc" id="L1033">                    y0 = getCategoryStart(categoryIndex, ticks.size(),</span>
+                            dataArea, edge);
+<span class="fc" id="L1035">                    y1 = getCategoryEnd(categoryIndex, ticks.size(), dataArea,</span>
+                            edge);
+<span class="fc" id="L1037">                    x1 = state.getCursor() - this.categoryLabelPositionOffset;</span>
+<span class="fc" id="L1038">                    x0 = x1 - state.getMax();</span>
+                }
+<span class="nc bnc" id="L1040" title="All 2 branches missed.">                else if (edge == RectangleEdge.RIGHT) {</span>
+<span class="nc" id="L1041">                    y0 = getCategoryStart(categoryIndex, ticks.size(),</span>
+                            dataArea, edge);
+<span class="nc" id="L1043">                    y1 = getCategoryEnd(categoryIndex, ticks.size(), dataArea,</span>
+                            edge);
+<span class="nc" id="L1045">                    x0 = state.getCursor() + this.categoryLabelPositionOffset;</span>
+<span class="nc" id="L1046">                    x1 = x0 - state.getMax();</span>
+                }
+<span class="fc" id="L1048">                Rectangle2D area = new Rectangle2D.Double(x0, y0, (x1 - x0),</span>
+                        (y1 - y0));
+<span class="fc" id="L1050">                Point2D anchorPoint = RectangleAnchor.coordinates(area,</span>
+<span class="fc" id="L1051">                        position.getCategoryAnchor());</span>
+<span class="fc" id="L1052">                TextBlock block = tick.getLabel();</span>
+<span class="fc" id="L1053">                block.draw(g2, (float) anchorPoint.getX(),</span>
+<span class="fc" id="L1054">                        (float) anchorPoint.getY(), position.getLabelAnchor(),</span>
+<span class="fc" id="L1055">                        (float) anchorPoint.getX(), (float) anchorPoint.getY(),</span>
+<span class="fc" id="L1056">                        position.getAngle());</span>
+<span class="fc" id="L1057">                Shape bounds = block.calculateBounds(g2,</span>
+<span class="fc" id="L1058">                        (float) anchorPoint.getX(), (float) anchorPoint.getY(),</span>
+<span class="fc" id="L1059">                        position.getLabelAnchor(), (float) anchorPoint.getX(),</span>
+<span class="fc" id="L1060">                        (float) anchorPoint.getY(), position.getAngle());</span>
+<span class="fc bfc" id="L1061" title="All 4 branches covered.">                if (plotState != null &amp;&amp; plotState.getOwner() != null) {</span>
+<span class="fc" id="L1062">                    EntityCollection entities</span>
+<span class="fc" id="L1063">                            = plotState.getOwner().getEntityCollection();</span>
+<span class="pc bpc" id="L1064" title="1 of 2 branches missed.">                    if (entities != null) {</span>
+<span class="fc" id="L1065">                        String tooltip = getCategoryLabelToolTip(</span>
+<span class="fc" id="L1066">                                tick.getCategory());</span>
+<span class="fc" id="L1067">                        entities.add(new CategoryLabelEntity(tick.getCategory(),</span>
+                                bounds, tooltip, null));
+                    }
+                }
+<span class="fc" id="L1071">                categoryIndex++;</span>
+<span class="fc" id="L1072">            }</span>
+
+<span class="pc bpc" id="L1074" title="1 of 2 branches missed.">            if (edge.equals(RectangleEdge.TOP)) {</span>
+<span class="nc" id="L1075">                double h = state.getMax() + this.categoryLabelPositionOffset;</span>
+<span class="nc" id="L1076">                state.cursorUp(h);</span>
+<span class="nc" id="L1077">            }</span>
+<span class="fc bfc" id="L1078" title="All 2 branches covered.">            else if (edge.equals(RectangleEdge.BOTTOM)) {</span>
+<span class="fc" id="L1079">                double h = state.getMax() + this.categoryLabelPositionOffset;</span>
+<span class="fc" id="L1080">                state.cursorDown(h);</span>
+<span class="fc" id="L1081">            }</span>
+<span class="pc bpc" id="L1082" title="1 of 2 branches missed.">            else if (edge == RectangleEdge.LEFT) {</span>
+<span class="fc" id="L1083">                double w = state.getMax() + this.categoryLabelPositionOffset;</span>
+<span class="fc" id="L1084">                state.cursorLeft(w);</span>
+<span class="fc" id="L1085">            }</span>
+<span class="nc bnc" id="L1086" title="All 2 branches missed.">            else if (edge == RectangleEdge.RIGHT) {</span>
+<span class="nc" id="L1087">                double w = state.getMax() + this.categoryLabelPositionOffset;</span>
+<span class="nc" id="L1088">                state.cursorRight(w);</span>
+            }
+        }
+<span class="fc" id="L1091">        return state;</span>
+    }
+
+    /**
+     * Creates a temporary list of ticks that can be used when drawing the axis.
+     *
+     * @param g2  the graphics device (used to get font measurements).
+     * @param state  the axis state.
+     * @param dataArea  the area inside the axes.
+     * @param edge  the location of the axis.
+     *
+     * @return A list of ticks.
+     */
+    public List refreshTicks(Graphics2D g2,
+                             AxisState state,
+                             Rectangle2D dataArea,
+                             RectangleEdge edge) {
+
+<span class="fc" id="L1109">        List ticks = new java.util.ArrayList();</span>
+
+        // sanity check for data area...
+<span class="pc bpc" id="L1112" title="2 of 4 branches missed.">        if (dataArea.getHeight() &lt;= 0.0 || dataArea.getWidth() &lt; 0.0) {</span>
+<span class="nc" id="L1113">            return ticks;</span>
+        }
+
+<span class="fc" id="L1116">        CategoryPlot plot = (CategoryPlot) getPlot();</span>
+<span class="fc" id="L1117">        List categories = plot.getCategoriesForAxis(this);</span>
+<span class="fc" id="L1118">        double max = 0.0;</span>
+
+<span class="pc bpc" id="L1120" title="1 of 2 branches missed.">        if (categories != null) {</span>
+<span class="fc" id="L1121">            CategoryLabelPosition position</span>
+<span class="fc" id="L1122">                    = this.categoryLabelPositions.getLabelPosition(edge);</span>
+<span class="fc" id="L1123">            float r = this.maximumCategoryLabelWidthRatio;</span>
+<span class="pc bpc" id="L1124" title="1 of 2 branches missed.">            if (r &lt;= 0.0) {</span>
+<span class="fc" id="L1125">                r = position.getWidthRatio();</span>
+            }
+
+<span class="fc" id="L1128">            float l = 0.0f;</span>
+<span class="fc bfc" id="L1129" title="All 2 branches covered.">            if (position.getWidthType() == CategoryLabelWidthType.CATEGORY) {</span>
+<span class="fc" id="L1130">                l = (float) calculateCategorySize(categories.size(), dataArea,</span>
+                        edge);
+            }
+            else {
+<span class="pc bpc" id="L1134" title="1 of 2 branches missed.">                if (RectangleEdge.isLeftOrRight(edge)) {</span>
+<span class="fc" id="L1135">                    l = (float) dataArea.getWidth();</span>
+                }
+                else {
+<span class="nc" id="L1138">                    l = (float) dataArea.getHeight();</span>
+                }
+            }
+<span class="fc" id="L1141">            int categoryIndex = 0;</span>
+<span class="fc" id="L1142">            Iterator iterator = categories.iterator();</span>
+<span class="fc bfc" id="L1143" title="All 2 branches covered.">            while (iterator.hasNext()) {</span>
+<span class="fc" id="L1144">                Comparable category = (Comparable) iterator.next();</span>
+<span class="fc" id="L1145">                g2.setFont(getTickLabelFont(category));</span>
+<span class="fc" id="L1146">                TextBlock label = createLabel(category, l * r, edge, g2);</span>
+<span class="pc bpc" id="L1147" title="1 of 4 branches missed.">                if (edge == RectangleEdge.TOP || edge == RectangleEdge.BOTTOM) {</span>
+<span class="fc" id="L1148">                    max = Math.max(max, calculateTextBlockHeight(label,</span>
+                            position, g2));
+                }
+<span class="pc bpc" id="L1151" title="3 of 4 branches missed.">                else if (edge == RectangleEdge.LEFT</span>
+                        || edge == RectangleEdge.RIGHT) {
+<span class="fc" id="L1153">                    max = Math.max(max, calculateTextBlockWidth(label,</span>
+                            position, g2));
+                }
+<span class="fc" id="L1156">                Tick tick = new CategoryTick(category, label,</span>
+<span class="fc" id="L1157">                        position.getLabelAnchor(),</span>
+<span class="fc" id="L1158">                        position.getRotationAnchor(), position.getAngle());</span>
+<span class="fc" id="L1159">                ticks.add(tick);</span>
+<span class="fc" id="L1160">                categoryIndex = categoryIndex + 1;</span>
+<span class="fc" id="L1161">            }</span>
+        }
+<span class="fc" id="L1163">        state.setMax(max);</span>
+<span class="fc" id="L1164">        return ticks;</span>
+
+    }
+
+    /**
+     * Draws the tick marks.
+     *
+     * @since 1.0.13
+     */
+    public void drawTickMarks(Graphics2D g2, double cursor,
+            Rectangle2D dataArea, RectangleEdge edge, AxisState state) {
+
+<span class="fc" id="L1176">        Plot p = getPlot();</span>
+<span class="pc bpc" id="L1177" title="1 of 2 branches missed.">        if (p == null) {</span>
+<span class="nc" id="L1178">            return;</span>
+        }
+<span class="fc" id="L1180">        CategoryPlot plot = (CategoryPlot) p;</span>
+<span class="fc" id="L1181">        double il = getTickMarkInsideLength();</span>
+<span class="fc" id="L1182">        double ol = getTickMarkOutsideLength();</span>
+<span class="fc" id="L1183">        Line2D line = new Line2D.Double();</span>
+<span class="fc" id="L1184">        List categories = plot.getCategoriesForAxis(this);</span>
+<span class="fc" id="L1185">        g2.setPaint(getTickMarkPaint());</span>
+<span class="fc" id="L1186">        g2.setStroke(getTickMarkStroke());</span>
+<span class="pc bpc" id="L1187" title="1 of 2 branches missed.">        if (edge.equals(RectangleEdge.TOP)) {</span>
+<span class="nc" id="L1188">            Iterator iterator = categories.iterator();</span>
+<span class="nc bnc" id="L1189" title="All 2 branches missed.">            while (iterator.hasNext()) {</span>
+<span class="nc" id="L1190">                Comparable key = (Comparable) iterator.next();</span>
+<span class="nc" id="L1191">                double x = getCategoryMiddle(key, categories, dataArea, edge);</span>
+<span class="nc" id="L1192">                line.setLine(x, cursor, x, cursor + il);</span>
+<span class="nc" id="L1193">                g2.draw(line);</span>
+<span class="nc" id="L1194">                line.setLine(x, cursor, x, cursor - ol);</span>
+<span class="nc" id="L1195">                g2.draw(line);</span>
+<span class="nc" id="L1196">            }</span>
+<span class="nc" id="L1197">            state.cursorUp(ol);</span>
+<span class="nc" id="L1198">        }</span>
+<span class="fc bfc" id="L1199" title="All 2 branches covered.">        else if (edge.equals(RectangleEdge.BOTTOM)) {</span>
+<span class="fc" id="L1200">            Iterator iterator = categories.iterator();</span>
+<span class="fc bfc" id="L1201" title="All 2 branches covered.">            while (iterator.hasNext()) {</span>
+<span class="fc" id="L1202">                Comparable key = (Comparable) iterator.next();</span>
+<span class="fc" id="L1203">                double x = getCategoryMiddle(key, categories, dataArea, edge);</span>
+<span class="fc" id="L1204">                line.setLine(x, cursor, x, cursor - il);</span>
+<span class="fc" id="L1205">                g2.draw(line);</span>
+<span class="fc" id="L1206">                line.setLine(x, cursor, x, cursor + ol);</span>
+<span class="fc" id="L1207">                g2.draw(line);</span>
+<span class="fc" id="L1208">            }</span>
+<span class="fc" id="L1209">            state.cursorDown(ol);</span>
+<span class="fc" id="L1210">        }</span>
+<span class="pc bpc" id="L1211" title="1 of 2 branches missed.">        else if (edge.equals(RectangleEdge.LEFT)) {</span>
+<span class="fc" id="L1212">            Iterator iterator = categories.iterator();</span>
+<span class="fc bfc" id="L1213" title="All 2 branches covered.">            while (iterator.hasNext()) {</span>
+<span class="fc" id="L1214">                Comparable key = (Comparable) iterator.next();</span>
+<span class="fc" id="L1215">                double y = getCategoryMiddle(key, categories, dataArea, edge);</span>
+<span class="fc" id="L1216">                line.setLine(cursor, y, cursor + il, y);</span>
+<span class="fc" id="L1217">                g2.draw(line);</span>
+<span class="fc" id="L1218">                line.setLine(cursor, y, cursor - ol, y);</span>
+<span class="fc" id="L1219">                g2.draw(line);</span>
+<span class="fc" id="L1220">            }</span>
+<span class="fc" id="L1221">            state.cursorLeft(ol);</span>
+<span class="fc" id="L1222">        }</span>
+<span class="nc bnc" id="L1223" title="All 2 branches missed.">        else if (edge.equals(RectangleEdge.RIGHT)) {</span>
+<span class="nc" id="L1224">            Iterator iterator = categories.iterator();</span>
+<span class="nc bnc" id="L1225" title="All 2 branches missed.">            while (iterator.hasNext()) {</span>
+<span class="nc" id="L1226">                Comparable key = (Comparable) iterator.next();</span>
+<span class="nc" id="L1227">                double y = getCategoryMiddle(key, categories, dataArea, edge);</span>
+<span class="nc" id="L1228">                line.setLine(cursor, y, cursor - il, y);</span>
+<span class="nc" id="L1229">                g2.draw(line);</span>
+<span class="nc" id="L1230">                line.setLine(cursor, y, cursor + ol, y);</span>
+<span class="nc" id="L1231">                g2.draw(line);</span>
+<span class="nc" id="L1232">            }</span>
+<span class="nc" id="L1233">            state.cursorRight(ol);</span>
+        }
+<span class="fc" id="L1235">    }</span>
+
+    /**
+     * Creates a label.
+     *
+     * @param category  the category.
+     * @param width  the available width.
+     * @param edge  the edge on which the axis appears.
+     * @param g2  the graphics device.
+     *
+     * @return A label.
+     */
+    protected TextBlock createLabel(Comparable category, float width,
+                                    RectangleEdge edge, Graphics2D g2) {
+<span class="fc" id="L1249">        TextBlock label = TextUtilities.createTextBlock(category.toString(),</span>
+<span class="fc" id="L1250">                getTickLabelFont(category), getTickLabelPaint(category), width,</span>
+                this.maximumCategoryLabelLines, new G2TextMeasurer(g2));
+<span class="fc" id="L1252">        return label;</span>
+    }
+
+    /**
+     * A utility method for determining the width of a text block.
+     *
+     * @param block  the text block.
+     * @param position  the position.
+     * @param g2  the graphics device.
+     *
+     * @return The width.
+     */
+    protected double calculateTextBlockWidth(TextBlock block,
+            CategoryLabelPosition position, Graphics2D g2) {
+
+<span class="fc" id="L1267">        RectangleInsets insets = getTickLabelInsets();</span>
+<span class="fc" id="L1268">        Size2D size = block.calculateDimensions(g2);</span>
+<span class="fc" id="L1269">        Rectangle2D box = new Rectangle2D.Double(0.0, 0.0, size.getWidth(),</span>
+<span class="fc" id="L1270">                size.getHeight());</span>
+<span class="fc" id="L1271">        Shape rotatedBox = ShapeUtilities.rotateShape(box, position.getAngle(),</span>
+                0.0f, 0.0f);
+<span class="fc" id="L1273">        double w = rotatedBox.getBounds2D().getWidth() + insets.getLeft()</span>
+<span class="fc" id="L1274">                + insets.getRight();</span>
+<span class="fc" id="L1275">        return w;</span>
+
+    }
+
+    /**
+     * A utility method for determining the height of a text block.
+     *
+     * @param block  the text block.
+     * @param position  the label position.
+     * @param g2  the graphics device.
+     *
+     * @return The height.
+     */
+    protected double calculateTextBlockHeight(TextBlock block,
+                                              CategoryLabelPosition position,
+                                              Graphics2D g2) {
+
+<span class="fc" id="L1292">        RectangleInsets insets = getTickLabelInsets();</span>
+<span class="fc" id="L1293">        Size2D size = block.calculateDimensions(g2);</span>
+<span class="fc" id="L1294">        Rectangle2D box = new Rectangle2D.Double(0.0, 0.0, size.getWidth(),</span>
+<span class="fc" id="L1295">                size.getHeight());</span>
+<span class="fc" id="L1296">        Shape rotatedBox = ShapeUtilities.rotateShape(box, position.getAngle(),</span>
+                0.0f, 0.0f);
+<span class="fc" id="L1298">        double h = rotatedBox.getBounds2D().getHeight()</span>
+<span class="fc" id="L1299">                   + insets.getTop() + insets.getBottom();</span>
+<span class="fc" id="L1300">        return h;</span>
+
+    }
+
+    /**
+     * Creates a clone of the axis.
+     *
+     * @return A clone.
+     *
+     * @throws CloneNotSupportedException if some component of the axis does
+     *         not support cloning.
+     */
+    public Object clone() throws CloneNotSupportedException {
+<span class="fc" id="L1313">        CategoryAxis clone = (CategoryAxis) super.clone();</span>
+<span class="fc" id="L1314">        clone.tickLabelFontMap = new HashMap(this.tickLabelFontMap);</span>
+<span class="fc" id="L1315">        clone.tickLabelPaintMap = new HashMap(this.tickLabelPaintMap);</span>
+<span class="fc" id="L1316">        clone.categoryLabelToolTips = new HashMap(this.categoryLabelToolTips);</span>
+<span class="fc" id="L1317">        return clone;</span>
+    }
+
+    /**
+     * Tests this axis for equality with an arbitrary object.
+     *
+     * @param obj  the object (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    public boolean equals(Object obj) {
+<span class="fc bfc" id="L1328" title="All 2 branches covered.">        if (obj == this) {</span>
+<span class="fc" id="L1329">            return true;</span>
+        }
+<span class="fc bfc" id="L1331" title="All 2 branches covered.">        if (!(obj instanceof CategoryAxis)) {</span>
+<span class="fc" id="L1332">            return false;</span>
+        }
+<span class="fc bfc" id="L1334" title="All 2 branches covered.">        if (!super.equals(obj)) {</span>
+<span class="fc" id="L1335">            return false;</span>
+        }
+<span class="fc" id="L1337">        CategoryAxis that = (CategoryAxis) obj;</span>
+<span class="fc bfc" id="L1338" title="All 2 branches covered.">        if (that.lowerMargin != this.lowerMargin) {</span>
+<span class="fc" id="L1339">            return false;</span>
+        }
+<span class="fc bfc" id="L1341" title="All 2 branches covered.">        if (that.upperMargin != this.upperMargin) {</span>
+<span class="fc" id="L1342">            return false;</span>
+        }
+<span class="fc bfc" id="L1344" title="All 2 branches covered.">        if (that.categoryMargin != this.categoryMargin) {</span>
+<span class="fc" id="L1345">            return false;</span>
+        }
+<span class="fc bfc" id="L1347" title="All 2 branches covered.">        if (that.maximumCategoryLabelWidthRatio</span>
+                != this.maximumCategoryLabelWidthRatio) {
+<span class="fc" id="L1349">            return false;</span>
+        }
+<span class="fc bfc" id="L1351" title="All 2 branches covered.">        if (that.categoryLabelPositionOffset</span>
+                != this.categoryLabelPositionOffset) {
+<span class="fc" id="L1353">            return false;</span>
+        }
+<span class="fc bfc" id="L1355" title="All 2 branches covered.">        if (!ObjectUtilities.equal(that.categoryLabelPositions,</span>
+                this.categoryLabelPositions)) {
+<span class="fc" id="L1357">            return false;</span>
+        }
+<span class="fc bfc" id="L1359" title="All 2 branches covered.">        if (!ObjectUtilities.equal(that.categoryLabelToolTips,</span>
+                this.categoryLabelToolTips)) {
+<span class="fc" id="L1361">            return false;</span>
+        }
+<span class="fc bfc" id="L1363" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.tickLabelFontMap,</span>
+                that.tickLabelFontMap)) {
+<span class="fc" id="L1365">            return false;</span>
+        }
+<span class="fc bfc" id="L1367" title="All 2 branches covered.">        if (!equalPaintMaps(this.tickLabelPaintMap, that.tickLabelPaintMap)) {</span>
+<span class="fc" id="L1368">            return false;</span>
+        }
+<span class="fc" id="L1370">        return true;</span>
+    }
+
+    /**
+     * Returns a hash code for this object.
+     *
+     * @return A hash code.
+     */
+    public int hashCode() {
+<span class="pc bpc" id="L1379" title="1 of 2 branches missed.">        if (getLabel() != null) {</span>
+<span class="fc" id="L1380">            return getLabel().hashCode();</span>
+        }
+        else {
+<span class="nc" id="L1383">            return 0;</span>
+        }
+    }
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the output stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     */
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+<span class="fc" id="L1395">        stream.defaultWriteObject();</span>
+<span class="fc" id="L1396">        writePaintMap(this.tickLabelPaintMap, stream);</span>
+<span class="fc" id="L1397">    }</span>
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the input stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     * @throws ClassNotFoundException  if there is a classpath problem.
+     */
+    private void readObject(ObjectInputStream stream)
+        throws IOException, ClassNotFoundException {
+<span class="fc" id="L1409">        stream.defaultReadObject();</span>
+<span class="fc" id="L1410">        this.tickLabelPaintMap = readPaintMap(stream);</span>
+<span class="fc" id="L1411">    }</span>
+
+    /**
+     * Reads a &lt;code&gt;Map&lt;/code&gt; of (&lt;code&gt;Comparable&lt;/code&gt;, &lt;code&gt;Paint&lt;/code&gt;)
+     * elements from a stream.
+     *
+     * @param in  the input stream.
+     *
+     * @return The map.
+     *
+     * @throws IOException
+     * @throws ClassNotFoundException
+     *
+     * @see #writePaintMap(Map, ObjectOutputStream)
+     */
+    private Map readPaintMap(ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
+<span class="fc" id="L1428">        boolean isNull = in.readBoolean();</span>
+<span class="pc bpc" id="L1429" title="1 of 2 branches missed.">        if (isNull) {</span>
+<span class="nc" id="L1430">            return null;</span>
+        }
+<span class="fc" id="L1432">        Map result = new HashMap();</span>
+<span class="fc" id="L1433">        int count = in.readInt();</span>
+<span class="fc bfc" id="L1434" title="All 2 branches covered.">        for (int i = 0; i &lt; count; i++) {</span>
+<span class="fc" id="L1435">            Comparable category = (Comparable) in.readObject();</span>
+<span class="fc" id="L1436">            Paint paint = SerialUtilities.readPaint(in);</span>
+<span class="fc" id="L1437">            result.put(category, paint);</span>
+        }
+<span class="fc" id="L1439">        return result;</span>
+    }
+
+    /**
+     * Writes a map of (&lt;code&gt;Comparable&lt;/code&gt;, &lt;code&gt;Paint&lt;/code&gt;)
+     * elements to a stream.
+     *
+     * @param map  the map (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @param out
+     * @throws IOException
+     *
+     * @see #readPaintMap(ObjectInputStream)
+     */
+    private void writePaintMap(Map map, ObjectOutputStream out)
+            throws IOException {
+<span class="pc bpc" id="L1455" title="1 of 2 branches missed.">        if (map == null) {</span>
+<span class="nc" id="L1456">            out.writeBoolean(true);</span>
+        }
+        else {
+<span class="fc" id="L1459">            out.writeBoolean(false);</span>
+<span class="fc" id="L1460">            Set keys = map.keySet();</span>
+<span class="fc" id="L1461">            int count = keys.size();</span>
+<span class="fc" id="L1462">            out.writeInt(count);</span>
+<span class="fc" id="L1463">            Iterator iterator = keys.iterator();</span>
+<span class="fc bfc" id="L1464" title="All 2 branches covered.">            while (iterator.hasNext()) {</span>
+<span class="fc" id="L1465">                Comparable key = (Comparable) iterator.next();</span>
+<span class="fc" id="L1466">                out.writeObject(key);</span>
+<span class="fc" id="L1467">                SerialUtilities.writePaint((Paint) map.get(key), out);</span>
+<span class="fc" id="L1468">            }</span>
+        }
+<span class="fc" id="L1470">    }</span>
+
+    /**
+     * Tests two maps containing (&lt;code&gt;Comparable&lt;/code&gt;, &lt;code&gt;Paint&lt;/code&gt;)
+     * elements for equality.
+     *
+     * @param map1  the first map (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param map2  the second map (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return A boolean.
+     */
+    private boolean equalPaintMaps(Map map1, Map map2) {
+<span class="fc bfc" id="L1482" title="All 2 branches covered.">        if (map1.size() != map2.size()) {</span>
+<span class="fc" id="L1483">            return false;</span>
+        }
+<span class="fc" id="L1485">        Set entries = map1.entrySet();</span>
+<span class="fc" id="L1486">        Iterator iterator = entries.iterator();</span>
+<span class="fc bfc" id="L1487" title="All 2 branches covered.">        while (iterator.hasNext()) {</span>
+<span class="fc" id="L1488">            Map.Entry entry = (Map.Entry) iterator.next();</span>
+<span class="fc" id="L1489">            Paint p1 = (Paint) entry.getValue();</span>
+<span class="fc" id="L1490">            Paint p2 = (Paint) map2.get(entry.getKey());</span>
+<span class="fc bfc" id="L1491" title="All 2 branches covered.">            if (!PaintUtilities.equal(p1, p2)) {</span>
+<span class="fc" id="L1492">                return false;</span>
+            }
+<span class="fc" id="L1494">        }</span>
+<span class="fc" id="L1495">        return true;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

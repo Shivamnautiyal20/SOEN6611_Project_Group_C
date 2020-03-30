@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryMarkerTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot.junit</a> &gt; <span class="el_source">CategoryMarkerTests.java</span></div><h1>CategoryMarkerTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------------
+ * CategoryMarkerTests.java
+ * ------------------------
+ * (C) Copyright 2005-2007, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 22-Mar-2005 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.plot.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.event.MarkerChangeEvent;
+import org.jfree.chart.event.MarkerChangeListener;
+import org.jfree.chart.plot.CategoryMarker;
+
+/**
+ * Some tests for the {@link CategoryMarker} class.
+ */
+public class CategoryMarkerTests extends TestCase
+        implements MarkerChangeListener {
+
+    MarkerChangeEvent lastEvent;
+
+    /**
+     * Records the last event.
+     *
+     * @param event  the last event.
+     */
+    public void markerChanged(MarkerChangeEvent event) {
+<span class="fc" id="L75">        this.lastEvent = event;</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        return new TestSuite(CategoryMarkerTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public CategoryMarkerTests(String name) {
+<span class="fc" id="L93">        super(name);</span>
+<span class="fc" id="L94">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L100">        CategoryMarker m1 = new CategoryMarker(&quot;A&quot;);</span>
+<span class="fc" id="L101">        CategoryMarker m2 = new CategoryMarker(&quot;A&quot;);</span>
+<span class="fc" id="L102">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L103">        assertTrue(m2.equals(m1));</span>
+
+        //key
+<span class="fc" id="L106">        m1 = new CategoryMarker(&quot;B&quot;);</span>
+<span class="fc" id="L107">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L108">        m2 = new CategoryMarker(&quot;B&quot;);</span>
+<span class="fc" id="L109">        assertTrue(m1.equals(m2));</span>
+
+        //paint
+<span class="fc" id="L112">        m1 = new CategoryMarker(&quot;A&quot;, new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.yellow), new BasicStroke(1.1f));
+<span class="fc" id="L114">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L115">        m2 = new CategoryMarker(&quot;A&quot;, new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.yellow), new BasicStroke(1.1f));
+<span class="fc" id="L117">        assertTrue(m1.equals(m2));</span>
+
+        //stroke
+<span class="fc" id="L120">        m1 = new CategoryMarker(&quot;A&quot;, new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.yellow), new BasicStroke(2.2f));
+<span class="fc" id="L122">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L123">        m2 = new CategoryMarker(&quot;A&quot;, new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.yellow), new BasicStroke(2.2f));
+<span class="fc" id="L125">        assertTrue(m1.equals(m2));</span>
+
+        //outlinePaint
+<span class="fc" id="L128">        m1 = new CategoryMarker(&quot;A&quot;, new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.yellow), new BasicStroke(2.2f), Color.red,
+                new BasicStroke(1.0f), 1.0f);
+<span class="fc" id="L131">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L132">        m2 = new CategoryMarker(&quot;A&quot;, new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.yellow), new BasicStroke(2.2f), Color.red,
+                new BasicStroke(1.0f), 1.0f);
+<span class="fc" id="L135">        assertTrue(m1.equals(m2));</span>
+
+        //outlineStroke
+<span class="fc" id="L138">        m1 = new CategoryMarker(&quot;A&quot;, new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.yellow), new BasicStroke(2.2f), Color.red,
+                new BasicStroke(3.3f), 1.0f);
+<span class="fc" id="L141">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L142">        m2 = new CategoryMarker(&quot;A&quot;, new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.yellow), new BasicStroke(2.2f), Color.red,
+                new BasicStroke(3.3f), 1.0f);
+<span class="fc" id="L145">        assertTrue(m1.equals(m2));</span>
+
+        //alpha
+<span class="fc" id="L148">        m1 = new CategoryMarker(&quot;A&quot;, new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.yellow), new BasicStroke(2.2f), Color.red,
+                new BasicStroke(1.0f), 0.5f);
+<span class="fc" id="L151">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L152">        m2 = new CategoryMarker(&quot;A&quot;, new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.yellow), new BasicStroke(2.2f), Color.red,
+                new BasicStroke(1.0f), 0.5f);
+<span class="fc" id="L155">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L157">    }</span>
+
+    /**
+     * Check cloning.
+     */
+    public void testCloning() {
+<span class="fc" id="L163">        CategoryMarker m1 = new CategoryMarker(&quot;A&quot;, new GradientPaint(1.0f,</span>
+                2.0f, Color.white, 3.0f, 4.0f, Color.yellow),
+                new BasicStroke(1.1f));
+<span class="fc" id="L166">        CategoryMarker m2 = null;</span>
+        try {
+<span class="fc" id="L168">            m2 = (CategoryMarker) m1.clone();</span>
+        }
+<span class="nc" id="L170">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L171">            e.printStackTrace();</span>
+<span class="fc" id="L172">        }</span>
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">        assertTrue(m1 != m2);</span>
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">        assertTrue(m1.getClass() == m2.getClass());</span>
+<span class="fc" id="L175">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L176">    }</span>
+
+   /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L183">        CategoryMarker m1 = new CategoryMarker(&quot;A&quot;, new GradientPaint(1.0f,</span>
+                2.0f, Color.white, 3.0f, 4.0f, Color.yellow),
+                new BasicStroke(1.1f));
+<span class="fc" id="L186">        CategoryMarker m2 = null;</span>
+        try {
+<span class="fc" id="L188">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L189">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L190">            out.writeObject(m1);</span>
+<span class="fc" id="L191">            out.close();</span>
+
+<span class="fc" id="L193">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L194">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L195">            m2 = (CategoryMarker) in.readObject();</span>
+<span class="fc" id="L196">            in.close();</span>
+        }
+<span class="nc" id="L198">        catch (Exception e) {</span>
+<span class="nc" id="L199">            fail(e.toString());</span>
+<span class="fc" id="L200">        }</span>
+<span class="fc" id="L201">        boolean b = m1.equals(m2);</span>
+<span class="fc" id="L202">        assertTrue(b);</span>
+
+<span class="fc" id="L204">    }</span>
+
+    /**
+     * Some checks for the getKey() and setKey() methods.
+     */
+    public void testGetSetKey() {
+<span class="fc" id="L210">        CategoryMarker m = new CategoryMarker(&quot;X&quot;);</span>
+<span class="fc" id="L211">        m.addChangeListener(this);</span>
+<span class="fc" id="L212">        this.lastEvent = null;</span>
+<span class="fc" id="L213">        assertEquals(&quot;X&quot;, m.getKey());</span>
+<span class="fc" id="L214">        m.setKey(&quot;Y&quot;);</span>
+<span class="fc" id="L215">        assertEquals(&quot;Y&quot;, m.getKey());</span>
+<span class="fc" id="L216">        assertEquals(m, this.lastEvent.getMarker());</span>
+
+        // check null argument...
+        try {
+<span class="nc" id="L220">            m.setKey(null);</span>
+<span class="nc" id="L221">            fail(&quot;Expected an IllegalArgumentException for null.&quot;);</span>
+        }
+<span class="fc" id="L223">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L224">            assertTrue(true);</span>
+<span class="nc" id="L225">        }</span>
+<span class="fc" id="L226">    }</span>
+
+    /**
+     * Some checks for the getDrawAsLine() and setDrawAsLine() methods.
+     */
+    public void testGetSetDrawAsLine() {
+<span class="fc" id="L232">        CategoryMarker m = new CategoryMarker(&quot;X&quot;);</span>
+<span class="fc" id="L233">        m.addChangeListener(this);</span>
+<span class="fc" id="L234">        this.lastEvent = null;</span>
+<span class="fc" id="L235">        assertEquals(false, m.getDrawAsLine());</span>
+<span class="fc" id="L236">        m.setDrawAsLine(true);</span>
+<span class="fc" id="L237">        assertEquals(true, m.getDrawAsLine());</span>
+<span class="fc" id="L238">        assertEquals(m, this.lastEvent.getMarker());</span>
+<span class="fc" id="L239">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

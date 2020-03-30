@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PeriodAxisTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.axis.junit</a> &gt; <span class="el_source">PeriodAxisTests.java</span></div><h1>PeriodAxisTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------
+ * PeriodAxisTests.java
+ * --------------------
+ * (C) Copyright 2004-2009, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 10-Jun-2003 : Version 1 (DG);
+ * 07-Jan-2005 : Added test for hashCode() method (DG);
+ * 08-Apr-2008 : Added test1932146() (DG);
+ * 16-Jan-2009 : Added test2490803() (DG);
+ * 02-Mar-2009 : Added testEqualsWithLocale (DG);
+ *
+ */
+
+package org.jfree.chart.axis.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Stroke;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.axis.PeriodAxis;
+import org.jfree.chart.axis.PeriodAxisLabelInfo;
+import org.jfree.chart.event.AxisChangeEvent;
+import org.jfree.chart.event.AxisChangeListener;
+import org.jfree.data.Range;
+import org.jfree.data.time.DateRange;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.Minute;
+import org.jfree.data.time.Month;
+import org.jfree.data.time.Quarter;
+import org.jfree.data.time.Second;
+import org.jfree.data.time.Year;
+
+/**
+ * Tests for the {@link PeriodAxis} class.
+ */
+public class PeriodAxisTests extends TestCase implements AxisChangeListener {
+
+    /** The last event received. */
+    private AxisChangeEvent lastEvent;
+
+    /**
+     * Receives and records an {@link AxisChangeEvent}.
+     *
+     * @param event  the event.
+     */
+    public void axisChanged(AxisChangeEvent event) {
+<span class="fc" id="L93">        this.lastEvent = event;</span>
+<span class="fc" id="L94">    }</span>
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        return new TestSuite(PeriodAxisTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public PeriodAxisTests(String name) {
+<span class="fc" id="L111">        super(name);</span>
+<span class="fc" id="L112">    }</span>
+
+    /**
+     * Confirm that the equals() method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L119">        PeriodAxis a1 = new PeriodAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L120">        PeriodAxis a2 = new PeriodAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L121">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L122">        assertTrue(a2.equals(a1));</span>
+
+<span class="fc" id="L124">        a1.setFirst(new Year(2000));</span>
+<span class="fc" id="L125">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L126">        a2.setFirst(new Year(2000));</span>
+<span class="fc" id="L127">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L129">        a1.setLast(new Year(2004));</span>
+<span class="fc" id="L130">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L131">        a2.setLast(new Year(2004));</span>
+<span class="fc" id="L132">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L134">        a1.setTimeZone(TimeZone.getTimeZone(&quot;Pacific/Auckland&quot;));</span>
+<span class="fc" id="L135">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L136">        a2.setTimeZone(TimeZone.getTimeZone(&quot;Pacific/Auckland&quot;));</span>
+<span class="fc" id="L137">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc bfc" id="L139" title="All 2 branches covered.">        a1.setAutoRangeTimePeriodClass(Quarter.class);</span>
+<span class="fc" id="L140">        assertFalse(a1.equals(a2));</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">        a2.setAutoRangeTimePeriodClass(Quarter.class);</span>
+<span class="fc" id="L142">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L144">        PeriodAxisLabelInfo info[] = new PeriodAxisLabelInfo[1];</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">        info[0] = new PeriodAxisLabelInfo(Month.class,</span>
+                new SimpleDateFormat(&quot;MMM&quot;));
+
+<span class="fc" id="L148">        a1.setLabelInfo(info);</span>
+<span class="fc" id="L149">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L150">        a2.setLabelInfo(info);</span>
+<span class="fc" id="L151">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        a1.setMajorTickTimePeriodClass(Minute.class);</span>
+<span class="fc" id="L154">        assertFalse(a1.equals(a2));</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        a2.setMajorTickTimePeriodClass(Minute.class);</span>
+<span class="fc" id="L156">        assertTrue(a1.equals(a2));</span>
+
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">        a1.setMinorTickMarksVisible(!a1.isMinorTickMarksVisible());</span>
+<span class="fc" id="L159">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L160">        a2.setMinorTickMarksVisible(a1.isMinorTickMarksVisible());</span>
+<span class="fc" id="L161">        assertTrue(a1.equals(a2));</span>
+
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">        a1.setMinorTickTimePeriodClass(Minute.class);</span>
+<span class="fc" id="L164">        assertFalse(a1.equals(a2));</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">        a2.setMinorTickTimePeriodClass(Minute.class);</span>
+<span class="fc" id="L166">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L168">        Stroke s = new BasicStroke(1.23f);</span>
+<span class="fc" id="L169">        a1.setMinorTickMarkStroke(s);</span>
+<span class="fc" id="L170">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L171">        a2.setMinorTickMarkStroke(s);</span>
+<span class="fc" id="L172">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L174">        a1.setMinorTickMarkPaint(Color.blue);</span>
+<span class="fc" id="L175">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L176">        a2.setMinorTickMarkPaint(Color.blue);</span>
+<span class="fc" id="L177">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L179">    }</span>
+
+    /**
+     * Confirm that the equals() method can distinguish the locale field (which
+     * is new in version 1.0.13).
+     */
+    public void testEqualsWithLocale() {
+<span class="fc" id="L186">        PeriodAxis a1 = new PeriodAxis(&quot;Test&quot;, new Year(2000), new Year(2009),</span>
+<span class="fc" id="L187">                TimeZone.getDefault(), Locale.JAPAN);</span>
+<span class="fc" id="L188">        PeriodAxis a2 = new PeriodAxis(&quot;Test&quot;, new Year(2000), new Year(2009),</span>
+<span class="fc" id="L189">                TimeZone.getDefault(), Locale.JAPAN);</span>
+<span class="fc" id="L190">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L191">        assertTrue(a2.equals(a1));</span>
+
+<span class="fc" id="L193">        a1 = new PeriodAxis(&quot;Test&quot;, new Year(2000), new Year(2009),</span>
+<span class="fc" id="L194">                TimeZone.getDefault(), Locale.UK);</span>
+<span class="fc" id="L195">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L196">        a2 = new PeriodAxis(&quot;Test&quot;, new Year(2000), new Year(2009),</span>
+<span class="fc" id="L197">                TimeZone.getDefault(), Locale.UK);</span>
+<span class="fc" id="L198">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L199">    }</span>
+
+        /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashCode() {
+<span class="fc" id="L205">        PeriodAxis a1 = new PeriodAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L206">        PeriodAxis a2 = new PeriodAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L207">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L208">        int h1 = a1.hashCode();</span>
+<span class="fc" id="L209">        int h2 = a2.hashCode();</span>
+<span class="fc" id="L210">        assertEquals(h1, h2);</span>
+<span class="fc" id="L211">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L217">        PeriodAxis a1 = new PeriodAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L218">        PeriodAxis a2 = null;</span>
+        try {
+<span class="fc" id="L220">            a2 = (PeriodAxis) a1.clone();</span>
+        }
+<span class="nc" id="L222">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L223">            e.printStackTrace();</span>
+<span class="fc" id="L224">        }</span>
+<span class="pc bpc" id="L225" title="1 of 2 branches missed.">        assertTrue(a1 != a2);</span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">        assertTrue(a1.getClass() == a2.getClass());</span>
+<span class="fc" id="L227">        assertTrue(a1.equals(a2));</span>
+
+        // some checks that the clone is independent of the original
+<span class="fc" id="L230">        a1.setLabel(&quot;New Label&quot;);</span>
+<span class="fc" id="L231">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L232">        a2.setLabel(&quot;New Label&quot;);</span>
+<span class="fc" id="L233">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L235">        a1.setFirst(new Year(1920));</span>
+<span class="fc" id="L236">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L237">        a2.setFirst(new Year(1920));</span>
+<span class="fc" id="L238">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L240">        a1.setLast(new Year(2020));</span>
+<span class="fc" id="L241">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L242">        a2.setLast(new Year(2020));</span>
+<span class="fc" id="L243">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L245">        PeriodAxisLabelInfo[] info = new PeriodAxisLabelInfo[2];</span>
+<span class="fc bfc" id="L246" title="All 2 branches covered.">        info[0] = new PeriodAxisLabelInfo(Day.class, new SimpleDateFormat(&quot;d&quot;));</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">        info[1] = new PeriodAxisLabelInfo(Year.class,</span>
+                new SimpleDateFormat(&quot;yyyy&quot;));
+<span class="fc" id="L249">        a1.setLabelInfo(info);</span>
+<span class="fc" id="L250">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L251">        a2.setLabelInfo(info);</span>
+<span class="fc" id="L252">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc bfc" id="L254" title="All 2 branches covered.">        a1.setAutoRangeTimePeriodClass(Second.class);</span>
+<span class="fc" id="L255">        assertFalse(a1.equals(a2));</span>
+<span class="pc bpc" id="L256" title="1 of 2 branches missed.">        a2.setAutoRangeTimePeriodClass(Second.class);</span>
+<span class="fc" id="L257">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L259">        a1.setTimeZone(new SimpleTimeZone(123, &quot;Bogus&quot;));</span>
+<span class="fc" id="L260">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L261">        a2.setTimeZone(new SimpleTimeZone(123, &quot;Bogus&quot;));</span>
+<span class="fc" id="L262">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L264">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L270">        PeriodAxis a1 = new PeriodAxis(&quot;Test Axis&quot;);</span>
+<span class="fc" id="L271">        PeriodAxis a2 = null;</span>
+        try {
+<span class="fc" id="L273">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L274">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L275">            out.writeObject(a1);</span>
+<span class="fc" id="L276">            out.close();</span>
+
+<span class="fc" id="L278">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L279">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L280">            a2 = (PeriodAxis) in.readObject();</span>
+<span class="fc" id="L281">            in.close();</span>
+        }
+<span class="nc" id="L283">        catch (Exception e) {</span>
+<span class="nc" id="L284">            e.printStackTrace();</span>
+<span class="fc" id="L285">        }</span>
+<span class="fc" id="L286">        boolean b = a1.equals(a2);</span>
+<span class="fc" id="L287">        assertTrue(b);</span>
+<span class="fc" id="L288">    }</span>
+
+    /**
+     * A test for bug 1932146.
+     */
+    public void test1932146() {
+<span class="fc" id="L294">        PeriodAxis axis = new PeriodAxis(&quot;TestAxis&quot;);</span>
+<span class="fc" id="L295">        axis.addChangeListener(this);</span>
+<span class="fc" id="L296">        this.lastEvent = null;</span>
+<span class="fc" id="L297">        axis.setRange(new DateRange(0L, 1000L));</span>
+<span class="pc bpc" id="L298" title="1 of 2 branches missed.">        assertTrue(this.lastEvent != null);</span>
+<span class="fc" id="L299">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * A test for the setRange() method (because the axis shows whole time
+     * periods, the range set for the axis will most likely be wider than the
+     * one specified).
+     */
+    public void test2490803() {
+<span class="fc" id="L309">        Locale savedLocale = Locale.getDefault();</span>
+<span class="fc" id="L310">        TimeZone savedTimeZone = TimeZone.getDefault();</span>
+        try {
+<span class="fc" id="L312">            Locale.setDefault(Locale.FRANCE);</span>
+<span class="fc" id="L313">            TimeZone.setDefault(TimeZone.getTimeZone(&quot;Europe/Paris&quot;));</span>
+<span class="fc" id="L314">            GregorianCalendar c0 = new GregorianCalendar();</span>
+<span class="fc" id="L315">            c0.clear();</span>
+            /* c0.set(2009, Calendar.JANUARY, 16, 12, 34, 56);
+            System.out.println(c0.getTime().getTime());
+            c0.clear();
+            c0.set(2009, Calendar.JANUARY, 17, 12, 34, 56);
+            System.out.println(c0.getTime().getTime()); */
+<span class="fc" id="L321">            PeriodAxis axis = new PeriodAxis(&quot;TestAxis&quot;);</span>
+<span class="fc" id="L322">            axis.setRange(new Range(1232105696000L, 1232192096000L), false,</span>
+                    false);
+<span class="fc" id="L324">            Range r = axis.getRange();</span>
+<span class="fc" id="L325">            Day d0 = new Day(16, 1, 2009);</span>
+<span class="fc" id="L326">            Day d1 = new Day(17, 1, 2009);</span>
+<span class="fc" id="L327">            assertEquals(d0.getFirstMillisecond(), r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L328">            assertEquals(d1.getLastMillisecond() + 1.0, r.getUpperBound(),</span>
+                    EPSILON);
+        }
+        finally {
+<span class="fc" id="L332">            TimeZone.setDefault(savedTimeZone);</span>
+<span class="fc" id="L333">            Locale.setDefault(savedLocale);</span>
+        }
+<span class="fc" id="L335">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PaintScaleLegendTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.title.junit</a> &gt; <span class="el_source">PaintScaleLegendTests.java</span></div><h1>PaintScaleLegendTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------------
+ * PaintScaleLegendTests.java
+ * --------------------------
+ * (C) Copyright 2007, 2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 22-Jan-2007 : Version 1 (DG);
+ * 18-Jun-2008 : Extended testEquals() for new field (DG);
+ *
+ */
+
+package org.jfree.chart.title.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.axis.AxisLocation;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.renderer.GrayPaintScale;
+import org.jfree.chart.renderer.LookupPaintScale;
+import org.jfree.chart.title.PaintScaleLegend;
+
+/**
+ * Tests for the {@link PaintScaleLegend} class.
+ */
+public class PaintScaleLegendTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        return new TestSuite(PaintScaleLegendTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public PaintScaleLegendTests(String name) {
+<span class="fc" id="L84">        super(name);</span>
+<span class="fc" id="L85">    }</span>
+
+    /**
+     * Test that the equals() method distinguishes all fields.
+     */
+    public void testEquals() {
+
+        // default instances
+<span class="fc" id="L93">        PaintScaleLegend l1 = new PaintScaleLegend(new GrayPaintScale(),</span>
+                new NumberAxis(&quot;X&quot;));
+<span class="fc" id="L95">        PaintScaleLegend l2 = new PaintScaleLegend(new GrayPaintScale(),</span>
+                new NumberAxis(&quot;X&quot;));
+<span class="fc" id="L97">        assertTrue(l1.equals(l2));</span>
+<span class="fc" id="L98">        assertTrue(l2.equals(l1));</span>
+
+        // paintScale
+<span class="fc" id="L101">        l1.setScale(new LookupPaintScale());</span>
+<span class="fc" id="L102">        assertFalse(l1.equals(l2));</span>
+<span class="fc" id="L103">        l2.setScale(new LookupPaintScale());</span>
+<span class="fc" id="L104">        assertTrue(l1.equals(l2));</span>
+
+        // axis
+<span class="fc" id="L107">        l1.setAxis(new NumberAxis(&quot;Axis 2&quot;));</span>
+<span class="fc" id="L108">        assertFalse(l1.equals(l2));</span>
+<span class="fc" id="L109">        l2.setAxis(new NumberAxis(&quot;Axis 2&quot;));</span>
+<span class="fc" id="L110">        assertTrue(l1.equals(l2));</span>
+
+        // axisLocation
+<span class="fc" id="L113">        l1.setAxisLocation(AxisLocation.BOTTOM_OR_RIGHT);</span>
+<span class="fc" id="L114">        assertFalse(l1.equals(l2));</span>
+<span class="fc" id="L115">        l2.setAxisLocation(AxisLocation.BOTTOM_OR_RIGHT);</span>
+<span class="fc" id="L116">        assertTrue(l1.equals(l2));</span>
+
+        // axisOffset
+<span class="fc" id="L119">        l1.setAxisOffset(99.0);</span>
+<span class="fc" id="L120">        assertFalse(l1.equals(l2));</span>
+<span class="fc" id="L121">        l2.setAxisOffset(99.0);</span>
+<span class="fc" id="L122">        assertTrue(l1.equals(l2));</span>
+
+        // stripWidth
+<span class="fc" id="L125">        l1.setStripWidth(99.0);</span>
+<span class="fc" id="L126">        assertFalse(l1.equals(l2));</span>
+<span class="fc" id="L127">        l2.setStripWidth(99.0);</span>
+<span class="fc" id="L128">        assertTrue(l1.equals(l2));</span>
+
+        // stripOutlineVisible
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        l1.setStripOutlineVisible(!l1.isStripOutlineVisible());</span>
+<span class="fc" id="L132">        assertFalse(l1.equals(l2));</span>
+<span class="fc" id="L133">        l2.setStripOutlineVisible(l1.isStripOutlineVisible());</span>
+<span class="fc" id="L134">        assertTrue(l1.equals(l2));</span>
+
+        // stripOutlinePaint
+<span class="fc" id="L137">        l1.setStripOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L139">        assertFalse(l1.equals(l2));</span>
+<span class="fc" id="L140">        l2.setStripOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L142">        assertTrue(l1.equals(l2));</span>
+
+        // stripOutlineStroke
+<span class="fc" id="L145">        l1.setStripOutlineStroke(new BasicStroke(1.1f));</span>
+<span class="fc" id="L146">        assertFalse(l1.equals(l2));</span>
+<span class="fc" id="L147">        l2.setStripOutlineStroke(new BasicStroke(1.1f));</span>
+<span class="fc" id="L148">        assertTrue(l1.equals(l2));</span>
+
+        // backgroundPaint
+<span class="fc" id="L151">        l1.setBackgroundPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L153">        assertFalse(l1.equals(l2));</span>
+<span class="fc" id="L154">        l2.setBackgroundPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L156">        assertTrue(l1.equals(l2));</span>
+
+<span class="fc" id="L158">        l1.setSubdivisionCount(99);</span>
+<span class="fc" id="L159">        assertFalse(l1.equals(l2));</span>
+<span class="fc" id="L160">        l2.setSubdivisionCount(99);</span>
+<span class="fc" id="L161">        assertTrue(l1.equals(l2));</span>
+
+<span class="fc" id="L163">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L169">        PaintScaleLegend l1 = new PaintScaleLegend(new GrayPaintScale(),</span>
+                new NumberAxis(&quot;X&quot;));
+<span class="fc" id="L171">        PaintScaleLegend l2 = new PaintScaleLegend(new GrayPaintScale(),</span>
+                new NumberAxis(&quot;X&quot;));
+<span class="fc" id="L173">        assertTrue(l1.equals(l2));</span>
+<span class="fc" id="L174">        int h1 = l1.hashCode();</span>
+<span class="fc" id="L175">        int h2 = l2.hashCode();</span>
+<span class="fc" id="L176">        assertEquals(h1, h2);</span>
+<span class="fc" id="L177">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L183">        PaintScaleLegend l1 = new PaintScaleLegend(new GrayPaintScale(),</span>
+                new NumberAxis(&quot;X&quot;));
+<span class="fc" id="L185">        PaintScaleLegend l2 = null;</span>
+        try {
+<span class="fc" id="L187">            l2 = (PaintScaleLegend) l1.clone();</span>
+        }
+<span class="nc" id="L189">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L190">            e.printStackTrace();</span>
+<span class="fc" id="L191">        }</span>
+<span class="pc bpc" id="L192" title="1 of 2 branches missed.">        assertTrue(l1 != l2);</span>
+<span class="pc bpc" id="L193" title="1 of 2 branches missed.">        assertTrue(l1.getClass() == l2.getClass());</span>
+<span class="fc" id="L194">        assertTrue(l1.equals(l2));</span>
+<span class="fc" id="L195">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L201">        PaintScaleLegend l1 = new PaintScaleLegend(new GrayPaintScale(),</span>
+                new NumberAxis(&quot;X&quot;));
+<span class="fc" id="L203">        PaintScaleLegend l2 = null;</span>
+        try {
+<span class="fc" id="L205">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L206">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L207">            out.writeObject(l1);</span>
+<span class="fc" id="L208">            out.close();</span>
+
+<span class="fc" id="L210">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L211">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L212">            l2 = (PaintScaleLegend) in.readObject();</span>
+<span class="fc" id="L213">            in.close();</span>
+        }
+<span class="nc" id="L215">        catch (Exception e) {</span>
+<span class="nc" id="L216">            e.printStackTrace();</span>
+<span class="fc" id="L217">        }</span>
+<span class="fc" id="L218">        assertEquals(l1, l2);</span>
+<span class="fc" id="L219">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

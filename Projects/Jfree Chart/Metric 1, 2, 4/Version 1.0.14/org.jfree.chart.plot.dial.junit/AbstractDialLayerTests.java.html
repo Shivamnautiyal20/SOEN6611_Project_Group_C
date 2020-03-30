@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractDialLayerTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot.dial.junit</a> &gt; <span class="el_source">AbstractDialLayerTests.java</span></div><h1>AbstractDialLayerTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------------
+ * AbstractDialLayerTests.java
+ * ---------------------------
+ * (C) Copyright 2007, 2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 16-Oct-2007 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.plot.dial.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.plot.dial.AbstractDialLayer;
+import org.jfree.chart.plot.dial.DialCap;
+
+/**
+ * Tests for the {@link AbstractDialLayer} class.
+ */
+public class AbstractDialLayerTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        return new TestSuite(AbstractDialLayerTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public AbstractDialLayerTests(String name) {
+<span class="fc" id="L77">        super(name);</span>
+<span class="fc" id="L78">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L84">        DialCap c1 = new DialCap();</span>
+<span class="fc" id="L85">        DialCap c2 = new DialCap();</span>
+<span class="fc" id="L86">        assertTrue(c1.equals(c2));</span>
+
+        // visible
+<span class="fc" id="L89">        c1.setVisible(false);</span>
+<span class="fc" id="L90">        assertFalse(c1.equals(c2));</span>
+<span class="fc" id="L91">        c2.setVisible(false);</span>
+<span class="fc" id="L92">        assertTrue(c1.equals(c2));</span>
+<span class="fc" id="L93">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+        // test a default instance
+<span class="fc" id="L100">        DialCap c1 = new DialCap();</span>
+<span class="fc" id="L101">        DialCap c2 = null;</span>
+        try {
+<span class="fc" id="L103">            c2 = (DialCap) c1.clone();</span>
+        }
+<span class="nc" id="L105">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L106">            e.printStackTrace();</span>
+<span class="fc" id="L107">        }</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">        assertTrue(c1 != c2);</span>
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">        assertTrue(c1.getClass() == c2.getClass());</span>
+<span class="fc" id="L110">        assertTrue(c1.equals(c2));</span>
+
+        // check that the listener lists are independent
+<span class="fc" id="L113">        MyDialLayerChangeListener l1 = new MyDialLayerChangeListener();</span>
+<span class="fc" id="L114">        c1.addChangeListener(l1);</span>
+<span class="fc" id="L115">        assertTrue(c1.hasListener(l1));</span>
+<span class="fc" id="L116">        assertFalse(c2.hasListener(l1));</span>
+<span class="fc" id="L117">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+        // test a default instance
+<span class="fc" id="L124">        DialCap c1 = new DialCap();</span>
+<span class="fc" id="L125">        DialCap c2 = null;</span>
+
+        try {
+<span class="fc" id="L128">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L129">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L130">            out.writeObject(c1);</span>
+<span class="fc" id="L131">            out.close();</span>
+
+<span class="fc" id="L133">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L134">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L135">            c2 = (DialCap) in.readObject();</span>
+<span class="fc" id="L136">            in.close();</span>
+        }
+<span class="nc" id="L138">        catch (Exception e) {</span>
+<span class="nc" id="L139">            e.printStackTrace();</span>
+<span class="fc" id="L140">        }</span>
+<span class="fc" id="L141">        assertEquals(c1, c2);</span>
+
+        // check that the listener lists are independent
+<span class="fc" id="L144">        MyDialLayerChangeListener l1 = new MyDialLayerChangeListener();</span>
+<span class="fc" id="L145">        c1.addChangeListener(l1);</span>
+<span class="fc" id="L146">        assertTrue(c1.hasListener(l1));</span>
+<span class="fc" id="L147">        assertFalse(c2.hasListener(l1));</span>
+<span class="fc" id="L148">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LogAxisTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.axis.junit</a> &gt; <span class="el_source">LogAxisTests.java</span></div><h1>LogAxisTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------
+ * LogAxisTests.java
+ * -----------------
+ * (C) Copyright 2007, 2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 11-Jul-2007 : Version 1 (DG);
+ * 08-Apr-2008 : Fixed incorrect testEquals() method (DG);
+ * 28-Oct-2011 : Cdded test for endless loop, # 3429707 (MH);
+ */
+
+package org.jfree.chart.axis.junit;
+
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.AxisState;
+import org.jfree.chart.axis.LogAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.RectangleEdge;
+
+/**
+ * Tests for the {@link LogAxis} class.
+ */
+public class LogAxisTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        return new TestSuite(LogAxisTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public LogAxisTests(String name) {
+<span class="fc" id="L90">        super(name);</span>
+<span class="fc" id="L91">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L97">        LogAxis a1 = new LogAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L98">        LogAxis a2 = null;</span>
+        try {
+<span class="fc" id="L100">            a2 = (LogAxis) a1.clone();</span>
+        }
+<span class="nc" id="L102">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L103">            e.printStackTrace();</span>
+<span class="fc" id="L104">        }</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">        assertTrue(a1 != a2);</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">        assertTrue(a1.getClass() == a2.getClass());</span>
+<span class="fc" id="L107">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L108">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L114">        LogAxis a1 = new LogAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L115">        LogAxis a2 = new LogAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L116">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L118">        a1.setBase(2.0);</span>
+<span class="fc" id="L119">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L120">        a2.setBase(2.0);</span>
+<span class="fc" id="L121">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L123">        a1.setSmallestValue(0.1);</span>
+<span class="fc" id="L124">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L125">        a2.setSmallestValue(0.1);</span>
+<span class="fc" id="L126">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L128">        a1.setMinorTickCount(8);</span>
+<span class="fc" id="L129">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L130">        a2.setMinorTickCount(8);</span>
+<span class="fc" id="L131">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L132">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashCode() {
+<span class="fc" id="L138">        LogAxis a1 = new LogAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L139">        LogAxis a2 = new LogAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L140">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L141">        int h1 = a1.hashCode();</span>
+<span class="fc" id="L142">        int h2 = a2.hashCode();</span>
+<span class="fc" id="L143">        assertEquals(h1, h2);</span>
+<span class="fc" id="L144">    }</span>
+
+    private static final double EPSILON = 0.0000001;
+
+    /**
+     * Test the translation of Java2D values to data values.
+     */
+    public void testTranslateJava2DToValue() {
+<span class="fc" id="L152">        LogAxis axis = new LogAxis();</span>
+<span class="fc" id="L153">        axis.setRange(50.0, 100.0);</span>
+<span class="fc" id="L154">        Rectangle2D dataArea = new Rectangle2D.Double(10.0, 50.0, 400.0, 300.0);</span>
+<span class="fc" id="L155">        double y1 = axis.java2DToValue(75.0, dataArea, RectangleEdge.LEFT);</span>
+<span class="fc" id="L156">        assertEquals(94.3874312681693, y1, EPSILON);</span>
+<span class="fc" id="L157">        double y2 = axis.java2DToValue(75.0, dataArea, RectangleEdge.RIGHT);</span>
+<span class="fc" id="L158">        assertEquals(94.3874312681693, y2, EPSILON);</span>
+<span class="fc" id="L159">        double x1 = axis.java2DToValue(75.0, dataArea, RectangleEdge.TOP);</span>
+<span class="fc" id="L160">        assertEquals(55.961246381405, x1, EPSILON);</span>
+<span class="fc" id="L161">        double x2 = axis.java2DToValue(75.0, dataArea, RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L162">        assertEquals(55.961246381405, x2, EPSILON);</span>
+<span class="fc" id="L163">        axis.setInverted(true);</span>
+<span class="fc" id="L164">        double y3 = axis.java2DToValue(75.0, dataArea, RectangleEdge.LEFT);</span>
+<span class="fc" id="L165">        assertEquals(52.9731547179647, y3, EPSILON);</span>
+<span class="fc" id="L166">        double y4 = axis.java2DToValue(75.0, dataArea, RectangleEdge.RIGHT);</span>
+<span class="fc" id="L167">        assertEquals(52.9731547179647, y4, EPSILON);</span>
+<span class="fc" id="L168">        double x3 = axis.java2DToValue(75.0, dataArea, RectangleEdge.TOP);</span>
+<span class="fc" id="L169">        assertEquals(89.3475453695651, x3, EPSILON);</span>
+<span class="fc" id="L170">        double x4 = axis.java2DToValue(75.0, dataArea, RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L171">        assertEquals(89.3475453695651, x4, EPSILON);</span>
+<span class="fc" id="L172">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L179">        LogAxis a1 = new LogAxis(&quot;Test Axis&quot;);</span>
+<span class="fc" id="L180">        LogAxis a2 = null;</span>
+
+        try {
+<span class="fc" id="L183">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L184">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L185">            out.writeObject(a1);</span>
+<span class="fc" id="L186">            out.close();</span>
+
+<span class="fc" id="L188">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L189">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L190">            a2 = (LogAxis) in.readObject();</span>
+<span class="fc" id="L191">            in.close();</span>
+        }
+<span class="nc" id="L193">        catch (Exception e) {</span>
+<span class="nc" id="L194">            e.printStackTrace();</span>
+<span class="fc" id="L195">        }</span>
+<span class="fc" id="L196">        assertEquals(a1, a2);</span>
+
+<span class="fc" id="L198">    }</span>
+
+    /**
+     * A simple test for the auto-range calculation looking at a
+     * LogAxis used as the range axis for a CategoryPlot.
+     */
+    public void testAutoRange1() {
+<span class="fc" id="L205">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L206">        dataset.setValue(100.0, &quot;Row 1&quot;, &quot;Column 1&quot;);</span>
+<span class="fc" id="L207">        dataset.setValue(200.0, &quot;Row 1&quot;, &quot;Column 2&quot;);</span>
+<span class="fc" id="L208">        JFreeChart chart = ChartFactory.createBarChart(</span>
+            &quot;Test&quot;,
+            &quot;Categories&quot;,
+            &quot;Value&quot;,
+            dataset,
+            PlotOrientation.VERTICAL,
+            false,
+            false,
+            false
+        );
+<span class="fc" id="L218">        CategoryPlot plot = (CategoryPlot) chart.getPlot();</span>
+<span class="fc" id="L219">        LogAxis axis = new LogAxis(&quot;Log(Y)&quot;);</span>
+<span class="fc" id="L220">        plot.setRangeAxis(axis);</span>
+<span class="fc" id="L221">        assertEquals(0.0, axis.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L222">        assertEquals(2.6066426411261268E7, axis.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L223">    }</span>
+
+    /**
+     * A simple test for the auto-range calculation looking at a
+     * NumberAxis used as the range axis for a CategoryPlot.  In this
+     * case, the original dataset is replaced with a new dataset.
+     */
+    public void testAutoRange3() {
+<span class="fc" id="L231">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L232">        dataset.setValue(100.0, &quot;Row 1&quot;, &quot;Column 1&quot;);</span>
+<span class="fc" id="L233">        dataset.setValue(200.0, &quot;Row 1&quot;, &quot;Column 2&quot;);</span>
+<span class="fc" id="L234">        JFreeChart chart = ChartFactory.createLineChart(&quot;Test&quot;, &quot;Categories&quot;,</span>
+                &quot;Value&quot;, dataset, PlotOrientation.VERTICAL, false, false,
+                false);
+<span class="fc" id="L237">        CategoryPlot plot = (CategoryPlot) chart.getPlot();</span>
+<span class="fc" id="L238">        LogAxis axis = new LogAxis(&quot;Log(Y)&quot;);</span>
+<span class="fc" id="L239">        plot.setRangeAxis(axis);</span>
+<span class="fc" id="L240">        assertEquals(96.59363289248458, axis.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L241">        assertEquals(207.0529847682752, axis.getUpperBound(), EPSILON);</span>
+
+        // now replacing the dataset should update the axis range...
+<span class="fc" id="L244">        DefaultCategoryDataset dataset2 = new DefaultCategoryDataset();</span>
+<span class="fc" id="L245">        dataset2.setValue(900.0, &quot;Row 1&quot;, &quot;Column 1&quot;);</span>
+<span class="fc" id="L246">        dataset2.setValue(1000.0, &quot;Row 1&quot;, &quot;Column 2&quot;);</span>
+<span class="fc" id="L247">        plot.setDataset(dataset2);</span>
+<span class="fc" id="L248">        assertEquals(895.2712433374774, axis.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L249">        assertEquals(1005.2819262292991, axis.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L250">    }</span>
+
+    /**
+     * Checks that the auto-range for the domain axis on an XYPlot is
+     * working as expected.
+     */
+    public void testXYAutoRange1() {
+<span class="fc" id="L257">        XYSeries series = new XYSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L258">        series.add(1.0, 1.0);</span>
+<span class="fc" id="L259">        series.add(2.0, 2.0);</span>
+<span class="fc" id="L260">        series.add(3.0, 3.0);</span>
+<span class="fc" id="L261">        XYSeriesCollection dataset = new XYSeriesCollection();</span>
+<span class="fc" id="L262">        dataset.addSeries(series);</span>
+<span class="fc" id="L263">        JFreeChart chart = ChartFactory.createScatterPlot(</span>
+            &quot;Test&quot;,
+            &quot;X&quot;,
+            &quot;Y&quot;,
+            dataset,
+            PlotOrientation.VERTICAL,
+            false,
+            false,
+            false
+        );
+<span class="fc" id="L273">        XYPlot plot = (XYPlot) chart.getPlot();</span>
+<span class="fc" id="L274">        LogAxis axis = new LogAxis(&quot;Log(Y)&quot;);</span>
+<span class="fc" id="L275">        plot.setRangeAxis(axis);</span>
+<span class="fc" id="L276">        assertEquals(0.9465508226401592, axis.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L277">        assertEquals(3.1694019256486126, axis.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L278">    }</span>
+
+    /**
+     * Checks that the auto-range for the range axis on an XYPlot is
+     * working as expected.
+     */
+    public void testXYAutoRange2() {
+<span class="fc" id="L285">        XYSeries series = new XYSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L286">        series.add(1.0, 1.0);</span>
+<span class="fc" id="L287">        series.add(2.0, 2.0);</span>
+<span class="fc" id="L288">        series.add(3.0, 3.0);</span>
+<span class="fc" id="L289">        XYSeriesCollection dataset = new XYSeriesCollection();</span>
+<span class="fc" id="L290">        dataset.addSeries(series);</span>
+<span class="fc" id="L291">        JFreeChart chart = ChartFactory.createScatterPlot(</span>
+            &quot;Test&quot;,
+            &quot;X&quot;,
+            &quot;Y&quot;,
+            dataset,
+            PlotOrientation.VERTICAL,
+            false,
+            false,
+            false
+        );
+<span class="fc" id="L301">        XYPlot plot = (XYPlot) chart.getPlot();</span>
+<span class="fc" id="L302">        LogAxis axis = new LogAxis(&quot;Log(Y)&quot;);</span>
+<span class="fc" id="L303">        plot.setRangeAxis(axis);</span>
+<span class="fc" id="L304">        assertEquals(0.9465508226401592, axis.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L305">        assertEquals(3.1694019256486126, axis.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L306">    }</span>
+
+    /**
+     * Some checks for the setLowerBound() method.
+     */
+    public void testSetLowerBound() {
+<span class="fc" id="L312">        LogAxis axis = new LogAxis(&quot;X&quot;);</span>
+<span class="fc" id="L313">        axis.setRange(0.0, 10.0);</span>
+<span class="fc" id="L314">        axis.setLowerBound(5.0);</span>
+<span class="fc" id="L315">        assertEquals(5.0, axis.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L316">        axis.setLowerBound(10.0);</span>
+<span class="fc" id="L317">        assertEquals(10.0, axis.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L318">        assertEquals(11.0, axis.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L319">    }</span>
+
+    /**
+     * Checks the default value for the tickMarksVisible flag.
+     */
+    public void testTickMarksVisibleDefault() {
+<span class="fc" id="L325">        LogAxis axis = new LogAxis(&quot;Log Axis&quot;);</span>
+<span class="fc" id="L326">        assertTrue(axis.isTickMarksVisible());</span>
+<span class="fc" id="L327">    }</span>
+    
+    /**
+     * Checks that a TickUnit with a size of 0 doesn't crash.
+     */
+    public void testrefreshTicksWithZeroTickUnit() {
+<span class="fc" id="L333">        LogAxis axis = new LogAxis();</span>
+<span class="fc" id="L334">        AxisState state = new AxisState();</span>
+<span class="fc" id="L335">        BufferedImage image = new BufferedImage(200, 100,</span>
+                BufferedImage.TYPE_INT_ARGB);
+<span class="fc" id="L337">        Graphics2D g2 = image.createGraphics();</span>
+<span class="fc" id="L338">        Rectangle2D area = new Rectangle2D.Double(0.0, 0.0, 200, 100);</span>
+<span class="fc" id="L339">        axis.refreshTicks(g2, state, area, RectangleEdge.TOP);</span>
+<span class="fc" id="L340">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

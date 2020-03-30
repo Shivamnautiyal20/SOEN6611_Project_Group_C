@@ -1,0 +1,1863 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContourPlot.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot</a> &gt; <span class="el_source">ContourPlot.java</span></div><h1>ContourPlot.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------
+ * ContourPlot.java
+ * ----------------
+ * (C) Copyright 2002-2009, by David M. O'Donnell and Contributors.
+ *
+ * Original Author:  David M. O'Donnell;
+ * Contributor(s):   David Gilbert (for Object Refinery Limited);
+ *                   Arnaud Lelievre;
+ *                   Nicolas Brodu;
+ *
+ * Changes
+ * -------
+ * 26-Nov-2002 : Version 1 contributed by David M. O'Donnell (DG);
+ * 14-Jan-2003 : Added crosshair attributes (DG);
+ * 23-Jan-2003 : Removed two constructors (DG);
+ * 21-Mar-2003 : Bug fix 701744 (DG);
+ * 26-Mar-2003 : Implemented Serializable (DG);
+ * 09-Jul-2003 : Changed ColorBar from extending axis classes to enclosing
+ *               them (DG);
+ * 05-Aug-2003 : Applied changes in bug report 780298 (DG);
+ * 08-Sep-2003 : Added internationalization via use of properties
+ *               resourceBundle (RFE 690236) (AL);
+ * 11-Sep-2003 : Cloning support (NB);
+ * 16-Sep-2003 : Changed ChartRenderingInfo --&gt; PlotRenderingInfo (DG);
+ * 17-Jan-2004 : Removed references to DefaultContourDataset class, replaced
+ *               with ContourDataset interface (with changes to the interface).
+ *               See bug 741048 (DG);
+ * 21-Jan-2004 : Update for renamed method in ValueAxis (DG);
+ * 25-Feb-2004 : Replaced CrosshairInfo with CrosshairState (DG);
+ * 06-Oct-2004 : Updated for changes in DatasetUtilities class (DG);
+ * 11-Nov-2004 : Renamed zoom methods to match ValueAxisPlot interface (DG);
+ * 25-Nov-2004 : Small update to clone() implementation (DG);
+ * 11-Jan-2005 : Removed deprecated code in preparation for 1.0.0 release (DG);
+ * 05-May-2005 : Updated draw() method parameters (DG);
+ * 16-Jun-2005 : Added default constructor (DG);
+ * 01-Sep-2005 : Moved dataAreaRatio from Plot to here (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 31-Jan-2007 : Deprecated (DG);
+ * 18-Dec-2008 : Use ResourceBundleWrapper - see patch 1607918 by
+ *               Jess Thrysoee (DG);
+ * 19-May-2009 : Fixed FindBugs warnings, patch by Michal Wozniak (DG);
+ *
+ */
+
+package org.jfree.chart.plot;
+
+import java.awt.AlphaComposite;
+import java.awt.Composite;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.Stroke;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RectangularShape;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ResourceBundle;
+
+import org.jfree.chart.ClipPath;
+import org.jfree.chart.annotations.XYAnnotation;
+import org.jfree.chart.axis.AxisSpace;
+import org.jfree.chart.axis.ColorBar;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.entity.ContourEntity;
+import org.jfree.chart.entity.EntityCollection;
+import org.jfree.chart.event.AxisChangeEvent;
+import org.jfree.chart.event.PlotChangeEvent;
+import org.jfree.chart.labels.ContourToolTipGenerator;
+import org.jfree.chart.labels.StandardContourToolTipGenerator;
+import org.jfree.chart.renderer.xy.XYBlockRenderer;
+import org.jfree.chart.urls.XYURLGenerator;
+import org.jfree.chart.util.ResourceBundleWrapper;
+import org.jfree.data.Range;
+import org.jfree.data.contour.ContourDataset;
+import org.jfree.data.general.DatasetChangeEvent;
+import org.jfree.data.general.DatasetUtilities;
+import org.jfree.ui.RectangleEdge;
+import org.jfree.ui.RectangleInsets;
+import org.jfree.util.ObjectUtilities;
+
+/**
+ * A class for creating shaded contours.
+ *
+ * @deprecated This plot is no longer supported, please use {@link XYPlot} with
+ *     an {@link XYBlockRenderer}.
+ */
+public class ContourPlot extends Plot implements ContourValuePlot,
+        ValueAxisPlot, PropertyChangeListener, Serializable, Cloneable {
+
+    /** For serialization. */
+    private static final long serialVersionUID = 7861072556590502247L;
+
+    /** The default insets. */
+<span class="fc" id="L129">    protected static final RectangleInsets DEFAULT_INSETS</span>
+            = new RectangleInsets(2.0, 2.0, 100.0, 10.0);
+
+    /** The domain axis (used for the x-values). */
+    private ValueAxis domainAxis;
+
+    /** The range axis (used for the y-values). */
+    private ValueAxis rangeAxis;
+
+    /** The dataset. */
+    private ContourDataset dataset;
+
+    /** The colorbar axis (used for the z-values). */
+<span class="fc" id="L142">    private ColorBar colorBar = null;</span>
+
+    /** The color bar location. */
+    private RectangleEdge colorBarLocation;
+
+    /** A flag that controls whether or not a domain crosshair is drawn..*/
+    private boolean domainCrosshairVisible;
+
+    /** The domain crosshair value. */
+    private double domainCrosshairValue;
+
+    /** The pen/brush used to draw the crosshair (if any). */
+    private transient Stroke domainCrosshairStroke;
+
+    /** The color used to draw the crosshair (if any). */
+    private transient Paint domainCrosshairPaint;
+
+    /**
+     * A flag that controls whether or not the crosshair locks onto actual data
+     * points.
+     */
+<span class="fc" id="L163">    private boolean domainCrosshairLockedOnData = true;</span>
+
+    /** A flag that controls whether or not a range crosshair is drawn..*/
+    private boolean rangeCrosshairVisible;
+
+    /** The range crosshair value. */
+    private double rangeCrosshairValue;
+
+    /** The pen/brush used to draw the crosshair (if any). */
+    private transient Stroke rangeCrosshairStroke;
+
+    /** The color used to draw the crosshair (if any). */
+    private transient Paint rangeCrosshairPaint;
+
+    /**
+     * A flag that controls whether or not the crosshair locks onto actual data
+     * points.
+     */
+<span class="fc" id="L181">    private boolean rangeCrosshairLockedOnData = true;</span>
+
+    /**
+     * Defines dataArea rectangle as the ratio formed from dividing height by
+     * width (of the dataArea).  Modifies plot area calculations.
+     * ratio&gt;0 will attempt to layout the plot so that the
+     * dataArea.height/dataArea.width = ratio.
+     * ratio&lt;0 will attempt to layout the plot so that the
+     * dataArea.height/dataArea.width in plot units (not java2D units as when
+     * ratio&gt;0) = -1.*ratio.
+     */         //dmo
+<span class="fc" id="L192">    private double dataAreaRatio = 0.0;  //zero when the parameter is not set</span>
+
+    /** A list of markers (optional) for the domain axis. */
+    private List domainMarkers;
+
+    /** A list of markers (optional) for the range axis. */
+    private List rangeMarkers;
+
+    /** A list of annotations (optional) for the plot. */
+    private List annotations;
+
+    /** The tool tip generator. */
+    private ContourToolTipGenerator toolTipGenerator;
+
+    /** The URL text generator. */
+    private XYURLGenerator urlGenerator;
+
+    /**
+     * Controls whether data are render as filled rectangles or rendered as
+     * points
+     */
+<span class="fc" id="L213">    private boolean renderAsPoints = false;</span>
+
+    /**
+     * Size of points rendered when renderAsPoints = true.  Size is relative to
+     * dataArea
+     */
+<span class="fc" id="L219">    private double ptSizePct = 0.05;</span>
+
+    /** Contains the a ClipPath to &quot;trim&quot; the contours. */
+<span class="fc" id="L222">    private transient ClipPath clipPath = null;</span>
+
+    /** Set to Paint to represent missing values. */
+<span class="fc" id="L225">    private transient Paint missingPaint = null;</span>
+
+    /** The resourceBundle for the localization. */
+<span class="fc" id="L228">    protected static ResourceBundle localizationResources</span>
+<span class="fc" id="L229">            = ResourceBundleWrapper.getBundle(</span>
+                    &quot;org.jfree.chart.plot.LocalizationBundle&quot;);
+
+    /**
+     * Creates a new plot with no dataset or axes.
+     */
+    public ContourPlot() {
+<span class="nc" id="L236">        this(null, null, null, null);</span>
+<span class="nc" id="L237">    }</span>
+
+    /**
+     * Constructs a contour plot with the specified axes (other attributes take
+     * default values).
+     *
+     * @param dataset  The dataset.
+     * @param domainAxis  The domain axis.
+     * @param rangeAxis  The range axis.
+     * @param colorBar  The z-axis axis.
+    */
+    public ContourPlot(ContourDataset dataset,
+                       ValueAxis domainAxis, ValueAxis rangeAxis,
+                       ColorBar colorBar) {
+
+<span class="fc" id="L252">        super();</span>
+
+<span class="fc" id="L254">        this.dataset = dataset;</span>
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">        if (dataset != null) {</span>
+<span class="nc" id="L256">            dataset.addChangeListener(this);</span>
+        }
+
+<span class="fc" id="L259">        this.domainAxis = domainAxis;</span>
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">        if (domainAxis != null) {</span>
+<span class="nc" id="L261">            domainAxis.setPlot(this);</span>
+<span class="nc" id="L262">            domainAxis.addChangeListener(this);</span>
+        }
+
+<span class="fc" id="L265">        this.rangeAxis = rangeAxis;</span>
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">        if (rangeAxis != null) {</span>
+<span class="nc" id="L267">            rangeAxis.setPlot(this);</span>
+<span class="nc" id="L268">            rangeAxis.addChangeListener(this);</span>
+        }
+
+<span class="fc" id="L271">        this.colorBar = colorBar;</span>
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">        if (colorBar != null) {</span>
+<span class="nc" id="L273">            colorBar.getAxis().setPlot(this);</span>
+<span class="nc" id="L274">            colorBar.getAxis().addChangeListener(this);</span>
+<span class="nc" id="L275">            colorBar.configure(this);</span>
+        }
+<span class="fc" id="L277">        this.colorBarLocation = RectangleEdge.LEFT;</span>
+
+<span class="fc" id="L279">        this.toolTipGenerator = new StandardContourToolTipGenerator();</span>
+
+<span class="fc" id="L281">    }</span>
+
+    /**
+     * Returns the color bar location.
+     *
+     * @return The color bar location.
+     */
+    public RectangleEdge getColorBarLocation() {
+<span class="nc" id="L289">        return this.colorBarLocation;</span>
+    }
+
+    /**
+     * Sets the color bar location and sends a {@link PlotChangeEvent} to all
+     * registered listeners.
+     *
+     * @param edge  the location.
+     */
+    public void setColorBarLocation(RectangleEdge edge) {
+<span class="nc" id="L299">        this.colorBarLocation = edge;</span>
+<span class="nc" id="L300">        fireChangeEvent();</span>
+<span class="nc" id="L301">    }</span>
+
+    /**
+     * Returns the primary dataset for the plot.
+     *
+     * @return The primary dataset (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public ContourDataset getDataset() {
+<span class="nc" id="L309">        return this.dataset;</span>
+    }
+
+    /**
+     * Sets the dataset for the plot, replacing the existing dataset if there
+     * is one.
+     *
+     * @param dataset  the dataset (&lt;code&gt;null&lt;/code&gt; permitted).
+     */
+    public void setDataset(ContourDataset dataset) {
+
+        // if there is an existing dataset, remove the plot from the list of
+        // change listeners...
+<span class="nc" id="L322">        ContourDataset existing = this.dataset;</span>
+<span class="nc bnc" id="L323" title="All 2 branches missed.">        if (existing != null) {</span>
+<span class="nc" id="L324">            existing.removeChangeListener(this);</span>
+        }
+
+        // set the new dataset, and register the chart as a change listener...
+<span class="nc" id="L328">        this.dataset = dataset;</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">        if (dataset != null) {</span>
+<span class="nc" id="L330">            setDatasetGroup(dataset.getGroup());</span>
+<span class="nc" id="L331">            dataset.addChangeListener(this);</span>
+        }
+
+        // send a dataset change event to self...
+<span class="nc" id="L335">        DatasetChangeEvent event = new DatasetChangeEvent(this, dataset);</span>
+<span class="nc" id="L336">        datasetChanged(event);</span>
+
+<span class="nc" id="L338">    }</span>
+
+    /**
+     * Returns the domain axis for the plot.
+     *
+     * @return The domain axis.
+     */
+    public ValueAxis getDomainAxis() {
+
+<span class="nc" id="L347">        ValueAxis result = this.domainAxis;</span>
+
+<span class="nc" id="L349">        return result;</span>
+
+    }
+
+    /**
+     * Sets the domain axis for the plot (this must be compatible with the plot
+     * type or an exception is thrown).
+     *
+     * @param axis The new axis.
+     */
+    public void setDomainAxis(ValueAxis axis) {
+
+<span class="nc bnc" id="L361" title="All 2 branches missed.">        if (isCompatibleDomainAxis(axis)) {</span>
+
+<span class="nc bnc" id="L363" title="All 2 branches missed.">            if (axis != null) {</span>
+<span class="nc" id="L364">                axis.setPlot(this);</span>
+<span class="nc" id="L365">                axis.addChangeListener(this);</span>
+            }
+
+            // plot is likely registered as a listener with the existing axis...
+<span class="nc bnc" id="L369" title="All 2 branches missed.">            if (this.domainAxis != null) {</span>
+<span class="nc" id="L370">                this.domainAxis.removeChangeListener(this);</span>
+            }
+
+<span class="nc" id="L373">            this.domainAxis = axis;</span>
+<span class="nc" id="L374">            fireChangeEvent();</span>
+
+        }
+
+<span class="nc" id="L378">    }</span>
+
+    /**
+     * Returns the range axis for the plot.
+     *
+     * @return The range axis.
+     */
+    public ValueAxis getRangeAxis() {
+
+<span class="nc" id="L387">        ValueAxis result = this.rangeAxis;</span>
+
+<span class="nc" id="L389">        return result;</span>
+
+    }
+
+    /**
+     * Sets the range axis for the plot.
+     * &lt;P&gt;
+     * An exception is thrown if the new axis and the plot are not mutually
+     * compatible.
+     *
+     * @param axis The new axis (null permitted).
+     */
+    public void setRangeAxis(ValueAxis axis) {
+
+<span class="nc bnc" id="L403" title="All 2 branches missed.">        if (axis != null) {</span>
+<span class="nc" id="L404">            axis.setPlot(this);</span>
+<span class="nc" id="L405">            axis.addChangeListener(this);</span>
+        }
+
+        // plot is likely registered as a listener with the existing axis...
+<span class="nc bnc" id="L409" title="All 2 branches missed.">        if (this.rangeAxis != null) {</span>
+<span class="nc" id="L410">            this.rangeAxis.removeChangeListener(this);</span>
+        }
+
+<span class="nc" id="L413">        this.rangeAxis = axis;</span>
+<span class="nc" id="L414">        fireChangeEvent();</span>
+
+<span class="nc" id="L416">    }</span>
+
+    /**
+     * Sets the colorbar for the plot.
+     *
+     * @param axis The new axis (null permitted).
+     */
+    public void setColorBarAxis(ColorBar axis) {
+
+<span class="nc" id="L425">        this.colorBar = axis;</span>
+<span class="nc" id="L426">        fireChangeEvent();</span>
+
+<span class="nc" id="L428">    }</span>
+
+    /**
+     * Returns the data area ratio.
+     *
+     * @return The ratio.
+     */
+    public double getDataAreaRatio() {
+<span class="nc" id="L436">        return this.dataAreaRatio;</span>
+    }
+
+    /**
+     * Sets the data area ratio.
+     *
+     * @param ratio  the ratio.
+     */
+    public void setDataAreaRatio(double ratio) {
+<span class="nc" id="L445">        this.dataAreaRatio = ratio;</span>
+<span class="nc" id="L446">    }</span>
+
+    /**
+     * Adds a marker for the domain axis.
+     * &lt;P&gt;
+     * Typically a marker will be drawn by the renderer as a line perpendicular
+     * to the range axis, however this is entirely up to the renderer.
+     *
+     * @param marker the marker.
+     */
+    public void addDomainMarker(Marker marker) {
+
+<span class="nc bnc" id="L458" title="All 2 branches missed.">        if (this.domainMarkers == null) {</span>
+<span class="nc" id="L459">            this.domainMarkers = new java.util.ArrayList();</span>
+        }
+<span class="nc" id="L461">        this.domainMarkers.add(marker);</span>
+<span class="nc" id="L462">        fireChangeEvent();</span>
+
+<span class="nc" id="L464">    }</span>
+
+    /**
+     * Clears all the domain markers.
+     */
+    public void clearDomainMarkers() {
+<span class="nc bnc" id="L470" title="All 2 branches missed.">        if (this.domainMarkers != null) {</span>
+<span class="nc" id="L471">            this.domainMarkers.clear();</span>
+<span class="nc" id="L472">            fireChangeEvent();</span>
+        }
+<span class="nc" id="L474">    }</span>
+
+    /**
+     * Adds a marker for the range axis.
+     * &lt;P&gt;
+     * Typically a marker will be drawn by the renderer as a line perpendicular
+     * to the range axis, however this is entirely up to the renderer.
+     *
+     * @param marker The marker.
+     */
+    public void addRangeMarker(Marker marker) {
+
+<span class="nc bnc" id="L486" title="All 2 branches missed.">        if (this.rangeMarkers == null) {</span>
+<span class="nc" id="L487">            this.rangeMarkers = new java.util.ArrayList();</span>
+        }
+<span class="nc" id="L489">        this.rangeMarkers.add(marker);</span>
+<span class="nc" id="L490">        fireChangeEvent();</span>
+
+<span class="nc" id="L492">    }</span>
+
+    /**
+     * Clears all the range markers.
+     */
+    public void clearRangeMarkers() {
+<span class="nc bnc" id="L498" title="All 2 branches missed.">        if (this.rangeMarkers != null) {</span>
+<span class="nc" id="L499">            this.rangeMarkers.clear();</span>
+<span class="nc" id="L500">            fireChangeEvent();</span>
+        }
+<span class="nc" id="L502">    }</span>
+
+    /**
+     * Adds an annotation to the plot.
+     *
+     * @param annotation  the annotation.
+     */
+    public void addAnnotation(XYAnnotation annotation) {
+
+<span class="nc bnc" id="L511" title="All 2 branches missed.">        if (this.annotations == null) {</span>
+<span class="nc" id="L512">            this.annotations = new java.util.ArrayList();</span>
+        }
+<span class="nc" id="L514">        this.annotations.add(annotation);</span>
+<span class="nc" id="L515">        fireChangeEvent();</span>
+
+<span class="nc" id="L517">    }</span>
+
+    /**
+     * Clears all the annotations.
+     */
+    public void clearAnnotations() {
+<span class="nc bnc" id="L523" title="All 2 branches missed.">        if (this.annotations != null) {</span>
+<span class="nc" id="L524">            this.annotations.clear();</span>
+<span class="nc" id="L525">            fireChangeEvent();</span>
+        }
+<span class="nc" id="L527">    }</span>
+
+    /**
+     * Checks the compatibility of a domain axis, returning true if the axis is
+     * compatible with the plot, and false otherwise.
+     *
+     * @param axis The proposed axis.
+     *
+     * @return &lt;code&gt;true&lt;/code&gt; if the axis is compatible with the plot.
+     */
+    public boolean isCompatibleDomainAxis(ValueAxis axis) {
+
+<span class="nc" id="L539">        return true;</span>
+
+    }
+
+    /**
+     * Draws the plot on a Java 2D graphics device (such as the screen or a
+     * printer).
+     * &lt;P&gt;
+     * The optional &lt;code&gt;info&lt;/code&gt; argument collects information about the
+     * rendering of the plot (dimensions, tooltip information etc).  Just pass
+     * in &lt;code&gt;null&lt;/code&gt; if you do not need this information.
+     *
+     * @param g2  the graphics device.
+     * @param area  the area within which the plot (including axis labels)
+     *              should be drawn.
+     * @param anchor  the anchor point (&lt;code&gt;null&lt;/code&gt; permitted).
+     * @param parentState  the state from the parent plot, if there is one.
+     * @param info  collects chart drawing information (&lt;code&gt;null&lt;/code&gt;
+     *              permitted).
+     */
+    public void draw(Graphics2D g2, Rectangle2D area, Point2D anchor,
+                     PlotState parentState,
+                     PlotRenderingInfo info) {
+
+        // if the plot area is too small, just return...
+<span class="nc bnc" id="L564" title="All 2 branches missed.">        boolean b1 = (area.getWidth() &lt;= MINIMUM_WIDTH_TO_DRAW);</span>
+<span class="nc bnc" id="L565" title="All 2 branches missed.">        boolean b2 = (area.getHeight() &lt;= MINIMUM_HEIGHT_TO_DRAW);</span>
+<span class="nc bnc" id="L566" title="All 4 branches missed.">        if (b1 || b2) {</span>
+<span class="nc" id="L567">            return;</span>
+        }
+
+        // record the plot area...
+<span class="nc bnc" id="L571" title="All 2 branches missed.">        if (info != null) {</span>
+<span class="nc" id="L572">            info.setPlotArea(area);</span>
+        }
+
+        // adjust the drawing area for plot insets (if any)...
+<span class="nc" id="L576">        RectangleInsets insets = getInsets();</span>
+<span class="nc" id="L577">        insets.trim(area);</span>
+
+<span class="nc" id="L579">        AxisSpace space = new AxisSpace();</span>
+
+<span class="nc" id="L581">        space = this.domainAxis.reserveSpace(g2, this, area,</span>
+                RectangleEdge.BOTTOM, space);
+<span class="nc" id="L583">        space = this.rangeAxis.reserveSpace(g2, this, area,</span>
+                RectangleEdge.LEFT, space);
+
+<span class="nc" id="L586">        Rectangle2D estimatedDataArea = space.shrink(area, null);</span>
+
+<span class="nc" id="L588">        AxisSpace space2 = new AxisSpace();</span>
+<span class="nc" id="L589">        space2 = this.colorBar.reserveSpace(g2, this, area, estimatedDataArea,</span>
+                this.colorBarLocation, space2);
+<span class="nc" id="L591">        Rectangle2D adjustedPlotArea = space2.shrink(area, null);</span>
+
+<span class="nc" id="L593">        Rectangle2D dataArea = space.shrink(adjustedPlotArea, null);</span>
+
+<span class="nc" id="L595">        Rectangle2D colorBarArea = space2.reserved(area, this.colorBarLocation);</span>
+
+        // additional dataArea modifications
+<span class="nc bnc" id="L598" title="All 2 branches missed.">        if (getDataAreaRatio() != 0.0) { //check whether modification is</span>
+<span class="nc" id="L599">            double ratio = getDataAreaRatio();</span>
+<span class="nc" id="L600">            Rectangle2D tmpDataArea = (Rectangle2D) dataArea.clone();</span>
+<span class="nc" id="L601">            double h = tmpDataArea.getHeight();</span>
+<span class="nc" id="L602">            double w = tmpDataArea.getWidth();</span>
+
+<span class="nc bnc" id="L604" title="All 2 branches missed.">            if (ratio &gt; 0) { // ratio represents pixels</span>
+<span class="nc bnc" id="L605" title="All 2 branches missed.">                if (w * ratio &lt;= h) {</span>
+<span class="nc" id="L606">                    h = ratio * w;</span>
+                }
+                else {
+<span class="nc" id="L609">                    w = h / ratio;</span>
+                }
+            }
+            else {  // ratio represents axis units
+<span class="nc" id="L613">                ratio *= -1.0;</span>
+<span class="nc" id="L614">                double xLength = getDomainAxis().getRange().getLength();</span>
+<span class="nc" id="L615">                double yLength = getRangeAxis().getRange().getLength();</span>
+<span class="nc" id="L616">                double unitRatio = yLength / xLength;</span>
+
+<span class="nc" id="L618">                ratio = unitRatio * ratio;</span>
+
+<span class="nc bnc" id="L620" title="All 2 branches missed.">                if (w * ratio &lt;= h) {</span>
+<span class="nc" id="L621">                    h = ratio * w;</span>
+                }
+                else {
+<span class="nc" id="L624">                    w = h / ratio;</span>
+                }
+            }
+
+<span class="nc" id="L628">            dataArea.setRect(tmpDataArea.getX() + tmpDataArea.getWidth() / 2</span>
+<span class="nc" id="L629">                    - w / 2, tmpDataArea.getY(), w, h);</span>
+        }
+
+<span class="nc bnc" id="L632" title="All 2 branches missed.">        if (info != null) {</span>
+<span class="nc" id="L633">            info.setDataArea(dataArea);</span>
+        }
+
+<span class="nc" id="L636">        CrosshairState crosshairState = new CrosshairState();</span>
+<span class="nc" id="L637">        crosshairState.setCrosshairDistance(Double.POSITIVE_INFINITY);</span>
+
+        // draw the plot background...
+<span class="nc" id="L640">        drawBackground(g2, dataArea);</span>
+
+<span class="nc" id="L642">        double cursor = dataArea.getMaxY();</span>
+<span class="nc bnc" id="L643" title="All 2 branches missed.">        if (this.domainAxis != null) {</span>
+<span class="nc" id="L644">            this.domainAxis.draw(g2, cursor, adjustedPlotArea, dataArea,</span>
+                    RectangleEdge.BOTTOM, info);
+        }
+
+<span class="nc bnc" id="L648" title="All 2 branches missed.">        if (this.rangeAxis != null) {</span>
+<span class="nc" id="L649">            cursor = dataArea.getMinX();</span>
+<span class="nc" id="L650">            this.rangeAxis.draw(g2, cursor, adjustedPlotArea, dataArea,</span>
+                    RectangleEdge.LEFT, info);
+        }
+
+<span class="nc bnc" id="L654" title="All 2 branches missed.">        if (this.colorBar != null) {</span>
+<span class="nc" id="L655">            cursor = 0.0;</span>
+<span class="nc" id="L656">            this.colorBar.draw(g2, cursor, adjustedPlotArea, dataArea,</span>
+                    colorBarArea, this.colorBarLocation);
+        }
+<span class="nc" id="L659">        Shape originalClip = g2.getClip();</span>
+<span class="nc" id="L660">        Composite originalComposite = g2.getComposite();</span>
+
+<span class="nc" id="L662">        g2.clip(dataArea);</span>
+<span class="nc" id="L663">        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,</span>
+<span class="nc" id="L664">                getForegroundAlpha()));</span>
+<span class="nc" id="L665">        render(g2, dataArea, info, crosshairState);</span>
+
+<span class="nc bnc" id="L667" title="All 2 branches missed.">        if (this.domainMarkers != null) {</span>
+<span class="nc" id="L668">            Iterator iterator = this.domainMarkers.iterator();</span>
+<span class="nc bnc" id="L669" title="All 2 branches missed.">            while (iterator.hasNext()) {</span>
+<span class="nc" id="L670">                Marker marker = (Marker) iterator.next();</span>
+<span class="nc" id="L671">                drawDomainMarker(g2, this, getDomainAxis(), marker, dataArea);</span>
+<span class="nc" id="L672">            }</span>
+        }
+
+<span class="nc bnc" id="L675" title="All 2 branches missed.">        if (this.rangeMarkers != null) {</span>
+<span class="nc" id="L676">            Iterator iterator = this.rangeMarkers.iterator();</span>
+<span class="nc bnc" id="L677" title="All 2 branches missed.">            while (iterator.hasNext()) {</span>
+<span class="nc" id="L678">                Marker marker = (Marker) iterator.next();</span>
+<span class="nc" id="L679">                drawRangeMarker(g2, this, getRangeAxis(), marker, dataArea);</span>
+<span class="nc" id="L680">            }</span>
+        }
+
+// TO DO:  these annotations only work with XYPlot, see if it is possible to
+// make ContourPlot a subclass of XYPlot (DG);
+
+//        // draw the annotations...
+//        if (this.annotations != null) {
+//            Iterator iterator = this.annotations.iterator();
+//            while (iterator.hasNext()) {
+//                Annotation annotation = (Annotation) iterator.next();
+//                if (annotation instanceof XYAnnotation) {
+//                    XYAnnotation xya = (XYAnnotation) annotation;
+//                    // get the annotation to draw itself...
+//                    xya.draw(g2, this, dataArea, getDomainAxis(),
+//                             getRangeAxis());
+//                }
+//            }
+//        }
+
+<span class="nc" id="L700">        g2.setClip(originalClip);</span>
+<span class="nc" id="L701">        g2.setComposite(originalComposite);</span>
+<span class="nc" id="L702">        drawOutline(g2, dataArea);</span>
+
+<span class="nc" id="L704">    }</span>
+
+    /**
+     * Draws a representation of the data within the dataArea region, using the
+     * current renderer.
+     * &lt;P&gt;
+     * The &lt;code&gt;info&lt;/code&gt; and &lt;code&gt;crosshairState&lt;/code&gt; arguments may be
+     * &lt;code&gt;null&lt;/code&gt;.
+     *
+     * @param g2  the graphics device.
+     * @param dataArea  the region in which the data is to be drawn.
+     * @param info  an optional object for collection dimension information.
+     * @param crosshairState  an optional object for collecting crosshair info.
+     */
+    public void render(Graphics2D g2, Rectangle2D dataArea,
+                       PlotRenderingInfo info, CrosshairState crosshairState) {
+
+        // now get the data and plot it (the visual representation will depend
+        // on the renderer that has been set)...
+<span class="nc" id="L723">        ContourDataset data = getDataset();</span>
+<span class="nc bnc" id="L724" title="All 2 branches missed.">        if (data != null) {</span>
+
+<span class="nc" id="L726">            ColorBar zAxis = getColorBar();</span>
+
+<span class="nc bnc" id="L728" title="All 2 branches missed.">            if (this.clipPath != null) {</span>
+<span class="nc" id="L729">                GeneralPath clipper = getClipPath().draw(g2, dataArea,</span>
+                        this.domainAxis, this.rangeAxis);
+<span class="nc bnc" id="L731" title="All 2 branches missed.">                if (this.clipPath.isClip()) {</span>
+<span class="nc" id="L732">                    g2.clip(clipper);</span>
+                }
+            }
+
+<span class="nc bnc" id="L736" title="All 2 branches missed.">            if (this.renderAsPoints) {</span>
+<span class="nc" id="L737">                pointRenderer(g2, dataArea, info, this, this.domainAxis,</span>
+                        this.rangeAxis, zAxis, data, crosshairState);
+            }
+            else {
+<span class="nc" id="L741">                contourRenderer(g2, dataArea, info, this, this.domainAxis,</span>
+                        this.rangeAxis, zAxis, data, crosshairState);
+            }
+
+            // draw vertical crosshair if required...
+<span class="nc" id="L746">            setDomainCrosshairValue(crosshairState.getCrosshairX(), false);</span>
+<span class="nc bnc" id="L747" title="All 2 branches missed.">            if (isDomainCrosshairVisible()) {</span>
+<span class="nc" id="L748">                drawVerticalLine(g2, dataArea,</span>
+<span class="nc" id="L749">                                 getDomainCrosshairValue(),</span>
+<span class="nc" id="L750">                                 getDomainCrosshairStroke(),</span>
+<span class="nc" id="L751">                                 getDomainCrosshairPaint());</span>
+            }
+
+            // draw horizontal crosshair if required...
+<span class="nc" id="L755">            setRangeCrosshairValue(crosshairState.getCrosshairY(), false);</span>
+<span class="nc bnc" id="L756" title="All 2 branches missed.">            if (isRangeCrosshairVisible()) {</span>
+<span class="nc" id="L757">                drawHorizontalLine(g2, dataArea,</span>
+<span class="nc" id="L758">                                   getRangeCrosshairValue(),</span>
+<span class="nc" id="L759">                                   getRangeCrosshairStroke(),</span>
+<span class="nc" id="L760">                                   getRangeCrosshairPaint());</span>
+            }
+
+<span class="nc" id="L763">        }</span>
+<span class="nc bnc" id="L764" title="All 2 branches missed.">        else if (this.clipPath != null) {</span>
+<span class="nc" id="L765">            getClipPath().draw(g2, dataArea, this.domainAxis, this.rangeAxis);</span>
+        }
+
+<span class="nc" id="L768">    }</span>
+
+    /**
+     * Fills the plot.
+     *
+     * @param g2  the graphics device.
+     * @param dataArea  the area within which the data is being drawn.
+     * @param info  collects information about the drawing.
+     * @param plot  the plot (can be used to obtain standard color
+     *              information etc).
+     * @param horizontalAxis  the domain (horizontal) axis.
+     * @param verticalAxis  the range (vertical) axis.
+     * @param colorBar  the color bar axis.
+     * @param data  the dataset.
+     * @param crosshairState  information about crosshairs on a plot.
+     */
+    public void contourRenderer(Graphics2D g2,
+                                Rectangle2D dataArea,
+                                PlotRenderingInfo info,
+                                ContourPlot plot,
+                                ValueAxis horizontalAxis,
+                                ValueAxis verticalAxis,
+                                ColorBar colorBar,
+                                ContourDataset data,
+                                CrosshairState crosshairState) {
+
+        // setup for collecting optional entity info...
+<span class="nc" id="L795">        Rectangle2D.Double entityArea = null;</span>
+<span class="nc" id="L796">        EntityCollection entities = null;</span>
+<span class="nc bnc" id="L797" title="All 2 branches missed.">        if (info != null) {</span>
+<span class="nc" id="L798">            entities = info.getOwner().getEntityCollection();</span>
+        }
+
+<span class="nc" id="L801">        Rectangle2D.Double rect = null;</span>
+<span class="nc" id="L802">        rect = new Rectangle2D.Double();</span>
+
+        //turn off anti-aliasing when filling rectangles
+<span class="nc" id="L805">        Object antiAlias = g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING);</span>
+<span class="nc" id="L806">        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,</span>
+                RenderingHints.VALUE_ANTIALIAS_OFF);
+
+        // get the data points
+<span class="nc" id="L810">        Number[] xNumber = data.getXValues();</span>
+<span class="nc" id="L811">        Number[] yNumber = data.getYValues();</span>
+<span class="nc" id="L812">        Number[] zNumber = data.getZValues();</span>
+
+<span class="nc" id="L814">        double[] x = new double[xNumber.length];</span>
+<span class="nc" id="L815">        double[] y = new double[yNumber.length];</span>
+
+<span class="nc bnc" id="L817" title="All 2 branches missed.">        for (int i = 0; i &lt; x.length; i++) {</span>
+<span class="nc" id="L818">            x[i] = xNumber[i].doubleValue();</span>
+<span class="nc" id="L819">            y[i] = yNumber[i].doubleValue();</span>
+        }
+
+<span class="nc" id="L822">        int[] xIndex = data.indexX();</span>
+<span class="nc" id="L823">        int[] indexX = data.getXIndices();</span>
+<span class="nc" id="L824">        boolean vertInverted = ((NumberAxis) verticalAxis).isInverted();</span>
+<span class="nc" id="L825">        boolean horizInverted = false;</span>
+<span class="nc bnc" id="L826" title="All 2 branches missed.">        if (horizontalAxis instanceof NumberAxis) {</span>
+<span class="nc" id="L827">            horizInverted = ((NumberAxis) horizontalAxis).isInverted();</span>
+        }
+<span class="nc" id="L829">        double transX = 0.0;</span>
+<span class="nc" id="L830">        double transXm1 = 0.0;</span>
+<span class="nc" id="L831">        double transXp1 = 0.0;</span>
+<span class="nc" id="L832">        double transDXm1 = 0.0;</span>
+<span class="nc" id="L833">        double transDXp1 = 0.0;</span>
+<span class="nc" id="L834">        double transDX = 0.0;</span>
+<span class="nc" id="L835">        double transY = 0.0;</span>
+<span class="nc" id="L836">        double transYm1 = 0.0;</span>
+<span class="nc" id="L837">        double transYp1 = 0.0;</span>
+<span class="nc" id="L838">        double transDYm1 = 0.0;</span>
+<span class="nc" id="L839">        double transDYp1 = 0.0;</span>
+<span class="nc" id="L840">        double transDY = 0.0;</span>
+<span class="nc" id="L841">        int iMax = xIndex[xIndex.length - 1];</span>
+<span class="nc bnc" id="L842" title="All 2 branches missed.">        for (int k = 0; k &lt; x.length; k++) {</span>
+<span class="nc" id="L843">            int i = xIndex[k];</span>
+<span class="nc bnc" id="L844" title="All 2 branches missed.">            if (indexX[i] == k) { // this is a new column</span>
+<span class="nc bnc" id="L845" title="All 2 branches missed.">                if (i == 0) {</span>
+<span class="nc" id="L846">                    transX = horizontalAxis.valueToJava2D(x[k], dataArea,</span>
+                            RectangleEdge.BOTTOM);
+<span class="nc" id="L848">                    transXm1 = transX;</span>
+<span class="nc" id="L849">                    transXp1 = horizontalAxis.valueToJava2D(</span>
+                            x[indexX[i + 1]], dataArea, RectangleEdge.BOTTOM);
+<span class="nc" id="L851">                    transDXm1 = Math.abs(0.5 * (transX - transXm1));</span>
+<span class="nc" id="L852">                    transDXp1 = Math.abs(0.5 * (transX - transXp1));</span>
+                }
+<span class="nc bnc" id="L854" title="All 2 branches missed.">                else if (i == iMax) {</span>
+<span class="nc" id="L855">                    transX = horizontalAxis.valueToJava2D(x[k], dataArea,</span>
+                            RectangleEdge.BOTTOM);
+<span class="nc" id="L857">                    transXm1 = horizontalAxis.valueToJava2D(x[indexX[i - 1]],</span>
+                            dataArea, RectangleEdge.BOTTOM);
+<span class="nc" id="L859">                    transXp1 = transX;</span>
+<span class="nc" id="L860">                    transDXm1 = Math.abs(0.5 * (transX - transXm1));</span>
+<span class="nc" id="L861">                    transDXp1 = Math.abs(0.5 * (transX - transXp1));</span>
+                }
+                else {
+<span class="nc" id="L864">                    transX = horizontalAxis.valueToJava2D(x[k], dataArea,</span>
+                            RectangleEdge.BOTTOM);
+<span class="nc" id="L866">                    transXp1 = horizontalAxis.valueToJava2D(x[indexX[i + 1]],</span>
+                            dataArea, RectangleEdge.BOTTOM);
+<span class="nc" id="L868">                    transDXm1 = transDXp1;</span>
+<span class="nc" id="L869">                    transDXp1 = Math.abs(0.5 * (transX - transXp1));</span>
+                }
+
+<span class="nc bnc" id="L872" title="All 2 branches missed.">                if (horizInverted) {</span>
+<span class="nc" id="L873">                    transX -= transDXp1;</span>
+                }
+                else {
+<span class="nc" id="L876">                    transX -= transDXm1;</span>
+                }
+
+<span class="nc" id="L879">                transDX = transDXm1 + transDXp1;</span>
+
+<span class="nc" id="L881">                transY = verticalAxis.valueToJava2D(y[k], dataArea,</span>
+                        RectangleEdge.LEFT);
+<span class="nc" id="L883">                transYm1 = transY;</span>
+<span class="nc bnc" id="L884" title="All 2 branches missed.">                if (k + 1 == y.length) {</span>
+<span class="nc" id="L885">                    continue;</span>
+                }
+<span class="nc" id="L887">                transYp1 = verticalAxis.valueToJava2D(y[k + 1], dataArea,</span>
+                        RectangleEdge.LEFT);
+<span class="nc" id="L889">                transDYm1 = Math.abs(0.5 * (transY - transYm1));</span>
+<span class="nc" id="L890">                transDYp1 = Math.abs(0.5 * (transY - transYp1));</span>
+            }
+<span class="nc bnc" id="L892" title="All 6 branches missed.">            else if ((i &lt; indexX.length - 1</span>
+                     &amp;&amp; indexX[i + 1] - 1 == k) || k == x.length - 1) {
+                // end of column
+<span class="nc" id="L895">                transY = verticalAxis.valueToJava2D(y[k], dataArea,</span>
+                        RectangleEdge.LEFT);
+<span class="nc" id="L897">                transYm1 = verticalAxis.valueToJava2D(y[k - 1], dataArea,</span>
+                        RectangleEdge.LEFT);
+<span class="nc" id="L899">                transYp1 = transY;</span>
+<span class="nc" id="L900">                transDYm1 = Math.abs(0.5 * (transY - transYm1));</span>
+<span class="nc" id="L901">                transDYp1 = Math.abs(0.5 * (transY - transYp1));</span>
+            }
+            else {
+<span class="nc" id="L904">                transY = verticalAxis.valueToJava2D(y[k], dataArea,</span>
+                        RectangleEdge.LEFT);
+<span class="nc" id="L906">                transYp1 = verticalAxis.valueToJava2D(y[k + 1], dataArea,</span>
+                        RectangleEdge.LEFT);
+<span class="nc" id="L908">                transDYm1 = transDYp1;</span>
+<span class="nc" id="L909">                transDYp1 = Math.abs(0.5 * (transY - transYp1));</span>
+            }
+<span class="nc bnc" id="L911" title="All 2 branches missed.">            if (vertInverted) {</span>
+<span class="nc" id="L912">                transY -= transDYm1;</span>
+            }
+            else {
+<span class="nc" id="L915">                transY -= transDYp1;</span>
+            }
+
+<span class="nc" id="L918">            transDY = transDYm1 + transDYp1;</span>
+
+<span class="nc" id="L920">            rect.setRect(transX, transY, transDX, transDY);</span>
+<span class="nc bnc" id="L921" title="All 2 branches missed.">            if (zNumber[k] != null) {</span>
+<span class="nc" id="L922">                g2.setPaint(colorBar.getPaint(zNumber[k].doubleValue()));</span>
+<span class="nc" id="L923">                g2.fill(rect);</span>
+            }
+<span class="nc bnc" id="L925" title="All 2 branches missed.">            else if (this.missingPaint != null) {</span>
+<span class="nc" id="L926">                g2.setPaint(this.missingPaint);</span>
+<span class="nc" id="L927">                g2.fill(rect);</span>
+            }
+
+<span class="nc" id="L930">            entityArea = rect;</span>
+
+            // add an entity for the item...
+<span class="nc bnc" id="L933" title="All 2 branches missed.">            if (entities != null) {</span>
+<span class="nc" id="L934">                String tip = &quot;&quot;;</span>
+<span class="nc bnc" id="L935" title="All 2 branches missed.">                if (getToolTipGenerator() != null) {</span>
+<span class="nc" id="L936">                    tip = this.toolTipGenerator.generateToolTip(data, k);</span>
+                }
+//              Shape s = g2.getClip();
+//              if (s.contains(rect) || s.intersects(rect)) {
+<span class="nc" id="L940">                String url = null;</span>
+                // if (getURLGenerator() != null) {    //dmo: look at this later
+                //      url = getURLGenerator().generateURL(data, series, item);
+                // }
+                // Unlike XYItemRenderer, we need to clone entityArea since it
+                // reused.
+<span class="nc" id="L946">                ContourEntity entity = new ContourEntity(</span>
+<span class="nc" id="L947">                        (Rectangle2D.Double) entityArea.clone(), tip, url);</span>
+<span class="nc" id="L948">                entity.setIndex(k);</span>
+<span class="nc" id="L949">                entities.add(entity);</span>
+//              }
+            }
+
+            // do we need to update the crosshair values?
+<span class="nc bnc" id="L954" title="All 2 branches missed.">            if (plot.isDomainCrosshairLockedOnData()) {</span>
+<span class="nc bnc" id="L955" title="All 2 branches missed.">                if (plot.isRangeCrosshairLockedOnData()) {</span>
+                    // both axes
+<span class="nc" id="L957">                    crosshairState.updateCrosshairPoint(x[k], y[k], transX,</span>
+                            transY, PlotOrientation.VERTICAL);
+                }
+                else {
+                    // just the horizontal axis...
+<span class="nc" id="L962">                    crosshairState.updateCrosshairX(transX);</span>
+                }
+            }
+            else {
+<span class="nc bnc" id="L966" title="All 2 branches missed.">                if (plot.isRangeCrosshairLockedOnData()) {</span>
+                    // just the vertical axis...
+<span class="nc" id="L968">                    crosshairState.updateCrosshairY(transY);</span>
+                }
+            }
+        }
+
+<span class="nc" id="L973">        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAlias);</span>
+
+<span class="nc" id="L975">        return;</span>
+
+    }
+
+    /**
+     * Draws the visual representation of a single data item.
+     *
+     * @param g2  the graphics device.
+     * @param dataArea  the area within which the data is being drawn.
+     * @param info  collects information about the drawing.
+     * @param plot  the plot (can be used to obtain standard color
+     *              information etc).
+     * @param domainAxis  the domain (horizontal) axis.
+     * @param rangeAxis  the range (vertical) axis.
+     * @param colorBar  the color bar axis.
+     * @param data  the dataset.
+     * @param crosshairState  information about crosshairs on a plot.
+     */
+    public void pointRenderer(Graphics2D g2,
+                              Rectangle2D dataArea,
+                              PlotRenderingInfo info,
+                              ContourPlot plot,
+                              ValueAxis domainAxis,
+                              ValueAxis rangeAxis,
+                              ColorBar colorBar,
+                              ContourDataset data,
+                              CrosshairState crosshairState) {
+
+        // setup for collecting optional entity info...
+<span class="nc" id="L1004">        RectangularShape entityArea = null;</span>
+<span class="nc" id="L1005">        EntityCollection entities = null;</span>
+<span class="nc bnc" id="L1006" title="All 2 branches missed.">        if (info != null) {</span>
+<span class="nc" id="L1007">            entities = info.getOwner().getEntityCollection();</span>
+        }
+
+//      Rectangle2D.Double rect = null;
+//      rect = new Rectangle2D.Double();
+<span class="nc" id="L1012">        RectangularShape rect = new Ellipse2D.Double();</span>
+
+
+        //turn off anti-aliasing when filling rectangles
+<span class="nc" id="L1016">        Object antiAlias = g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING);</span>
+<span class="nc" id="L1017">        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,</span>
+                RenderingHints.VALUE_ANTIALIAS_OFF);
+
+        // if (tooltips!=null) tooltips.clearToolTips(); // reset collection
+        // get the data points
+<span class="nc" id="L1022">        Number[] xNumber = data.getXValues();</span>
+<span class="nc" id="L1023">        Number[] yNumber = data.getYValues();</span>
+<span class="nc" id="L1024">        Number[] zNumber = data.getZValues();</span>
+
+<span class="nc" id="L1026">        double[] x = new double[xNumber.length];</span>
+<span class="nc" id="L1027">        double[] y = new double[yNumber.length];</span>
+
+<span class="nc bnc" id="L1029" title="All 2 branches missed.">        for (int i = 0; i &lt; x.length; i++) {</span>
+<span class="nc" id="L1030">            x[i] = xNumber[i].doubleValue();</span>
+<span class="nc" id="L1031">            y[i] = yNumber[i].doubleValue();</span>
+        }
+
+<span class="nc" id="L1034">        double transX = 0.0;</span>
+<span class="nc" id="L1035">        double transDX = 0.0;</span>
+<span class="nc" id="L1036">        double transY = 0.0;</span>
+<span class="nc" id="L1037">        double transDY = 0.0;</span>
+<span class="nc" id="L1038">        double size = dataArea.getWidth() * this.ptSizePct;</span>
+<span class="nc bnc" id="L1039" title="All 2 branches missed.">        for (int k = 0; k &lt; x.length; k++) {</span>
+
+<span class="nc" id="L1041">            transX = domainAxis.valueToJava2D(x[k], dataArea,</span>
+                    RectangleEdge.BOTTOM) - 0.5 * size;
+<span class="nc" id="L1043">            transY = rangeAxis.valueToJava2D(y[k], dataArea, RectangleEdge.LEFT)</span>
+                     - 0.5 * size;
+<span class="nc" id="L1045">            transDX = size;</span>
+<span class="nc" id="L1046">            transDY = size;</span>
+
+<span class="nc" id="L1048">            rect.setFrame(transX, transY, transDX, transDY);</span>
+
+<span class="nc bnc" id="L1050" title="All 2 branches missed.">            if (zNumber[k] != null) {</span>
+<span class="nc" id="L1051">                g2.setPaint(colorBar.getPaint(zNumber[k].doubleValue()));</span>
+<span class="nc" id="L1052">                g2.fill(rect);</span>
+            }
+<span class="nc bnc" id="L1054" title="All 2 branches missed.">            else if (this.missingPaint != null) {</span>
+<span class="nc" id="L1055">                g2.setPaint(this.missingPaint);</span>
+<span class="nc" id="L1056">                g2.fill(rect);</span>
+            }
+
+
+<span class="nc" id="L1060">            entityArea = rect;</span>
+
+            // add an entity for the item...
+<span class="nc bnc" id="L1063" title="All 2 branches missed.">            if (entities != null) {</span>
+<span class="nc" id="L1064">                String tip = null;</span>
+<span class="nc bnc" id="L1065" title="All 2 branches missed.">                if (getToolTipGenerator() != null) {</span>
+<span class="nc" id="L1066">                    tip = this.toolTipGenerator.generateToolTip(data, k);</span>
+                }
+<span class="nc" id="L1068">                String url = null;</span>
+                // if (getURLGenerator() != null) {   //dmo: look at this later
+                //   url = getURLGenerator().generateURL(data, series, item);
+                // }
+                // Unlike XYItemRenderer, we need to clone entityArea since it
+                // reused.
+<span class="nc" id="L1074">                ContourEntity entity = new ContourEntity(</span>
+<span class="nc" id="L1075">                        (RectangularShape) entityArea.clone(), tip, url);</span>
+<span class="nc" id="L1076">                entity.setIndex(k);</span>
+<span class="nc" id="L1077">                entities.add(entity);</span>
+            }
+
+            // do we need to update the crosshair values?
+<span class="nc bnc" id="L1081" title="All 2 branches missed.">            if (plot.isDomainCrosshairLockedOnData()) {</span>
+<span class="nc bnc" id="L1082" title="All 2 branches missed.">                if (plot.isRangeCrosshairLockedOnData()) {</span>
+                    // both axes
+<span class="nc" id="L1084">                    crosshairState.updateCrosshairPoint(x[k], y[k], transX,</span>
+                            transY, PlotOrientation.VERTICAL);
+                }
+                else {
+                    // just the horizontal axis...
+<span class="nc" id="L1089">                    crosshairState.updateCrosshairX(transX);</span>
+                }
+            }
+            else {
+<span class="nc bnc" id="L1093" title="All 2 branches missed.">                if (plot.isRangeCrosshairLockedOnData()) {</span>
+                    // just the vertical axis...
+<span class="nc" id="L1095">                    crosshairState.updateCrosshairY(transY);</span>
+                }
+            }
+        }
+
+
+<span class="nc" id="L1101">        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAlias);</span>
+
+<span class="nc" id="L1103">        return;</span>
+
+    }
+
+    /**
+     * Utility method for drawing a crosshair on the chart (if required).
+     *
+     * @param g2  The graphics device.
+     * @param dataArea  The data area.
+     * @param value  The coordinate, where to draw the line.
+     * @param stroke  The stroke to use.
+     * @param paint  The paint to use.
+     */
+    protected void drawVerticalLine(Graphics2D g2, Rectangle2D dataArea,
+                                    double value, Stroke stroke, Paint paint) {
+
+<span class="nc" id="L1119">        double xx = getDomainAxis().valueToJava2D(value, dataArea,</span>
+                RectangleEdge.BOTTOM);
+<span class="nc" id="L1121">        Line2D line = new Line2D.Double(xx, dataArea.getMinY(), xx,</span>
+<span class="nc" id="L1122">                dataArea.getMaxY());</span>
+<span class="nc" id="L1123">        g2.setStroke(stroke);</span>
+<span class="nc" id="L1124">        g2.setPaint(paint);</span>
+<span class="nc" id="L1125">        g2.draw(line);</span>
+
+<span class="nc" id="L1127">    }</span>
+
+    /**
+     * Utility method for drawing a crosshair on the chart (if required).
+     *
+     * @param g2  The graphics device.
+     * @param dataArea  The data area.
+     * @param value  The coordinate, where to draw the line.
+     * @param stroke  The stroke to use.
+     * @param paint  The paint to use.
+     */
+    protected void drawHorizontalLine(Graphics2D g2, Rectangle2D dataArea,
+                                      double value, Stroke stroke,
+                                      Paint paint) {
+
+<span class="nc" id="L1142">        double yy = getRangeAxis().valueToJava2D(value, dataArea,</span>
+                RectangleEdge.LEFT);
+<span class="nc" id="L1144">        Line2D line = new Line2D.Double(dataArea.getMinX(), yy,</span>
+<span class="nc" id="L1145">                dataArea.getMaxX(), yy);</span>
+<span class="nc" id="L1146">        g2.setStroke(stroke);</span>
+<span class="nc" id="L1147">        g2.setPaint(paint);</span>
+<span class="nc" id="L1148">        g2.draw(line);</span>
+
+<span class="nc" id="L1150">    }</span>
+
+    /**
+     * Handles a 'click' on the plot by updating the anchor values...
+     *
+     * @param x  x-coordinate, where the click occured.
+     * @param y  y-coordinate, where the click occured.
+     * @param info  An object for collection dimension information.
+     */
+    public void handleClick(int x, int y, PlotRenderingInfo info) {
+
+/*        // set the anchor value for the horizontal axis...
+        ValueAxis hva = getDomainAxis();
+        if (hva != null) {
+            double hvalue = hva.translateJava2DtoValue(
+                (float) x, info.getDataArea()
+            );
+
+            hva.setAnchorValue(hvalue);
+            setDomainCrosshairValue(hvalue);
+        }
+
+        // set the anchor value for the vertical axis...
+        ValueAxis vva = getRangeAxis();
+        if (vva != null) {
+            double vvalue = vva.translateJava2DtoValue(
+                (float) y, info.getDataArea()
+            );
+            vva.setAnchorValue(vvalue);
+            setRangeCrosshairValue(vvalue);
+        }
+*/
+<span class="nc" id="L1182">    }</span>
+
+    /**
+     * Zooms the axis ranges by the specified percentage about the anchor point.
+     *
+     * @param percent  The amount of the zoom.
+     */
+    public void zoom(double percent) {
+
+<span class="nc bnc" id="L1191" title="All 2 branches missed.">        if (percent &gt; 0) {</span>
+          //  double range = this.domainAxis.getRange().getLength();
+          //  double scaledRange = range * percent;
+          //  domainAxis.setAnchoredRange(scaledRange);
+
+          //  range = this.rangeAxis.getRange().getLength();
+         //  scaledRange = range * percent;
+         //   rangeAxis.setAnchoredRange(scaledRange);
+        }
+        else {
+<span class="nc" id="L1201">            getRangeAxis().setAutoRange(true);</span>
+<span class="nc" id="L1202">            getDomainAxis().setAutoRange(true);</span>
+        }
+
+<span class="nc" id="L1205">    }</span>
+
+    /**
+     * Returns the plot type as a string.
+     *
+     * @return A short string describing the type of plot.
+     */
+    public String getPlotType() {
+<span class="nc" id="L1213">        return localizationResources.getString(&quot;Contour_Plot&quot;);</span>
+    }
+
+    /**
+     * Returns the range for an axis.
+     *
+     * @param axis  the axis.
+     *
+     * @return The range for an axis.
+     */
+    public Range getDataRange(ValueAxis axis) {
+
+<span class="nc bnc" id="L1225" title="All 2 branches missed.">        if (this.dataset == null) {</span>
+<span class="nc" id="L1226">            return null;</span>
+        }
+
+<span class="nc" id="L1229">        Range result = null;</span>
+
+<span class="nc bnc" id="L1231" title="All 2 branches missed.">        if (axis == getDomainAxis()) {</span>
+<span class="nc" id="L1232">            result = DatasetUtilities.findDomainBounds(this.dataset);</span>
+        }
+<span class="nc bnc" id="L1234" title="All 2 branches missed.">        else if (axis == getRangeAxis()) {</span>
+<span class="nc" id="L1235">            result = DatasetUtilities.findRangeBounds(this.dataset);</span>
+        }
+
+<span class="nc" id="L1238">        return result;</span>
+
+    }
+
+    /**
+     * Returns the range for the Contours.
+     *
+     * @return The range for the Contours (z-axis).
+     */
+    public Range getContourDataRange() {
+
+<span class="nc" id="L1249">        Range result = null;</span>
+
+<span class="nc" id="L1251">        ContourDataset data = getDataset();</span>
+
+<span class="nc bnc" id="L1253" title="All 2 branches missed.">        if (data != null) {</span>
+<span class="nc" id="L1254">            Range h = getDomainAxis().getRange();</span>
+<span class="nc" id="L1255">            Range v = getRangeAxis().getRange();</span>
+<span class="nc" id="L1256">            result = this.visibleRange(data, h, v);</span>
+        }
+
+<span class="nc" id="L1259">        return result;</span>
+    }
+
+    /**
+     * Notifies all registered listeners of a property change.
+     * &lt;P&gt;
+     * One source of property change events is the plot's renderer.
+     *
+     * @param event  Information about the property change.
+     */
+    public void propertyChange(PropertyChangeEvent event) {
+<span class="nc" id="L1270">        fireChangeEvent();</span>
+<span class="nc" id="L1271">    }</span>
+
+    /**
+     * Receives notification of a change to the plot's dataset.
+     * &lt;P&gt;
+     * The chart reacts by passing on a chart change event to all registered
+     * listeners.
+     *
+     * @param event  Information about the event (not used here).
+     */
+    public void datasetChanged(DatasetChangeEvent event) {
+<span class="nc bnc" id="L1282" title="All 2 branches missed.">        if (this.domainAxis != null) {</span>
+<span class="nc" id="L1283">            this.domainAxis.configure();</span>
+        }
+<span class="nc bnc" id="L1285" title="All 2 branches missed.">        if (this.rangeAxis != null) {</span>
+<span class="nc" id="L1286">            this.rangeAxis.configure();</span>
+        }
+<span class="nc bnc" id="L1288" title="All 2 branches missed.">        if (this.colorBar != null) {</span>
+<span class="nc" id="L1289">            this.colorBar.configure(this);</span>
+        }
+<span class="nc" id="L1291">        super.datasetChanged(event);</span>
+<span class="nc" id="L1292">    }</span>
+
+    /**
+     * Returns the colorbar.
+     *
+     * @return The colorbar.
+     */
+    public ColorBar getColorBar() {
+<span class="nc" id="L1300">        return this.colorBar;</span>
+    }
+
+    /**
+     * Returns a flag indicating whether or not the domain crosshair is visible.
+     *
+     * @return The flag.
+     */
+    public boolean isDomainCrosshairVisible() {
+<span class="nc" id="L1309">        return this.domainCrosshairVisible;</span>
+    }
+
+    /**
+     * Sets the flag indicating whether or not the domain crosshair is visible.
+     *
+     * @param flag  the new value of the flag.
+     */
+    public void setDomainCrosshairVisible(boolean flag) {
+
+<span class="nc bnc" id="L1319" title="All 2 branches missed.">        if (this.domainCrosshairVisible != flag) {</span>
+<span class="nc" id="L1320">            this.domainCrosshairVisible = flag;</span>
+<span class="nc" id="L1321">            fireChangeEvent();</span>
+        }
+
+<span class="nc" id="L1324">    }</span>
+
+    /**
+     * Returns a flag indicating whether or not the crosshair should &quot;lock-on&quot;
+     * to actual data values.
+     *
+     * @return The flag.
+     */
+    public boolean isDomainCrosshairLockedOnData() {
+<span class="nc" id="L1333">        return this.domainCrosshairLockedOnData;</span>
+    }
+
+    /**
+     * Sets the flag indicating whether or not the domain crosshair should
+     * &quot;lock-on&quot; to actual data values.
+     *
+     * @param flag  the flag.
+     */
+    public void setDomainCrosshairLockedOnData(boolean flag) {
+<span class="nc bnc" id="L1343" title="All 2 branches missed.">        if (this.domainCrosshairLockedOnData != flag) {</span>
+<span class="nc" id="L1344">            this.domainCrosshairLockedOnData = flag;</span>
+<span class="nc" id="L1345">            fireChangeEvent();</span>
+        }
+<span class="nc" id="L1347">    }</span>
+
+    /**
+     * Returns the domain crosshair value.
+     *
+     * @return The value.
+     */
+    public double getDomainCrosshairValue() {
+<span class="nc" id="L1355">        return this.domainCrosshairValue;</span>
+    }
+
+    /**
+     * Sets the domain crosshair value.
+     * &lt;P&gt;
+     * Registered listeners are notified that the plot has been modified, but
+     * only if the crosshair is visible.
+     *
+     * @param value  the new value.
+     */
+    public void setDomainCrosshairValue(double value) {
+<span class="nc" id="L1367">        setDomainCrosshairValue(value, true);</span>
+<span class="nc" id="L1368">    }</span>
+
+    /**
+     * Sets the domain crosshair value.
+     * &lt;P&gt;
+     * Registered listeners are notified that the axis has been modified, but
+     * only if the crosshair is visible.
+     *
+     * @param value  the new value.
+     * @param notify  a flag that controls whether or not listeners are
+     *                notified.
+     */
+    public void setDomainCrosshairValue(double value, boolean notify) {
+<span class="nc" id="L1381">        this.domainCrosshairValue = value;</span>
+<span class="nc bnc" id="L1382" title="All 4 branches missed.">        if (isDomainCrosshairVisible() &amp;&amp; notify) {</span>
+<span class="nc" id="L1383">            fireChangeEvent();</span>
+        }
+<span class="nc" id="L1385">    }</span>
+
+    /**
+     * Returns the Stroke used to draw the crosshair (if visible).
+     *
+     * @return The crosshair stroke.
+     */
+    public Stroke getDomainCrosshairStroke() {
+<span class="nc" id="L1393">        return this.domainCrosshairStroke;</span>
+    }
+
+    /**
+     * Sets the Stroke used to draw the crosshairs (if visible) and notifies
+     * registered listeners that the axis has been modified.
+     *
+     * @param stroke  the new crosshair stroke.
+     */
+    public void setDomainCrosshairStroke(Stroke stroke) {
+<span class="nc" id="L1403">        this.domainCrosshairStroke = stroke;</span>
+<span class="nc" id="L1404">        fireChangeEvent();</span>
+<span class="nc" id="L1405">    }</span>
+
+    /**
+     * Returns the domain crosshair color.
+     *
+     * @return The crosshair color.
+     */
+    public Paint getDomainCrosshairPaint() {
+<span class="nc" id="L1413">        return this.domainCrosshairPaint;</span>
+    }
+
+    /**
+     * Sets the Paint used to color the crosshairs (if visible) and notifies
+     * registered listeners that the axis has been modified.
+     *
+     * @param paint the new crosshair paint.
+     */
+    public void setDomainCrosshairPaint(Paint paint) {
+<span class="nc" id="L1423">        this.domainCrosshairPaint = paint;</span>
+<span class="nc" id="L1424">        fireChangeEvent();</span>
+<span class="nc" id="L1425">    }</span>
+
+    /**
+     * Returns a flag indicating whether or not the range crosshair is visible.
+     *
+     * @return The flag.
+     */
+    public boolean isRangeCrosshairVisible() {
+<span class="nc" id="L1433">        return this.rangeCrosshairVisible;</span>
+    }
+
+    /**
+     * Sets the flag indicating whether or not the range crosshair is visible.
+     *
+     * @param flag  the new value of the flag.
+     */
+    public void setRangeCrosshairVisible(boolean flag) {
+<span class="nc bnc" id="L1442" title="All 2 branches missed.">        if (this.rangeCrosshairVisible != flag) {</span>
+<span class="nc" id="L1443">            this.rangeCrosshairVisible = flag;</span>
+<span class="nc" id="L1444">            fireChangeEvent();</span>
+        }
+<span class="nc" id="L1446">    }</span>
+
+    /**
+     * Returns a flag indicating whether or not the crosshair should &quot;lock-on&quot;
+     * to actual data values.
+     *
+     * @return The flag.
+     */
+    public boolean isRangeCrosshairLockedOnData() {
+<span class="nc" id="L1455">        return this.rangeCrosshairLockedOnData;</span>
+    }
+
+    /**
+     * Sets the flag indicating whether or not the range crosshair should
+     * &quot;lock-on&quot; to actual data values.
+     *
+     * @param flag  the flag.
+     */
+    public void setRangeCrosshairLockedOnData(boolean flag) {
+<span class="nc bnc" id="L1465" title="All 2 branches missed.">        if (this.rangeCrosshairLockedOnData != flag) {</span>
+<span class="nc" id="L1466">            this.rangeCrosshairLockedOnData = flag;</span>
+<span class="nc" id="L1467">            fireChangeEvent();</span>
+        }
+<span class="nc" id="L1469">    }</span>
+
+    /**
+     * Returns the range crosshair value.
+     *
+     * @return The value.
+     */
+    public double getRangeCrosshairValue() {
+<span class="nc" id="L1477">        return this.rangeCrosshairValue;</span>
+    }
+
+    /**
+     * Sets the domain crosshair value.
+     * &lt;P&gt;
+     * Registered listeners are notified that the plot has been modified, but
+     * only if the crosshair is visible.
+     *
+     * @param value  the new value.
+     */
+    public void setRangeCrosshairValue(double value) {
+<span class="nc" id="L1489">        setRangeCrosshairValue(value, true);</span>
+<span class="nc" id="L1490">    }</span>
+
+    /**
+     * Sets the range crosshair value.
+     * &lt;P&gt;
+     * Registered listeners are notified that the axis has been modified, but
+     * only if the crosshair is visible.
+     *
+     * @param value  the new value.
+     * @param notify  a flag that controls whether or not listeners are
+     *                notified.
+     */
+    public void setRangeCrosshairValue(double value, boolean notify) {
+<span class="nc" id="L1503">        this.rangeCrosshairValue = value;</span>
+<span class="nc bnc" id="L1504" title="All 4 branches missed.">        if (isRangeCrosshairVisible() &amp;&amp; notify) {</span>
+<span class="nc" id="L1505">            fireChangeEvent();</span>
+        }
+<span class="nc" id="L1507">    }</span>
+
+    /**
+     * Returns the Stroke used to draw the crosshair (if visible).
+     *
+     * @return The crosshair stroke.
+     */
+    public Stroke getRangeCrosshairStroke() {
+<span class="nc" id="L1515">        return this.rangeCrosshairStroke;</span>
+    }
+
+    /**
+     * Sets the Stroke used to draw the crosshairs (if visible) and notifies
+     * registered listeners that the axis has been modified.
+     *
+     * @param stroke  the new crosshair stroke.
+     */
+    public void setRangeCrosshairStroke(Stroke stroke) {
+<span class="nc" id="L1525">        this.rangeCrosshairStroke = stroke;</span>
+<span class="nc" id="L1526">        fireChangeEvent();</span>
+<span class="nc" id="L1527">    }</span>
+
+    /**
+     * Returns the range crosshair color.
+     *
+     * @return The crosshair color.
+     */
+    public Paint getRangeCrosshairPaint() {
+<span class="nc" id="L1535">        return this.rangeCrosshairPaint;</span>
+    }
+
+    /**
+     * Sets the Paint used to color the crosshairs (if visible) and notifies
+     * registered listeners that the axis has been modified.
+     *
+     * @param paint the new crosshair paint.
+     */
+    public void setRangeCrosshairPaint(Paint paint) {
+<span class="nc" id="L1545">        this.rangeCrosshairPaint = paint;</span>
+<span class="nc" id="L1546">        fireChangeEvent();</span>
+<span class="nc" id="L1547">    }</span>
+
+    /**
+     * Returns the tool tip generator.
+     *
+     * @return The tool tip generator (possibly null).
+     */
+    public ContourToolTipGenerator getToolTipGenerator() {
+<span class="nc" id="L1555">        return this.toolTipGenerator;</span>
+    }
+
+    /**
+     * Sets the tool tip generator.
+     *
+     * @param generator  the tool tip generator (null permitted).
+     */
+    public void setToolTipGenerator(ContourToolTipGenerator generator) {
+        //Object oldValue = this.toolTipGenerator;
+<span class="nc" id="L1565">        this.toolTipGenerator = generator;</span>
+<span class="nc" id="L1566">    }</span>
+
+    /**
+     * Returns the URL generator for HTML image maps.
+     *
+     * @return The URL generator (possibly null).
+     */
+    public XYURLGenerator getURLGenerator() {
+<span class="nc" id="L1574">        return this.urlGenerator;</span>
+    }
+
+    /**
+     * Sets the URL generator for HTML image maps.
+     *
+     * @param urlGenerator  the URL generator (null permitted).
+     */
+    public void setURLGenerator(XYURLGenerator urlGenerator) {
+        //Object oldValue = this.urlGenerator;
+<span class="nc" id="L1584">        this.urlGenerator = urlGenerator;</span>
+<span class="nc" id="L1585">    }</span>
+
+    /**
+     * Draws a vertical line on the chart to represent a 'range marker'.
+     *
+     * @param g2  the graphics device.
+     * @param plot  the plot.
+     * @param domainAxis  the domain axis.
+     * @param marker  the marker line.
+     * @param dataArea  the axis data area.
+     */
+    public void drawDomainMarker(Graphics2D g2,
+                                 ContourPlot plot,
+                                 ValueAxis domainAxis,
+                                 Marker marker,
+                                 Rectangle2D dataArea) {
+
+<span class="nc bnc" id="L1602" title="All 2 branches missed.">        if (marker instanceof ValueMarker) {</span>
+<span class="nc" id="L1603">            ValueMarker vm = (ValueMarker) marker;</span>
+<span class="nc" id="L1604">            double value = vm.getValue();</span>
+<span class="nc" id="L1605">            Range range = domainAxis.getRange();</span>
+<span class="nc bnc" id="L1606" title="All 2 branches missed.">            if (!range.contains(value)) {</span>
+<span class="nc" id="L1607">                return;</span>
+            }
+
+<span class="nc" id="L1610">            double x = domainAxis.valueToJava2D(value, dataArea,</span>
+                    RectangleEdge.BOTTOM);
+<span class="nc" id="L1612">            Line2D line = new Line2D.Double(x, dataArea.getMinY(), x,</span>
+<span class="nc" id="L1613">                    dataArea.getMaxY());</span>
+<span class="nc" id="L1614">            Paint paint = marker.getOutlinePaint();</span>
+<span class="nc" id="L1615">            Stroke stroke = marker.getOutlineStroke();</span>
+<span class="nc bnc" id="L1616" title="All 2 branches missed.">            g2.setPaint(paint != null ? paint : Plot.DEFAULT_OUTLINE_PAINT);</span>
+<span class="nc bnc" id="L1617" title="All 2 branches missed.">            g2.setStroke(stroke != null ? stroke : Plot.DEFAULT_OUTLINE_STROKE);</span>
+<span class="nc" id="L1618">            g2.draw(line);</span>
+        }
+
+<span class="nc" id="L1621">    }</span>
+
+    /**
+     * Draws a horizontal line across the chart to represent a 'range marker'.
+     *
+     * @param g2  the graphics device.
+     * @param plot  the plot.
+     * @param rangeAxis  the range axis.
+     * @param marker  the marker line.
+     * @param dataArea  the axis data area.
+     */
+    public void drawRangeMarker(Graphics2D g2,
+                                ContourPlot plot,
+                                ValueAxis rangeAxis,
+                                Marker marker,
+                                Rectangle2D dataArea) {
+
+<span class="nc bnc" id="L1638" title="All 2 branches missed.">        if (marker instanceof ValueMarker) {</span>
+<span class="nc" id="L1639">            ValueMarker vm = (ValueMarker) marker;</span>
+<span class="nc" id="L1640">            double value = vm.getValue();</span>
+<span class="nc" id="L1641">            Range range = rangeAxis.getRange();</span>
+<span class="nc bnc" id="L1642" title="All 2 branches missed.">            if (!range.contains(value)) {</span>
+<span class="nc" id="L1643">                return;</span>
+            }
+
+<span class="nc" id="L1646">            double y = rangeAxis.valueToJava2D(value, dataArea,</span>
+                    RectangleEdge.LEFT);
+<span class="nc" id="L1648">            Line2D line = new Line2D.Double(dataArea.getMinX(), y,</span>
+<span class="nc" id="L1649">                    dataArea.getMaxX(), y);</span>
+<span class="nc" id="L1650">            Paint paint = marker.getOutlinePaint();</span>
+<span class="nc" id="L1651">            Stroke stroke = marker.getOutlineStroke();</span>
+<span class="nc bnc" id="L1652" title="All 2 branches missed.">            g2.setPaint(paint != null ? paint : Plot.DEFAULT_OUTLINE_PAINT);</span>
+<span class="nc bnc" id="L1653" title="All 2 branches missed.">            g2.setStroke(stroke != null ? stroke : Plot.DEFAULT_OUTLINE_STROKE);</span>
+<span class="nc" id="L1654">            g2.draw(line);</span>
+        }
+
+<span class="nc" id="L1657">    }</span>
+
+    /**
+     * Returns the clipPath.
+     * @return ClipPath
+     */
+    public ClipPath getClipPath() {
+<span class="nc" id="L1664">        return this.clipPath;</span>
+    }
+
+    /**
+     * Sets the clipPath.
+     * @param clipPath The clipPath to set
+     */
+    public void setClipPath(ClipPath clipPath) {
+<span class="nc" id="L1672">        this.clipPath = clipPath;</span>
+<span class="nc" id="L1673">    }</span>
+
+    /**
+     * Returns the ptSizePct.
+     * @return double
+     */
+    public double getPtSizePct() {
+<span class="nc" id="L1680">        return this.ptSizePct;</span>
+    }
+
+    /**
+     * Returns the renderAsPoints.
+     * @return boolean
+     */
+    public boolean isRenderAsPoints() {
+<span class="nc" id="L1688">        return this.renderAsPoints;</span>
+    }
+
+    /**
+     * Sets the ptSizePct.
+     * @param ptSizePct The ptSizePct to set
+     */
+    public void setPtSizePct(double ptSizePct) {
+<span class="nc" id="L1696">        this.ptSizePct = ptSizePct;</span>
+<span class="nc" id="L1697">    }</span>
+
+    /**
+     * Sets the renderAsPoints.
+     * @param renderAsPoints The renderAsPoints to set
+     */
+    public void setRenderAsPoints(boolean renderAsPoints) {
+<span class="nc" id="L1704">        this.renderAsPoints = renderAsPoints;</span>
+<span class="nc" id="L1705">    }</span>
+
+    /**
+     * Receives notification of a change to one of the plot's axes.
+     *
+     * @param event  information about the event.
+     */
+    public void axisChanged(AxisChangeEvent event) {
+<span class="nc" id="L1713">        Object source = event.getSource();</span>
+<span class="nc bnc" id="L1714" title="All 4 branches missed.">        if (source.equals(this.rangeAxis) || source.equals(this.domainAxis)) {</span>
+<span class="nc" id="L1715">            ColorBar cba = this.colorBar;</span>
+<span class="nc bnc" id="L1716" title="All 2 branches missed.">            if (this.colorBar.getAxis().isAutoRange()) {</span>
+<span class="nc" id="L1717">                cba.getAxis().configure();</span>
+            }
+
+        }
+<span class="nc" id="L1721">        super.axisChanged(event);</span>
+<span class="nc" id="L1722">    }</span>
+
+    /**
+     * Returns the visible z-range.
+     *
+     * @param data  the dataset.
+     * @param x  the x range.
+     * @param y  the y range.
+     *
+     * @return The range.
+     */
+    public Range visibleRange(ContourDataset data, Range x, Range y) {
+<span class="nc" id="L1734">        Range range = null;</span>
+<span class="nc" id="L1735">        range = data.getZValueRange(x, y);</span>
+<span class="nc" id="L1736">        return range;</span>
+    }
+
+    /**
+     * Returns the missingPaint.
+     * @return Paint
+     */
+    public Paint getMissingPaint() {
+<span class="nc" id="L1744">        return this.missingPaint;</span>
+    }
+
+    /**
+     * Sets the missingPaint.
+     *
+     * @param paint  the missingPaint to set.
+     */
+    public void setMissingPaint(Paint paint) {
+<span class="nc" id="L1753">        this.missingPaint = paint;</span>
+<span class="nc" id="L1754">    }</span>
+
+    /**
+     * Multiplies the range on the domain axis/axes by the specified factor
+     * (to be implemented).
+     *
+     * @param x  the x-coordinate (in Java2D space).
+     * @param y  the y-coordinate (in Java2D space).
+     * @param factor  the zoom factor.
+     */
+    public void zoomDomainAxes(double x, double y, double factor) {
+        // TODO: to be implemented
+<span class="nc" id="L1766">    }</span>
+
+    /**
+     * Zooms the domain axes (not yet implemented).
+     *
+     * @param x  the x-coordinate (in Java2D space).
+     * @param y  the y-coordinate (in Java2D space).
+     * @param lowerPercent  the new lower bound.
+     * @param upperPercent  the new upper bound.
+     */
+    public void zoomDomainAxes(double x, double y, double lowerPercent,
+                               double upperPercent) {
+        // TODO: to be implemented
+<span class="nc" id="L1779">    }</span>
+
+    /**
+     * Multiplies the range on the range axis/axes by the specified factor.
+     *
+     * @param x  the x-coordinate (in Java2D space).
+     * @param y  the y-coordinate (in Java2D space).
+     * @param factor  the zoom factor.
+     */
+    public void zoomRangeAxes(double x, double y, double factor) {
+        // TODO: to be implemented
+<span class="nc" id="L1790">    }</span>
+
+    /**
+     * Zooms the range axes (not yet implemented).
+     *
+     * @param x  the x-coordinate (in Java2D space).
+     * @param y  the y-coordinate (in Java2D space).
+     * @param lowerPercent  the new lower bound.
+     * @param upperPercent  the new upper bound.
+     */
+    public void zoomRangeAxes(double x, double y, double lowerPercent,
+                              double upperPercent) {
+        // TODO: to be implemented
+<span class="nc" id="L1803">    }</span>
+
+    /**
+     * Returns &lt;code&gt;false&lt;/code&gt;.
+     *
+     * @return A boolean.
+     */
+    public boolean isDomainZoomable() {
+<span class="nc" id="L1811">        return false;</span>
+    }
+
+    /**
+     * Returns &lt;code&gt;false&lt;/code&gt;.
+     *
+     * @return A boolean.
+     */
+    public boolean isRangeZoomable() {
+<span class="nc" id="L1820">        return false;</span>
+    }
+
+    /**
+     * Extends plot cloning to this plot type
+     * @see org.jfree.chart.plot.Plot#clone()
+     */
+    public Object clone() throws CloneNotSupportedException {
+<span class="nc" id="L1828">        ContourPlot clone = (ContourPlot) super.clone();</span>
+
+<span class="nc bnc" id="L1830" title="All 2 branches missed.">        if (this.domainAxis != null) {</span>
+<span class="nc" id="L1831">            clone.domainAxis = (ValueAxis) this.domainAxis.clone();</span>
+<span class="nc" id="L1832">            clone.domainAxis.setPlot(clone);</span>
+<span class="nc" id="L1833">            clone.domainAxis.addChangeListener(clone);</span>
+        }
+<span class="nc bnc" id="L1835" title="All 2 branches missed.">        if (this.rangeAxis != null) {</span>
+<span class="nc" id="L1836">            clone.rangeAxis = (ValueAxis) this.rangeAxis.clone();</span>
+<span class="nc" id="L1837">            clone.rangeAxis.setPlot(clone);</span>
+<span class="nc" id="L1838">            clone.rangeAxis.addChangeListener(clone);</span>
+        }
+
+<span class="nc bnc" id="L1841" title="All 2 branches missed.">        if (clone.dataset != null) {</span>
+<span class="nc" id="L1842">            clone.dataset.addChangeListener(clone);</span>
+        }
+
+<span class="nc bnc" id="L1845" title="All 2 branches missed.">        if (this.colorBar != null) {</span>
+<span class="nc" id="L1846">            clone.colorBar = (ColorBar) this.colorBar.clone();</span>
+        }
+
+<span class="nc" id="L1849">        clone.domainMarkers = (List) ObjectUtilities.deepClone(</span>
+                this.domainMarkers);
+<span class="nc" id="L1851">        clone.rangeMarkers = (List) ObjectUtilities.deepClone(</span>
+                this.rangeMarkers);
+<span class="nc" id="L1853">        clone.annotations = (List) ObjectUtilities.deepClone(this.annotations);</span>
+
+<span class="nc bnc" id="L1855" title="All 2 branches missed.">        if (this.clipPath != null) {</span>
+<span class="nc" id="L1856">            clone.clipPath = (ClipPath) this.clipPath.clone();</span>
+        }
+
+<span class="nc" id="L1859">        return clone;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

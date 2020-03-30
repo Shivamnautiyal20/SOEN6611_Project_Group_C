@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultChartEditor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.editor</a> &gt; <span class="el_source">DefaultChartEditor.java</span></div><h1>DefaultChartEditor.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------------
+ * DefaultChartEditor.java
+ * -----------------------
+ * (C) Copyright 2000-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Arnaud Lelievre;
+ *                   Daniel Gredler;
+ *
+ * Changes
+ * -------
+ * 24-Nov-2005 : New class, based on ChartPropertyEditPanel.java (DG);
+ * 18-Dec-2008 : Use ResourceBundleWrapper - see patch 1607918 by
+ *               Jess Thrysoee (DG);
+ *
+ */
+
+package org.jfree.chart.editor;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Paint;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ResourceBundle;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.Plot;
+import org.jfree.chart.title.Title;
+import org.jfree.chart.util.ResourceBundleWrapper;
+import org.jfree.layout.LCBLayout;
+import org.jfree.ui.PaintSample;
+
+/**
+ * A panel for editing chart properties (includes subpanels for the title,
+ * legend and plot).
+ */
+class DefaultChartEditor extends JPanel implements ActionListener, ChartEditor {
+
+    /** A panel for displaying/editing the properties of the title. */
+    private DefaultTitleEditor titleEditor;
+
+    /** A panel for displaying/editing the properties of the plot. */
+    private DefaultPlotEditor plotEditor;
+
+    /**
+     * A checkbox indicating whether or not the chart is drawn with
+     * anti-aliasing.
+     */
+    private JCheckBox antialias;
+
+    /** The chart background color. */
+    private PaintSample background;
+
+    /** The resourceBundle for the localization. */
+<span class="nc" id="L91">    protected static ResourceBundle localizationResources</span>
+<span class="nc" id="L92">            = ResourceBundleWrapper.getBundle(</span>
+                    &quot;org.jfree.chart.editor.LocalizationBundle&quot;);
+
+    /**
+     * Standard constructor - the property panel is made up of a number of
+     * sub-panels that are displayed in the tabbed pane.
+     *
+     * @param chart  the chart, whichs properties should be changed.
+     */
+<span class="nc" id="L101">    public DefaultChartEditor(JFreeChart chart) {</span>
+<span class="nc" id="L102">        setLayout(new BorderLayout());</span>
+
+<span class="nc" id="L104">        JPanel other = new JPanel(new BorderLayout());</span>
+<span class="nc" id="L105">        other.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));</span>
+
+<span class="nc" id="L107">        JPanel general = new JPanel(new BorderLayout());</span>
+<span class="nc" id="L108">        general.setBorder(BorderFactory.createTitledBorder(</span>
+<span class="nc" id="L109">            BorderFactory.createEtchedBorder(),</span>
+<span class="nc" id="L110">            localizationResources.getString(&quot;General&quot;)));</span>
+
+<span class="nc" id="L112">        JPanel interior = new JPanel(new LCBLayout(6));</span>
+<span class="nc" id="L113">        interior.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));</span>
+
+<span class="nc" id="L115">        this.antialias = new JCheckBox(localizationResources.getString(</span>
+                &quot;Draw_anti-aliased&quot;));
+<span class="nc" id="L117">        this.antialias.setSelected(chart.getAntiAlias());</span>
+<span class="nc" id="L118">        interior.add(this.antialias);</span>
+<span class="nc" id="L119">        interior.add(new JLabel(&quot;&quot;));</span>
+<span class="nc" id="L120">        interior.add(new JLabel(&quot;&quot;));</span>
+<span class="nc" id="L121">        interior.add(new JLabel(localizationResources.getString(</span>
+                &quot;Background_paint&quot;)));
+<span class="nc" id="L123">        this.background = new PaintSample(chart.getBackgroundPaint());</span>
+<span class="nc" id="L124">        interior.add(this.background);</span>
+<span class="nc" id="L125">        JButton button = new JButton(localizationResources.getString(</span>
+                &quot;Select...&quot;));
+<span class="nc" id="L127">        button.setActionCommand(&quot;BackgroundPaint&quot;);</span>
+<span class="nc" id="L128">        button.addActionListener(this);</span>
+<span class="nc" id="L129">        interior.add(button);</span>
+
+<span class="nc" id="L131">        interior.add(new JLabel(localizationResources.getString(</span>
+                &quot;Series_Paint&quot;)));
+<span class="nc" id="L133">        JTextField info = new JTextField(localizationResources.getString(</span>
+                &quot;No_editor_implemented&quot;));
+<span class="nc" id="L135">        info.setEnabled(false);</span>
+<span class="nc" id="L136">        interior.add(info);</span>
+<span class="nc" id="L137">        button = new JButton(localizationResources.getString(&quot;Edit...&quot;));</span>
+<span class="nc" id="L138">        button.setEnabled(false);</span>
+<span class="nc" id="L139">        interior.add(button);</span>
+
+<span class="nc" id="L141">        interior.add(new JLabel(localizationResources.getString(</span>
+                &quot;Series_Stroke&quot;)));
+<span class="nc" id="L143">        info = new JTextField(localizationResources.getString(</span>
+                &quot;No_editor_implemented&quot;));
+<span class="nc" id="L145">        info.setEnabled(false);</span>
+<span class="nc" id="L146">        interior.add(info);</span>
+<span class="nc" id="L147">        button = new JButton(localizationResources.getString(&quot;Edit...&quot;));</span>
+<span class="nc" id="L148">        button.setEnabled(false);</span>
+<span class="nc" id="L149">        interior.add(button);</span>
+
+<span class="nc" id="L151">        interior.add(new JLabel(localizationResources.getString(</span>
+                &quot;Series_Outline_Paint&quot;)));
+<span class="nc" id="L153">        info = new JTextField(localizationResources.getString(</span>
+                &quot;No_editor_implemented&quot;));
+<span class="nc" id="L155">        info.setEnabled(false);</span>
+<span class="nc" id="L156">        interior.add(info);</span>
+<span class="nc" id="L157">        button = new JButton(localizationResources.getString(&quot;Edit...&quot;));</span>
+<span class="nc" id="L158">        button.setEnabled(false);</span>
+<span class="nc" id="L159">        interior.add(button);</span>
+
+<span class="nc" id="L161">        interior.add(new JLabel(localizationResources.getString(</span>
+                &quot;Series_Outline_Stroke&quot;)));
+<span class="nc" id="L163">        info = new JTextField(localizationResources.getString(</span>
+                &quot;No_editor_implemented&quot;));
+<span class="nc" id="L165">        info.setEnabled(false);</span>
+<span class="nc" id="L166">        interior.add(info);</span>
+<span class="nc" id="L167">        button = new JButton(localizationResources.getString(&quot;Edit...&quot;));</span>
+<span class="nc" id="L168">        button.setEnabled(false);</span>
+<span class="nc" id="L169">        interior.add(button);</span>
+
+<span class="nc" id="L171">        general.add(interior, BorderLayout.NORTH);</span>
+<span class="nc" id="L172">        other.add(general, BorderLayout.NORTH);</span>
+
+<span class="nc" id="L174">        JPanel parts = new JPanel(new BorderLayout());</span>
+
+<span class="nc" id="L176">        Title title = chart.getTitle();</span>
+<span class="nc" id="L177">        Plot plot = chart.getPlot();</span>
+
+<span class="nc" id="L179">        JTabbedPane tabs = new JTabbedPane();</span>
+
+<span class="nc" id="L181">        this.titleEditor = new DefaultTitleEditor(title);</span>
+<span class="nc" id="L182">        this.titleEditor.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));</span>
+<span class="nc" id="L183">        tabs.addTab(localizationResources.getString(&quot;Title&quot;), this.titleEditor);</span>
+
+<span class="nc" id="L185">        this.plotEditor = new DefaultPlotEditor(plot);</span>
+<span class="nc" id="L186">        this.plotEditor.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));</span>
+<span class="nc" id="L187">        tabs.addTab(localizationResources.getString(&quot;Plot&quot;), this.plotEditor);</span>
+
+<span class="nc" id="L189">        tabs.add(localizationResources.getString(&quot;Other&quot;), other);</span>
+<span class="nc" id="L190">        parts.add(tabs, BorderLayout.NORTH);</span>
+<span class="nc" id="L191">        add(parts);</span>
+<span class="nc" id="L192">    }</span>
+
+    /**
+     * Returns a reference to the title editor.
+     *
+     * @return A panel for editing the title.
+     */
+    public DefaultTitleEditor getTitleEditor() {
+<span class="nc" id="L200">      return this.titleEditor;</span>
+    }
+
+    /**
+     * Returns a reference to the plot property sub-panel.
+     *
+     * @return A panel for editing the plot properties.
+     */
+    public DefaultPlotEditor getPlotEditor() {
+<span class="nc" id="L209">        return this.plotEditor;</span>
+    }
+
+    /**
+     * Returns the current setting of the anti-alias flag.
+     *
+     * @return &lt;code&gt;true&lt;/code&gt; if anti-aliasing is enabled.
+     */
+    public boolean getAntiAlias() {
+<span class="nc" id="L218">        return this.antialias.isSelected();</span>
+    }
+
+    /**
+     * Returns the current background paint.
+     *
+     * @return The current background paint.
+     */
+    public Paint getBackgroundPaint() {
+<span class="nc" id="L227">        return this.background.getPaint();</span>
+    }
+
+    /**
+     * Handles user interactions with the panel.
+     *
+     * @param event  a BackgroundPaint action.
+     */
+    public void actionPerformed(ActionEvent event) {
+<span class="nc" id="L236">        String command = event.getActionCommand();</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (command.equals(&quot;BackgroundPaint&quot;)) {</span>
+<span class="nc" id="L238">            attemptModifyBackgroundPaint();</span>
+        }
+<span class="nc" id="L240">    }</span>
+
+    /**
+     * Allows the user the opportunity to select a new background paint.  Uses
+     * JColorChooser, so we are only allowing a subset of all Paint objects to
+     * be selected (fix later).
+     */
+    private void attemptModifyBackgroundPaint() {
+        Color c;
+<span class="nc" id="L249">        c = JColorChooser.showDialog(this, localizationResources.getString(</span>
+                &quot;Background_Color&quot;), Color.blue);
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        if (c != null) {</span>
+<span class="nc" id="L252">            this.background.setPaint(c);</span>
+        }
+<span class="nc" id="L254">    }</span>
+
+    /**
+     * Updates the properties of a chart to match the properties defined on the
+     * panel.
+     *
+     * @param chart  the chart.
+     */
+    public void updateChart(JFreeChart chart) {
+
+<span class="nc" id="L264">        this.titleEditor.setTitleProperties(chart);</span>
+<span class="nc" id="L265">        this.plotEditor.updatePlotProperties(chart.getPlot());</span>
+
+<span class="nc" id="L267">        chart.setAntiAlias(getAntiAlias());</span>
+<span class="nc" id="L268">        chart.setBackgroundPaint(getBackgroundPaint());</span>
+<span class="nc" id="L269">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

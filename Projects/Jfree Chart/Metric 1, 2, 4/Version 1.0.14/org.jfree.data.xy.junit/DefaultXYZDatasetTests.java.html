@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultXYZDatasetTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.xy.junit</a> &gt; <span class="el_source">DefaultXYZDatasetTests.java</span></div><h1>DefaultXYZDatasetTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------------
+ * DefaultXYZDatasetTests.java
+ * ---------------------------
+ * (C) Copyright 2006-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 12-Jul-2006 : Version 1 (DG);
+ * 02-Nov-2006 : Added testAddSeries() method (DG);
+ * 22-Apr-2008 : Added testPublicCloneable (DG);
+ *
+ */
+
+package org.jfree.data.xy.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.xy.DefaultXYZDataset;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for {@link DefaultXYZDataset}.
+ */
+public class DefaultXYZDatasetTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        return new TestSuite(DefaultXYZDatasetTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DefaultXYZDatasetTests(String name) {
+<span class="fc" id="L79">        super(name);</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L87">        DefaultXYZDataset d1 = new DefaultXYZDataset();</span>
+<span class="fc" id="L88">        DefaultXYZDataset d2 = new DefaultXYZDataset();</span>
+<span class="fc" id="L89">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L90">        assertTrue(d2.equals(d1));</span>
+
+<span class="fc" id="L92">        double[] x1 = new double[] {1.0, 2.0, 3.0};</span>
+<span class="fc" id="L93">        double[] y1 = new double[] {4.0, 5.0, 6.0};</span>
+<span class="fc" id="L94">        double[] z1 = new double[] {7.0, 8.0, 9.0};</span>
+<span class="fc" id="L95">        double[][] data1 = new double[][] {x1, y1, z1};</span>
+<span class="fc" id="L96">        double[] x2 = new double[] {1.0, 2.0, 3.0};</span>
+<span class="fc" id="L97">        double[] y2 = new double[] {4.0, 5.0, 6.0};</span>
+<span class="fc" id="L98">        double[] z2 = new double[] {7.0, 8.0, 9.0};</span>
+<span class="fc" id="L99">        double[][] data2 = new double[][] {x2, y2, z2};</span>
+<span class="fc" id="L100">        d1.addSeries(&quot;S1&quot;, data1);</span>
+<span class="fc" id="L101">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L102">        d2.addSeries(&quot;S1&quot;, data2);</span>
+<span class="fc" id="L103">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L104">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L110">        DefaultXYZDataset d1 = new DefaultXYZDataset();</span>
+<span class="fc" id="L111">        DefaultXYZDataset d2 = null;</span>
+        try {
+<span class="fc" id="L113">            d2 = (DefaultXYZDataset) d1.clone();</span>
+        }
+<span class="nc" id="L115">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L116">            e.printStackTrace();</span>
+<span class="fc" id="L117">        }</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="fc" id="L120">        assertTrue(d1.equals(d2));</span>
+
+        // try a dataset with some content...
+<span class="fc" id="L123">        double[] x1 = new double[] {1.0, 2.0, 3.0};</span>
+<span class="fc" id="L124">        double[] y1 = new double[] {4.0, 5.0, 6.0};</span>
+<span class="fc" id="L125">        double[] z1 = new double[] {7.0, 8.0, 9.0};</span>
+<span class="fc" id="L126">        double[][] data1 = new double[][] {x1, y1, z1};</span>
+<span class="fc" id="L127">        d1.addSeries(&quot;S1&quot;, data1);</span>
+        try {
+<span class="fc" id="L129">            d2 = (DefaultXYZDataset) d1.clone();</span>
+        }
+<span class="nc" id="L131">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L132">            e.printStackTrace();</span>
+<span class="fc" id="L133">        }</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="fc" id="L136">        assertTrue(d1.equals(d2));</span>
+
+        // check that the clone doesn't share the same underlying arrays.
+<span class="fc" id="L139">        x1[1] = 2.2;</span>
+<span class="fc" id="L140">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L141">        x1[1] = 2.0;</span>
+<span class="fc" id="L142">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L143">    }</span>
+
+    /**
+     * Verify that this class implements {@link PublicCloneable}.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L149">        DefaultXYZDataset d1 = new DefaultXYZDataset();</span>
+<span class="fc" id="L150">        assertTrue(d1 instanceof PublicCloneable);</span>
+<span class="fc" id="L151">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L158">        DefaultXYZDataset d1 = new DefaultXYZDataset();</span>
+<span class="fc" id="L159">        DefaultXYZDataset d2 = null;</span>
+
+        try {
+<span class="fc" id="L162">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L163">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L164">            out.writeObject(d1);</span>
+<span class="fc" id="L165">            out.close();</span>
+
+<span class="fc" id="L167">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L168">                new ByteArrayInputStream(buffer.toByteArray())</span>
+            );
+<span class="fc" id="L170">            d2 = (DefaultXYZDataset) in.readObject();</span>
+<span class="fc" id="L171">            in.close();</span>
+        }
+<span class="nc" id="L173">        catch (Exception e) {</span>
+<span class="nc" id="L174">            e.printStackTrace();</span>
+<span class="fc" id="L175">        }</span>
+<span class="fc" id="L176">        assertEquals(d1, d2);</span>
+
+        // try a dataset with some content...
+<span class="fc" id="L179">        double[] x1 = new double[] {1.0, 2.0, 3.0};</span>
+<span class="fc" id="L180">        double[] y1 = new double[] {4.0, 5.0, 6.0};</span>
+<span class="fc" id="L181">        double[] z1 = new double[] {7.0, 8.0, 9.0};</span>
+<span class="fc" id="L182">        double[][] data1 = new double[][] {x1, y1, z1};</span>
+<span class="fc" id="L183">        d1.addSeries(&quot;S1&quot;, data1);</span>
+        try {
+<span class="fc" id="L185">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L186">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L187">            out.writeObject(d1);</span>
+<span class="fc" id="L188">            out.close();</span>
+
+<span class="fc" id="L190">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L191">                    buffer.toByteArray()));</span>
+<span class="fc" id="L192">            d2 = (DefaultXYZDataset) in.readObject();</span>
+<span class="fc" id="L193">            in.close();</span>
+        }
+<span class="nc" id="L195">        catch (Exception e) {</span>
+<span class="nc" id="L196">            e.printStackTrace();</span>
+<span class="fc" id="L197">        }</span>
+<span class="fc" id="L198">        assertEquals(d1, d2);</span>
+
+<span class="fc" id="L200">    }</span>
+
+    /**
+     * Some checks for the getSeriesKey(int) method.
+     */
+    public void testGetSeriesKey() {
+<span class="fc" id="L206">        DefaultXYZDataset d = createSampleDataset1();</span>
+<span class="fc" id="L207">        assertEquals(&quot;S1&quot;, d.getSeriesKey(0));</span>
+<span class="fc" id="L208">        assertEquals(&quot;S2&quot;, d.getSeriesKey(1));</span>
+
+        // check for series key out of bounds
+<span class="fc" id="L211">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L213">            /*Comparable k =*/ d.getSeriesKey(-1);</span>
+        }
+<span class="fc" id="L215">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L216">            pass = true;</span>
+<span class="nc" id="L217">        }</span>
+<span class="fc" id="L218">        assertTrue(pass);</span>
+
+<span class="fc" id="L220">        pass = false;</span>
+        try {
+<span class="nc" id="L222">            /*Comparable k =*/ d.getSeriesKey(2);</span>
+        }
+<span class="fc" id="L224">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L225">            pass = true;</span>
+<span class="nc" id="L226">        }</span>
+<span class="fc" id="L227">        assertTrue(pass);</span>
+<span class="fc" id="L228">    }</span>
+
+    /**
+     * Some checks for the indexOf(Comparable) method.
+     */
+    public void testIndexOf() {
+<span class="fc" id="L234">        DefaultXYZDataset d = createSampleDataset1();</span>
+<span class="fc" id="L235">        assertEquals(0, d.indexOf(&quot;S1&quot;));</span>
+<span class="fc" id="L236">        assertEquals(1, d.indexOf(&quot;S2&quot;));</span>
+<span class="fc" id="L237">        assertEquals(-1, d.indexOf(&quot;Green Eggs and Ham&quot;));</span>
+<span class="fc" id="L238">        assertEquals(-1, d.indexOf(null));</span>
+<span class="fc" id="L239">    }</span>
+
+    static final double EPSILON = 0.0000000001;
+
+    /**
+     * Some tests for the addSeries() method.
+     */
+    public void testAddSeries() {
+<span class="fc" id="L247">        DefaultXYZDataset d = new DefaultXYZDataset();</span>
+<span class="fc" id="L248">        d.addSeries(&quot;S1&quot;, new double[][] {{1.0}, {2.0}, {3.0}});</span>
+<span class="fc" id="L249">        assertEquals(1, d.getSeriesCount());</span>
+<span class="fc" id="L250">        assertEquals(&quot;S1&quot;, d.getSeriesKey(0));</span>
+
+        // check that adding a series will overwrite the old series
+<span class="fc" id="L253">        d.addSeries(&quot;S1&quot;, new double[][] {{11.0}, {12.0}, {13.0}});</span>
+<span class="fc" id="L254">        assertEquals(1, d.getSeriesCount());</span>
+<span class="fc" id="L255">        assertEquals(12.0, d.getYValue(0, 0), EPSILON);</span>
+
+        // check null key
+<span class="fc" id="L258">        boolean pass = false;</span>
+        try
+        {
+<span class="nc" id="L261">          d.addSeries(null, new double[][] {{1.0}, {2.0}, {3.0}});</span>
+        }
+<span class="fc" id="L263">        catch (IllegalArgumentException e)</span>
+        {
+<span class="fc" id="L265">          pass = true;</span>
+<span class="nc" id="L266">        }</span>
+<span class="fc" id="L267">        assertTrue(pass);</span>
+<span class="fc" id="L268">    }</span>
+
+    /**
+     * Creates a sample dataset for testing.
+     *
+     * @return A sample dataset.
+     */
+    public DefaultXYZDataset createSampleDataset1() {
+<span class="fc" id="L276">        DefaultXYZDataset d = new DefaultXYZDataset();</span>
+<span class="fc" id="L277">        double[] x1 = new double[] {1.0, 2.0, 3.0};</span>
+<span class="fc" id="L278">        double[] y1 = new double[] {4.0, 5.0, 6.0};</span>
+<span class="fc" id="L279">        double[] z1 = new double[] {7.0, 8.0, 9.0};</span>
+<span class="fc" id="L280">        double[][] data1 = new double[][] {x1, y1, z1};</span>
+<span class="fc" id="L281">        d.addSeries(&quot;S1&quot;, data1);</span>
+
+<span class="fc" id="L283">        double[] x2 = new double[] {1.0, 2.0, 3.0};</span>
+<span class="fc" id="L284">        double[] y2 = new double[] {4.0, 5.0, 6.0};</span>
+<span class="fc" id="L285">        double[] z2 = new double[] {7.0, 8.0, 9.0};</span>
+<span class="fc" id="L286">        double[][] data2 = new double[][] {x2, y2, z2};</span>
+<span class="fc" id="L287">        d.addSeries(&quot;S2&quot;, data2);</span>
+<span class="fc" id="L288">        return d;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

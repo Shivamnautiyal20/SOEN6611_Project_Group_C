@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LabelBlockTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.block.junit</a> &gt; <span class="el_source">LabelBlockTests.java</span></div><h1>LabelBlockTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------
+ * LabelBlockTests.java
+ * --------------------
+ * (C) Copyright 2005-2009, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 01-Sep-2005 : Version 1 (DG);
+ * 16-Mar-2007 : Check GradientPaint in testSerialization() (DG);
+ * 10-Feb-2009 : Added new fields to testEquals() (DG);
+ *
+ */
+
+package org.jfree.chart.block.junit;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.block.LabelBlock;
+import org.jfree.text.TextBlockAnchor;
+import org.jfree.ui.RectangleAnchor;
+
+/**
+ * Some tests for the {@link LabelBlock} class.
+ */
+public class LabelBlockTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        return new TestSuite(LabelBlockTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public LabelBlockTests(String name) {
+<span class="fc" id="L83">        super(name);</span>
+<span class="fc" id="L84">    }</span>
+
+    /**
+     * Confirm that the equals() method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L90">        LabelBlock b1 = new LabelBlock(&quot;ABC&quot;, new Font(&quot;Dialog&quot;,</span>
+                Font.PLAIN, 12), Color.red);
+<span class="fc" id="L92">        LabelBlock b2 = new LabelBlock(&quot;ABC&quot;, new Font(&quot;Dialog&quot;,</span>
+                Font.PLAIN, 12), Color.red);
+<span class="fc" id="L94">        assertTrue(b1.equals(b2));</span>
+<span class="fc" id="L95">        assertTrue(b2.equals(b2));</span>
+
+<span class="fc" id="L97">        b1 = new LabelBlock(&quot;XYZ&quot;, new Font(&quot;Dialog&quot;, Font.PLAIN, 12),</span>
+                Color.red);
+<span class="fc" id="L99">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L100">        b2 = new LabelBlock(&quot;XYZ&quot;, new Font(&quot;Dialog&quot;, Font.PLAIN, 12),</span>
+                Color.red);
+<span class="fc" id="L102">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L104">        b1 = new LabelBlock(&quot;XYZ&quot;, new Font(&quot;Dialog&quot;, Font.BOLD, 12),</span>
+                Color.red);
+<span class="fc" id="L106">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L107">        b2 = new LabelBlock(&quot;XYZ&quot;, new Font(&quot;Dialog&quot;, Font.BOLD, 12),</span>
+                Color.red);
+<span class="fc" id="L109">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L111">        b1 = new LabelBlock(&quot;XYZ&quot;, new Font(&quot;Dialog&quot;, Font.BOLD, 12),</span>
+                Color.blue);
+<span class="fc" id="L113">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L114">        b2 = new LabelBlock(&quot;XYZ&quot;, new Font(&quot;Dialog&quot;, Font.BOLD, 12),</span>
+                Color.blue);
+<span class="fc" id="L116">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L118">        b1.setToolTipText(&quot;Tooltip&quot;);</span>
+<span class="fc" id="L119">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L120">        b2.setToolTipText(&quot;Tooltip&quot;);</span>
+<span class="fc" id="L121">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L123">        b1.setURLText(&quot;URL&quot;);</span>
+<span class="fc" id="L124">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L125">        b2.setURLText(&quot;URL&quot;);</span>
+<span class="fc" id="L126">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L128">        b1.setContentAlignmentPoint(TextBlockAnchor.CENTER_RIGHT);</span>
+<span class="fc" id="L129">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L130">        b2.setContentAlignmentPoint(TextBlockAnchor.CENTER_RIGHT);</span>
+<span class="fc" id="L131">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L133">        b1.setTextAnchor(RectangleAnchor.BOTTOM_RIGHT);</span>
+<span class="fc" id="L134">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L135">        b2.setTextAnchor(RectangleAnchor.BOTTOM_RIGHT);</span>
+<span class="fc" id="L136">        assertTrue(b1.equals(b2));</span>
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L143">        LabelBlock b1 = new LabelBlock(&quot;ABC&quot;, new Font(&quot;Dialog&quot;,</span>
+                Font.PLAIN, 12), Color.red);
+<span class="fc" id="L145">        LabelBlock b2 = null;</span>
+
+        try {
+<span class="fc" id="L148">            b2 = (LabelBlock) b1.clone();</span>
+        }
+<span class="nc" id="L150">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L151">            e.printStackTrace();</span>
+<span class="fc" id="L152">        }</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">        assertTrue(b1 != b2);</span>
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">        assertTrue(b1.getClass() == b2.getClass());</span>
+<span class="fc" id="L155">        assertTrue(b1.equals(b2));</span>
+<span class="fc" id="L156">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L162">        GradientPaint gp = new GradientPaint(1.0f, 2.0f, Color.red, 3.0f, 4.0f,</span>
+                Color.blue);
+<span class="fc" id="L164">        LabelBlock b1 = new LabelBlock(&quot;ABC&quot;, new Font(&quot;Dialog&quot;,</span>
+                Font.PLAIN, 12), gp);
+<span class="fc" id="L166">        LabelBlock b2 = null;</span>
+        try {
+<span class="fc" id="L168">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L169">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L170">            out.writeObject(b1);</span>
+<span class="fc" id="L171">            out.close();</span>
+
+<span class="fc" id="L173">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L174">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L175">            b2 = (LabelBlock) in.readObject();</span>
+<span class="fc" id="L176">            in.close();</span>
+        }
+<span class="nc" id="L178">        catch (Exception e) {</span>
+<span class="nc" id="L179">            e.printStackTrace();</span>
+<span class="fc" id="L180">        }</span>
+<span class="fc" id="L181">        assertEquals(b1, b2);</span>
+<span class="fc" id="L182">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BoxAndWhiskerCalculatorTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.statistics.junit</a> &gt; <span class="el_source">BoxAndWhiskerCalculatorTests.java</span></div><h1>BoxAndWhiskerCalculatorTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------------------
+ * BoxAndWhiskerCalculatorTests.java
+ * ---------------------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 28-Aug-2003 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.data.statistics.junit;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.statistics.BoxAndWhiskerCalculator;
+import org.jfree.data.statistics.BoxAndWhiskerItem;
+
+/**
+ * Tests for the {@link BoxAndWhiskerCalculator} class.
+ */
+public class BoxAndWhiskerCalculatorTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        return new TestSuite(BoxAndWhiskerCalculatorTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public BoxAndWhiskerCalculatorTests(String name) {
+<span class="fc" id="L73">        super(name);</span>
+<span class="fc" id="L74">    }</span>
+
+    /**
+     * Some checks for the calculateBoxAndWhiskerStatistics() method.
+     */
+    public void testCalculateBoxAndWhiskerStatistics() {
+
+        // try null list
+<span class="fc" id="L82">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L84">            BoxAndWhiskerCalculator.calculateBoxAndWhiskerStatistics(null);</span>
+        }
+<span class="fc" id="L86">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L87">            pass = true;</span>
+<span class="nc" id="L88">        }</span>
+<span class="fc" id="L89">        assertTrue(pass);</span>
+
+        // try a list containing a single value
+<span class="fc" id="L92">        List values = new ArrayList();</span>
+<span class="fc" id="L93">        values.add(new Double(1.1));</span>
+<span class="fc" id="L94">        BoxAndWhiskerItem item</span>
+<span class="fc" id="L95">            = BoxAndWhiskerCalculator.calculateBoxAndWhiskerStatistics(values);</span>
+<span class="fc" id="L96">        assertEquals(1.1, item.getMean().doubleValue(), EPSILON);</span>
+<span class="fc" id="L97">        assertEquals(1.1, item.getMedian().doubleValue(), EPSILON);</span>
+<span class="fc" id="L98">        assertEquals(1.1, item.getQ1().doubleValue(), EPSILON);</span>
+<span class="fc" id="L99">        assertEquals(1.1, item.getQ3().doubleValue(), EPSILON);</span>
+<span class="fc" id="L100">    }</span>
+
+    private static final double EPSILON = 0.000000001;
+
+    /**
+     * Tests the Q1 calculation.
+     */
+    public void testCalculateQ1() {
+
+        // try null argument
+<span class="fc" id="L110">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L112">            BoxAndWhiskerCalculator.calculateQ1(null);</span>
+        }
+<span class="fc" id="L114">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L115">            pass = true;</span>
+<span class="nc" id="L116">        }</span>
+<span class="fc" id="L117">        assertTrue(pass);</span>
+
+<span class="fc" id="L119">        List values = new ArrayList();</span>
+<span class="fc" id="L120">        double q1 = BoxAndWhiskerCalculator.calculateQ1(values);</span>
+<span class="fc" id="L121">        assertTrue(Double.isNaN(q1));</span>
+<span class="fc" id="L122">        values.add(new Double(1.0));</span>
+<span class="fc" id="L123">        q1 = BoxAndWhiskerCalculator.calculateQ1(values);</span>
+<span class="fc" id="L124">        assertEquals(q1, 1.0, EPSILON);</span>
+<span class="fc" id="L125">        values.add(new Double(2.0));</span>
+<span class="fc" id="L126">        q1 = BoxAndWhiskerCalculator.calculateQ1(values);</span>
+<span class="fc" id="L127">        assertEquals(q1, 1.0, EPSILON);</span>
+<span class="fc" id="L128">        values.add(new Double(3.0));</span>
+<span class="fc" id="L129">        q1 = BoxAndWhiskerCalculator.calculateQ1(values);</span>
+<span class="fc" id="L130">        assertEquals(q1, 1.5, EPSILON);</span>
+<span class="fc" id="L131">        values.add(new Double(4.0));</span>
+<span class="fc" id="L132">        q1 = BoxAndWhiskerCalculator.calculateQ1(values);</span>
+<span class="fc" id="L133">        assertEquals(q1, 1.5, EPSILON);</span>
+<span class="fc" id="L134">    }</span>
+
+    /**
+     * Tests the Q3 calculation.
+     */
+    public void testCalculateQ3() {
+        // try null argument
+<span class="fc" id="L141">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L143">            BoxAndWhiskerCalculator.calculateQ3(null);</span>
+        }
+<span class="fc" id="L145">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L146">            pass = true;</span>
+<span class="nc" id="L147">        }</span>
+<span class="fc" id="L148">        assertTrue(pass);</span>
+
+<span class="fc" id="L150">        List values = new ArrayList();</span>
+<span class="fc" id="L151">        double q3 = BoxAndWhiskerCalculator.calculateQ3(values);</span>
+<span class="fc" id="L152">        assertTrue(Double.isNaN(q3));</span>
+<span class="fc" id="L153">        values.add(new Double(1.0));</span>
+<span class="fc" id="L154">        q3 = BoxAndWhiskerCalculator.calculateQ3(values);</span>
+<span class="fc" id="L155">        assertEquals(q3, 1.0, EPSILON);</span>
+<span class="fc" id="L156">        values.add(new Double(2.0));</span>
+<span class="fc" id="L157">        q3 = BoxAndWhiskerCalculator.calculateQ3(values);</span>
+<span class="fc" id="L158">        assertEquals(q3, 2.0, EPSILON);</span>
+<span class="fc" id="L159">        values.add(new Double(3.0));</span>
+<span class="fc" id="L160">        q3 = BoxAndWhiskerCalculator.calculateQ3(values);</span>
+<span class="fc" id="L161">        assertEquals(q3, 2.5, EPSILON);</span>
+<span class="fc" id="L162">        values.add(new Double(4.0));</span>
+<span class="fc" id="L163">        q3 = BoxAndWhiskerCalculator.calculateQ3(values);</span>
+<span class="fc" id="L164">        assertEquals(q3, 3.5, EPSILON);</span>
+<span class="fc" id="L165">    }</span>
+
+    /**
+     * The test case included in bug report 1593149.
+     */
+    public void test1593149() {
+<span class="fc" id="L171">        ArrayList theList = new ArrayList(5);</span>
+<span class="fc" id="L172">        theList.add(0, new Double(1.0));</span>
+<span class="fc" id="L173">        theList.add(1, new Double(2.0));</span>
+<span class="fc" id="L174">        theList.add(2, new Double(Double.NaN));</span>
+<span class="fc" id="L175">        theList.add(3, new Double(3.0));</span>
+<span class="fc" id="L176">        theList.add(4, new Double(4.0));</span>
+<span class="fc" id="L177">        BoxAndWhiskerItem theItem =</span>
+<span class="fc" id="L178">            BoxAndWhiskerCalculator.calculateBoxAndWhiskerStatistics(theList);</span>
+<span class="fc" id="L179">        assertEquals(1.0, theItem.getMinRegularValue().doubleValue(), EPSILON);</span>
+<span class="fc" id="L180">        assertEquals(4.0, theItem.getMaxRegularValue().doubleValue(), EPSILON);</span>
+<span class="fc" id="L181">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

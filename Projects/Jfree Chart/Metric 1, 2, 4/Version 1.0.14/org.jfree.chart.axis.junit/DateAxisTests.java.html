@@ -1,0 +1,1190 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DateAxisTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.axis.junit</a> &gt; <span class="el_source">DateAxisTests.java</span></div><h1>DateAxisTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------
+ * DateAxisTests.java
+ * ------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 22-Apr-2003 : Version 1 (DG);
+ * 07-Jan-2005 : Added test for hashCode() method (DG);
+ * 25-Sep-2005 : New tests for bug 1564977 (DG);
+ * 19-Apr-2007 : Added further checks for setMinimumDate() and
+ *               setMaximumDate() (DG);
+ * 03-May-2007 : Replaced the tests for the previousStandardDate() method with
+ *               new tests that check that the previousStandardDate and the
+ *               next standard date do in fact span the reference date (DG);
+ * 25-Nov-2008 : Added testBug2201869 (DG);
+ *
+ */
+
+package org.jfree.chart.axis.junit;
+
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.axis.AxisState;
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.DateTick;
+import org.jfree.chart.axis.DateTickMarkPosition;
+import org.jfree.chart.axis.DateTickUnit;
+import org.jfree.chart.axis.SegmentedTimeline;
+import org.jfree.data.time.DateRange;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.Hour;
+import org.jfree.data.time.Millisecond;
+import org.jfree.data.time.Month;
+import org.jfree.data.time.Second;
+import org.jfree.data.time.Year;
+import org.jfree.ui.RectangleEdge;
+
+/**
+ * Tests for the {@link DateAxis} class.
+ */
+public class DateAxisTests extends TestCase {
+
+    static class MyDateAxis extends DateAxis {
+
+        /**
+         * Creates a new instance.
+         *
+         * @param label  the label.
+         */
+        public MyDateAxis(String label) {
+<span class="fc" id="L100">            super(label);</span>
+<span class="fc" id="L101">        }</span>
+
+        public Date previousStandardDate(Date d, DateTickUnit unit) {
+<span class="fc" id="L104">            return super.previousStandardDate(d, unit);</span>
+        }
+    }
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        return new TestSuite(DateAxisTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DateAxisTests(String name) {
+<span class="fc" id="L123">        super(name);</span>
+<span class="fc" id="L124">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L131">        DateAxis a1 = new DateAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L132">        DateAxis a2 = new DateAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L133">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L134">        assertFalse(a1.equals(null));</span>
+<span class="fc" id="L135">        assertFalse(a1.equals(&quot;Some non-DateAxis object&quot;));</span>
+
+        // tickUnit
+<span class="fc" id="L138">        a1.setTickUnit(new DateTickUnit(DateTickUnit.DAY, 7));</span>
+<span class="fc" id="L139">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L140">        a2.setTickUnit(new DateTickUnit(DateTickUnit.DAY, 7));</span>
+<span class="fc" id="L141">        assertTrue(a1.equals(a2));</span>
+
+        // dateFormatOverride
+<span class="fc" id="L144">        a1.setDateFormatOverride(new SimpleDateFormat(&quot;yyyy&quot;));</span>
+<span class="fc" id="L145">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L146">        a2.setDateFormatOverride(new SimpleDateFormat(&quot;yyyy&quot;));</span>
+<span class="fc" id="L147">        assertTrue(a1.equals(a2));</span>
+
+        // tickMarkPosition
+<span class="fc" id="L150">        a1.setTickMarkPosition(DateTickMarkPosition.END);</span>
+<span class="fc" id="L151">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L152">        a2.setTickMarkPosition(DateTickMarkPosition.END);</span>
+<span class="fc" id="L153">        assertTrue(a1.equals(a2));</span>
+
+        // timeline
+<span class="fc" id="L156">        a1.setTimeline(SegmentedTimeline.newMondayThroughFridayTimeline());</span>
+<span class="fc" id="L157">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L158">        a2.setTimeline(SegmentedTimeline.newMondayThroughFridayTimeline());</span>
+<span class="fc" id="L159">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L161">    }</span>
+
+    /**
+     * A test for bug report 1472942.  The DateFormat.equals() method is not
+     * checking the range attribute.
+     */
+    public void test1472942() {
+<span class="fc" id="L168">        DateAxis a1 = new DateAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L169">        DateAxis a2 = new DateAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L170">        assertTrue(a1.equals(a2));</span>
+
+        // range
+<span class="fc" id="L173">        a1.setRange(new Date(1L), new Date(2L));</span>
+<span class="fc" id="L174">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L175">        a2.setRange(new Date(1L), new Date(2L));</span>
+<span class="fc" id="L176">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L177">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashCode() {
+<span class="fc" id="L183">        DateAxis a1 = new DateAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L184">        DateAxis a2 = new DateAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L185">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L186">        int h1 = a1.hashCode();</span>
+<span class="fc" id="L187">        int h2 = a2.hashCode();</span>
+<span class="fc" id="L188">        assertEquals(h1, h2);</span>
+<span class="fc" id="L189">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L195">        DateAxis a1 = new DateAxis(&quot;Test&quot;);</span>
+<span class="fc" id="L196">        DateAxis a2 = null;</span>
+        try {
+<span class="fc" id="L198">            a2 = (DateAxis) a1.clone();</span>
+        }
+<span class="nc" id="L200">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L201">            e.printStackTrace();</span>
+<span class="fc" id="L202">        }</span>
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">        assertTrue(a1 != a2);</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">        assertTrue(a1.getClass() == a2.getClass());</span>
+<span class="fc" id="L205">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L206">    }</span>
+
+    /**
+     * Test that the setRange() method works.
+     */
+    public void testSetRange() {
+
+<span class="fc" id="L213">        DateAxis axis = new DateAxis(&quot;Test Axis&quot;);</span>
+<span class="fc" id="L214">        Calendar calendar = Calendar.getInstance();</span>
+<span class="fc" id="L215">        calendar.set(1999, Calendar.JANUARY, 3);</span>
+<span class="fc" id="L216">        Date d1 = calendar.getTime();</span>
+<span class="fc" id="L217">        calendar.set(1999, Calendar.JANUARY, 31);</span>
+<span class="fc" id="L218">        Date d2 = calendar.getTime();</span>
+<span class="fc" id="L219">        axis.setRange(d1, d2);</span>
+
+<span class="fc" id="L221">        DateRange range = (DateRange) axis.getRange();</span>
+<span class="fc" id="L222">        assertEquals(d1, range.getLowerDate());</span>
+<span class="fc" id="L223">        assertEquals(d2, range.getUpperDate());</span>
+
+<span class="fc" id="L225">    }</span>
+
+    /**
+     * Test that the setMaximumDate() method works.
+     */
+    public void testSetMaximumDate() {
+<span class="fc" id="L231">        DateAxis axis = new DateAxis(&quot;Test Axis&quot;);</span>
+<span class="fc" id="L232">        Date date = new Date();</span>
+<span class="fc" id="L233">        axis.setMaximumDate(date);</span>
+<span class="fc" id="L234">        assertEquals(date, axis.getMaximumDate());</span>
+
+        // check that setting the max date to something on or before the
+        // current min date works...
+<span class="fc" id="L238">        Date d1 = new Date();</span>
+<span class="fc" id="L239">        Date d2 = new Date(d1.getTime() + 1);</span>
+<span class="fc" id="L240">        Date d0 = new Date(d1.getTime() - 1);</span>
+<span class="fc" id="L241">        axis.setMaximumDate(d2);</span>
+<span class="fc" id="L242">        axis.setMinimumDate(d1);</span>
+<span class="fc" id="L243">        axis.setMaximumDate(d1);</span>
+<span class="fc" id="L244">        assertEquals(d0, axis.getMinimumDate());</span>
+<span class="fc" id="L245">    }</span>
+
+    /**
+     * Test that the setMinimumDate() method works.
+     */
+    public void testSetMinimumDate() {
+<span class="fc" id="L251">        DateAxis axis = new DateAxis(&quot;Test Axis&quot;);</span>
+<span class="fc" id="L252">        Date d1 = new Date();</span>
+<span class="fc" id="L253">        Date d2 = new Date(d1.getTime() + 1);</span>
+<span class="fc" id="L254">        axis.setMaximumDate(d2);</span>
+<span class="fc" id="L255">        axis.setMinimumDate(d1);</span>
+<span class="fc" id="L256">        assertEquals(d1, axis.getMinimumDate());</span>
+
+        // check that setting the min date to something on or after the
+        // current min date works...
+<span class="fc" id="L260">        Date d3 = new Date(d2.getTime() + 1);</span>
+<span class="fc" id="L261">        axis.setMinimumDate(d2);</span>
+<span class="fc" id="L262">        assertEquals(d3, axis.getMaximumDate());</span>
+<span class="fc" id="L263">    }</span>
+
+    /**
+     * Tests two doubles for 'near enough' equality.
+     *
+     * @param d1  number 1.
+     * @param d2  number 2.
+     * @param tolerance  maximum tolerance.
+     *
+     * @return A boolean.
+     */
+    private boolean same(double d1, double d2, double tolerance) {
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">        return (Math.abs(d1 - d2) &lt; tolerance);</span>
+    }
+
+    /**
+     * Test the translation of Java2D values to data values.
+     */
+    public void testJava2DToValue() {
+<span class="fc" id="L282">        DateAxis axis = new DateAxis();</span>
+<span class="fc" id="L283">        axis.setRange(50.0, 100.0);</span>
+<span class="fc" id="L284">        Rectangle2D dataArea = new Rectangle2D.Double(10.0, 50.0, 400.0, 300.0);</span>
+<span class="fc" id="L285">        double y1 = axis.java2DToValue(75.0, dataArea, RectangleEdge.LEFT);</span>
+<span class="fc" id="L286">        assertTrue(same(y1, 95.8333333, 1.0));</span>
+<span class="fc" id="L287">        double y2 = axis.java2DToValue(75.0, dataArea, RectangleEdge.RIGHT);</span>
+<span class="fc" id="L288">        assertTrue(same(y2, 95.8333333, 1.0));</span>
+<span class="fc" id="L289">        double x1 = axis.java2DToValue(75.0, dataArea, RectangleEdge.TOP);</span>
+<span class="fc" id="L290">        assertTrue(same(x1, 58.125, 1.0));</span>
+<span class="fc" id="L291">        double x2 = axis.java2DToValue(75.0, dataArea, RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L292">        assertTrue(same(x2, 58.125, 1.0));</span>
+<span class="fc" id="L293">        axis.setInverted(true);</span>
+<span class="fc" id="L294">        double y3 = axis.java2DToValue(75.0, dataArea, RectangleEdge.LEFT);</span>
+<span class="fc" id="L295">        assertTrue(same(y3, 54.1666667, 1.0));</span>
+<span class="fc" id="L296">        double y4 = axis.java2DToValue(75.0, dataArea, RectangleEdge.RIGHT);</span>
+<span class="fc" id="L297">        assertTrue(same(y4, 54.1666667, 1.0));</span>
+<span class="fc" id="L298">        double x3 = axis.java2DToValue(75.0, dataArea, RectangleEdge.TOP);</span>
+<span class="fc" id="L299">        assertTrue(same(x3, 91.875, 1.0));</span>
+<span class="fc" id="L300">        double x4 = axis.java2DToValue(75.0, dataArea, RectangleEdge.BOTTOM);</span>
+<span class="fc" id="L301">        assertTrue(same(x4, 91.875, 1.0));</span>
+<span class="fc" id="L302">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L309">        DateAxis a1 = new DateAxis(&quot;Test Axis&quot;);</span>
+<span class="fc" id="L310">        DateAxis a2 = null;</span>
+
+        try {
+<span class="fc" id="L313">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L314">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L315">            out.writeObject(a1);</span>
+<span class="fc" id="L316">            out.close();</span>
+
+<span class="fc" id="L318">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L319">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L320">            a2 = (DateAxis) in.readObject();</span>
+<span class="fc" id="L321">            in.close();</span>
+        }
+<span class="nc" id="L323">        catch (Exception e) {</span>
+<span class="nc" id="L324">            e.printStackTrace();</span>
+<span class="fc" id="L325">        }</span>
+<span class="fc" id="L326">        boolean b = a1.equals(a2);</span>
+<span class="fc" id="L327">        assertTrue(b);</span>
+
+<span class="fc" id="L329">    }</span>
+
+    /**
+     * A basic check for the testPreviousStandardDate() method when the
+     * tick unit is 1 year.
+     */
+    public void testPreviousStandardDateYearA() {
+<span class="fc" id="L336">        MyDateAxis axis = new MyDateAxis(&quot;Year&quot;);</span>
+<span class="fc" id="L337">        Year y2006 = new Year(2006);</span>
+<span class="fc" id="L338">        Year y2007 = new Year(2007);</span>
+
+        // five dates to check...
+<span class="fc" id="L341">        Date d0 = new Date(y2006.getFirstMillisecond());</span>
+<span class="fc" id="L342">        Date d1 = new Date(y2006.getFirstMillisecond() + 500L);</span>
+<span class="fc" id="L343">        Date d2 = new Date(y2006.getMiddleMillisecond());</span>
+<span class="fc" id="L344">        Date d3 = new Date(y2006.getMiddleMillisecond() + 500L);</span>
+<span class="fc" id="L345">        Date d4 = new Date(y2006.getLastMillisecond());</span>
+
+<span class="fc" id="L347">        Date end = new Date(y2007.getLastMillisecond());</span>
+
+<span class="fc" id="L349">        DateTickUnit unit = new DateTickUnit(DateTickUnit.YEAR, 1);</span>
+<span class="fc" id="L350">        axis.setTickUnit(unit);</span>
+
+        // START: check d0 and d1
+<span class="fc" id="L353">        axis.setTickMarkPosition(DateTickMarkPosition.START);</span>
+
+<span class="fc" id="L355">        axis.setRange(d0, end);</span>
+<span class="fc" id="L356">        Date psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L357">        Date nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L358" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L359" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+<span class="fc" id="L361">        axis.setRange(d1, end);</span>
+<span class="fc" id="L362">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L363">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L364" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L365" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+        // MIDDLE: check d1, d2 and d3
+<span class="fc" id="L368">        axis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);</span>
+
+<span class="fc" id="L370">        axis.setRange(d1, end);</span>
+<span class="fc" id="L371">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L372">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L373" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L374" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+<span class="fc" id="L376">        axis.setRange(d2, end);</span>
+<span class="fc" id="L377">        psd = axis.previousStandardDate(d2, unit);</span>
+<span class="fc" id="L378">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L379" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d2.getTime());</span>
+<span class="pc bpc" id="L380" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d2.getTime());</span>
+
+<span class="fc" id="L382">        axis.setRange(d3, end);</span>
+<span class="fc" id="L383">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L384">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L385" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L386" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+        // END: check d3 and d4
+<span class="fc" id="L389">        axis.setTickMarkPosition(DateTickMarkPosition.END);</span>
+
+<span class="fc" id="L391">        axis.setRange(d3, end);</span>
+<span class="fc" id="L392">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L393">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L394" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L395" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+<span class="fc" id="L397">        axis.setRange(d4, end);</span>
+<span class="fc" id="L398">        psd = axis.previousStandardDate(d4, unit);</span>
+<span class="fc" id="L399">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L400" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d4.getTime());</span>
+<span class="pc bpc" id="L401" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d4.getTime());</span>
+<span class="fc" id="L402">    }</span>
+
+    /**
+     * A basic check for the testPreviousStandardDate() method when the
+     * tick unit is 10 years (just for the sake of having a multiple).
+     */
+    public void testPreviousStandardDateYearB() {
+<span class="fc" id="L409">        MyDateAxis axis = new MyDateAxis(&quot;Year&quot;);</span>
+<span class="fc" id="L410">        Year y2006 = new Year(2006);</span>
+<span class="fc" id="L411">        Year y2007 = new Year(2007);</span>
+
+        // five dates to check...
+<span class="fc" id="L414">        Date d0 = new Date(y2006.getFirstMillisecond());</span>
+<span class="fc" id="L415">        Date d1 = new Date(y2006.getFirstMillisecond() + 500L);</span>
+<span class="fc" id="L416">        Date d2 = new Date(y2006.getMiddleMillisecond());</span>
+<span class="fc" id="L417">        Date d3 = new Date(y2006.getMiddleMillisecond() + 500L);</span>
+<span class="fc" id="L418">        Date d4 = new Date(y2006.getLastMillisecond());</span>
+
+<span class="fc" id="L420">        Date end = new Date(y2007.getLastMillisecond());</span>
+
+<span class="fc" id="L422">        DateTickUnit unit = new DateTickUnit(DateTickUnit.YEAR, 10);</span>
+<span class="fc" id="L423">        axis.setTickUnit(unit);</span>
+
+        // START: check d0 and d1
+<span class="fc" id="L426">        axis.setTickMarkPosition(DateTickMarkPosition.START);</span>
+
+<span class="fc" id="L428">        axis.setRange(d0, end);</span>
+<span class="fc" id="L429">        Date psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L430">        Date nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L431" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L432" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+<span class="fc" id="L434">        axis.setRange(d1, end);</span>
+<span class="fc" id="L435">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L436">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L437" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L438" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+        // MIDDLE: check d1, d2 and d3
+<span class="fc" id="L441">        axis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);</span>
+
+<span class="fc" id="L443">        axis.setRange(d1, end);</span>
+<span class="fc" id="L444">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L445">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L446" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L447" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+<span class="fc" id="L449">        axis.setRange(d2, end);</span>
+<span class="fc" id="L450">        psd = axis.previousStandardDate(d2, unit);</span>
+<span class="fc" id="L451">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L452" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d2.getTime());</span>
+<span class="pc bpc" id="L453" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d2.getTime());</span>
+
+<span class="fc" id="L455">        axis.setRange(d3, end);</span>
+<span class="fc" id="L456">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L457">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L458" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L459" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+        // END: check d3 and d4
+<span class="fc" id="L462">        axis.setTickMarkPosition(DateTickMarkPosition.END);</span>
+
+<span class="fc" id="L464">        axis.setRange(d3, end);</span>
+<span class="fc" id="L465">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L466">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L467" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L468" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+<span class="fc" id="L470">        axis.setRange(d4, end);</span>
+<span class="fc" id="L471">        psd = axis.previousStandardDate(d4, unit);</span>
+<span class="fc" id="L472">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L473" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d4.getTime());</span>
+<span class="pc bpc" id="L474" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d4.getTime());</span>
+<span class="fc" id="L475">    }</span>
+
+    /**
+     * A basic check for the testPreviousStandardDate() method when the
+     * tick unit is 1 month.
+     */
+    public void testPreviousStandardDateMonthA() {
+<span class="fc" id="L482">        MyDateAxis axis = new MyDateAxis(&quot;Month&quot;);</span>
+<span class="fc" id="L483">        Month nov2006 = new Month(11, 2006);</span>
+<span class="fc" id="L484">        Month dec2006 = new Month(12, 2006);</span>
+
+        // five dates to check...
+<span class="fc" id="L487">        Date d0 = new Date(nov2006.getFirstMillisecond());</span>
+<span class="fc" id="L488">        Date d1 = new Date(nov2006.getFirstMillisecond() + 500L);</span>
+<span class="fc" id="L489">        Date d2 = new Date(nov2006.getMiddleMillisecond());</span>
+<span class="fc" id="L490">        Date d3 = new Date(nov2006.getMiddleMillisecond() + 500L);</span>
+<span class="fc" id="L491">        Date d4 = new Date(nov2006.getLastMillisecond());</span>
+
+<span class="fc" id="L493">        Date end = new Date(dec2006.getLastMillisecond());</span>
+
+<span class="fc" id="L495">        DateTickUnit unit = new DateTickUnit(DateTickUnit.MONTH, 1);</span>
+<span class="fc" id="L496">        axis.setTickUnit(unit);</span>
+
+        // START: check d0 and d1
+<span class="fc" id="L499">        axis.setTickMarkPosition(DateTickMarkPosition.START);</span>
+
+<span class="fc" id="L501">        axis.setRange(d0, end);</span>
+<span class="fc" id="L502">        Date psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L503">        Date nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L504" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L505" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+<span class="fc" id="L507">        axis.setRange(d1, end);</span>
+<span class="fc" id="L508">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L509">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L510" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L511" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+        // MIDDLE: check d1, d2 and d3
+<span class="fc" id="L514">        axis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);</span>
+
+<span class="fc" id="L516">        axis.setRange(d1, end);</span>
+<span class="fc" id="L517">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L518">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L519" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L520" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+<span class="fc" id="L522">        axis.setRange(d2, end);</span>
+<span class="fc" id="L523">        psd = axis.previousStandardDate(d2, unit);</span>
+<span class="fc" id="L524">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L525" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d2.getTime());</span>
+<span class="pc bpc" id="L526" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d2.getTime());</span>
+
+<span class="fc" id="L528">        axis.setRange(d3, end);</span>
+<span class="fc" id="L529">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L530">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L531" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L532" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+        // END: check d3 and d4
+<span class="fc" id="L535">        axis.setTickMarkPosition(DateTickMarkPosition.END);</span>
+
+<span class="fc" id="L537">        axis.setRange(d3, end);</span>
+<span class="fc" id="L538">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L539">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L540" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L541" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+<span class="fc" id="L543">        axis.setRange(d4, end);</span>
+<span class="fc" id="L544">        psd = axis.previousStandardDate(d4, unit);</span>
+<span class="fc" id="L545">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L546" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d4.getTime());</span>
+<span class="pc bpc" id="L547" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d4.getTime());</span>
+<span class="fc" id="L548">    }</span>
+
+    /**
+     * A basic check for the testPreviousStandardDate() method when the
+     * tick unit is 3 months (just for the sake of having a multiple).
+     */
+    public void testPreviousStandardDateMonthB() {
+<span class="fc" id="L555">        MyDateAxis axis = new MyDateAxis(&quot;Month&quot;);</span>
+<span class="fc" id="L556">        Month nov2006 = new Month(11, 2006);</span>
+<span class="fc" id="L557">        Month dec2006 = new Month(12, 2006);</span>
+
+        // five dates to check...
+<span class="fc" id="L560">        Date d0 = new Date(nov2006.getFirstMillisecond());</span>
+<span class="fc" id="L561">        Date d1 = new Date(nov2006.getFirstMillisecond() + 500L);</span>
+<span class="fc" id="L562">        Date d2 = new Date(nov2006.getMiddleMillisecond());</span>
+<span class="fc" id="L563">        Date d3 = new Date(nov2006.getMiddleMillisecond() + 500L);</span>
+<span class="fc" id="L564">        Date d4 = new Date(nov2006.getLastMillisecond());</span>
+
+<span class="fc" id="L566">        Date end = new Date(dec2006.getLastMillisecond());</span>
+
+<span class="fc" id="L568">        DateTickUnit unit = new DateTickUnit(DateTickUnit.MONTH, 3);</span>
+<span class="fc" id="L569">        axis.setTickUnit(unit);</span>
+
+        // START: check d0 and d1
+<span class="fc" id="L572">        axis.setTickMarkPosition(DateTickMarkPosition.START);</span>
+
+<span class="fc" id="L574">        axis.setRange(d0, end);</span>
+<span class="fc" id="L575">        Date psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L576">        Date nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L577" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L578" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+<span class="fc" id="L580">        axis.setRange(d1, end);</span>
+<span class="fc" id="L581">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L582">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L583" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L584" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+        // MIDDLE: check d1, d2 and d3
+<span class="fc" id="L587">        axis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);</span>
+
+<span class="fc" id="L589">        axis.setRange(d1, end);</span>
+<span class="fc" id="L590">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L591">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L592" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L593" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+<span class="fc" id="L595">        axis.setRange(d2, end);</span>
+<span class="fc" id="L596">        psd = axis.previousStandardDate(d2, unit);</span>
+<span class="fc" id="L597">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L598" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d2.getTime());</span>
+<span class="pc bpc" id="L599" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d2.getTime());</span>
+
+<span class="fc" id="L601">        axis.setRange(d3, end);</span>
+<span class="fc" id="L602">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L603">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L604" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L605" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+        // END: check d3 and d4
+<span class="fc" id="L608">        axis.setTickMarkPosition(DateTickMarkPosition.END);</span>
+
+<span class="fc" id="L610">        axis.setRange(d3, end);</span>
+<span class="fc" id="L611">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L612">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L613" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L614" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+<span class="fc" id="L616">        axis.setRange(d4, end);</span>
+<span class="fc" id="L617">        psd = axis.previousStandardDate(d4, unit);</span>
+<span class="fc" id="L618">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L619" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d4.getTime());</span>
+<span class="pc bpc" id="L620" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d4.getTime());</span>
+<span class="fc" id="L621">    }</span>
+
+    /**
+     * A basic check for the testPreviousStandardDate() method when the
+     * tick unit is 1 day.
+     */
+    public void testPreviousStandardDateDayA() {
+<span class="fc" id="L628">        MyDateAxis axis = new MyDateAxis(&quot;Day&quot;);</span>
+<span class="fc" id="L629">        Day apr12007 = new Day(1, 4, 2007);</span>
+<span class="fc" id="L630">        Day apr22007 = new Day(2, 4, 2007);</span>
+
+        // five dates to check...
+<span class="fc" id="L633">        Date d0 = new Date(apr12007.getFirstMillisecond());</span>
+<span class="fc" id="L634">        Date d1 = new Date(apr12007.getFirstMillisecond() + 500L);</span>
+<span class="fc" id="L635">        Date d2 = new Date(apr12007.getMiddleMillisecond());</span>
+<span class="fc" id="L636">        Date d3 = new Date(apr12007.getMiddleMillisecond() + 500L);</span>
+<span class="fc" id="L637">        Date d4 = new Date(apr12007.getLastMillisecond());</span>
+
+<span class="fc" id="L639">        Date end = new Date(apr22007.getLastMillisecond());</span>
+
+<span class="fc" id="L641">        DateTickUnit unit = new DateTickUnit(DateTickUnit.DAY, 1);</span>
+<span class="fc" id="L642">        axis.setTickUnit(unit);</span>
+
+        // START: check d0 and d1
+<span class="fc" id="L645">        axis.setTickMarkPosition(DateTickMarkPosition.START);</span>
+
+<span class="fc" id="L647">        axis.setRange(d0, end);</span>
+<span class="fc" id="L648">        Date psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L649">        Date nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L650" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L651" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+<span class="fc" id="L653">        axis.setRange(d1, end);</span>
+<span class="fc" id="L654">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L655">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L656" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L657" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+        // MIDDLE: check d1, d2 and d3
+<span class="fc" id="L660">        axis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);</span>
+
+<span class="fc" id="L662">        axis.setRange(d1, end);</span>
+<span class="fc" id="L663">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L664">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L665" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L666" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+<span class="fc" id="L668">        axis.setRange(d2, end);</span>
+<span class="fc" id="L669">        psd = axis.previousStandardDate(d2, unit);</span>
+<span class="fc" id="L670">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L671" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d2.getTime());</span>
+<span class="pc bpc" id="L672" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d2.getTime());</span>
+
+<span class="fc" id="L674">        axis.setRange(d3, end);</span>
+<span class="fc" id="L675">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L676">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L677" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L678" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+        // END: check d3 and d4
+<span class="fc" id="L681">        axis.setTickMarkPosition(DateTickMarkPosition.END);</span>
+
+<span class="fc" id="L683">        axis.setRange(d3, end);</span>
+<span class="fc" id="L684">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L685">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L686" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L687" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+<span class="fc" id="L689">        axis.setRange(d4, end);</span>
+<span class="fc" id="L690">        psd = axis.previousStandardDate(d4, unit);</span>
+<span class="fc" id="L691">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L692" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d4.getTime());</span>
+<span class="pc bpc" id="L693" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d4.getTime());</span>
+<span class="fc" id="L694">    }</span>
+
+    /**
+     * A basic check for the testPreviousStandardDate() method when the
+     * tick unit is 7 days (just for the sake of having a multiple).
+     */
+    public void testPreviousStandardDateDayB() {
+<span class="fc" id="L701">        MyDateAxis axis = new MyDateAxis(&quot;Day&quot;);</span>
+<span class="fc" id="L702">        Day apr12007 = new Day(1, 4, 2007);</span>
+<span class="fc" id="L703">        Day apr22007 = new Day(2, 4, 2007);</span>
+
+        // five dates to check...
+<span class="fc" id="L706">        Date d0 = new Date(apr12007.getFirstMillisecond());</span>
+<span class="fc" id="L707">        Date d1 = new Date(apr12007.getFirstMillisecond() + 500L);</span>
+<span class="fc" id="L708">        Date d2 = new Date(apr12007.getMiddleMillisecond());</span>
+<span class="fc" id="L709">        Date d3 = new Date(apr12007.getMiddleMillisecond() + 500L);</span>
+<span class="fc" id="L710">        Date d4 = new Date(apr12007.getLastMillisecond());</span>
+
+<span class="fc" id="L712">        Date end = new Date(apr22007.getLastMillisecond());</span>
+
+<span class="fc" id="L714">        DateTickUnit unit = new DateTickUnit(DateTickUnit.DAY, 7);</span>
+<span class="fc" id="L715">        axis.setTickUnit(unit);</span>
+
+        // START: check d0 and d1
+<span class="fc" id="L718">        axis.setTickMarkPosition(DateTickMarkPosition.START);</span>
+
+<span class="fc" id="L720">        axis.setRange(d0, end);</span>
+<span class="fc" id="L721">        Date psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L722">        Date nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L723" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L724" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+<span class="fc" id="L726">        axis.setRange(d1, end);</span>
+<span class="fc" id="L727">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L728">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L729" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L730" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+        // MIDDLE: check d1, d2 and d3
+<span class="fc" id="L733">        axis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);</span>
+
+<span class="fc" id="L735">        axis.setRange(d1, end);</span>
+<span class="fc" id="L736">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L737">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L738" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L739" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+<span class="fc" id="L741">        axis.setRange(d2, end);</span>
+<span class="fc" id="L742">        psd = axis.previousStandardDate(d2, unit);</span>
+<span class="fc" id="L743">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L744" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d2.getTime());</span>
+<span class="pc bpc" id="L745" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d2.getTime());</span>
+
+<span class="fc" id="L747">        axis.setRange(d3, end);</span>
+<span class="fc" id="L748">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L749">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L750" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L751" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+        // END: check d3 and d4
+<span class="fc" id="L754">        axis.setTickMarkPosition(DateTickMarkPosition.END);</span>
+
+<span class="fc" id="L756">        axis.setRange(d3, end);</span>
+<span class="fc" id="L757">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L758">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L759" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L760" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+<span class="fc" id="L762">        axis.setRange(d4, end);</span>
+<span class="fc" id="L763">        psd = axis.previousStandardDate(d4, unit);</span>
+<span class="fc" id="L764">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L765" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d4.getTime());</span>
+<span class="pc bpc" id="L766" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d4.getTime());</span>
+<span class="fc" id="L767">    }</span>
+
+    /**
+     * A basic check for the testPreviousStandardDate() method when the
+     * tick unit is 1 hour.
+     */
+    public void testPreviousStandardDateHourA() {
+<span class="fc" id="L774">        MyDateAxis axis = new MyDateAxis(&quot;Hour&quot;);</span>
+<span class="fc" id="L775">        Hour h0 = new Hour(12, 1, 4, 2007);</span>
+<span class="fc" id="L776">        Hour h1 = new Hour(13, 1, 4, 2007);</span>
+
+        // five dates to check...
+<span class="fc" id="L779">        Date d0 = new Date(h0.getFirstMillisecond());</span>
+<span class="fc" id="L780">        Date d1 = new Date(h0.getFirstMillisecond() + 500L);</span>
+<span class="fc" id="L781">        Date d2 = new Date(h0.getMiddleMillisecond());</span>
+<span class="fc" id="L782">        Date d3 = new Date(h0.getMiddleMillisecond() + 500L);</span>
+<span class="fc" id="L783">        Date d4 = new Date(h0.getLastMillisecond());</span>
+
+<span class="fc" id="L785">        Date end = new Date(h1.getLastMillisecond());</span>
+
+<span class="fc" id="L787">        DateTickUnit unit = new DateTickUnit(DateTickUnit.HOUR, 1);</span>
+<span class="fc" id="L788">        axis.setTickUnit(unit);</span>
+
+        // START: check d0 and d1
+<span class="fc" id="L791">        axis.setTickMarkPosition(DateTickMarkPosition.START);</span>
+
+<span class="fc" id="L793">        axis.setRange(d0, end);</span>
+<span class="fc" id="L794">        Date psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L795">        Date nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L796" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L797" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+<span class="fc" id="L799">        axis.setRange(d1, end);</span>
+<span class="fc" id="L800">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L801">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L802" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L803" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+        // MIDDLE: check d1, d2 and d3
+<span class="fc" id="L806">        axis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);</span>
+
+<span class="fc" id="L808">        axis.setRange(d1, end);</span>
+<span class="fc" id="L809">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L810">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L811" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L812" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+<span class="fc" id="L814">        axis.setRange(d2, end);</span>
+<span class="fc" id="L815">        psd = axis.previousStandardDate(d2, unit);</span>
+<span class="fc" id="L816">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L817" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d2.getTime());</span>
+<span class="pc bpc" id="L818" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d2.getTime());</span>
+
+<span class="fc" id="L820">        axis.setRange(d3, end);</span>
+<span class="fc" id="L821">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L822">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L823" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L824" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+        // END: check d3 and d4
+<span class="fc" id="L827">        axis.setTickMarkPosition(DateTickMarkPosition.END);</span>
+
+<span class="fc" id="L829">        axis.setRange(d3, end);</span>
+<span class="fc" id="L830">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L831">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L832" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L833" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+<span class="fc" id="L835">        axis.setRange(d4, end);</span>
+<span class="fc" id="L836">        psd = axis.previousStandardDate(d4, unit);</span>
+<span class="fc" id="L837">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L838" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d4.getTime());</span>
+<span class="pc bpc" id="L839" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d4.getTime());</span>
+<span class="fc" id="L840">    }</span>
+
+    /**
+     * A basic check for the testPreviousStandardDate() method when the
+     * tick unit is 6 hours (just for the sake of having a multiple).
+     */
+    public void testPreviousStandardDateHourB() {
+<span class="fc" id="L847">        MyDateAxis axis = new MyDateAxis(&quot;Hour&quot;);</span>
+<span class="fc" id="L848">        Hour h0 = new Hour(12, 1, 4, 2007);</span>
+<span class="fc" id="L849">        Hour h1 = new Hour(13, 1, 4, 2007);</span>
+
+        // five dates to check...
+<span class="fc" id="L852">        Date d0 = new Date(h0.getFirstMillisecond());</span>
+<span class="fc" id="L853">        Date d1 = new Date(h0.getFirstMillisecond() + 500L);</span>
+<span class="fc" id="L854">        Date d2 = new Date(h0.getMiddleMillisecond());</span>
+<span class="fc" id="L855">        Date d3 = new Date(h0.getMiddleMillisecond() + 500L);</span>
+<span class="fc" id="L856">        Date d4 = new Date(h0.getLastMillisecond());</span>
+
+<span class="fc" id="L858">        Date end = new Date(h1.getLastMillisecond());</span>
+
+<span class="fc" id="L860">        DateTickUnit unit = new DateTickUnit(DateTickUnit.HOUR, 6);</span>
+<span class="fc" id="L861">        axis.setTickUnit(unit);</span>
+
+        // START: check d0 and d1
+<span class="fc" id="L864">        axis.setTickMarkPosition(DateTickMarkPosition.START);</span>
+
+<span class="fc" id="L866">        axis.setRange(d0, end);</span>
+<span class="fc" id="L867">        Date psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L868">        Date nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L869" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L870" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+<span class="fc" id="L872">        axis.setRange(d1, end);</span>
+<span class="fc" id="L873">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L874">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L875" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L876" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+        // MIDDLE: check d1, d2 and d3
+<span class="fc" id="L879">        axis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);</span>
+
+<span class="fc" id="L881">        axis.setRange(d1, end);</span>
+<span class="fc" id="L882">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L883">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L884" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L885" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+<span class="fc" id="L887">        axis.setRange(d2, end);</span>
+<span class="fc" id="L888">        psd = axis.previousStandardDate(d2, unit);</span>
+<span class="fc" id="L889">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L890" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d2.getTime());</span>
+<span class="pc bpc" id="L891" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d2.getTime());</span>
+
+<span class="fc" id="L893">        axis.setRange(d3, end);</span>
+<span class="fc" id="L894">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L895">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L896" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L897" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+        // END: check d3 and d4
+<span class="fc" id="L900">        axis.setTickMarkPosition(DateTickMarkPosition.END);</span>
+
+<span class="fc" id="L902">        axis.setRange(d3, end);</span>
+<span class="fc" id="L903">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L904">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L905" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L906" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+<span class="fc" id="L908">        axis.setRange(d4, end);</span>
+<span class="fc" id="L909">        psd = axis.previousStandardDate(d4, unit);</span>
+<span class="fc" id="L910">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L911" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d4.getTime());</span>
+<span class="pc bpc" id="L912" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d4.getTime());</span>
+<span class="fc" id="L913">    }</span>
+
+    /**
+     * A basic check for the testPreviousStandardDate() method when the
+     * tick unit is 1 second.
+     */
+    public void testPreviousStandardDateSecondA() {
+<span class="fc" id="L920">        MyDateAxis axis = new MyDateAxis(&quot;Second&quot;);</span>
+<span class="fc" id="L921">        Second s0 = new Second(58, 31, 12, 1, 4, 2007);</span>
+<span class="fc" id="L922">        Second s1 = new Second(59, 31, 12, 1, 4, 2007);</span>
+
+        // five dates to check...
+<span class="fc" id="L925">        Date d0 = new Date(s0.getFirstMillisecond());</span>
+<span class="fc" id="L926">        Date d1 = new Date(s0.getFirstMillisecond() + 50L);</span>
+<span class="fc" id="L927">        Date d2 = new Date(s0.getMiddleMillisecond());</span>
+<span class="fc" id="L928">        Date d3 = new Date(s0.getMiddleMillisecond() + 50L);</span>
+<span class="fc" id="L929">        Date d4 = new Date(s0.getLastMillisecond());</span>
+
+<span class="fc" id="L931">        Date end = new Date(s1.getLastMillisecond());</span>
+
+<span class="fc" id="L933">        DateTickUnit unit = new DateTickUnit(DateTickUnit.SECOND, 1);</span>
+<span class="fc" id="L934">        axis.setTickUnit(unit);</span>
+
+        // START: check d0 and d1
+<span class="fc" id="L937">        axis.setTickMarkPosition(DateTickMarkPosition.START);</span>
+
+<span class="fc" id="L939">        axis.setRange(d0, end);</span>
+<span class="fc" id="L940">        Date psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L941">        Date nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L942" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L943" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+<span class="fc" id="L945">        axis.setRange(d1, end);</span>
+<span class="fc" id="L946">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L947">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L948" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L949" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+        // MIDDLE: check d1, d2 and d3
+<span class="fc" id="L952">        axis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);</span>
+
+<span class="fc" id="L954">        axis.setRange(d1, end);</span>
+<span class="fc" id="L955">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L956">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L957" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L958" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+<span class="fc" id="L960">        axis.setRange(d2, end);</span>
+<span class="fc" id="L961">        psd = axis.previousStandardDate(d2, unit);</span>
+<span class="fc" id="L962">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L963" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d2.getTime());</span>
+<span class="pc bpc" id="L964" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d2.getTime());</span>
+
+<span class="fc" id="L966">        axis.setRange(d3, end);</span>
+<span class="fc" id="L967">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L968">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L969" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L970" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+        // END: check d3 and d4
+<span class="fc" id="L973">        axis.setTickMarkPosition(DateTickMarkPosition.END);</span>
+
+<span class="fc" id="L975">        axis.setRange(d3, end);</span>
+<span class="fc" id="L976">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L977">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L978" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L979" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+<span class="fc" id="L981">        axis.setRange(d4, end);</span>
+<span class="fc" id="L982">        psd = axis.previousStandardDate(d4, unit);</span>
+<span class="fc" id="L983">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L984" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d4.getTime());</span>
+<span class="pc bpc" id="L985" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d4.getTime());</span>
+<span class="fc" id="L986">    }</span>
+
+    /**
+     * A basic check for the testPreviousStandardDate() method when the
+     * tick unit is 5 seconds (just for the sake of having a multiple).
+     */
+    public void testPreviousStandardDateSecondB() {
+<span class="fc" id="L993">        MyDateAxis axis = new MyDateAxis(&quot;Second&quot;);</span>
+<span class="fc" id="L994">        Second s0 = new Second(58, 31, 12, 1, 4, 2007);</span>
+<span class="fc" id="L995">        Second s1 = new Second(59, 31, 12, 1, 4, 2007);</span>
+
+        // five dates to check...
+<span class="fc" id="L998">        Date d0 = new Date(s0.getFirstMillisecond());</span>
+<span class="fc" id="L999">        Date d1 = new Date(s0.getFirstMillisecond() + 50L);</span>
+<span class="fc" id="L1000">        Date d2 = new Date(s0.getMiddleMillisecond());</span>
+<span class="fc" id="L1001">        Date d3 = new Date(s0.getMiddleMillisecond() + 50L);</span>
+<span class="fc" id="L1002">        Date d4 = new Date(s0.getLastMillisecond());</span>
+
+<span class="fc" id="L1004">        Date end = new Date(s1.getLastMillisecond());</span>
+
+<span class="fc" id="L1006">        DateTickUnit unit = new DateTickUnit(DateTickUnit.SECOND, 5);</span>
+<span class="fc" id="L1007">        axis.setTickUnit(unit);</span>
+
+        // START: check d0 and d1
+<span class="fc" id="L1010">        axis.setTickMarkPosition(DateTickMarkPosition.START);</span>
+
+<span class="fc" id="L1012">        axis.setRange(d0, end);</span>
+<span class="fc" id="L1013">        Date psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L1014">        Date nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L1015" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L1016" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+<span class="fc" id="L1018">        axis.setRange(d1, end);</span>
+<span class="fc" id="L1019">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L1020">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L1021" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L1022" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+        // MIDDLE: check d1, d2 and d3
+<span class="fc" id="L1025">        axis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);</span>
+
+<span class="fc" id="L1027">        axis.setRange(d1, end);</span>
+<span class="fc" id="L1028">        psd = axis.previousStandardDate(d1, unit);</span>
+<span class="fc" id="L1029">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L1030" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d1.getTime());</span>
+<span class="pc bpc" id="L1031" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d1.getTime());</span>
+
+<span class="fc" id="L1033">        axis.setRange(d2, end);</span>
+<span class="fc" id="L1034">        psd = axis.previousStandardDate(d2, unit);</span>
+<span class="fc" id="L1035">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L1036" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d2.getTime());</span>
+<span class="pc bpc" id="L1037" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d2.getTime());</span>
+
+<span class="fc" id="L1039">        axis.setRange(d3, end);</span>
+<span class="fc" id="L1040">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L1041">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L1042" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L1043" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+        // END: check d3 and d4
+<span class="fc" id="L1046">        axis.setTickMarkPosition(DateTickMarkPosition.END);</span>
+
+<span class="fc" id="L1048">        axis.setRange(d3, end);</span>
+<span class="fc" id="L1049">        psd = axis.previousStandardDate(d3, unit);</span>
+<span class="fc" id="L1050">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L1051" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d3.getTime());</span>
+<span class="pc bpc" id="L1052" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d3.getTime());</span>
+
+<span class="fc" id="L1054">        axis.setRange(d4, end);</span>
+<span class="fc" id="L1055">        psd = axis.previousStandardDate(d4, unit);</span>
+<span class="fc" id="L1056">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L1057" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d4.getTime());</span>
+<span class="pc bpc" id="L1058" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d4.getTime());</span>
+<span class="fc" id="L1059">    }</span>
+
+    /**
+     * A basic check for the testPreviousStandardDate() method when the
+     * tick unit is 1 millisecond.
+     */
+    public void testPreviousStandardDateMillisecondA() {
+<span class="fc" id="L1066">        MyDateAxis axis = new MyDateAxis(&quot;Millisecond&quot;);</span>
+<span class="fc" id="L1067">        Millisecond m0 = new Millisecond(458, 58, 31, 12, 1, 4, 2007);</span>
+<span class="fc" id="L1068">        Millisecond m1 = new Millisecond(459, 58, 31, 12, 1, 4, 2007);</span>
+
+<span class="fc" id="L1070">        Date d0 = new Date(m0.getFirstMillisecond());</span>
+<span class="fc" id="L1071">        Date end = new Date(m1.getLastMillisecond());</span>
+
+<span class="fc" id="L1073">        DateTickUnit unit = new DateTickUnit(DateTickUnit.MILLISECOND, 1);</span>
+<span class="fc" id="L1074">        axis.setTickUnit(unit);</span>
+
+        // START: check d0
+<span class="fc" id="L1077">        axis.setTickMarkPosition(DateTickMarkPosition.START);</span>
+
+<span class="fc" id="L1079">        axis.setRange(d0, end);</span>
+<span class="fc" id="L1080">        Date psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L1081">        Date nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L1082" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L1083" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+        // MIDDLE: check d0
+<span class="fc" id="L1086">        axis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);</span>
+
+<span class="fc" id="L1088">        axis.setRange(d0, end);</span>
+<span class="fc" id="L1089">        psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L1090">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L1091" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L1092" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+        // END: check d0
+<span class="fc" id="L1095">        axis.setTickMarkPosition(DateTickMarkPosition.END);</span>
+
+<span class="fc" id="L1097">        axis.setRange(d0, end);</span>
+<span class="fc" id="L1098">        psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L1099">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L1100" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L1101" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+<span class="fc" id="L1102">    }</span>
+
+    /**
+     * A basic check for the testPreviousStandardDate() method when the
+     * tick unit is 10 milliseconds (just for the sake of having a multiple).
+     */
+    public void testPreviousStandardDateMillisecondB() {
+<span class="fc" id="L1109">        MyDateAxis axis = new MyDateAxis(&quot;Millisecond&quot;);</span>
+<span class="fc" id="L1110">        Millisecond m0 = new Millisecond(458, 58, 31, 12, 1, 4, 2007);</span>
+<span class="fc" id="L1111">        Millisecond m1 = new Millisecond(459, 58, 31, 12, 1, 4, 2007);</span>
+
+<span class="fc" id="L1113">        Date d0 = new Date(m0.getFirstMillisecond());</span>
+<span class="fc" id="L1114">        Date end = new Date(m1.getLastMillisecond());</span>
+
+<span class="fc" id="L1116">        DateTickUnit unit = new DateTickUnit(DateTickUnit.MILLISECOND, 10);</span>
+<span class="fc" id="L1117">        axis.setTickUnit(unit);</span>
+
+        // START: check d0
+<span class="fc" id="L1120">        axis.setTickMarkPosition(DateTickMarkPosition.START);</span>
+
+<span class="fc" id="L1122">        axis.setRange(d0, end);</span>
+<span class="fc" id="L1123">        Date psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L1124">        Date nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L1125" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L1126" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+        // MIDDLE: check d0
+<span class="fc" id="L1129">        axis.setTickMarkPosition(DateTickMarkPosition.MIDDLE);</span>
+
+<span class="fc" id="L1131">        axis.setRange(d0, end);</span>
+<span class="fc" id="L1132">        psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L1133">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L1134" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L1135" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+
+        // END: check d0
+<span class="fc" id="L1138">        axis.setTickMarkPosition(DateTickMarkPosition.END);</span>
+
+<span class="fc" id="L1140">        axis.setRange(d0, end);</span>
+<span class="fc" id="L1141">        psd = axis.previousStandardDate(d0, unit);</span>
+<span class="fc" id="L1142">        nsd = unit.addToDate(psd);</span>
+<span class="pc bpc" id="L1143" title="1 of 2 branches missed.">        assertTrue(psd.getTime() &lt; d0.getTime());</span>
+<span class="pc bpc" id="L1144" title="1 of 2 branches missed.">        assertTrue(nsd.getTime() &gt;= d0.getTime());</span>
+<span class="fc" id="L1145">    }</span>
+
+    /**
+     * A test to reproduce bug 2201869.
+     */
+    public void testBug2201869() {
+<span class="fc" id="L1151">        TimeZone tz = TimeZone.getTimeZone(&quot;GMT&quot;);</span>
+<span class="fc" id="L1152">        GregorianCalendar c = new GregorianCalendar(tz, Locale.UK);</span>
+<span class="fc" id="L1153">        DateAxis axis = new DateAxis(&quot;Date&quot;, tz, Locale.UK);</span>
+<span class="fc" id="L1154">        SimpleDateFormat sdf = new SimpleDateFormat(&quot;d-MMM-yyyy&quot;, Locale.UK);</span>
+<span class="fc" id="L1155">        sdf.setCalendar(c);</span>
+<span class="fc" id="L1156">        axis.setTickUnit(new DateTickUnit(DateTickUnit.MONTH, 1, sdf));</span>
+<span class="fc" id="L1157">        Day d1 = new Day(1, 3, 2008);</span>
+<span class="fc" id="L1158">        d1.peg(c);</span>
+<span class="fc" id="L1159">        Day d2 = new Day(30, 6, 2008);</span>
+<span class="fc" id="L1160">        d2.peg(c);</span>
+<span class="fc" id="L1161">        axis.setRange(d1.getStart(), d2.getEnd());</span>
+<span class="fc" id="L1162">        BufferedImage image = new BufferedImage(200, 100,</span>
+                BufferedImage.TYPE_INT_ARGB);
+<span class="fc" id="L1164">        Graphics2D g2 = image.createGraphics();</span>
+<span class="fc" id="L1165">        Rectangle2D area = new Rectangle2D.Double(0.0, 0.0, 200, 100);</span>
+<span class="fc" id="L1166">        axis.setTickMarkPosition(DateTickMarkPosition.END);</span>
+<span class="fc" id="L1167">        List ticks = axis.refreshTicks(g2, new AxisState(), area,</span>
+                RectangleEdge.BOTTOM);
+<span class="fc" id="L1169">        assertEquals(3, ticks.size());</span>
+<span class="fc" id="L1170">        DateTick t1 = (DateTick) ticks.get(0);</span>
+<span class="fc" id="L1171">        assertEquals(&quot;31-Mar-2008&quot;, t1.getText());</span>
+<span class="fc" id="L1172">        DateTick t2 = (DateTick) ticks.get(1);</span>
+<span class="fc" id="L1173">        assertEquals(&quot;30-Apr-2008&quot;, t2.getText());</span>
+<span class="fc" id="L1174">        DateTick t3 = (DateTick) ticks.get(2);</span>
+<span class="fc" id="L1175">        assertEquals(&quot;31-May-2008&quot;, t3.getText());</span>
+
+        // now repeat for a vertical axis
+<span class="fc" id="L1178">        ticks = axis.refreshTicks(g2, new AxisState(), area,</span>
+                RectangleEdge.LEFT);
+<span class="fc" id="L1180">        assertEquals(3, ticks.size());</span>
+<span class="fc" id="L1181">        t1 = (DateTick) ticks.get(0);</span>
+<span class="fc" id="L1182">        assertEquals(&quot;31-Mar-2008&quot;, t1.getText());</span>
+<span class="fc" id="L1183">        t2 = (DateTick) ticks.get(1);</span>
+<span class="fc" id="L1184">        assertEquals(&quot;30-Apr-2008&quot;, t2.getText());</span>
+<span class="fc" id="L1185">        t3 = (DateTick) ticks.get(2);</span>
+<span class="fc" id="L1186">        assertEquals(&quot;31-May-2008&quot;, t3.getText());</span>
+<span class="fc" id="L1187">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

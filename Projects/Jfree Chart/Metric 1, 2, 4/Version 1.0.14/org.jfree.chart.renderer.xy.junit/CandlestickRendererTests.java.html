@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CandlestickRendererTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.xy.junit</a> &gt; <span class="el_source">CandlestickRendererTests.java</span></div><h1>CandlestickRendererTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------------------
+ * CandlestickRendererTests.java
+ * -----------------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 25-Mar-2003 : Version 1 (DG);
+ * 22-Oct-2003 : Added hashCode test (DG);
+ * 17-Aug-2006 : Strengthened testEquals() and added testFindRangeBounds()
+ *               method (DG);
+ * 05-Mar-2007 : Added new field to testEquals() (DG);
+ * 08-Oct-2007 : Added tests for new volumePaint field (DG);
+ * 22-Apr-2008 : Added testPublicCloneable() (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.xy.junit;
+
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.Date;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.renderer.xy.CandlestickRenderer;
+import org.jfree.data.Range;
+import org.jfree.data.xy.DefaultOHLCDataset;
+import org.jfree.data.xy.OHLCDataItem;
+import org.jfree.data.xy.OHLCDataset;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link CandlestickRenderer} class.
+ */
+public class CandlestickRendererTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        return new TestSuite(CandlestickRendererTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public CandlestickRendererTests(String name) {
+<span class="fc" id="L90">        super(name);</span>
+<span class="fc" id="L91">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * Some checks for the constructor.
+     */
+    public void testConstructor() {
+<span class="fc" id="L99">        CandlestickRenderer r1 = new CandlestickRenderer();</span>
+
+        // check defaults
+<span class="fc" id="L102">        assertEquals(Color.green, r1.getUpPaint());</span>
+<span class="fc" id="L103">        assertEquals(Color.red, r1.getDownPaint());</span>
+<span class="fc" id="L104">        assertFalse(r1.getUseOutlinePaint());</span>
+<span class="fc" id="L105">        assertTrue(r1.getDrawVolume());</span>
+<span class="fc" id="L106">        assertEquals(Color.gray, r1.getVolumePaint());</span>
+<span class="fc" id="L107">        assertEquals(-1.0, r1.getCandleWidth(), EPSILON);</span>
+<span class="fc" id="L108">    }</span>
+
+    /**
+     * Check that the equals() method distinguishes all fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L114">        CandlestickRenderer r1 = new CandlestickRenderer();</span>
+<span class="fc" id="L115">        CandlestickRenderer r2 = new CandlestickRenderer();</span>
+<span class="fc" id="L116">        assertEquals(r1, r2);</span>
+
+        // upPaint
+<span class="fc" id="L119">        r1.setUpPaint(new GradientPaint(1.0f, 2.0f, Color.red, 3.0f, 4.0f,</span>
+                Color.white));
+<span class="fc" id="L121">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L122">        r2.setUpPaint(new GradientPaint(1.0f, 2.0f, Color.red, 3.0f, 4.0f,</span>
+                Color.white));
+<span class="fc" id="L124">        assertTrue(r1.equals(r2));</span>
+
+        // downPaint
+<span class="fc" id="L127">        r1.setDownPaint(new GradientPaint(5.0f, 6.0f, Color.green, 7.0f, 8.0f,</span>
+                Color.yellow));
+<span class="fc" id="L129">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L130">        r2.setDownPaint(new GradientPaint(5.0f, 6.0f, Color.green, 7.0f, 8.0f,</span>
+                Color.yellow));
+<span class="fc" id="L132">        assertTrue(r1.equals(r2));</span>
+
+        // drawVolume
+<span class="fc" id="L135">        r1.setDrawVolume(false);</span>
+<span class="fc" id="L136">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L137">        r2.setDrawVolume(false);</span>
+<span class="fc" id="L138">        assertTrue(r1.equals(r2));</span>
+
+        // candleWidth
+<span class="fc" id="L141">        r1.setCandleWidth(3.3);</span>
+<span class="fc" id="L142">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L143">        r2.setCandleWidth(3.3);</span>
+<span class="fc" id="L144">        assertTrue(r1.equals(r2));</span>
+
+        // maxCandleWidthInMilliseconds
+<span class="fc" id="L147">        r1.setMaxCandleWidthInMilliseconds(123);</span>
+<span class="fc" id="L148">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L149">        r2.setMaxCandleWidthInMilliseconds(123);</span>
+<span class="fc" id="L150">        assertTrue(r1.equals(r2));</span>
+
+        // autoWidthMethod
+<span class="fc" id="L153">        r1.setAutoWidthMethod(CandlestickRenderer.WIDTHMETHOD_SMALLEST);</span>
+<span class="fc" id="L154">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L155">        r2.setAutoWidthMethod(CandlestickRenderer.WIDTHMETHOD_SMALLEST);</span>
+<span class="fc" id="L156">        assertTrue(r1.equals(r2));</span>
+
+        // autoWidthFactor
+<span class="fc" id="L159">        r1.setAutoWidthFactor(0.22);</span>
+<span class="fc" id="L160">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L161">        r2.setAutoWidthFactor(0.22);</span>
+<span class="fc" id="L162">        assertTrue(r1.equals(r2));</span>
+
+        // autoWidthGap
+<span class="fc" id="L165">        r1.setAutoWidthGap(1.1);</span>
+<span class="fc" id="L166">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L167">        r2.setAutoWidthGap(1.1);</span>
+<span class="fc" id="L168">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L170">        r1.setUseOutlinePaint(true);</span>
+<span class="fc" id="L171">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L172">        r2.setUseOutlinePaint(true);</span>
+<span class="fc" id="L173">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L175">        r1.setVolumePaint(Color.blue);</span>
+<span class="fc" id="L176">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L177">        r2.setVolumePaint(Color.blue);</span>
+<span class="fc" id="L178">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L179">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L185">        CandlestickRenderer r1 = new CandlestickRenderer();</span>
+<span class="fc" id="L186">        CandlestickRenderer r2 = new CandlestickRenderer();</span>
+<span class="fc" id="L187">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L188">        int h1 = r1.hashCode();</span>
+<span class="fc" id="L189">        int h2 = r2.hashCode();</span>
+<span class="fc" id="L190">        assertEquals(h1, h2);</span>
+<span class="fc" id="L191">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L197">        CandlestickRenderer r1 = new CandlestickRenderer();</span>
+<span class="fc" id="L198">        CandlestickRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L200">            r2 = (CandlestickRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L202">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L203">            e.printStackTrace();</span>
+<span class="fc" id="L204">        }</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L207">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L208">    }</span>
+
+    /**
+     * Verify that this class implements {@link PublicCloneable}.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L214">        CandlestickRenderer r1 = new CandlestickRenderer();</span>
+<span class="fc" id="L215">        assertTrue(r1 instanceof PublicCloneable);</span>
+<span class="fc" id="L216">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L223">        CandlestickRenderer r1 = new CandlestickRenderer();</span>
+<span class="fc" id="L224">        CandlestickRenderer r2 = null;</span>
+
+        try {
+<span class="fc" id="L227">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L228">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L229">            out.writeObject(r1);</span>
+<span class="fc" id="L230">            out.close();</span>
+
+<span class="fc" id="L232">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L233">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L234">            r2 = (CandlestickRenderer) in.readObject();</span>
+<span class="fc" id="L235">            in.close();</span>
+        }
+<span class="nc" id="L237">        catch (Exception e) {</span>
+<span class="nc" id="L238">            e.printStackTrace();</span>
+<span class="fc" id="L239">        }</span>
+<span class="fc" id="L240">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L242">    }</span>
+
+    /**
+     * Some checks for the findRangeBounds() method.
+     */
+    public void testFindRangeBounds() {
+<span class="fc" id="L248">        CandlestickRenderer renderer = new CandlestickRenderer();</span>
+
+<span class="fc" id="L250">        OHLCDataItem item1 = new OHLCDataItem(new Date(1L), 2.0, 4.0, 1.0, 3.0,</span>
+                100);
+<span class="fc" id="L252">        OHLCDataset dataset = new DefaultOHLCDataset(&quot;S1&quot;,</span>
+                new OHLCDataItem[] {item1});
+<span class="fc" id="L254">        Range range = renderer.findRangeBounds(dataset);</span>
+<span class="fc" id="L255">        assertEquals(new Range(1.0, 4.0), range);</span>
+
+<span class="fc" id="L257">        OHLCDataItem item2 = new OHLCDataItem(new Date(1L), -1.0, 3.0, -1.0,</span>
+                3.0, 100);
+<span class="fc" id="L259">        dataset = new DefaultOHLCDataset(&quot;S1&quot;, new OHLCDataItem[] {item1,</span>
+                item2});
+<span class="fc" id="L261">        range = renderer.findRangeBounds(dataset);</span>
+<span class="fc" id="L262">        assertEquals(new Range(-1.0, 4.0), range);</span>
+
+        // try an empty dataset - should return a null range
+<span class="fc" id="L265">        dataset = new DefaultOHLCDataset(&quot;S1&quot;, new OHLCDataItem[] {});</span>
+<span class="fc" id="L266">        range = renderer.findRangeBounds(dataset);</span>
+<span class="fc" id="L267">        assertNull(range);</span>
+
+        // try a null dataset - should return a null range
+<span class="fc" id="L270">        range = renderer.findRangeBounds(null);</span>
+<span class="fc" id="L271">        assertNull(range);</span>
+<span class="fc" id="L272">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

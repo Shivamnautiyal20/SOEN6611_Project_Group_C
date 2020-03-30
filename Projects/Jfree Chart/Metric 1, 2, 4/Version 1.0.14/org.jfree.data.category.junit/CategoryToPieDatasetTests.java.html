@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryToPieDatasetTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.category.junit</a> &gt; <span class="el_source">CategoryToPieDatasetTests.java</span></div><h1>CategoryToPieDatasetTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------------------
+ * CategoryToPieDatasetTests.java
+ * ------------------------------
+ * (C) Copyright 2006-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 26-Jul-2006 : Version 1 (DG);
+ * 01-Aug-2006 : Added testGetIndex() method (DG);
+ *
+ */
+
+package org.jfree.data.category.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.category.CategoryToPieDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.util.TableOrder;
+
+/**
+ * Tests for the {@link CategoryToPieDataset} class.
+ */
+public class CategoryToPieDatasetTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        return new TestSuite(CategoryToPieDatasetTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public CategoryToPieDatasetTests(String name) {
+<span class="fc" id="L80">        super(name);</span>
+<span class="fc" id="L81">    }</span>
+
+    /**
+     * Some tests for the constructor.
+     */
+    public void testConstructor() {
+        // try a null source
+<span class="fc" id="L88">        CategoryToPieDataset p1 = new CategoryToPieDataset(null,</span>
+                TableOrder.BY_COLUMN, 0);
+<span class="fc" id="L90">        assertNull(p1.getUnderlyingDataset());</span>
+<span class="fc" id="L91">        assertEquals(p1.getItemCount(), 0);</span>
+<span class="fc" id="L92">        assertTrue(p1.getKeys().isEmpty());</span>
+<span class="fc" id="L93">        assertNull(p1.getValue(&quot;R1&quot;));</span>
+<span class="fc" id="L94">    }</span>
+
+    /**
+     * Some checks for the getValue() method.
+     */
+    public void testGetValue() {
+<span class="fc" id="L100">        DefaultCategoryDataset underlying = new DefaultCategoryDataset();</span>
+<span class="fc" id="L101">        underlying.addValue(1.1, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L102">        underlying.addValue(2.2, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L103">        CategoryToPieDataset d1 = new CategoryToPieDataset(underlying,</span>
+                TableOrder.BY_ROW, 0);
+<span class="fc" id="L105">        assertEquals(d1.getValue(&quot;C1&quot;), new Double(1.1));</span>
+<span class="fc" id="L106">        assertEquals(d1.getValue(&quot;C2&quot;), new Double(2.2));</span>
+
+        // check negative index throws exception
+        try {
+<span class="nc" id="L110">            /* Number n = */ d1.getValue(-1);</span>
+<span class="nc" id="L111">            fail(&quot;Expected IndexOutOfBoundsException.&quot;);</span>
+        }
+<span class="fc" id="L113">        catch (IndexOutOfBoundsException e) {</span>
+            // this is expected
+<span class="nc" id="L115">        }</span>
+
+        // check index == getItemCount() throws exception
+        try {
+<span class="nc" id="L119">            /* Number n = */ d1.getValue(d1.getItemCount());</span>
+<span class="nc" id="L120">            fail(&quot;Expected IndexOutOfBoundsException.&quot;);</span>
+        }
+<span class="fc" id="L122">        catch (IndexOutOfBoundsException e) {</span>
+            // this is expected
+<span class="nc" id="L124">        }</span>
+
+        // test null source
+<span class="fc" id="L127">        CategoryToPieDataset p1 = new CategoryToPieDataset(null,</span>
+                TableOrder.BY_COLUMN, 0);
+        try {
+<span class="nc" id="L130">            /* Number n = */ p1.getValue(0);</span>
+<span class="nc" id="L131">            fail(&quot;Expected IndexOutOfBoundsException.&quot;);</span>
+        }
+<span class="fc" id="L133">        catch (IndexOutOfBoundsException e) {</span>
+            // this is expected
+<span class="nc" id="L135">        }</span>
+<span class="fc" id="L136">    }</span>
+
+    /**
+     * Some checks for the getKey(int) method.
+     */
+    public void testGetKey() {
+<span class="fc" id="L142">        DefaultCategoryDataset underlying = new DefaultCategoryDataset();</span>
+<span class="fc" id="L143">        underlying.addValue(1.1, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L144">        underlying.addValue(2.2, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L145">        CategoryToPieDataset d1 = new CategoryToPieDataset(underlying,</span>
+                TableOrder.BY_ROW, 0);
+<span class="fc" id="L147">        assertEquals(d1.getKey(0), &quot;C1&quot;);</span>
+<span class="fc" id="L148">        assertEquals(d1.getKey(1), &quot;C2&quot;);</span>
+
+        // check negative index throws exception
+        try {
+<span class="nc" id="L152">            /* Number n = */ d1.getKey(-1);</span>
+<span class="nc" id="L153">            fail(&quot;Expected IndexOutOfBoundsException.&quot;);</span>
+        }
+<span class="fc" id="L155">        catch (IndexOutOfBoundsException e) {</span>
+            // this is expected
+<span class="nc" id="L157">        }</span>
+
+        // check index == getItemCount() throws exception
+        try {
+<span class="nc" id="L161">            /* Number n = */ d1.getKey(d1.getItemCount());</span>
+<span class="nc" id="L162">            fail(&quot;Expected IndexOutOfBoundsException.&quot;);</span>
+        }
+<span class="fc" id="L164">        catch (IndexOutOfBoundsException e) {</span>
+            // this is expected
+<span class="nc" id="L166">        }</span>
+
+        // test null source
+<span class="fc" id="L169">        CategoryToPieDataset p1 = new CategoryToPieDataset(null,</span>
+                TableOrder.BY_COLUMN, 0);
+        try {
+<span class="nc" id="L172">            /* Number n = */ p1.getKey(0);</span>
+<span class="nc" id="L173">            fail(&quot;Expected IndexOutOfBoundsException.&quot;);</span>
+        }
+<span class="fc" id="L175">        catch (IndexOutOfBoundsException e) {</span>
+            // this is expected
+<span class="nc" id="L177">        }</span>
+<span class="fc" id="L178">    }</span>
+
+    /**
+     * Some checks for the getIndex() method.
+     */
+    public void testGetIndex() {
+<span class="fc" id="L184">        DefaultCategoryDataset underlying = new DefaultCategoryDataset();</span>
+<span class="fc" id="L185">        underlying.addValue(1.1, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L186">        underlying.addValue(2.2, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L187">        CategoryToPieDataset d1 = new CategoryToPieDataset(underlying,</span>
+                TableOrder.BY_ROW, 0);
+<span class="fc" id="L189">        assertEquals(0, d1.getIndex(&quot;C1&quot;));</span>
+<span class="fc" id="L190">        assertEquals(1, d1.getIndex(&quot;C2&quot;));</span>
+<span class="fc" id="L191">        assertEquals(-1, d1.getIndex(&quot;XX&quot;));</span>
+
+        // try null
+<span class="fc" id="L194">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L196">            d1.getIndex(null);</span>
+        }
+<span class="fc" id="L198">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L199">            pass = true;</span>
+<span class="nc" id="L200">        }</span>
+<span class="fc" id="L201">        assertTrue(pass);</span>
+<span class="fc" id="L202">    }</span>
+
+    /**
+     * For datasets, the equals() method just checks keys and values.
+     */
+    public void testEquals() {
+<span class="fc" id="L208">        DefaultCategoryDataset underlying = new DefaultCategoryDataset();</span>
+<span class="fc" id="L209">        underlying.addValue(1.1, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L210">        underlying.addValue(2.2, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L211">        CategoryToPieDataset d1 = new CategoryToPieDataset(underlying,</span>
+                TableOrder.BY_COLUMN, 1);
+<span class="fc" id="L213">        DefaultPieDataset d2 = new DefaultPieDataset();</span>
+<span class="fc" id="L214">        d2.setValue(&quot;R1&quot;, 2.2);</span>
+<span class="fc" id="L215">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L216">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L222">        DefaultCategoryDataset underlying = new DefaultCategoryDataset();</span>
+<span class="fc" id="L223">        underlying.addValue(1.1, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L224">        underlying.addValue(2.2, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L225">        CategoryToPieDataset d1 = new CategoryToPieDataset(underlying,</span>
+                TableOrder.BY_COLUMN, 1);
+<span class="fc" id="L227">        CategoryToPieDataset d2 = null;</span>
+
+        try {
+<span class="fc" id="L230">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L231">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L232">            out.writeObject(d1);</span>
+<span class="fc" id="L233">            out.close();</span>
+
+<span class="fc" id="L235">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L236">                    buffer.toByteArray()));</span>
+<span class="fc" id="L237">            d2 = (CategoryToPieDataset) in.readObject();</span>
+<span class="fc" id="L238">            in.close();</span>
+        }
+<span class="nc" id="L240">        catch (Exception e) {</span>
+<span class="nc" id="L241">            e.printStackTrace();</span>
+<span class="fc" id="L242">        }</span>
+<span class="fc" id="L243">        assertEquals(d1, d2);</span>
+
+        // regular equality for the datasets doesn't check the fields, just
+        // the data values...so let's check some more things...
+<span class="fc" id="L247">        assertEquals(d1.getUnderlyingDataset(), d2.getUnderlyingDataset());</span>
+<span class="fc" id="L248">        assertEquals(d1.getExtractType(), d2.getExtractType());</span>
+<span class="fc" id="L249">        assertEquals(d1.getExtractIndex(), d2.getExtractIndex());</span>
+<span class="fc" id="L250">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

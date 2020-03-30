@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ImageEncoderFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.encoders</a> &gt; <span class="el_source">ImageEncoderFactory.java</span></div><h1>ImageEncoderFactory.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------------
+ * ImageEncoderFactory.java
+ * ------------------------
+ * (C) Copyright 2004-2008, by Richard Atkinson and Contributors.
+ *
+ * Original Author:  Richard Atkinson;
+ * Contributor(s):   David Gilbert (for Object Refinery Limited);
+ *
+ * Changes
+ * -------
+ * 01-Aug-2004 : Initial version (RA);
+ * 01-Nov-2005 : Now using ImageIO for JPEG encoding, so we no longer have a
+ *               dependency on com.sun.* which isn't available on all
+ *               implementations (DG);
+ * 02-Feb-2007 : Removed author tags all over JFreeChart sources (DG);
+ *
+ */
+
+package org.jfree.chart.encoders;
+
+import java.util.Hashtable;
+
+/**
+ * Factory class for returning {@link ImageEncoder}s for different
+ * {@link ImageFormat}s.
+ */
+<span class="nc" id="L53">public class ImageEncoderFactory {</span>
+
+    /** Storage for the encoders. */
+<span class="nc" id="L56">    private static Hashtable encoders = null;</span>
+
+    static {
+<span class="nc" id="L59">        init();</span>
+<span class="nc" id="L60">    }</span>
+
+    /**
+     * Sets up default encoders (uses Sun PNG Encoder if JDK 1.4+ and the
+     * SunPNGEncoderAdapter class is available).
+     */
+    private static void init() {
+<span class="nc" id="L67">        encoders = new Hashtable();</span>
+<span class="nc" id="L68">        encoders.put(&quot;jpeg&quot;, &quot;org.jfree.chart.encoders.SunJPEGEncoderAdapter&quot;);</span>
+        try {
+            //  Test for being run under JDK 1.4+
+<span class="nc" id="L71">            Class.forName(&quot;javax.imageio.ImageIO&quot;);</span>
+            //  Test for JFreeChart being compiled under JDK 1.4+
+<span class="nc" id="L73">            Class.forName(&quot;org.jfree.chart.encoders.SunPNGEncoderAdapter&quot;);</span>
+<span class="nc" id="L74">            encoders.put(&quot;png&quot;,</span>
+                    &quot;org.jfree.chart.encoders.SunPNGEncoderAdapter&quot;);
+<span class="nc" id="L76">            encoders.put(&quot;jpeg&quot;,</span>
+                    &quot;org.jfree.chart.encoders.SunJPEGEncoderAdapter&quot;);
+        }
+<span class="nc" id="L79">        catch (ClassNotFoundException e) {</span>
+<span class="nc" id="L80">            encoders.put(&quot;png&quot;,</span>
+                    &quot;org.jfree.chart.encoders.KeypointPNGEncoderAdapter&quot;);
+<span class="nc" id="L82">        }</span>
+<span class="nc" id="L83">    }</span>
+
+    /**
+     * Used to set additional encoders or replace default ones.
+     *
+     * @param format  The image format name.
+     * @param imageEncoderClassName  The name of the ImageEncoder class.
+     */
+    public static void setImageEncoder(String format,
+                                       String imageEncoderClassName) {
+<span class="nc" id="L93">        encoders.put(format, imageEncoderClassName);</span>
+<span class="nc" id="L94">    }</span>
+
+    /**
+     * Used to retrieve an ImageEncoder for a specific image format.
+     *
+     * @param format  The image format required.
+     *
+     * @return The ImageEncoder or &lt;code&gt;null&lt;/code&gt; if none available.
+     */
+    public static ImageEncoder newInstance(String format) {
+<span class="nc" id="L104">        ImageEncoder imageEncoder = null;</span>
+<span class="nc" id="L105">        String className = (String) encoders.get(format);</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">        if (className == null) {</span>
+<span class="nc" id="L107">            throw new IllegalArgumentException(&quot;Unsupported image format - &quot;</span>
+                    + format);
+        }
+        try {
+<span class="nc" id="L111">            Class imageEncoderClass = Class.forName(className);</span>
+<span class="nc" id="L112">            imageEncoder = (ImageEncoder) imageEncoderClass.newInstance();</span>
+        }
+<span class="nc" id="L114">        catch (Exception e) {</span>
+<span class="nc" id="L115">            throw new IllegalArgumentException(e.toString());</span>
+<span class="nc" id="L116">        }</span>
+<span class="nc" id="L117">        return imageEncoder;</span>
+    }
+
+    /**
+     * Used to retrieve an ImageEncoder for a specific image format.
+     *
+     * @param format  The image format required.
+     * @param quality  The quality to be set before returning.
+     *
+     * @return The ImageEncoder or &lt;code&gt;null&lt;/code&gt; if none available.
+     */
+    public static ImageEncoder newInstance(String format, float quality) {
+<span class="nc" id="L129">        ImageEncoder imageEncoder = newInstance(format);</span>
+<span class="nc" id="L130">        imageEncoder.setQuality(quality);</span>
+<span class="nc" id="L131">        return imageEncoder;</span>
+    }
+
+    /**
+     * Used to retrieve an ImageEncoder for a specific image format.
+     *
+     * @param format  The image format required.
+     * @param encodingAlpha  Sets whether alpha transparency should be encoded.
+     *
+     * @return The ImageEncoder or &lt;code&gt;null&lt;/code&gt; if none available.
+     */
+    public static ImageEncoder newInstance(String format,
+                                           boolean encodingAlpha) {
+<span class="nc" id="L144">        ImageEncoder imageEncoder = newInstance(format);</span>
+<span class="nc" id="L145">        imageEncoder.setEncodingAlpha(encodingAlpha);</span>
+<span class="nc" id="L146">        return imageEncoder;</span>
+    }
+
+    /**
+     * Used to retrieve an ImageEncoder for a specific image format.
+     *
+     * @param format  The image format required.
+     * @param quality  The quality to be set before returning.
+     * @param encodingAlpha  Sets whether alpha transparency should be encoded.
+     *
+     * @return The ImageEncoder or &lt;code&gt;null&lt;/code&gt; if none available.
+     */
+    public static ImageEncoder newInstance(String format, float quality,
+                                           boolean encodingAlpha) {
+<span class="nc" id="L160">        ImageEncoder imageEncoder = newInstance(format);</span>
+<span class="nc" id="L161">        imageEncoder.setQuality(quality);</span>
+<span class="nc" id="L162">        imageEncoder.setEncodingAlpha(encodingAlpha);</span>
+<span class="nc" id="L163">        return imageEncoder;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

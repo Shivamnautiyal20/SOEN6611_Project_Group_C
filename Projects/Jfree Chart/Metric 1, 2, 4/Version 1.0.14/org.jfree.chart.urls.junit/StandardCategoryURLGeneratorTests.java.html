@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StandardCategoryURLGeneratorTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.urls.junit</a> &gt; <span class="el_source">StandardCategoryURLGeneratorTests.java</span></div><h1>StandardCategoryURLGeneratorTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------------------------
+ * StandardCategoryURLGeneratorTests.java
+ * --------------------------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 13-Aug-2003 : Version 1 (DG);
+ * 13-Dec-2007 : Added testGenerateURL() and testEquals() (DG);
+ * 23-Apr-2008 : Added testPublicCloneable (DG);
+ *
+ */
+
+package org.jfree.chart.urls.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.urls.StandardCategoryURLGenerator;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link StandardCategoryURLGenerator} class.
+ */
+public class StandardCategoryURLGeneratorTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        return new TestSuite(StandardCategoryURLGeneratorTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public StandardCategoryURLGeneratorTests(String name) {
+<span class="fc" id="L80">        super(name);</span>
+<span class="fc" id="L81">    }</span>
+
+    /**
+     * Some tests for the generateURL() method.
+     */
+    public void testGenerateURL() {
+<span class="fc" id="L87">        StandardCategoryURLGenerator g1 = new StandardCategoryURLGenerator();</span>
+<span class="fc" id="L88">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L89">        dataset.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L90">        dataset.addValue(2.0, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L91">        dataset.addValue(3.0, &quot;R&amp;&quot;, &quot;C&amp;&quot;);</span>
+<span class="fc" id="L92">        assertEquals(&quot;index.html?series=R1&amp;amp;category=C1&quot;,</span>
+<span class="fc" id="L93">                g1.generateURL(dataset, 0, 0));</span>
+<span class="fc" id="L94">        assertEquals(&quot;index.html?series=R1&amp;amp;category=C2&quot;,</span>
+<span class="fc" id="L95">                g1.generateURL(dataset, 0, 1));</span>
+<span class="fc" id="L96">        assertEquals(&quot;index.html?series=R2&amp;amp;category=C2&quot;,</span>
+<span class="fc" id="L97">                g1.generateURL(dataset, 1, 1));</span>
+<span class="fc" id="L98">        assertEquals(&quot;index.html?series=R%26&amp;amp;category=C%26&quot;,</span>
+<span class="fc" id="L99">                g1.generateURL(dataset, 2, 2));</span>
+<span class="fc" id="L100">    }</span>
+
+    /**
+     * Checks that the class does not implement PublicCloneable (the generator
+     * is immutable, so cloning is not necessary).
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L107">        StandardCategoryURLGenerator g1 = new StandardCategoryURLGenerator();</span>
+<span class="fc" id="L108">        assertFalse(g1 instanceof PublicCloneable);</span>
+<span class="fc" id="L109">    }</span>
+
+    /**
+     * Some tests for the equals() method.
+     */
+    public void testEquals() {
+<span class="fc" id="L115">        StandardCategoryURLGenerator g1 = new StandardCategoryURLGenerator();</span>
+<span class="fc" id="L116">        StandardCategoryURLGenerator g2 = new StandardCategoryURLGenerator();</span>
+<span class="fc" id="L117">        assertTrue(g1.equals(g2));</span>
+
+<span class="fc" id="L119">        g1 = new StandardCategoryURLGenerator(&quot;index2.html?&quot;);</span>
+<span class="fc" id="L120">        assertFalse(g1.equals(g2));</span>
+<span class="fc" id="L121">        g2 = new StandardCategoryURLGenerator(&quot;index2.html?&quot;);</span>
+<span class="fc" id="L122">        assertTrue(g1.equals(g2));</span>
+
+<span class="fc" id="L124">        g1 = new StandardCategoryURLGenerator(&quot;index2.html?&quot;, &quot;A&quot;, &quot;B&quot;);</span>
+<span class="fc" id="L125">        assertFalse(g1.equals(g2));</span>
+<span class="fc" id="L126">        g2 = new StandardCategoryURLGenerator(&quot;index2.html?&quot;, &quot;A&quot;, &quot;B&quot;);</span>
+<span class="fc" id="L127">        assertTrue(g1.equals(g2));</span>
+
+<span class="fc" id="L129">        g1 = new StandardCategoryURLGenerator(&quot;index2.html?&quot;, &quot;A&quot;, &quot;C&quot;);</span>
+<span class="fc" id="L130">        assertFalse(g1.equals(g2));</span>
+<span class="fc" id="L131">        g2 = new StandardCategoryURLGenerator(&quot;index2.html?&quot;, &quot;A&quot;, &quot;C&quot;);</span>
+<span class="fc" id="L132">        assertTrue(g1.equals(g2));</span>
+<span class="fc" id="L133">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L139">        StandardCategoryURLGenerator g1 = new StandardCategoryURLGenerator(</span>
+                &quot;index.html?&quot;);
+<span class="fc" id="L141">        StandardCategoryURLGenerator g2 = null;</span>
+
+        try {
+<span class="fc" id="L144">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L145">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L146">            out.writeObject(g1);</span>
+<span class="fc" id="L147">            out.close();</span>
+
+<span class="fc" id="L149">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L150">                    buffer.toByteArray()));</span>
+<span class="fc" id="L151">            g2 = (StandardCategoryURLGenerator) in.readObject();</span>
+<span class="fc" id="L152">            in.close();</span>
+        }
+<span class="nc" id="L154">        catch (Exception e) {</span>
+<span class="nc" id="L155">            e.printStackTrace();</span>
+<span class="fc" id="L156">        }</span>
+<span class="fc" id="L157">        assertEquals(g1, g2);</span>
+<span class="fc" id="L158">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

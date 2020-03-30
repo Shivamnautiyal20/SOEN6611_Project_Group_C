@@ -1,0 +1,1925 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractXYItemRenderer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.xy</a> &gt; <span class="el_source">AbstractXYItemRenderer.java</span></div><h1>AbstractXYItemRenderer.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------------
+ * AbstractXYItemRenderer.java
+ * ---------------------------
+ * (C) Copyright 2002-2011, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Richard Atkinson;
+ *                   Focus Computer Services Limited;
+ *                   Tim Bardzil;
+ *                   Sergei Ivanov;
+ *                   Peter Kolb (patch 2809117);
+ *                   Martin Krauskopf;
+ *
+ * Changes:
+ * --------
+ * 15-Mar-2002 : Version 1 (DG);
+ * 09-Apr-2002 : Added a getToolTipGenerator() method reflecting the change in
+ *               the XYItemRenderer interface (DG);
+ * 05-Aug-2002 : Added a urlGenerator member variable to support HTML image
+ *               maps (RA);
+ * 20-Aug-2002 : Added property change events for the tooltip and URL
+ *               generators (DG);
+ * 22-Aug-2002 : Moved property change support into AbstractRenderer class (DG);
+ * 23-Sep-2002 : Fixed errors reported by Checkstyle tool (DG);
+ * 18-Nov-2002 : Added methods for drawing grid lines (DG);
+ * 17-Jan-2003 : Moved plot classes into a separate package (DG);
+ * 25-Mar-2003 : Implemented Serializable (DG);
+ * 01-May-2003 : Modified initialise() return type and drawItem() method
+ *               signature (DG);
+ * 15-May-2003 : Modified to take into account the plot orientation (DG);
+ * 21-May-2003 : Added labels to markers (DG);
+ * 05-Jun-2003 : Added domain and range grid bands (sponsored by Focus Computer
+ *               Services Ltd) (DG);
+ * 27-Jul-2003 : Added getRangeType() to support stacked XY area charts (RA);
+ * 31-Jul-2003 : Deprecated all but the default constructor (DG);
+ * 13-Aug-2003 : Implemented Cloneable (DG);
+ * 16-Sep-2003 : Changed ChartRenderingInfo --&gt; PlotRenderingInfo (DG);
+ * 29-Oct-2003 : Added workaround for font alignment in PDF output (DG);
+ * 05-Nov-2003 : Fixed marker rendering bug (833623) (DG);
+ * 11-Feb-2004 : Updated labelling for markers (DG);
+ * 25-Feb-2004 : Added updateCrosshairValues() method.  Moved deprecated code
+ *               to bottom of source file (DG);
+ * 16-Apr-2004 : Added support for IntervalMarker in drawRangeMarker() method
+ *               - thanks to Tim Bardzil (DG);
+ * 05-May-2004 : Fixed bug (948310) where interval markers extend beyond axis
+ *               range (DG);
+ * 03-Jun-2004 : Fixed more bugs in drawing interval markers (DG);
+ * 26-Aug-2004 : Added the addEntity() method (DG);
+ * 29-Sep-2004 : Added annotation support (with layers) (DG);
+ * 30-Sep-2004 : Moved drawRotatedString() from RefineryUtilities --&gt;
+ *               TextUtilities (DG);
+ * 06-Oct-2004 : Added findDomainBounds() method and renamed
+ *               getRangeExtent() --&gt; findRangeBounds() (DG);
+ * 07-Jan-2005 : Removed deprecated code (DG);
+ * 27-Jan-2005 : Modified getLegendItem() to omit hidden series (DG);
+ * 24-Feb-2005 : Added getLegendItems() method (DG);
+ * 08-Mar-2005 : Fixed positioning of marker labels (DG);
+ * 20-Apr-2005 : Renamed XYLabelGenerator --&gt; XYItemLabelGenerator and
+ *               added generators for legend labels, tooltips and URLs (DG);
+ * 01-Jun-2005 : Handle one dimension of the marker label adjustment
+ *               automatically (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 20-Jul-2006 : Set dataset and series indices in LegendItem (DG);
+ * 24-Oct-2006 : Respect alpha setting in markers (see patch 1567843 by Sergei
+ *               Ivanov) (DG);
+ * 24-Oct-2006 : Added code to draw outlines for interval markers (DG);
+ * 24-Nov-2006 : Fixed cloning for legend item generators (DG);
+ * 06-Feb-2007 : Added new updateCrosshairValues() method that takes into
+ *               account multiple axis plots (see bug 1086307) (DG);
+ * 20-Feb-2007 : Fixed equals() method implementation (DG);
+ * 01-Mar-2007 : Fixed interval marker drawing (patch 1670686 thanks to
+ *               Sergei Ivanov) (DG);
+ * 22-Mar-2007 : Modified the tool tip generator look up (DG);
+ * 23-Mar-2007 : Added drawDomainLine() method (DG);
+ * 20-Apr-2007 : Updated getLegendItem() for renderer change, and deprecated
+ *               itemLabelGenerator and toolTipGenerator override fields (DG);
+ * 18-May-2007 : Set dataset and seriesKey for LegendItem (DG);
+ * 12-Nov-2007 : Fixed domain and range band drawing methods (DG);
+ * 07-Apr-2008 : Minor API doc update (DG);
+ * 14-May-2008 : Updated addEntity() method to take plot orientation into
+ *               account when the incoming area is null (DG);
+ * 02-Jun-2008 : Added isPointInRect() method (DG);
+ * 17-Jun-2008 : Apply legend shape, font and paint attributes (DG);
+ * 09-Mar-2009 : Added getAnnotations() method (DG);
+ * 27-Mar-2009 : Added new findDomainBounds() and findRangeBounds() methods to
+ *               take account of hidden series (DG);
+ * 01-Apr-2009 : Moved defaultEntityRadius up to superclass (DG);
+ * 28-Apr-2009 : Updated getLegendItem() method to observe new
+ *               'treatLegendShapeAsLine' flag (DG);
+ * 24-Jun-2009 : Added support for annotation events - see patch 2809117
+ *               by PK (DG);
+ * 01-Sep-2009 : Bug 2840132 - set renderer index when drawing
+ *               annotations (DG);
+ * 06-Oct-2011 : Add utility methods to work with 1.4 API in GeneralPath (MK)
+ * 
+ */
+
+package org.jfree.chart.renderer.xy;
+
+import java.awt.AlphaComposite;
+import java.awt.Composite;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.Stroke;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.LegendItemCollection;
+import org.jfree.chart.annotations.Annotation;
+import org.jfree.chart.annotations.XYAnnotation;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.entity.EntityCollection;
+import org.jfree.chart.entity.XYItemEntity;
+import org.jfree.chart.event.AnnotationChangeEvent;
+import org.jfree.chart.event.AnnotationChangeListener;
+import org.jfree.chart.event.RendererChangeEvent;
+import org.jfree.chart.labels.ItemLabelPosition;
+import org.jfree.chart.labels.StandardXYSeriesLabelGenerator;
+import org.jfree.chart.labels.XYItemLabelGenerator;
+import org.jfree.chart.labels.XYSeriesLabelGenerator;
+import org.jfree.chart.labels.XYToolTipGenerator;
+import org.jfree.chart.plot.CrosshairState;
+import org.jfree.chart.plot.DrawingSupplier;
+import org.jfree.chart.plot.IntervalMarker;
+import org.jfree.chart.plot.Marker;
+import org.jfree.chart.plot.Plot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.PlotRenderingInfo;
+import org.jfree.chart.plot.ValueMarker;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.AbstractRenderer;
+import org.jfree.chart.urls.XYURLGenerator;
+import org.jfree.data.Range;
+import org.jfree.data.general.DatasetUtilities;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.text.TextUtilities;
+import org.jfree.ui.GradientPaintTransformer;
+import org.jfree.ui.Layer;
+import org.jfree.ui.LengthAdjustmentType;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.RectangleInsets;
+import org.jfree.util.ObjectList;
+import org.jfree.util.ObjectUtilities;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * A base class that can be used to create new {@link XYItemRenderer}
+ * implementations.
+ */
+public abstract class AbstractXYItemRenderer extends AbstractRenderer
+        implements XYItemRenderer, AnnotationChangeListener,
+        Cloneable, Serializable {
+
+    /** For serialization. */
+    private static final long serialVersionUID = 8019124836026607990L;
+
+    /** The plot. */
+    private XYPlot plot;
+
+    /** A list of item label generators (one per series). */
+    private ObjectList itemLabelGeneratorList;
+
+    /** The base item label generator. */
+    private XYItemLabelGenerator baseItemLabelGenerator;
+
+    /** A list of tool tip generators (one per series). */
+    private ObjectList toolTipGeneratorList;
+
+    /** The base tool tip generator. */
+    private XYToolTipGenerator baseToolTipGenerator;
+
+    /** The URL text generator. */
+    private XYURLGenerator urlGenerator;
+
+    /**
+     * Annotations to be drawn in the background layer ('underneath' the data
+     * items).
+     */
+    private List backgroundAnnotations;
+
+    /**
+     * Annotations to be drawn in the foreground layer ('on top' of the data
+     * items).
+     */
+    private List foregroundAnnotations;
+
+    /** The legend item label generator. */
+    private XYSeriesLabelGenerator legendItemLabelGenerator;
+
+    /** The legend item tool tip generator. */
+    private XYSeriesLabelGenerator legendItemToolTipGenerator;
+
+    /** The legend item URL generator. */
+    private XYSeriesLabelGenerator legendItemURLGenerator;
+
+    /**
+     * Creates a renderer where the tooltip generator and the URL generator are
+     * both &lt;code&gt;null&lt;/code&gt;.
+     */
+    protected AbstractXYItemRenderer() {
+<span class="fc" id="L239">        super();</span>
+<span class="fc" id="L240">        this.itemLabelGenerator = null;</span>
+<span class="fc" id="L241">        this.itemLabelGeneratorList = new ObjectList();</span>
+<span class="fc" id="L242">        this.toolTipGenerator = null;</span>
+<span class="fc" id="L243">        this.toolTipGeneratorList = new ObjectList();</span>
+<span class="fc" id="L244">        this.urlGenerator = null;</span>
+<span class="fc" id="L245">        this.backgroundAnnotations = new java.util.ArrayList();</span>
+<span class="fc" id="L246">        this.foregroundAnnotations = new java.util.ArrayList();</span>
+<span class="fc" id="L247">        this.legendItemLabelGenerator = new StandardXYSeriesLabelGenerator(</span>
+                &quot;{0}&quot;);
+<span class="fc" id="L249">    }</span>
+
+    /**
+     * Returns the number of passes through the data that the renderer requires
+     * in order to draw the chart.  Most charts will require a single pass, but
+     * some require two passes.
+     *
+     * @return The pass count.
+     */
+    public int getPassCount() {
+<span class="fc" id="L259">        return 1;</span>
+    }
+
+    /**
+     * Returns the plot that the renderer is assigned to.
+     *
+     * @return The plot (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public XYPlot getPlot() {
+<span class="fc" id="L268">        return this.plot;</span>
+    }
+
+    /**
+     * Sets the plot that the renderer is assigned to.
+     *
+     * @param plot  the plot (&lt;code&gt;null&lt;/code&gt; permitted).
+     */
+    public void setPlot(XYPlot plot) {
+<span class="fc" id="L277">        this.plot = plot;</span>
+<span class="fc" id="L278">    }</span>
+
+    /**
+     * Initialises the renderer and returns a state object that should be
+     * passed to all subsequent calls to the drawItem() method.
+     * &lt;P&gt;
+     * This method will be called before the first item is rendered, giving the
+     * renderer an opportunity to initialise any state information it wants to
+     * maintain.  The renderer can do nothing if it chooses.
+     *
+     * @param g2  the graphics device.
+     * @param dataArea  the area inside the axes.
+     * @param plot  the plot.
+     * @param data  the data.
+     * @param info  an optional info collection object to return data back to
+     *              the caller.
+     *
+     * @return The renderer state (never &lt;code&gt;null&lt;/code&gt;).
+     */
+    public XYItemRendererState initialise(Graphics2D g2,
+                                          Rectangle2D dataArea,
+                                          XYPlot plot,
+                                          XYDataset data,
+                                          PlotRenderingInfo info) {
+
+<span class="fc" id="L303">        XYItemRendererState state = new XYItemRendererState(info);</span>
+<span class="fc" id="L304">        return state;</span>
+
+    }
+
+    // ITEM LABEL GENERATOR
+
+    /**
+     * Returns the label generator for a data item.  This implementation simply
+     * passes control to the {@link #getSeriesItemLabelGenerator(int)} method.
+     * If, for some reason, you want a different generator for individual
+     * items, you can override this method.
+     *
+     * @param series  the series index (zero based).
+     * @param item  the item index (zero based).
+     *
+     * @return The generator (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public XYItemLabelGenerator getItemLabelGenerator(int series, int item) {
+        // return the generator for ALL series, if there is one...
+<span class="nc bnc" id="L323" title="All 2 branches missed.">        if (this.itemLabelGenerator != null) {</span>
+<span class="nc" id="L324">            return this.itemLabelGenerator;</span>
+        }
+
+        // otherwise look up the generator table
+<span class="nc" id="L328">        XYItemLabelGenerator generator</span>
+<span class="nc" id="L329">            = (XYItemLabelGenerator) this.itemLabelGeneratorList.get(series);</span>
+<span class="nc bnc" id="L330" title="All 2 branches missed.">        if (generator == null) {</span>
+<span class="nc" id="L331">            generator = this.baseItemLabelGenerator;</span>
+        }
+<span class="nc" id="L333">        return generator;</span>
+    }
+
+    /**
+     * Returns the item label generator for a series.
+     *
+     * @param series  the series index (zero based).
+     *
+     * @return The generator (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public XYItemLabelGenerator getSeriesItemLabelGenerator(int series) {
+<span class="nc" id="L344">        return (XYItemLabelGenerator) this.itemLabelGeneratorList.get(series);</span>
+    }
+
+    /**
+     * Sets the item label generator for a series and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
+     * @param series  the series index (zero based).
+     * @param generator  the generator (&lt;code&gt;null&lt;/code&gt; permitted).
+     */
+    public void setSeriesItemLabelGenerator(int series,
+                                            XYItemLabelGenerator generator) {
+<span class="fc" id="L356">        this.itemLabelGeneratorList.set(series, generator);</span>
+<span class="fc" id="L357">        fireChangeEvent();</span>
+<span class="fc" id="L358">    }</span>
+
+    /**
+     * Returns the base item label generator.
+     *
+     * @return The generator (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public XYItemLabelGenerator getBaseItemLabelGenerator() {
+<span class="nc" id="L366">        return this.baseItemLabelGenerator;</span>
+    }
+
+    /**
+     * Sets the base item label generator and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
+     * @param generator  the generator (&lt;code&gt;null&lt;/code&gt; permitted).
+     */
+    public void setBaseItemLabelGenerator(XYItemLabelGenerator generator) {
+<span class="fc" id="L376">        this.baseItemLabelGenerator = generator;</span>
+<span class="fc" id="L377">        fireChangeEvent();</span>
+<span class="fc" id="L378">    }</span>
+
+    // TOOL TIP GENERATOR
+
+    /**
+     * Returns the tool tip generator for a data item.  If, for some reason,
+     * you want a different generator for individual items, you can override
+     * this method.
+     *
+     * @param series  the series index (zero based).
+     * @param item  the item index (zero based).
+     *
+     * @return The generator (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public XYToolTipGenerator getToolTipGenerator(int series, int item) {
+        // return the generator for ALL series, if there is one...
+<span class="pc bpc" id="L394" title="1 of 2 branches missed.">        if (this.toolTipGenerator != null) {</span>
+<span class="nc" id="L395">            return this.toolTipGenerator;</span>
+        }
+
+        // otherwise look up the generator table
+<span class="fc" id="L399">        XYToolTipGenerator generator</span>
+<span class="fc" id="L400">                = (XYToolTipGenerator) this.toolTipGeneratorList.get(series);</span>
+<span class="pc bpc" id="L401" title="1 of 2 branches missed.">        if (generator == null) {</span>
+<span class="nc" id="L402">            generator = this.baseToolTipGenerator;</span>
+        }
+<span class="fc" id="L404">        return generator;</span>
+    }
+
+    /**
+     * Returns the tool tip generator for a series.
+     *
+     * @param series  the series index (zero based).
+     *
+     * @return The generator (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public XYToolTipGenerator getSeriesToolTipGenerator(int series) {
+<span class="nc" id="L415">        return (XYToolTipGenerator) this.toolTipGeneratorList.get(series);</span>
+    }
+
+    /**
+     * Sets the tool tip generator for a series and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
+     * @param series  the series index (zero based).
+     * @param generator  the generator (&lt;code&gt;null&lt;/code&gt; permitted).
+     */
+    public void setSeriesToolTipGenerator(int series,
+                                          XYToolTipGenerator generator) {
+<span class="fc" id="L427">        this.toolTipGeneratorList.set(series, generator);</span>
+<span class="fc" id="L428">        fireChangeEvent();</span>
+<span class="fc" id="L429">    }</span>
+
+    /**
+     * Returns the base tool tip generator.
+     *
+     * @return The generator (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setBaseToolTipGenerator(XYToolTipGenerator)
+     */
+    public XYToolTipGenerator getBaseToolTipGenerator() {
+<span class="nc" id="L439">        return this.baseToolTipGenerator;</span>
+    }
+
+    /**
+     * Sets the base tool tip generator and sends a {@link RendererChangeEvent}
+     * to all registered listeners.
+     *
+     * @param generator  the generator (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @see #getBaseToolTipGenerator()
+     */
+    public void setBaseToolTipGenerator(XYToolTipGenerator generator) {
+<span class="fc" id="L451">        this.baseToolTipGenerator = generator;</span>
+<span class="fc" id="L452">        fireChangeEvent();</span>
+<span class="fc" id="L453">    }</span>
+
+    // URL GENERATOR
+
+    /**
+     * Returns the URL generator for HTML image maps.
+     *
+     * @return The URL generator (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public XYURLGenerator getURLGenerator() {
+<span class="nc" id="L463">        return this.urlGenerator;</span>
+    }
+
+    /**
+     * Sets the URL generator for HTML image maps and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
+     * @param urlGenerator  the URL generator (&lt;code&gt;null&lt;/code&gt; permitted).
+     */
+    public void setURLGenerator(XYURLGenerator urlGenerator) {
+<span class="fc" id="L473">        this.urlGenerator = urlGenerator;</span>
+<span class="fc" id="L474">        fireChangeEvent();</span>
+<span class="fc" id="L475">    }</span>
+
+    /**
+     * Adds an annotation and sends a {@link RendererChangeEvent} to all
+     * registered listeners.  The annotation is added to the foreground
+     * layer.
+     *
+     * @param annotation  the annotation (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public void addAnnotation(XYAnnotation annotation) {
+        // defer argument checking
+<span class="nc" id="L486">        addAnnotation(annotation, Layer.FOREGROUND);</span>
+<span class="nc" id="L487">    }</span>
+
+    /**
+     * Adds an annotation to the specified layer and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
+     * @param annotation  the annotation (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param layer  the layer (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public void addAnnotation(XYAnnotation annotation, Layer layer) {
+<span class="pc bpc" id="L497" title="1 of 2 branches missed.">        if (annotation == null) {</span>
+<span class="nc" id="L498">            throw new IllegalArgumentException(&quot;Null 'annotation' argument.&quot;);</span>
+        }
+<span class="fc bfc" id="L500" title="All 2 branches covered.">        if (layer.equals(Layer.FOREGROUND)) {</span>
+<span class="fc" id="L501">            this.foregroundAnnotations.add(annotation);</span>
+<span class="fc" id="L502">            annotation.addChangeListener(this);</span>
+<span class="fc" id="L503">            fireChangeEvent();</span>
+        }
+<span class="pc bpc" id="L505" title="1 of 2 branches missed.">        else if (layer.equals(Layer.BACKGROUND)) {</span>
+<span class="fc" id="L506">            this.backgroundAnnotations.add(annotation);</span>
+<span class="fc" id="L507">            annotation.addChangeListener(this);</span>
+<span class="fc" id="L508">            fireChangeEvent();</span>
+        }
+        else {
+            // should never get here
+<span class="nc" id="L512">            throw new RuntimeException(&quot;Unknown layer.&quot;);</span>
+        }
+<span class="fc" id="L514">    }</span>
+    /**
+     * Removes the specified annotation and sends a {@link RendererChangeEvent}
+     * to all registered listeners.
+     *
+     * @param annotation  the annotation to remove (&lt;code&gt;null&lt;/code&gt; not
+     *                    permitted).
+     *
+     * @return A boolean to indicate whether or not the annotation was
+     *         successfully removed.
+     */
+    public boolean removeAnnotation(XYAnnotation annotation) {
+<span class="nc" id="L526">        boolean removed = this.foregroundAnnotations.remove(annotation);</span>
+<span class="nc" id="L527">        removed = removed &amp; this.backgroundAnnotations.remove(annotation);</span>
+<span class="nc" id="L528">        annotation.removeChangeListener(this);</span>
+<span class="nc" id="L529">        fireChangeEvent();</span>
+<span class="nc" id="L530">        return removed;</span>
+    }
+
+    /**
+     * Removes all annotations and sends a {@link RendererChangeEvent}
+     * to all registered listeners.
+     */
+    public void removeAnnotations() {
+<span class="nc bnc" id="L538" title="All 2 branches missed.">        for(int i = 0; i &lt; this.foregroundAnnotations.size(); i++){</span>
+<span class="nc" id="L539">            XYAnnotation annotation </span>
+<span class="nc" id="L540">                    = (XYAnnotation) this.foregroundAnnotations.get(i);</span>
+<span class="nc" id="L541">            annotation.removeChangeListener(this);</span>
+        }
+<span class="nc bnc" id="L543" title="All 2 branches missed.">         for(int i = 0; i &lt; this.backgroundAnnotations.size(); i++){</span>
+<span class="nc" id="L544">            XYAnnotation annotation </span>
+<span class="nc" id="L545">                    = (XYAnnotation) this.backgroundAnnotations.get(i);</span>
+<span class="nc" id="L546">            annotation.removeChangeListener(this);</span>
+        }
+<span class="nc" id="L548">        this.foregroundAnnotations.clear();</span>
+<span class="nc" id="L549">        this.backgroundAnnotations.clear();</span>
+<span class="nc" id="L550">        fireChangeEvent();</span>
+<span class="nc" id="L551">    }</span>
+
+
+    /**
+     * Receives notification of a change to an {@link Annotation} added to
+     * this renderer.
+     *
+     * @param event  information about the event (not used here).
+     *
+     * @since 1.0.14
+     */
+    public void annotationChanged(AnnotationChangeEvent event) {
+<span class="nc" id="L563">        fireChangeEvent();</span>
+<span class="nc" id="L564">    }</span>
+
+    /**
+     * Returns a collection of the annotations that are assigned to the
+     * renderer.
+     *
+     * @return A collection of annotations (possibly empty but never
+     *     &lt;code&gt;null&lt;/code&gt;).
+     * 
+     * @since 1.0.13
+     */
+    public Collection getAnnotations() {
+<span class="fc" id="L576">        List result = new java.util.ArrayList(this.foregroundAnnotations);</span>
+<span class="fc" id="L577">        result.addAll(this.backgroundAnnotations);</span>
+<span class="fc" id="L578">        return result;</span>
+    }
+
+    /**
+     * Returns the legend item label generator.
+     *
+     * @return The label generator (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setLegendItemLabelGenerator(XYSeriesLabelGenerator)
+     */
+    public XYSeriesLabelGenerator getLegendItemLabelGenerator() {
+<span class="fc" id="L589">        return this.legendItemLabelGenerator;</span>
+    }
+
+    /**
+     * Sets the legend item label generator and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
+     * @param generator  the generator (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #getLegendItemLabelGenerator()
+     */
+    public void setLegendItemLabelGenerator(XYSeriesLabelGenerator generator) {
+<span class="pc bpc" id="L601" title="1 of 2 branches missed.">        if (generator == null) {</span>
+<span class="nc" id="L602">            throw new IllegalArgumentException(&quot;Null 'generator' argument.&quot;);</span>
+        }
+<span class="fc" id="L604">        this.legendItemLabelGenerator = generator;</span>
+<span class="fc" id="L605">        fireChangeEvent();</span>
+<span class="fc" id="L606">    }</span>
+
+    /**
+     * Returns the legend item tool tip generator.
+     *
+     * @return The tool tip generator (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setLegendItemToolTipGenerator(XYSeriesLabelGenerator)
+     */
+    public XYSeriesLabelGenerator getLegendItemToolTipGenerator() {
+<span class="fc" id="L616">        return this.legendItemToolTipGenerator;</span>
+    }
+
+    /**
+     * Sets the legend item tool tip generator and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
+     * @param generator  the generator (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @see #getLegendItemToolTipGenerator()
+     */
+    public void setLegendItemToolTipGenerator(
+            XYSeriesLabelGenerator generator) {
+<span class="fc" id="L629">        this.legendItemToolTipGenerator = generator;</span>
+<span class="fc" id="L630">        fireChangeEvent();</span>
+<span class="fc" id="L631">    }</span>
+
+    /**
+     * Returns the legend item URL generator.
+     *
+     * @return The URL generator (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setLegendItemURLGenerator(XYSeriesLabelGenerator)
+     */
+    public XYSeriesLabelGenerator getLegendItemURLGenerator() {
+<span class="fc" id="L641">        return this.legendItemURLGenerator;</span>
+    }
+
+    /**
+     * Sets the legend item URL generator and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
+     * @param generator  the generator (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @see #getLegendItemURLGenerator()
+     */
+    public void setLegendItemURLGenerator(XYSeriesLabelGenerator generator) {
+<span class="fc" id="L653">        this.legendItemURLGenerator = generator;</span>
+<span class="fc" id="L654">        fireChangeEvent();</span>
+<span class="fc" id="L655">    }</span>
+
+    /**
+     * Returns the lower and upper bounds (range) of the x-values in the
+     * specified dataset.
+     *
+     * @param dataset  the dataset (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return The range (&lt;code&gt;null&lt;/code&gt; if the dataset is &lt;code&gt;null&lt;/code&gt;
+     *         or empty).
+     *
+     * @see #findRangeBounds(XYDataset)
+     */
+    public Range findDomainBounds(XYDataset dataset) {
+<span class="fc" id="L669">        return findDomainBounds(dataset, false);</span>
+    }
+
+    /**
+     * Returns the lower and upper bounds (range) of the x-values in the
+     * specified dataset.
+     *
+     * @param dataset  the dataset (&lt;code&gt;null&lt;/code&gt; permitted).
+     * @param includeInterval  include the interval (if any) for the dataset?
+     *
+     * @return The range (&lt;code&gt;null&lt;/code&gt; if the dataset is &lt;code&gt;null&lt;/code&gt;
+     *         or empty).
+     *
+     * @since 1.0.13
+     */
+    protected Range findDomainBounds(XYDataset dataset,
+            boolean includeInterval) {
+<span class="fc bfc" id="L686" title="All 2 branches covered.">        if (dataset == null) {</span>
+<span class="fc" id="L687">            return null;</span>
+        }
+<span class="pc bpc" id="L689" title="1 of 2 branches missed.">        if (getDataBoundsIncludesVisibleSeriesOnly()) {</span>
+<span class="fc" id="L690">            List visibleSeriesKeys = new ArrayList();</span>
+<span class="fc" id="L691">            int seriesCount = dataset.getSeriesCount();</span>
+<span class="fc bfc" id="L692" title="All 2 branches covered.">            for (int s = 0; s &lt; seriesCount; s++) {</span>
+<span class="pc bpc" id="L693" title="1 of 2 branches missed.">                if (isSeriesVisible(s)) {</span>
+<span class="fc" id="L694">                    visibleSeriesKeys.add(dataset.getSeriesKey(s));</span>
+                }
+            }
+<span class="fc" id="L697">            return DatasetUtilities.findDomainBounds(dataset,</span>
+                    visibleSeriesKeys, includeInterval);
+        }
+<span class="nc" id="L700">        return DatasetUtilities.findDomainBounds(dataset, includeInterval);</span>
+    }
+
+    /**
+     * Returns the range of values the renderer requires to display all the
+     * items from the specified dataset.
+     *
+     * @param dataset  the dataset (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return The range (&lt;code&gt;null&lt;/code&gt; if the dataset is &lt;code&gt;null&lt;/code&gt;
+     *         or empty).
+     *
+     * @see #findDomainBounds(XYDataset)
+     */
+    public Range findRangeBounds(XYDataset dataset) {
+<span class="fc" id="L715">        return findRangeBounds(dataset, false);</span>
+    }
+
+    /**
+     * Returns the range of values the renderer requires to display all the
+     * items from the specified dataset.
+     *
+     * @param dataset  the dataset (&lt;code&gt;null&lt;/code&gt; permitted).
+     * @param includeInterval  include the interval (if any) for the dataset?
+     *
+     * @return The range (&lt;code&gt;null&lt;/code&gt; if the dataset is &lt;code&gt;null&lt;/code&gt;
+     *         or empty).
+     *
+     * @since 1.0.13
+     */
+    protected Range findRangeBounds(XYDataset dataset,
+            boolean includeInterval) {
+<span class="fc bfc" id="L732" title="All 2 branches covered.">        if (dataset == null) {</span>
+<span class="fc" id="L733">            return null;</span>
+        }
+<span class="pc bpc" id="L735" title="1 of 2 branches missed.">        if (getDataBoundsIncludesVisibleSeriesOnly()) {</span>
+<span class="fc" id="L736">            List visibleSeriesKeys = new ArrayList();</span>
+<span class="fc" id="L737">            int seriesCount = dataset.getSeriesCount();</span>
+<span class="fc bfc" id="L738" title="All 2 branches covered.">            for (int s = 0; s &lt; seriesCount; s++) {</span>
+<span class="pc bpc" id="L739" title="1 of 2 branches missed.">                if (isSeriesVisible(s)) {</span>
+<span class="fc" id="L740">                    visibleSeriesKeys.add(dataset.getSeriesKey(s));</span>
+                }
+            }
+            // the bounds should be calculated using just the items within
+            // the current range of the x-axis...if there is one
+<span class="fc" id="L745">            Range xRange = null;</span>
+<span class="fc" id="L746">            XYPlot p = getPlot();</span>
+<span class="fc bfc" id="L747" title="All 2 branches covered.">            if (p != null) {</span>
+<span class="fc" id="L748">                ValueAxis xAxis = null;</span>
+<span class="fc" id="L749">                int index = p.getIndexOf(this);</span>
+<span class="pc bpc" id="L750" title="1 of 2 branches missed.">                if (index &gt;= 0) {</span>
+<span class="fc" id="L751">                    xAxis = this.plot.getDomainAxisForDataset(index);</span>
+                }
+<span class="fc bfc" id="L753" title="All 2 branches covered.">                if (xAxis != null) {</span>
+<span class="fc" id="L754">                    xRange = xAxis.getRange();</span>
+                }
+            }
+<span class="fc bfc" id="L757" title="All 2 branches covered.">            if (xRange == null) {</span>
+<span class="fc" id="L758">                xRange = new Range(Double.NEGATIVE_INFINITY,</span>
+                        Double.POSITIVE_INFINITY);
+            }
+<span class="fc" id="L761">            return DatasetUtilities.findRangeBounds(dataset,</span>
+                    visibleSeriesKeys, xRange, includeInterval);
+        }
+<span class="nc" id="L764">        return DatasetUtilities.findRangeBounds(dataset, includeInterval);</span>
+    }
+
+    /**
+     * Returns a (possibly empty) collection of legend items for the series
+     * that this renderer is responsible for drawing.
+     *
+     * @return The legend item collection (never &lt;code&gt;null&lt;/code&gt;).
+     */
+    public LegendItemCollection getLegendItems() {
+<span class="nc bnc" id="L774" title="All 2 branches missed.">        if (this.plot == null) {</span>
+<span class="nc" id="L775">            return new LegendItemCollection();</span>
+        }
+<span class="nc" id="L777">        LegendItemCollection result = new LegendItemCollection();</span>
+<span class="nc" id="L778">        int index = this.plot.getIndexOf(this);</span>
+<span class="nc" id="L779">        XYDataset dataset = this.plot.getDataset(index);</span>
+<span class="nc bnc" id="L780" title="All 2 branches missed.">        if (dataset != null) {</span>
+<span class="nc" id="L781">            int seriesCount = dataset.getSeriesCount();</span>
+<span class="nc bnc" id="L782" title="All 2 branches missed.">            for (int i = 0; i &lt; seriesCount; i++) {</span>
+<span class="nc bnc" id="L783" title="All 2 branches missed.">                if (isSeriesVisibleInLegend(i)) {</span>
+<span class="nc" id="L784">                    LegendItem item = getLegendItem(index, i);</span>
+<span class="nc bnc" id="L785" title="All 2 branches missed.">                    if (item != null) {</span>
+<span class="nc" id="L786">                        result.add(item);</span>
+                    }
+                }
+            }
+
+        }
+<span class="nc" id="L792">        return result;</span>
+    }
+
+    /**
+     * Returns a default legend item for the specified series.  Subclasses
+     * should override this method to generate customised items.
+     *
+     * @param datasetIndex  the dataset index (zero-based).
+     * @param series  the series index (zero-based).
+     *
+     * @return A legend item for the series.
+     */
+    public LegendItem getLegendItem(int datasetIndex, int series) {
+<span class="fc" id="L805">        XYPlot xyplot = getPlot();</span>
+<span class="pc bpc" id="L806" title="1 of 2 branches missed.">        if (xyplot == null) {</span>
+<span class="nc" id="L807">            return null;</span>
+        }
+<span class="fc" id="L809">        XYDataset dataset = xyplot.getDataset(datasetIndex);</span>
+<span class="pc bpc" id="L810" title="1 of 2 branches missed.">        if (dataset == null) {</span>
+<span class="nc" id="L811">            return null;</span>
+        }
+<span class="fc" id="L813">        String label = this.legendItemLabelGenerator.generateLabel(dataset,</span>
+                series);
+<span class="fc" id="L815">        String description = label;</span>
+<span class="fc" id="L816">        String toolTipText = null;</span>
+<span class="pc bpc" id="L817" title="1 of 2 branches missed.">        if (getLegendItemToolTipGenerator() != null) {</span>
+<span class="nc" id="L818">            toolTipText = getLegendItemToolTipGenerator().generateLabel(</span>
+                    dataset, series);
+        }
+<span class="fc" id="L821">        String urlText = null;</span>
+<span class="pc bpc" id="L822" title="1 of 2 branches missed.">        if (getLegendItemURLGenerator() != null) {</span>
+<span class="nc" id="L823">            urlText = getLegendItemURLGenerator().generateLabel(dataset,</span>
+                    series);
+        }
+<span class="fc" id="L826">        Shape shape = lookupLegendShape(series);</span>
+<span class="fc" id="L827">        Paint paint = lookupSeriesPaint(series);</span>
+<span class="fc" id="L828">        LegendItem item = new LegendItem(label, paint);</span>
+<span class="fc" id="L829">        item.setToolTipText(toolTipText);</span>
+<span class="fc" id="L830">        item.setURLText(urlText);</span>
+<span class="fc" id="L831">        item.setLabelFont(lookupLegendTextFont(series));</span>
+<span class="fc" id="L832">        Paint labelPaint = lookupLegendTextPaint(series);</span>
+<span class="pc bpc" id="L833" title="1 of 2 branches missed.">        if (labelPaint != null) {</span>
+<span class="nc" id="L834">            item.setLabelPaint(labelPaint);</span>
+        }
+<span class="fc" id="L836">        item.setSeriesKey(dataset.getSeriesKey(series));</span>
+<span class="fc" id="L837">        item.setSeriesIndex(series);</span>
+<span class="fc" id="L838">        item.setDataset(dataset);</span>
+<span class="fc" id="L839">        item.setDatasetIndex(datasetIndex);</span>
+
+<span class="pc bpc" id="L841" title="1 of 2 branches missed.">        if (getTreatLegendShapeAsLine()) {</span>
+<span class="nc" id="L842">            item.setLineVisible(true);</span>
+<span class="nc" id="L843">            item.setLine(shape);</span>
+<span class="nc" id="L844">            item.setLinePaint(paint);</span>
+<span class="nc" id="L845">            item.setShapeVisible(false);</span>
+        }
+        else {
+<span class="fc" id="L848">            Paint outlinePaint = lookupSeriesOutlinePaint(series);</span>
+<span class="fc" id="L849">            Stroke outlineStroke = lookupSeriesOutlineStroke(series);</span>
+<span class="fc" id="L850">            item.setOutlinePaint(outlinePaint);</span>
+<span class="fc" id="L851">            item.setOutlineStroke(outlineStroke);</span>
+        }
+<span class="fc" id="L853">        return item;</span>
+    }
+
+    /**
+     * Fills a band between two values on the axis.  This can be used to color
+     * bands between the grid lines.
+     *
+     * @param g2  the graphics device.
+     * @param plot  the plot.
+     * @param axis  the domain axis.
+     * @param dataArea  the data area.
+     * @param start  the start value.
+     * @param end  the end value.
+     */
+    public void fillDomainGridBand(Graphics2D g2, XYPlot plot, ValueAxis axis,
+            Rectangle2D dataArea, double start, double end) {
+
+<span class="nc" id="L870">        double x1 = axis.valueToJava2D(start, dataArea,</span>
+<span class="nc" id="L871">                plot.getDomainAxisEdge());</span>
+<span class="nc" id="L872">        double x2 = axis.valueToJava2D(end, dataArea,</span>
+<span class="nc" id="L873">                plot.getDomainAxisEdge());</span>
+        Rectangle2D band;
+<span class="nc bnc" id="L875" title="All 2 branches missed.">        if (plot.getOrientation() == PlotOrientation.VERTICAL) {</span>
+<span class="nc" id="L876">            band = new Rectangle2D.Double(Math.min(x1, x2), dataArea.getMinY(),</span>
+<span class="nc" id="L877">                    Math.abs(x2 - x1), dataArea.getWidth());</span>
+        }
+        else {
+<span class="nc" id="L880">            band = new Rectangle2D.Double(dataArea.getMinX(), Math.min(x1, x2),</span>
+<span class="nc" id="L881">                    dataArea.getWidth(), Math.abs(x2 - x1));</span>
+        }
+<span class="nc" id="L883">        Paint paint = plot.getDomainTickBandPaint();</span>
+
+<span class="nc bnc" id="L885" title="All 2 branches missed.">        if (paint != null) {</span>
+<span class="nc" id="L886">            g2.setPaint(paint);</span>
+<span class="nc" id="L887">            g2.fill(band);</span>
+        }
+
+<span class="nc" id="L890">    }</span>
+
+    /**
+     * Fills a band between two values on the range axis.  This can be used to
+     * color bands between the grid lines.
+     *
+     * @param g2  the graphics device.
+     * @param plot  the plot.
+     * @param axis  the range axis.
+     * @param dataArea  the data area.
+     * @param start  the start value.
+     * @param end  the end value.
+     */
+    public void fillRangeGridBand(Graphics2D g2, XYPlot plot, ValueAxis axis,
+            Rectangle2D dataArea, double start, double end) {
+
+<span class="nc" id="L906">        double y1 = axis.valueToJava2D(start, dataArea,</span>
+<span class="nc" id="L907">                plot.getRangeAxisEdge());</span>
+<span class="nc" id="L908">        double y2 = axis.valueToJava2D(end, dataArea, plot.getRangeAxisEdge());</span>
+        Rectangle2D band;
+<span class="nc bnc" id="L910" title="All 2 branches missed.">        if (plot.getOrientation() == PlotOrientation.VERTICAL) {</span>
+<span class="nc" id="L911">            band = new Rectangle2D.Double(dataArea.getMinX(), Math.min(y1, y2),</span>
+<span class="nc" id="L912">                dataArea.getWidth(), Math.abs(y2 - y1));</span>
+        }
+        else {
+<span class="nc" id="L915">            band = new Rectangle2D.Double(Math.min(y1, y2), dataArea.getMinY(),</span>
+<span class="nc" id="L916">                    Math.abs(y2 - y1), dataArea.getHeight());</span>
+        }
+<span class="nc" id="L918">        Paint paint = plot.getRangeTickBandPaint();</span>
+
+<span class="nc bnc" id="L920" title="All 2 branches missed.">        if (paint != null) {</span>
+<span class="nc" id="L921">            g2.setPaint(paint);</span>
+<span class="nc" id="L922">            g2.fill(band);</span>
+        }
+
+<span class="nc" id="L925">    }</span>
+
+    /**
+     * Draws a grid line against the range axis.
+     *
+     * @param g2  the graphics device.
+     * @param plot  the plot.
+     * @param axis  the value axis.
+     * @param dataArea  the area for plotting data (not yet adjusted for any
+     *                  3D effect).
+     * @param value  the value at which the grid line should be drawn.
+     */
+    public void drawDomainGridLine(Graphics2D g2,
+                                   XYPlot plot,
+                                   ValueAxis axis,
+                                   Rectangle2D dataArea,
+                                   double value) {
+
+<span class="nc" id="L943">        Range range = axis.getRange();</span>
+<span class="nc bnc" id="L944" title="All 2 branches missed.">        if (!range.contains(value)) {</span>
+<span class="nc" id="L945">            return;</span>
+        }
+
+<span class="nc" id="L948">        PlotOrientation orientation = plot.getOrientation();</span>
+<span class="nc" id="L949">        double v = axis.valueToJava2D(value, dataArea,</span>
+<span class="nc" id="L950">                plot.getDomainAxisEdge());</span>
+<span class="nc" id="L951">        Line2D line = null;</span>
+<span class="nc bnc" id="L952" title="All 2 branches missed.">        if (orientation == PlotOrientation.HORIZONTAL) {</span>
+<span class="nc" id="L953">            line = new Line2D.Double(dataArea.getMinX(), v,</span>
+<span class="nc" id="L954">                    dataArea.getMaxX(), v);</span>
+        }
+<span class="nc bnc" id="L956" title="All 2 branches missed.">        else if (orientation == PlotOrientation.VERTICAL) {</span>
+<span class="nc" id="L957">            line = new Line2D.Double(v, dataArea.getMinY(), v,</span>
+<span class="nc" id="L958">                    dataArea.getMaxY());</span>
+        }
+
+<span class="nc" id="L961">        Paint paint = plot.getDomainGridlinePaint();</span>
+<span class="nc" id="L962">        Stroke stroke = plot.getDomainGridlineStroke();</span>
+<span class="nc bnc" id="L963" title="All 2 branches missed.">        g2.setPaint(paint != null ? paint : Plot.DEFAULT_OUTLINE_PAINT);</span>
+<span class="nc bnc" id="L964" title="All 2 branches missed.">        g2.setStroke(stroke != null ? stroke : Plot.DEFAULT_OUTLINE_STROKE);</span>
+<span class="nc" id="L965">        g2.draw(line);</span>
+
+<span class="nc" id="L967">    }</span>
+
+    /**
+     * Draws a line perpendicular to the domain axis.
+     *
+     * @param g2  the graphics device.
+     * @param plot  the plot.
+     * @param axis  the value axis.
+     * @param dataArea  the area for plotting data (not yet adjusted for any 3D
+     *                  effect).
+     * @param value  the value at which the grid line should be drawn.
+     * @param paint  the paint (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param stroke  the stroke (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @since 1.0.5
+     */
+    public void drawDomainLine(Graphics2D g2, XYPlot plot, ValueAxis axis,
+            Rectangle2D dataArea, double value, Paint paint, Stroke stroke) {
+
+<span class="fc" id="L986">        Range range = axis.getRange();</span>
+<span class="pc bpc" id="L987" title="1 of 2 branches missed.">        if (!range.contains(value)) {</span>
+<span class="nc" id="L988">            return;</span>
+        }
+
+<span class="fc" id="L991">        PlotOrientation orientation = plot.getOrientation();</span>
+<span class="fc" id="L992">        Line2D line = null;</span>
+<span class="fc" id="L993">        double v = axis.valueToJava2D(value, dataArea,</span>
+<span class="fc" id="L994">                plot.getDomainAxisEdge());</span>
+<span class="pc bpc" id="L995" title="1 of 2 branches missed.">        if (orientation == PlotOrientation.HORIZONTAL) {</span>
+<span class="nc" id="L996">            line = new Line2D.Double(dataArea.getMinX(), v, dataArea.getMaxX(),</span>
+                    v);
+        }
+<span class="pc bpc" id="L999" title="1 of 2 branches missed.">        else if (orientation == PlotOrientation.VERTICAL) {</span>
+<span class="fc" id="L1000">            line = new Line2D.Double(v, dataArea.getMinY(), v,</span>
+<span class="fc" id="L1001">                    dataArea.getMaxY());</span>
+        }
+
+<span class="fc" id="L1004">        g2.setPaint(paint);</span>
+<span class="fc" id="L1005">        g2.setStroke(stroke);</span>
+<span class="fc" id="L1006">        g2.draw(line);</span>
+
+<span class="fc" id="L1008">    }</span>
+
+    /**
+     * Draws a line perpendicular to the range axis.
+     *
+     * @param g2  the graphics device.
+     * @param plot  the plot.
+     * @param axis  the value axis.
+     * @param dataArea  the area for plotting data (not yet adjusted for any 3D
+     *                  effect).
+     * @param value  the value at which the grid line should be drawn.
+     * @param paint  the paint.
+     * @param stroke  the stroke.
+     */
+    public void drawRangeLine(Graphics2D g2,
+                              XYPlot plot,
+                              ValueAxis axis,
+                              Rectangle2D dataArea,
+                              double value,
+                              Paint paint,
+                              Stroke stroke) {
+
+<span class="fc" id="L1030">        Range range = axis.getRange();</span>
+<span class="pc bpc" id="L1031" title="1 of 2 branches missed.">        if (!range.contains(value)) {</span>
+<span class="nc" id="L1032">            return;</span>
+        }
+
+<span class="fc" id="L1035">        PlotOrientation orientation = plot.getOrientation();</span>
+<span class="fc" id="L1036">        Line2D line = null;</span>
+<span class="fc" id="L1037">        double v = axis.valueToJava2D(value, dataArea, plot.getRangeAxisEdge());</span>
+<span class="pc bpc" id="L1038" title="1 of 2 branches missed.">        if (orientation == PlotOrientation.HORIZONTAL) {</span>
+<span class="nc" id="L1039">            line = new Line2D.Double(v, dataArea.getMinY(), v,</span>
+<span class="nc" id="L1040">                    dataArea.getMaxY());</span>
+        }
+<span class="pc bpc" id="L1042" title="1 of 2 branches missed.">        else if (orientation == PlotOrientation.VERTICAL) {</span>
+<span class="fc" id="L1043">            line = new Line2D.Double(dataArea.getMinX(), v,</span>
+<span class="fc" id="L1044">                    dataArea.getMaxX(), v);</span>
+        }
+
+<span class="fc" id="L1047">        g2.setPaint(paint);</span>
+<span class="fc" id="L1048">        g2.setStroke(stroke);</span>
+<span class="fc" id="L1049">        g2.draw(line);</span>
+
+<span class="fc" id="L1051">    }</span>
+
+    /**
+     * Draws a vertical line on the chart to represent a 'range marker'.
+     *
+     * @param g2  the graphics device.
+     * @param plot  the plot.
+     * @param domainAxis  the domain axis.
+     * @param marker  the marker line.
+     * @param dataArea  the axis data area.
+     */
+    public void drawDomainMarker(Graphics2D g2,
+                                 XYPlot plot,
+                                 ValueAxis domainAxis,
+                                 Marker marker,
+                                 Rectangle2D dataArea) {
+
+<span class="fc bfc" id="L1068" title="All 2 branches covered.">        if (marker instanceof ValueMarker) {</span>
+<span class="fc" id="L1069">            ValueMarker vm = (ValueMarker) marker;</span>
+<span class="fc" id="L1070">            double value = vm.getValue();</span>
+<span class="fc" id="L1071">            Range range = domainAxis.getRange();</span>
+<span class="pc bpc" id="L1072" title="1 of 2 branches missed.">            if (!range.contains(value)) {</span>
+<span class="nc" id="L1073">                return;</span>
+            }
+
+<span class="fc" id="L1076">            double v = domainAxis.valueToJava2D(value, dataArea,</span>
+<span class="fc" id="L1077">                    plot.getDomainAxisEdge());</span>
+
+<span class="fc" id="L1079">            PlotOrientation orientation = plot.getOrientation();</span>
+<span class="fc" id="L1080">            Line2D line = null;</span>
+<span class="pc bpc" id="L1081" title="1 of 2 branches missed.">            if (orientation == PlotOrientation.HORIZONTAL) {</span>
+<span class="nc" id="L1082">                line = new Line2D.Double(dataArea.getMinX(), v,</span>
+<span class="nc" id="L1083">                        dataArea.getMaxX(), v);</span>
+            }
+<span class="pc bpc" id="L1085" title="1 of 2 branches missed.">            else if (orientation == PlotOrientation.VERTICAL) {</span>
+<span class="fc" id="L1086">                line = new Line2D.Double(v, dataArea.getMinY(), v,</span>
+<span class="fc" id="L1087">                        dataArea.getMaxY());</span>
+            }
+
+<span class="fc" id="L1090">            final Composite originalComposite = g2.getComposite();</span>
+<span class="fc" id="L1091">            g2.setComposite(AlphaComposite.getInstance(</span>
+<span class="fc" id="L1092">                    AlphaComposite.SRC_OVER, marker.getAlpha()));</span>
+<span class="fc" id="L1093">            g2.setPaint(marker.getPaint());</span>
+<span class="fc" id="L1094">            g2.setStroke(marker.getStroke());</span>
+<span class="fc" id="L1095">            g2.draw(line);</span>
+
+<span class="fc" id="L1097">            String label = marker.getLabel();</span>
+<span class="fc" id="L1098">            RectangleAnchor anchor = marker.getLabelAnchor();</span>
+<span class="pc bpc" id="L1099" title="1 of 2 branches missed.">            if (label != null) {</span>
+<span class="nc" id="L1100">                Font labelFont = marker.getLabelFont();</span>
+<span class="nc" id="L1101">                g2.setFont(labelFont);</span>
+<span class="nc" id="L1102">                g2.setPaint(marker.getLabelPaint());</span>
+<span class="nc" id="L1103">                Point2D coordinates = calculateDomainMarkerTextAnchorPoint(</span>
+<span class="nc" id="L1104">                        g2, orientation, dataArea, line.getBounds2D(),</span>
+<span class="nc" id="L1105">                        marker.getLabelOffset(),</span>
+                        LengthAdjustmentType.EXPAND, anchor);
+<span class="nc" id="L1107">                TextUtilities.drawAlignedString(label, g2,</span>
+<span class="nc" id="L1108">                        (float) coordinates.getX(), (float) coordinates.getY(),</span>
+<span class="nc" id="L1109">                        marker.getLabelTextAnchor());</span>
+            }
+<span class="fc" id="L1111">            g2.setComposite(originalComposite);</span>
+<span class="fc" id="L1112">        }</span>
+<span class="pc bpc" id="L1113" title="1 of 2 branches missed.">        else if (marker instanceof IntervalMarker) {</span>
+<span class="fc" id="L1114">            IntervalMarker im = (IntervalMarker) marker;</span>
+<span class="fc" id="L1115">            double start = im.getStartValue();</span>
+<span class="fc" id="L1116">            double end = im.getEndValue();</span>
+<span class="fc" id="L1117">            Range range = domainAxis.getRange();</span>
+<span class="pc bpc" id="L1118" title="1 of 2 branches missed.">            if (!(range.intersects(start, end))) {</span>
+<span class="fc" id="L1119">                return;</span>
+            }
+
+<span class="nc" id="L1122">            double start2d = domainAxis.valueToJava2D(start, dataArea,</span>
+<span class="nc" id="L1123">                    plot.getDomainAxisEdge());</span>
+<span class="nc" id="L1124">            double end2d = domainAxis.valueToJava2D(end, dataArea,</span>
+<span class="nc" id="L1125">                    plot.getDomainAxisEdge());</span>
+<span class="nc" id="L1126">            double low = Math.min(start2d, end2d);</span>
+<span class="nc" id="L1127">            double high = Math.max(start2d, end2d);</span>
+
+<span class="nc" id="L1129">            PlotOrientation orientation = plot.getOrientation();</span>
+<span class="nc" id="L1130">            Rectangle2D rect = null;</span>
+<span class="nc bnc" id="L1131" title="All 2 branches missed.">            if (orientation == PlotOrientation.HORIZONTAL) {</span>
+                // clip top and bottom bounds to data area
+<span class="nc" id="L1133">                low = Math.max(low, dataArea.getMinY());</span>
+<span class="nc" id="L1134">                high = Math.min(high, dataArea.getMaxY());</span>
+<span class="nc" id="L1135">                rect = new Rectangle2D.Double(dataArea.getMinX(),</span>
+<span class="nc" id="L1136">                        low, dataArea.getWidth(),</span>
+                        high - low);
+            }
+<span class="nc bnc" id="L1139" title="All 2 branches missed.">            else if (orientation == PlotOrientation.VERTICAL) {</span>
+                // clip left and right bounds to data area
+<span class="nc" id="L1141">                low = Math.max(low, dataArea.getMinX());</span>
+<span class="nc" id="L1142">                high = Math.min(high, dataArea.getMaxX());</span>
+<span class="nc" id="L1143">                rect = new Rectangle2D.Double(low,</span>
+<span class="nc" id="L1144">                        dataArea.getMinY(), high - low,</span>
+<span class="nc" id="L1145">                        dataArea.getHeight());</span>
+            }
+
+<span class="nc" id="L1148">            final Composite originalComposite = g2.getComposite();</span>
+<span class="nc" id="L1149">            g2.setComposite(AlphaComposite.getInstance(</span>
+<span class="nc" id="L1150">                    AlphaComposite.SRC_OVER, marker.getAlpha()));</span>
+<span class="nc" id="L1151">            Paint p = marker.getPaint();</span>
+<span class="nc bnc" id="L1152" title="All 2 branches missed.">            if (p instanceof GradientPaint) {</span>
+<span class="nc" id="L1153">                GradientPaint gp = (GradientPaint) p;</span>
+<span class="nc" id="L1154">                GradientPaintTransformer t = im.getGradientPaintTransformer();</span>
+<span class="nc bnc" id="L1155" title="All 2 branches missed.">                if (t != null) {</span>
+<span class="nc" id="L1156">                    gp = t.transform(gp, rect);</span>
+                }
+<span class="nc" id="L1158">                g2.setPaint(gp);</span>
+<span class="nc" id="L1159">            }</span>
+            else {
+<span class="nc" id="L1161">                g2.setPaint(p);</span>
+            }
+<span class="nc" id="L1163">            g2.fill(rect);</span>
+
+            // now draw the outlines, if visible...
+<span class="nc bnc" id="L1166" title="All 4 branches missed.">            if (im.getOutlinePaint() != null &amp;&amp; im.getOutlineStroke() != null) {</span>
+<span class="nc bnc" id="L1167" title="All 2 branches missed.">                if (orientation == PlotOrientation.VERTICAL) {</span>
+<span class="nc" id="L1168">                    Line2D line = new Line2D.Double();</span>
+<span class="nc" id="L1169">                    double y0 = dataArea.getMinY();</span>
+<span class="nc" id="L1170">                    double y1 = dataArea.getMaxY();</span>
+<span class="nc" id="L1171">                    g2.setPaint(im.getOutlinePaint());</span>
+<span class="nc" id="L1172">                    g2.setStroke(im.getOutlineStroke());</span>
+<span class="nc bnc" id="L1173" title="All 2 branches missed.">                    if (range.contains(start)) {</span>
+<span class="nc" id="L1174">                        line.setLine(start2d, y0, start2d, y1);</span>
+<span class="nc" id="L1175">                        g2.draw(line);</span>
+                    }
+<span class="nc bnc" id="L1177" title="All 2 branches missed.">                    if (range.contains(end)) {</span>
+<span class="nc" id="L1178">                        line.setLine(end2d, y0, end2d, y1);</span>
+<span class="nc" id="L1179">                        g2.draw(line);</span>
+                    }
+<span class="nc" id="L1181">                }</span>
+                else { // PlotOrientation.HORIZONTAL
+<span class="nc" id="L1183">                    Line2D line = new Line2D.Double();</span>
+<span class="nc" id="L1184">                    double x0 = dataArea.getMinX();</span>
+<span class="nc" id="L1185">                    double x1 = dataArea.getMaxX();</span>
+<span class="nc" id="L1186">                    g2.setPaint(im.getOutlinePaint());</span>
+<span class="nc" id="L1187">                    g2.setStroke(im.getOutlineStroke());</span>
+<span class="nc bnc" id="L1188" title="All 2 branches missed.">                    if (range.contains(start)) {</span>
+<span class="nc" id="L1189">                        line.setLine(x0, start2d, x1, start2d);</span>
+<span class="nc" id="L1190">                        g2.draw(line);</span>
+                    }
+<span class="nc bnc" id="L1192" title="All 2 branches missed.">                    if (range.contains(end)) {</span>
+<span class="nc" id="L1193">                        line.setLine(x0, end2d, x1, end2d);</span>
+<span class="nc" id="L1194">                        g2.draw(line);</span>
+                    }
+                }
+            }
+
+<span class="nc" id="L1199">            String label = marker.getLabel();</span>
+<span class="nc" id="L1200">            RectangleAnchor anchor = marker.getLabelAnchor();</span>
+<span class="nc bnc" id="L1201" title="All 2 branches missed.">            if (label != null) {</span>
+<span class="nc" id="L1202">                Font labelFont = marker.getLabelFont();</span>
+<span class="nc" id="L1203">                g2.setFont(labelFont);</span>
+<span class="nc" id="L1204">                g2.setPaint(marker.getLabelPaint());</span>
+<span class="nc" id="L1205">                Point2D coordinates = calculateDomainMarkerTextAnchorPoint(</span>
+                        g2, orientation, dataArea, rect,
+<span class="nc" id="L1207">                        marker.getLabelOffset(), marker.getLabelOffsetType(),</span>
+                        anchor);
+<span class="nc" id="L1209">                TextUtilities.drawAlignedString(label, g2,</span>
+<span class="nc" id="L1210">                        (float) coordinates.getX(), (float) coordinates.getY(),</span>
+<span class="nc" id="L1211">                        marker.getLabelTextAnchor());</span>
+            }
+<span class="nc" id="L1213">            g2.setComposite(originalComposite);</span>
+
+        }
+
+<span class="fc" id="L1217">    }</span>
+
+    /**
+     * Calculates the (x, y) coordinates for drawing a marker label.
+     *
+     * @param g2  the graphics device.
+     * @param orientation  the plot orientation.
+     * @param dataArea  the data area.
+     * @param markerArea  the rectangle surrounding the marker area.
+     * @param markerOffset  the marker label offset.
+     * @param labelOffsetType  the label offset type.
+     * @param anchor  the label anchor.
+     *
+     * @return The coordinates for drawing the marker label.
+     */
+    protected Point2D calculateDomainMarkerTextAnchorPoint(Graphics2D g2,
+            PlotOrientation orientation,
+            Rectangle2D dataArea,
+            Rectangle2D markerArea,
+            RectangleInsets markerOffset,
+            LengthAdjustmentType labelOffsetType,
+            RectangleAnchor anchor) {
+
+<span class="nc" id="L1240">        Rectangle2D anchorRect = null;</span>
+<span class="nc bnc" id="L1241" title="All 2 branches missed.">        if (orientation == PlotOrientation.HORIZONTAL) {</span>
+<span class="nc" id="L1242">            anchorRect = markerOffset.createAdjustedRectangle(markerArea,</span>
+                    LengthAdjustmentType.CONTRACT, labelOffsetType);
+        }
+<span class="nc bnc" id="L1245" title="All 2 branches missed.">        else if (orientation == PlotOrientation.VERTICAL) {</span>
+<span class="nc" id="L1246">            anchorRect = markerOffset.createAdjustedRectangle(markerArea,</span>
+                    labelOffsetType, LengthAdjustmentType.CONTRACT);
+        }
+<span class="nc" id="L1249">        return RectangleAnchor.coordinates(anchorRect, anchor);</span>
+
+    }
+
+    /**
+     * Draws a horizontal line across the chart to represent a 'range marker'.
+     *
+     * @param g2  the graphics device.
+     * @param plot  the plot.
+     * @param rangeAxis  the range axis.
+     * @param marker  the marker line.
+     * @param dataArea  the axis data area.
+     */
+    public void drawRangeMarker(Graphics2D g2,
+                                XYPlot plot,
+                                ValueAxis rangeAxis,
+                                Marker marker,
+                                Rectangle2D dataArea) {
+
+<span class="fc bfc" id="L1268" title="All 2 branches covered.">        if (marker instanceof ValueMarker) {</span>
+<span class="fc" id="L1269">            ValueMarker vm = (ValueMarker) marker;</span>
+<span class="fc" id="L1270">            double value = vm.getValue();</span>
+<span class="fc" id="L1271">            Range range = rangeAxis.getRange();</span>
+<span class="pc bpc" id="L1272" title="1 of 2 branches missed.">            if (!range.contains(value)) {</span>
+<span class="fc" id="L1273">                return;</span>
+            }
+
+<span class="nc" id="L1276">            double v = rangeAxis.valueToJava2D(value, dataArea,</span>
+<span class="nc" id="L1277">                    plot.getRangeAxisEdge());</span>
+<span class="nc" id="L1278">            PlotOrientation orientation = plot.getOrientation();</span>
+<span class="nc" id="L1279">            Line2D line = null;</span>
+<span class="nc bnc" id="L1280" title="All 2 branches missed.">            if (orientation == PlotOrientation.HORIZONTAL) {</span>
+<span class="nc" id="L1281">                line = new Line2D.Double(v, dataArea.getMinY(), v,</span>
+<span class="nc" id="L1282">                        dataArea.getMaxY());</span>
+            }
+<span class="nc bnc" id="L1284" title="All 2 branches missed.">            else if (orientation == PlotOrientation.VERTICAL) {</span>
+<span class="nc" id="L1285">                line = new Line2D.Double(dataArea.getMinX(), v,</span>
+<span class="nc" id="L1286">                        dataArea.getMaxX(), v);</span>
+            }
+            else {
+<span class="nc" id="L1289">                throw new IllegalStateException(&quot;Unknown orientation.&quot;);</span>
+            }
+
+<span class="nc" id="L1292">            final Composite originalComposite = g2.getComposite();</span>
+<span class="nc" id="L1293">            g2.setComposite(AlphaComposite.getInstance(</span>
+<span class="nc" id="L1294">                    AlphaComposite.SRC_OVER, marker.getAlpha()));</span>
+<span class="nc" id="L1295">            g2.setPaint(marker.getPaint());</span>
+<span class="nc" id="L1296">            g2.setStroke(marker.getStroke());</span>
+<span class="nc" id="L1297">            g2.draw(line);</span>
+
+<span class="nc" id="L1299">            String label = marker.getLabel();</span>
+<span class="nc" id="L1300">            RectangleAnchor anchor = marker.getLabelAnchor();</span>
+<span class="nc bnc" id="L1301" title="All 2 branches missed.">            if (label != null) {</span>
+<span class="nc" id="L1302">                Font labelFont = marker.getLabelFont();</span>
+<span class="nc" id="L1303">                g2.setFont(labelFont);</span>
+<span class="nc" id="L1304">                g2.setPaint(marker.getLabelPaint());</span>
+<span class="nc" id="L1305">                Point2D coordinates = calculateRangeMarkerTextAnchorPoint(</span>
+<span class="nc" id="L1306">                        g2, orientation, dataArea, line.getBounds2D(),</span>
+<span class="nc" id="L1307">                        marker.getLabelOffset(),</span>
+                        LengthAdjustmentType.EXPAND, anchor);
+<span class="nc" id="L1309">                TextUtilities.drawAlignedString(label, g2,</span>
+<span class="nc" id="L1310">                        (float) coordinates.getX(), (float) coordinates.getY(),</span>
+<span class="nc" id="L1311">                        marker.getLabelTextAnchor());</span>
+            }
+<span class="nc" id="L1313">            g2.setComposite(originalComposite);</span>
+<span class="nc" id="L1314">        }</span>
+<span class="pc bpc" id="L1315" title="1 of 2 branches missed.">        else if (marker instanceof IntervalMarker) {</span>
+<span class="fc" id="L1316">            IntervalMarker im = (IntervalMarker) marker;</span>
+<span class="fc" id="L1317">            double start = im.getStartValue();</span>
+<span class="fc" id="L1318">            double end = im.getEndValue();</span>
+<span class="fc" id="L1319">            Range range = rangeAxis.getRange();</span>
+<span class="pc bpc" id="L1320" title="1 of 2 branches missed.">            if (!(range.intersects(start, end))) {</span>
+<span class="fc" id="L1321">                return;</span>
+            }
+
+<span class="nc" id="L1324">            double start2d = rangeAxis.valueToJava2D(start, dataArea,</span>
+<span class="nc" id="L1325">                    plot.getRangeAxisEdge());</span>
+<span class="nc" id="L1326">            double end2d = rangeAxis.valueToJava2D(end, dataArea,</span>
+<span class="nc" id="L1327">                    plot.getRangeAxisEdge());</span>
+<span class="nc" id="L1328">            double low = Math.min(start2d, end2d);</span>
+<span class="nc" id="L1329">            double high = Math.max(start2d, end2d);</span>
+
+<span class="nc" id="L1331">            PlotOrientation orientation = plot.getOrientation();</span>
+<span class="nc" id="L1332">            Rectangle2D rect = null;</span>
+<span class="nc bnc" id="L1333" title="All 2 branches missed.">            if (orientation == PlotOrientation.HORIZONTAL) {</span>
+                // clip left and right bounds to data area
+<span class="nc" id="L1335">                low = Math.max(low, dataArea.getMinX());</span>
+<span class="nc" id="L1336">                high = Math.min(high, dataArea.getMaxX());</span>
+<span class="nc" id="L1337">                rect = new Rectangle2D.Double(low,</span>
+<span class="nc" id="L1338">                        dataArea.getMinY(), high - low,</span>
+<span class="nc" id="L1339">                        dataArea.getHeight());</span>
+            }
+<span class="nc bnc" id="L1341" title="All 2 branches missed.">            else if (orientation == PlotOrientation.VERTICAL) {</span>
+                // clip top and bottom bounds to data area
+<span class="nc" id="L1343">                low = Math.max(low, dataArea.getMinY());</span>
+<span class="nc" id="L1344">                high = Math.min(high, dataArea.getMaxY());</span>
+<span class="nc" id="L1345">                rect = new Rectangle2D.Double(dataArea.getMinX(),</span>
+<span class="nc" id="L1346">                        low, dataArea.getWidth(),</span>
+                        high - low);
+            }
+
+<span class="nc" id="L1350">            final Composite originalComposite = g2.getComposite();</span>
+<span class="nc" id="L1351">            g2.setComposite(AlphaComposite.getInstance(</span>
+<span class="nc" id="L1352">                    AlphaComposite.SRC_OVER, marker.getAlpha()));</span>
+<span class="nc" id="L1353">            Paint p = marker.getPaint();</span>
+<span class="nc bnc" id="L1354" title="All 2 branches missed.">            if (p instanceof GradientPaint) {</span>
+<span class="nc" id="L1355">                GradientPaint gp = (GradientPaint) p;</span>
+<span class="nc" id="L1356">                GradientPaintTransformer t = im.getGradientPaintTransformer();</span>
+<span class="nc bnc" id="L1357" title="All 2 branches missed.">                if (t != null) {</span>
+<span class="nc" id="L1358">                    gp = t.transform(gp, rect);</span>
+                }
+<span class="nc" id="L1360">                g2.setPaint(gp);</span>
+<span class="nc" id="L1361">            }</span>
+            else {
+<span class="nc" id="L1363">                g2.setPaint(p);</span>
+            }
+<span class="nc" id="L1365">            g2.fill(rect);</span>
+
+            // now draw the outlines, if visible...
+<span class="nc bnc" id="L1368" title="All 4 branches missed.">            if (im.getOutlinePaint() != null &amp;&amp; im.getOutlineStroke() != null) {</span>
+<span class="nc bnc" id="L1369" title="All 2 branches missed.">                if (orientation == PlotOrientation.VERTICAL) {</span>
+<span class="nc" id="L1370">                    Line2D line = new Line2D.Double();</span>
+<span class="nc" id="L1371">                    double x0 = dataArea.getMinX();</span>
+<span class="nc" id="L1372">                    double x1 = dataArea.getMaxX();</span>
+<span class="nc" id="L1373">                    g2.setPaint(im.getOutlinePaint());</span>
+<span class="nc" id="L1374">                    g2.setStroke(im.getOutlineStroke());</span>
+<span class="nc bnc" id="L1375" title="All 2 branches missed.">                    if (range.contains(start)) {</span>
+<span class="nc" id="L1376">                        line.setLine(x0, start2d, x1, start2d);</span>
+<span class="nc" id="L1377">                        g2.draw(line);</span>
+                    }
+<span class="nc bnc" id="L1379" title="All 2 branches missed.">                    if (range.contains(end)) {</span>
+<span class="nc" id="L1380">                        line.setLine(x0, end2d, x1, end2d);</span>
+<span class="nc" id="L1381">                        g2.draw(line);</span>
+                    }
+<span class="nc" id="L1383">                }</span>
+                else { // PlotOrientation.HORIZONTAL
+<span class="nc" id="L1385">                    Line2D line = new Line2D.Double();</span>
+<span class="nc" id="L1386">                    double y0 = dataArea.getMinY();</span>
+<span class="nc" id="L1387">                    double y1 = dataArea.getMaxY();</span>
+<span class="nc" id="L1388">                    g2.setPaint(im.getOutlinePaint());</span>
+<span class="nc" id="L1389">                    g2.setStroke(im.getOutlineStroke());</span>
+<span class="nc bnc" id="L1390" title="All 2 branches missed.">                    if (range.contains(start)) {</span>
+<span class="nc" id="L1391">                        line.setLine(start2d, y0, start2d, y1);</span>
+<span class="nc" id="L1392">                        g2.draw(line);</span>
+                    }
+<span class="nc bnc" id="L1394" title="All 2 branches missed.">                    if (range.contains(end)) {</span>
+<span class="nc" id="L1395">                        line.setLine(end2d, y0, end2d, y1);</span>
+<span class="nc" id="L1396">                        g2.draw(line);</span>
+                    }
+                }
+            }
+
+<span class="nc" id="L1401">            String label = marker.getLabel();</span>
+<span class="nc" id="L1402">            RectangleAnchor anchor = marker.getLabelAnchor();</span>
+<span class="nc bnc" id="L1403" title="All 2 branches missed.">            if (label != null) {</span>
+<span class="nc" id="L1404">                Font labelFont = marker.getLabelFont();</span>
+<span class="nc" id="L1405">                g2.setFont(labelFont);</span>
+<span class="nc" id="L1406">                g2.setPaint(marker.getLabelPaint());</span>
+<span class="nc" id="L1407">                Point2D coordinates = calculateRangeMarkerTextAnchorPoint(</span>
+                        g2, orientation, dataArea, rect,
+<span class="nc" id="L1409">                        marker.getLabelOffset(), marker.getLabelOffsetType(),</span>
+                        anchor);
+<span class="nc" id="L1411">                TextUtilities.drawAlignedString(label, g2,</span>
+<span class="nc" id="L1412">                        (float) coordinates.getX(), (float) coordinates.getY(),</span>
+<span class="nc" id="L1413">                        marker.getLabelTextAnchor());</span>
+            }
+<span class="nc" id="L1415">            g2.setComposite(originalComposite);</span>
+        }
+<span class="nc" id="L1417">    }</span>
+
+    /**
+     * Calculates the (x, y) coordinates for drawing a marker label.
+     *
+     * @param g2  the graphics device.
+     * @param orientation  the plot orientation.
+     * @param dataArea  the data area.
+     * @param markerArea  the marker area.
+     * @param markerOffset  the marker offset.
+     * @param labelOffsetForRange  ??
+     * @param anchor  the label anchor.
+     *
+     * @return The coordinates for drawing the marker label.
+     */
+    private Point2D calculateRangeMarkerTextAnchorPoint(Graphics2D g2,
+                                      PlotOrientation orientation,
+                                      Rectangle2D dataArea,
+                                      Rectangle2D markerArea,
+                                      RectangleInsets markerOffset,
+                                      LengthAdjustmentType labelOffsetForRange,
+                                      RectangleAnchor anchor) {
+
+<span class="nc" id="L1440">        Rectangle2D anchorRect = null;</span>
+<span class="nc bnc" id="L1441" title="All 2 branches missed.">        if (orientation == PlotOrientation.HORIZONTAL) {</span>
+<span class="nc" id="L1442">            anchorRect = markerOffset.createAdjustedRectangle(markerArea,</span>
+                    labelOffsetForRange, LengthAdjustmentType.CONTRACT);
+        }
+<span class="nc bnc" id="L1445" title="All 2 branches missed.">        else if (orientation == PlotOrientation.VERTICAL) {</span>
+<span class="nc" id="L1446">            anchorRect = markerOffset.createAdjustedRectangle(markerArea,</span>
+                    LengthAdjustmentType.CONTRACT, labelOffsetForRange);
+        }
+<span class="nc" id="L1449">        return RectangleAnchor.coordinates(anchorRect, anchor);</span>
+
+    }
+
+    /**
+     * Returns a clone of the renderer.
+     *
+     * @return A clone.
+     *
+     * @throws CloneNotSupportedException if the renderer does not support
+     *         cloning.
+     */
+    protected Object clone() throws CloneNotSupportedException {
+<span class="fc" id="L1462">        AbstractXYItemRenderer clone = (AbstractXYItemRenderer) super.clone();</span>
+        // 'plot' : just retain reference, not a deep copy
+
+<span class="pc bpc" id="L1465" title="3 of 4 branches missed.">        if (this.itemLabelGenerator != null</span>
+                &amp;&amp; this.itemLabelGenerator instanceof PublicCloneable) {
+<span class="nc" id="L1467">            PublicCloneable pc = (PublicCloneable) this.itemLabelGenerator;</span>
+<span class="nc" id="L1468">            clone.itemLabelGenerator = (XYItemLabelGenerator) pc.clone();</span>
+        }
+<span class="fc" id="L1470">        clone.itemLabelGeneratorList</span>
+<span class="fc" id="L1471">                = (ObjectList) this.itemLabelGeneratorList.clone();</span>
+<span class="pc bpc" id="L1472" title="3 of 4 branches missed.">        if (this.baseItemLabelGenerator != null</span>
+                &amp;&amp; this.baseItemLabelGenerator instanceof PublicCloneable) {
+<span class="nc" id="L1474">            PublicCloneable pc = (PublicCloneable) this.baseItemLabelGenerator;</span>
+<span class="nc" id="L1475">            clone.baseItemLabelGenerator = (XYItemLabelGenerator) pc.clone();</span>
+        }
+
+<span class="pc bpc" id="L1478" title="3 of 4 branches missed.">        if (this.toolTipGenerator != null</span>
+                &amp;&amp; this.toolTipGenerator instanceof PublicCloneable) {
+<span class="nc" id="L1480">            PublicCloneable pc = (PublicCloneable) this.toolTipGenerator;</span>
+<span class="nc" id="L1481">            clone.toolTipGenerator = (XYToolTipGenerator) pc.clone();</span>
+        }
+<span class="fc" id="L1483">        clone.toolTipGeneratorList</span>
+<span class="fc" id="L1484">                = (ObjectList) this.toolTipGeneratorList.clone();</span>
+<span class="pc bpc" id="L1485" title="1 of 4 branches missed.">        if (this.baseToolTipGenerator != null</span>
+                &amp;&amp; this.baseToolTipGenerator instanceof PublicCloneable) {
+<span class="fc" id="L1487">            PublicCloneable pc = (PublicCloneable) this.baseToolTipGenerator;</span>
+<span class="fc" id="L1488">            clone.baseToolTipGenerator = (XYToolTipGenerator) pc.clone();</span>
+        }
+
+<span class="pc bpc" id="L1491" title="1 of 2 branches missed.">        if (this.legendItemLabelGenerator instanceof PublicCloneable) {</span>
+<span class="fc" id="L1492">            clone.legendItemLabelGenerator = (XYSeriesLabelGenerator)</span>
+<span class="fc" id="L1493">                    ObjectUtilities.clone(this.legendItemLabelGenerator);</span>
+        }
+<span class="fc bfc" id="L1495" title="All 2 branches covered.">        if (this.legendItemToolTipGenerator instanceof PublicCloneable) {</span>
+<span class="fc" id="L1496">            clone.legendItemToolTipGenerator = (XYSeriesLabelGenerator)</span>
+<span class="fc" id="L1497">                    ObjectUtilities.clone(this.legendItemToolTipGenerator);</span>
+        }
+<span class="fc bfc" id="L1499" title="All 2 branches covered.">        if (this.legendItemURLGenerator instanceof PublicCloneable) {</span>
+<span class="fc" id="L1500">            clone.legendItemURLGenerator = (XYSeriesLabelGenerator)</span>
+<span class="fc" id="L1501">                    ObjectUtilities.clone(this.legendItemURLGenerator);</span>
+        }
+
+<span class="fc" id="L1504">        clone.foregroundAnnotations = (List) ObjectUtilities.deepClone(</span>
+                this.foregroundAnnotations);
+<span class="fc" id="L1506">        clone.backgroundAnnotations = (List) ObjectUtilities.deepClone(</span>
+                this.backgroundAnnotations);
+
+<span class="fc" id="L1509">        return clone;</span>
+    }
+
+    /**
+     * Tests this renderer for equality with another object.
+     *
+     * @param obj  the object (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return &lt;code&gt;true&lt;/code&gt; or &lt;code&gt;false&lt;/code&gt;.
+     */
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L1520" title="1 of 2 branches missed.">        if (obj == this) {</span>
+<span class="nc" id="L1521">            return true;</span>
+        }
+<span class="pc bpc" id="L1523" title="1 of 2 branches missed.">        if (!(obj instanceof AbstractXYItemRenderer)) {</span>
+<span class="nc" id="L1524">            return false;</span>
+        }
+<span class="fc" id="L1526">        AbstractXYItemRenderer that = (AbstractXYItemRenderer) obj;</span>
+<span class="fc bfc" id="L1527" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.itemLabelGenerator,</span>
+                that.itemLabelGenerator)) {
+<span class="fc" id="L1529">            return false;</span>
+        }
+<span class="fc bfc" id="L1531" title="All 2 branches covered.">        if (!this.itemLabelGeneratorList.equals(that.itemLabelGeneratorList)) {</span>
+<span class="fc" id="L1532">            return false;</span>
+        }
+<span class="fc bfc" id="L1534" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.baseItemLabelGenerator,</span>
+                that.baseItemLabelGenerator)) {
+<span class="fc" id="L1536">            return false;</span>
+        }
+<span class="fc bfc" id="L1538" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.toolTipGenerator,</span>
+                that.toolTipGenerator)) {
+<span class="fc" id="L1540">            return false;</span>
+        }
+<span class="fc bfc" id="L1542" title="All 2 branches covered.">        if (!this.toolTipGeneratorList.equals(that.toolTipGeneratorList)) {</span>
+<span class="fc" id="L1543">            return false;</span>
+        }
+<span class="fc bfc" id="L1545" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.baseToolTipGenerator,</span>
+                that.baseToolTipGenerator)) {
+<span class="fc" id="L1547">            return false;</span>
+        }
+<span class="fc bfc" id="L1549" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.urlGenerator, that.urlGenerator)) {</span>
+<span class="fc" id="L1550">            return false;</span>
+        }
+<span class="fc bfc" id="L1552" title="All 2 branches covered.">        if (!this.foregroundAnnotations.equals(that.foregroundAnnotations)) {</span>
+<span class="fc" id="L1553">            return false;</span>
+        }
+<span class="fc bfc" id="L1555" title="All 2 branches covered.">        if (!this.backgroundAnnotations.equals(that.backgroundAnnotations)) {</span>
+<span class="fc" id="L1556">            return false;</span>
+        }
+<span class="fc bfc" id="L1558" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.legendItemLabelGenerator,</span>
+                that.legendItemLabelGenerator)) {
+<span class="fc" id="L1560">            return false;</span>
+        }
+<span class="fc bfc" id="L1562" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.legendItemToolTipGenerator,</span>
+                that.legendItemToolTipGenerator)) {
+<span class="fc" id="L1564">            return false;</span>
+        }
+<span class="fc bfc" id="L1566" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.legendItemURLGenerator,</span>
+                that.legendItemURLGenerator)) {
+<span class="fc" id="L1568">            return false;</span>
+        }
+<span class="fc" id="L1570">        return super.equals(obj);</span>
+    }
+
+    /**
+     * Returns the drawing supplier from the plot.
+     *
+     * @return The drawing supplier (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public DrawingSupplier getDrawingSupplier() {
+<span class="fc" id="L1579">        DrawingSupplier result = null;</span>
+<span class="fc" id="L1580">        XYPlot p = getPlot();</span>
+<span class="pc bpc" id="L1581" title="1 of 2 branches missed.">        if (p != null) {</span>
+<span class="fc" id="L1582">            result = p.getDrawingSupplier();</span>
+        }
+<span class="fc" id="L1584">        return result;</span>
+    }
+
+    /**
+     * Considers the current (x, y) coordinate and updates the crosshair point
+     * if it meets the criteria (usually means the (x, y) coordinate is the
+     * closest to the anchor point so far).
+     *
+     * @param crosshairState  the crosshair state (&lt;code&gt;null&lt;/code&gt; permitted,
+     *                        but the method does nothing in that case).
+     * @param x  the x-value (in data space).
+     * @param y  the y-value (in data space).
+     * @param domainAxisIndex  the index of the domain axis for the point.
+     * @param rangeAxisIndex  the index of the range axis for the point.
+     * @param transX  the x-value translated to Java2D space.
+     * @param transY  the y-value translated to Java2D space.
+     * @param orientation  the plot orientation (&lt;code&gt;null&lt;/code&gt; not
+     *                     permitted).
+     *
+     * @since 1.0.4
+     */
+    protected void updateCrosshairValues(CrosshairState crosshairState,
+            double x, double y, int domainAxisIndex, int rangeAxisIndex,
+            double transX, double transY, PlotOrientation orientation) {
+
+<span class="pc bpc" id="L1609" title="1 of 2 branches missed.">        if (orientation == null) {</span>
+<span class="nc" id="L1610">            throw new IllegalArgumentException(&quot;Null 'orientation' argument.&quot;);</span>
+        }
+
+<span class="pc bpc" id="L1613" title="1 of 2 branches missed.">        if (crosshairState != null) {</span>
+            // do we need to update the crosshair values?
+<span class="pc bpc" id="L1615" title="1 of 2 branches missed.">            if (this.plot.isDomainCrosshairLockedOnData()) {</span>
+<span class="pc bpc" id="L1616" title="1 of 2 branches missed.">                if (this.plot.isRangeCrosshairLockedOnData()) {</span>
+                    // both axes
+<span class="fc" id="L1618">                    crosshairState.updateCrosshairPoint(x, y, domainAxisIndex,</span>
+                            rangeAxisIndex, transX, transY, orientation);
+                }
+                else {
+                    // just the domain axis...
+<span class="nc" id="L1623">                    crosshairState.updateCrosshairX(x, domainAxisIndex);</span>
+                }
+            }
+            else {
+<span class="nc bnc" id="L1627" title="All 2 branches missed.">                if (this.plot.isRangeCrosshairLockedOnData()) {</span>
+                    // just the range axis...
+<span class="nc" id="L1629">                    crosshairState.updateCrosshairY(y, rangeAxisIndex);</span>
+                }
+            }
+        }
+
+<span class="fc" id="L1634">    }</span>
+
+    /**
+     * Draws an item label.
+     *
+     * @param g2  the graphics device.
+     * @param orientation  the orientation.
+     * @param dataset  the dataset.
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     * @param x  the x coordinate (in Java2D space).
+     * @param y  the y coordinate (in Java2D space).
+     * @param negative  indicates a negative value (which affects the item
+     *                  label position).
+     */
+    protected void drawItemLabel(Graphics2D g2, PlotOrientation orientation,
+            XYDataset dataset, int series, int item, double x, double y,
+            boolean negative) {
+
+<span class="nc" id="L1653">        XYItemLabelGenerator generator = getItemLabelGenerator(series, item);</span>
+<span class="nc bnc" id="L1654" title="All 2 branches missed.">        if (generator != null) {</span>
+<span class="nc" id="L1655">            Font labelFont = getItemLabelFont(series, item);</span>
+<span class="nc" id="L1656">            Paint paint = getItemLabelPaint(series, item);</span>
+<span class="nc" id="L1657">            g2.setFont(labelFont);</span>
+<span class="nc" id="L1658">            g2.setPaint(paint);</span>
+<span class="nc" id="L1659">            String label = generator.generateLabel(dataset, series, item);</span>
+
+            // get the label position..
+<span class="nc" id="L1662">            ItemLabelPosition position = null;</span>
+<span class="nc bnc" id="L1663" title="All 2 branches missed.">            if (!negative) {</span>
+<span class="nc" id="L1664">                position = getPositiveItemLabelPosition(series, item);</span>
+            }
+            else {
+<span class="nc" id="L1667">                position = getNegativeItemLabelPosition(series, item);</span>
+            }
+
+            // work out the label anchor point...
+<span class="nc" id="L1671">            Point2D anchorPoint = calculateLabelAnchorPoint(</span>
+<span class="nc" id="L1672">                    position.getItemLabelAnchor(), x, y, orientation);</span>
+<span class="nc" id="L1673">            TextUtilities.drawRotatedString(label, g2,</span>
+<span class="nc" id="L1674">                    (float) anchorPoint.getX(), (float) anchorPoint.getY(),</span>
+<span class="nc" id="L1675">                    position.getTextAnchor(), position.getAngle(),</span>
+<span class="nc" id="L1676">                    position.getRotationAnchor());</span>
+        }
+
+<span class="nc" id="L1679">    }</span>
+
+    /**
+     * Draws all the annotations for the specified layer.
+     *
+     * @param g2  the graphics device.
+     * @param dataArea  the data area.
+     * @param domainAxis  the domain axis.
+     * @param rangeAxis  the range axis.
+     * @param layer  the layer.
+     * @param info  the plot rendering info.
+     */
+    public void drawAnnotations(Graphics2D g2,
+                                Rectangle2D dataArea,
+                                ValueAxis domainAxis,
+                                ValueAxis rangeAxis,
+                                Layer layer,
+                                PlotRenderingInfo info) {
+
+<span class="fc" id="L1698">        Iterator iterator = null;</span>
+<span class="fc bfc" id="L1699" title="All 2 branches covered.">        if (layer.equals(Layer.FOREGROUND)) {</span>
+<span class="fc" id="L1700">            iterator = this.foregroundAnnotations.iterator();</span>
+        }
+<span class="pc bpc" id="L1702" title="1 of 2 branches missed.">        else if (layer.equals(Layer.BACKGROUND)) {</span>
+<span class="fc" id="L1703">            iterator = this.backgroundAnnotations.iterator();</span>
+        }
+        else {
+            // should not get here
+<span class="nc" id="L1707">            throw new RuntimeException(&quot;Unknown layer.&quot;);</span>
+        }
+<span class="pc bpc" id="L1709" title="1 of 2 branches missed.">        while (iterator.hasNext()) {</span>
+<span class="nc" id="L1710">            XYAnnotation annotation = (XYAnnotation) iterator.next();</span>
+<span class="nc" id="L1711">            int index = this.plot.getIndexOf(this);</span>
+<span class="nc" id="L1712">            annotation.draw(g2, this.plot, dataArea, domainAxis, rangeAxis,</span>
+                    index, info);
+<span class="nc" id="L1714">        }</span>
+
+<span class="fc" id="L1716">    }</span>
+
+    /**
+     * Adds an entity to the collection.
+     *
+     * @param entities  the entity collection being populated.
+     * @param area  the entity area (if &lt;code&gt;null&lt;/code&gt; a default will be
+     *              used).
+     * @param dataset  the dataset.
+     * @param series  the series.
+     * @param item  the item.
+     * @param entityX  the entity's center x-coordinate in user space (only
+     *                 used if &lt;code&gt;area&lt;/code&gt; is &lt;code&gt;null&lt;/code&gt;).
+     * @param entityY  the entity's center y-coordinate in user space (only
+     *                 used if &lt;code&gt;area&lt;/code&gt; is &lt;code&gt;null&lt;/code&gt;).
+     */
+    protected void addEntity(EntityCollection entities, Shape area,
+                             XYDataset dataset, int series, int item,
+                             double entityX, double entityY) {
+<span class="nc bnc" id="L1735" title="All 2 branches missed.">        if (!getItemCreateEntity(series, item)) {</span>
+<span class="nc" id="L1736">            return;</span>
+        }
+<span class="nc" id="L1738">        Shape hotspot = area;</span>
+<span class="nc bnc" id="L1739" title="All 2 branches missed.">        if (hotspot == null) {</span>
+<span class="nc" id="L1740">            double r = getDefaultEntityRadius();</span>
+<span class="nc" id="L1741">            double w = r * 2;</span>
+<span class="nc bnc" id="L1742" title="All 2 branches missed.">            if (getPlot().getOrientation() == PlotOrientation.VERTICAL) {</span>
+<span class="nc" id="L1743">                hotspot = new Ellipse2D.Double(entityX - r, entityY - r, w, w);</span>
+            }
+            else {
+<span class="nc" id="L1746">                hotspot = new Ellipse2D.Double(entityY - r, entityX - r, w, w);</span>
+            }
+        }
+<span class="nc" id="L1749">        String tip = null;</span>
+<span class="nc" id="L1750">        XYToolTipGenerator generator = getToolTipGenerator(series, item);</span>
+<span class="nc bnc" id="L1751" title="All 2 branches missed.">        if (generator != null) {</span>
+<span class="nc" id="L1752">            tip = generator.generateToolTip(dataset, series, item);</span>
+        }
+<span class="nc" id="L1754">        String url = null;</span>
+<span class="nc bnc" id="L1755" title="All 2 branches missed.">        if (getURLGenerator() != null) {</span>
+<span class="nc" id="L1756">            url = getURLGenerator().generateURL(dataset, series, item);</span>
+        }
+<span class="nc" id="L1758">        XYItemEntity entity = new XYItemEntity(hotspot, dataset, series, item,</span>
+                tip, url);
+<span class="nc" id="L1760">        entities.add(entity);</span>
+<span class="nc" id="L1761">    }</span>
+
+    /**
+     * Returns &lt;code&gt;true&lt;/code&gt; if the specified point (x, y) falls within or
+     * on the boundary of the specified rectangle.
+     *
+     * @param rect  the rectangle (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param x  the x-coordinate.
+     * @param y  the y-coordinate.
+     *
+     * @return A boolean.
+     *
+     * @since 1.0.10
+     */
+    public static boolean isPointInRect(Rectangle2D rect, double x, double y) {
+        // TODO: For JFreeChart 1.2.0, this method should go in the
+        //       ShapeUtilities class
+<span class="pc bpc" id="L1778" title="2 of 4 branches missed.">        return (x &gt;= rect.getMinX() &amp;&amp; x &lt;= rect.getMaxX()</span>
+<span class="pc bnc" id="L1779" title="All 4 branches missed.">                &amp;&amp; y &gt;= rect.getMinY() &amp;&amp; y &lt;= rect.getMaxY());</span>
+    }
+
+    /**
+     * Utility method delegating to {@link GeneralPath#moveTo} taking double as
+     * parameters.
+     *
+     * @param hotspot  the region under construction (&lt;code&gt;null&lt;/code&gt; not 
+     *           permitted);
+     * @param x  the x coordinate;
+     * @param y  the y coordinate;
+     *
+     * @since 1.0.14
+     */
+    protected static void moveTo(GeneralPath hotspot, double x, double y) {
+<span class="fc" id="L1794">        hotspot.moveTo((float) x, (float) y);</span>
+<span class="fc" id="L1795">    }</span>
+
+    /**
+     * Utility method delegating to {@link GeneralPath#lineTo} taking double as
+     * parameters.
+     *
+     * @param hotspot  the region under construction (&lt;code&gt;null&lt;/code&gt; not 
+     *           permitted);
+     * @param x  the x coordinate;
+     * @param y  the y coordinate;
+     *
+     * @since 1.0.14
+     */
+    protected static void lineTo(GeneralPath hotspot, double x, double y) {
+<span class="fc" id="L1809">        hotspot.lineTo((float) x, (float) y);</span>
+<span class="fc" id="L1810">    }</span>
+
+    // === DEPRECATED CODE ===
+
+    /**
+     * The item label generator for ALL series.
+     *
+     * @deprecated This field is redundant, use itemLabelGeneratorList and
+     *     baseItemLabelGenerator instead.  Deprecated as of version 1.0.6.
+     */
+    private XYItemLabelGenerator itemLabelGenerator;
+
+    /**
+     * The tool tip generator for ALL series.
+     *
+     * @deprecated This field is redundant, use tooltipGeneratorList and
+     *     baseToolTipGenerator instead.  Deprecated as of version 1.0.6.
+     */
+    private XYToolTipGenerator toolTipGenerator;
+
+    /**
+     * Returns the item label generator override.
+     *
+     * @return The generator (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @since 1.0.5
+     *
+     * @see #setItemLabelGenerator(XYItemLabelGenerator)
+     *
+     * @deprecated As of version 1.0.6, this override setting should not be
+     *     used.  You can use the base setting instead
+     *     ({@link #getBaseItemLabelGenerator()}).
+     */
+    public XYItemLabelGenerator getItemLabelGenerator() {
+<span class="nc" id="L1844">        return this.itemLabelGenerator;</span>
+    }
+
+    /**
+     * Sets the item label generator for ALL series and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
+     * @param generator  the generator (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @see #getItemLabelGenerator()
+     *
+     * @deprecated As of version 1.0.6, this override setting should not be
+     *     used.  You can use the base setting instead
+     *     ({@link #setBaseItemLabelGenerator(XYItemLabelGenerator)}).
+     */
+    public void setItemLabelGenerator(XYItemLabelGenerator generator) {
+<span class="fc" id="L1860">        this.itemLabelGenerator = generator;</span>
+<span class="fc" id="L1861">        fireChangeEvent();</span>
+<span class="fc" id="L1862">    }</span>
+
+    /**
+     * Returns the override tool tip generator.
+     *
+     * @return The tool tip generator (possible &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @since 1.0.5
+     *
+     * @see #setToolTipGenerator(XYToolTipGenerator)
+     *
+     * @deprecated As of version 1.0.6, this override setting should not be
+     *     used.  You can use the base setting instead
+     *     ({@link #getBaseToolTipGenerator()}).
+     */
+    public XYToolTipGenerator getToolTipGenerator() {
+<span class="nc" id="L1878">        return this.toolTipGenerator;</span>
+    }
+
+    /**
+     * Sets the tool tip generator for ALL series and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
+     * @param generator  the generator (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @see #getToolTipGenerator()
+     *
+     * @deprecated As of version 1.0.6, this override setting should not be
+     *     used.  You can use the base setting instead
+     *     ({@link #setBaseToolTipGenerator(XYToolTipGenerator)}).
+     */
+    public void setToolTipGenerator(XYToolTipGenerator generator) {
+<span class="fc" id="L1894">        this.toolTipGenerator = generator;</span>
+<span class="fc" id="L1895">        fireChangeEvent();</span>
+<span class="fc" id="L1896">    }</span>
+
+    /**
+     * Considers the current (x, y) coordinate and updates the crosshair point
+     * if it meets the criteria (usually means the (x, y) coordinate is the
+     * closest to the anchor point so far).
+     *
+     * @param crosshairState  the crosshair state (&lt;code&gt;null&lt;/code&gt; permitted,
+     *                        but the method does nothing in that case).
+     * @param x  the x-value (in data space).
+     * @param y  the y-value (in data space).
+     * @param transX  the x-value translated to Java2D space.
+     * @param transY  the y-value translated to Java2D space.
+     * @param orientation  the plot orientation (&lt;code&gt;null&lt;/code&gt; not
+     *                     permitted).
+     *
+     * @deprecated Use {@link #updateCrosshairValues(CrosshairState, double,
+     *         double, int, int, double, double, PlotOrientation)} -- see bug
+     *         report 1086307.
+     */
+    protected void updateCrosshairValues(CrosshairState crosshairState,
+            double x, double y, double transX, double transY,
+            PlotOrientation orientation) {
+<span class="nc" id="L1919">        updateCrosshairValues(crosshairState, x, y, 0, 0, transX, transY,</span>
+                orientation);
+<span class="nc" id="L1921">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

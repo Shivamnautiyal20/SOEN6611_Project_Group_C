@@ -1,0 +1,567 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RingPlot.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot</a> &gt; <span class="el_source">RingPlot.java</span></div><h1>RingPlot.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------
+ * RingPlot.java
+ * -------------
+ * (C) Copyright 2004-2011, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limtied);
+ * Contributor(s):   Christoph Beck (bug 2121818);
+ *
+ * Changes
+ * -------
+ * 08-Nov-2004 : Version 1 (DG);
+ * 22-Feb-2005 : Renamed DonutPlot --&gt; RingPlot (DG);
+ * 06-Jun-2005 : Added default constructor and fixed equals() method to handle
+ *               GradientPaint (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 20-Dec-2005 : Fixed problem with entity shape (bug 1386328) (DG);
+ * 27-Sep-2006 : Updated drawItem() method for new lookup methods (DG);
+ * 12-Oct-2006 : Added configurable section depth (DG);
+ * 14-Feb-2007 : Added notification in setSectionDepth() method (DG);
+ * 23-Sep-2008 : Fix for bug 2121818 by Christoph Beck (DG);
+ * 13-Jul-2009 : Added support for shadow generator (DG);
+ * 11-Oct-2011 : Check sectionOutlineVisible - bug 3237879 (DG);
+ *
+ */
+
+package org.jfree.chart.plot;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.Stroke;
+import java.awt.geom.Arc2D;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import org.jfree.chart.entity.EntityCollection;
+import org.jfree.chart.entity.PieSectionEntity;
+import org.jfree.chart.event.PlotChangeEvent;
+import org.jfree.chart.labels.PieToolTipGenerator;
+import org.jfree.chart.urls.PieURLGenerator;
+import org.jfree.data.general.PieDataset;
+import org.jfree.io.SerialUtilities;
+import org.jfree.ui.RectangleInsets;
+import org.jfree.util.ObjectUtilities;
+import org.jfree.util.PaintUtilities;
+import org.jfree.util.Rotation;
+import org.jfree.util.ShapeUtilities;
+import org.jfree.util.UnitType;
+
+/**
+ * A customised pie plot that leaves a hole in the middle.
+ */
+public class RingPlot extends PiePlot implements Cloneable, Serializable {
+
+    /** For serialization. */
+    private static final long serialVersionUID = 1556064784129676620L;
+
+    /**
+     * A flag that controls whether or not separators are drawn between the
+     * sections of the chart.
+     */
+    private boolean separatorsVisible;
+
+    /** The stroke used to draw separators. */
+    private transient Stroke separatorStroke;
+
+    /** The paint used to draw separators. */
+    private transient Paint separatorPaint;
+
+    /**
+     * The length of the inner separator extension (as a percentage of the
+     * depth of the sections).
+     */
+    private double innerSeparatorExtension;
+
+    /**
+     * The length of the outer separator extension (as a percentage of the
+     * depth of the sections).
+     */
+    private double outerSeparatorExtension;
+
+    /**
+     * The depth of the section as a percentage of the diameter.
+     */
+    private double sectionDepth;
+
+    /**
+     * Creates a new plot with a &lt;code&gt;null&lt;/code&gt; dataset.
+     */
+    public RingPlot() {
+<span class="fc" id="L124">        this(null);</span>
+<span class="fc" id="L125">    }</span>
+
+    /**
+     * Creates a new plot for the specified dataset.
+     *
+     * @param dataset  the dataset (&lt;code&gt;null&lt;/code&gt; permitted).
+     */
+    public RingPlot(PieDataset dataset) {
+<span class="fc" id="L133">        super(dataset);</span>
+<span class="fc" id="L134">        this.separatorsVisible = true;</span>
+<span class="fc" id="L135">        this.separatorStroke = new BasicStroke(0.5f);</span>
+<span class="fc" id="L136">        this.separatorPaint = Color.gray;</span>
+<span class="fc" id="L137">        this.innerSeparatorExtension = 0.20;  // twenty percent</span>
+<span class="fc" id="L138">        this.outerSeparatorExtension = 0.20;  // twenty percent</span>
+<span class="fc" id="L139">        this.sectionDepth = 0.20; // 20%</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * Returns a flag that indicates whether or not separators are drawn between
+     * the sections in the chart.
+     *
+     * @return A boolean.
+     *
+     * @see #setSeparatorsVisible(boolean)
+     */
+    public boolean getSeparatorsVisible() {
+<span class="nc" id="L151">        return this.separatorsVisible;</span>
+    }
+
+    /**
+     * Sets the flag that controls whether or not separators are drawn between
+     * the sections in the chart, and sends a {@link PlotChangeEvent} to all
+     * registered listeners.
+     *
+     * @param visible  the flag.
+     *
+     * @see #getSeparatorsVisible()
+     */
+    public void setSeparatorsVisible(boolean visible) {
+<span class="fc" id="L164">        this.separatorsVisible = visible;</span>
+<span class="fc" id="L165">        fireChangeEvent();</span>
+<span class="fc" id="L166">    }</span>
+
+    /**
+     * Returns the separator stroke.
+     *
+     * @return The stroke (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setSeparatorStroke(Stroke)
+     */
+    public Stroke getSeparatorStroke() {
+<span class="nc" id="L176">        return this.separatorStroke;</span>
+    }
+
+    /**
+     * Sets the stroke used to draw the separator between sections and sends
+     * a {@link PlotChangeEvent} to all registered listeners.
+     *
+     * @param stroke  the stroke (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #getSeparatorStroke()
+     */
+    public void setSeparatorStroke(Stroke stroke) {
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">        if (stroke == null) {</span>
+<span class="nc" id="L189">            throw new IllegalArgumentException(&quot;Null 'stroke' argument.&quot;);</span>
+        }
+<span class="fc" id="L191">        this.separatorStroke = stroke;</span>
+<span class="fc" id="L192">        fireChangeEvent();</span>
+<span class="fc" id="L193">    }</span>
+
+    /**
+     * Returns the separator paint.
+     *
+     * @return The paint (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setSeparatorPaint(Paint)
+     */
+    public Paint getSeparatorPaint() {
+<span class="nc" id="L203">        return this.separatorPaint;</span>
+    }
+
+    /**
+     * Sets the paint used to draw the separator between sections and sends a
+     * {@link PlotChangeEvent} to all registered listeners.
+     *
+     * @param paint  the paint (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #getSeparatorPaint()
+     */
+    public void setSeparatorPaint(Paint paint) {
+<span class="pc bpc" id="L215" title="1 of 2 branches missed.">        if (paint == null) {</span>
+<span class="nc" id="L216">            throw new IllegalArgumentException(&quot;Null 'paint' argument.&quot;);</span>
+        }
+<span class="fc" id="L218">        this.separatorPaint = paint;</span>
+<span class="fc" id="L219">        fireChangeEvent();</span>
+<span class="fc" id="L220">    }</span>
+
+    /**
+     * Returns the length of the inner extension of the separator line that
+     * is drawn between sections, expressed as a percentage of the depth of
+     * the section.
+     *
+     * @return The inner separator extension (as a percentage).
+     *
+     * @see #setInnerSeparatorExtension(double)
+     */
+    public double getInnerSeparatorExtension() {
+<span class="nc" id="L232">        return this.innerSeparatorExtension;</span>
+    }
+
+    /**
+     * Sets the length of the inner extension of the separator line that is
+     * drawn between sections, as a percentage of the depth of the
+     * sections, and sends a {@link PlotChangeEvent} to all registered
+     * listeners.
+     *
+     * @param percent  the percentage.
+     *
+     * @see #getInnerSeparatorExtension()
+     * @see #setOuterSeparatorExtension(double)
+     */
+    public void setInnerSeparatorExtension(double percent) {
+<span class="fc" id="L247">        this.innerSeparatorExtension = percent;</span>
+<span class="fc" id="L248">        fireChangeEvent();</span>
+<span class="fc" id="L249">    }</span>
+
+    /**
+     * Returns the length of the outer extension of the separator line that
+     * is drawn between sections, expressed as a percentage of the depth of
+     * the section.
+     *
+     * @return The outer separator extension (as a percentage).
+     *
+     * @see #setOuterSeparatorExtension(double)
+     */
+    public double getOuterSeparatorExtension() {
+<span class="nc" id="L261">        return this.outerSeparatorExtension;</span>
+    }
+
+    /**
+     * Sets the length of the outer extension of the separator line that is
+     * drawn between sections, as a percentage of the depth of the
+     * sections, and sends a {@link PlotChangeEvent} to all registered
+     * listeners.
+     *
+     * @param percent  the percentage.
+     *
+     * @see #getOuterSeparatorExtension()
+     */
+    public void setOuterSeparatorExtension(double percent) {
+<span class="fc" id="L275">        this.outerSeparatorExtension = percent;</span>
+<span class="fc" id="L276">        fireChangeEvent();</span>
+<span class="fc" id="L277">    }</span>
+
+    /**
+     * Returns the depth of each section, expressed as a percentage of the
+     * plot radius.
+     *
+     * @return The depth of each section.
+     *
+     * @see #setSectionDepth(double)
+     * @since 1.0.3
+     */
+    public double getSectionDepth() {
+<span class="nc" id="L289">        return this.sectionDepth;</span>
+    }
+
+    /**
+     * The section depth is given as percentage of the plot radius.
+     * Specifying 1.0 results in a straightforward pie chart.
+     *
+     * @param sectionDepth  the section depth.
+     *
+     * @see #getSectionDepth()
+     * @since 1.0.3
+     */
+    public void setSectionDepth(double sectionDepth) {
+<span class="fc" id="L302">        this.sectionDepth = sectionDepth;</span>
+<span class="fc" id="L303">        fireChangeEvent();</span>
+<span class="fc" id="L304">    }</span>
+
+    /**
+     * Initialises the plot state (which will store the total of all dataset
+     * values, among other things).  This method is called once at the
+     * beginning of each drawing.
+     *
+     * @param g2  the graphics device.
+     * @param plotArea  the plot area (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param plot  the plot.
+     * @param index  the secondary index (&lt;code&gt;null&lt;/code&gt; for primary
+     *               renderer).
+     * @param info  collects chart rendering information for return to caller.
+     *
+     * @return A state object (maintains state information relevant to one
+     *         chart drawing).
+     */
+    public PiePlotState initialise(Graphics2D g2, Rectangle2D plotArea,
+            PiePlot plot, Integer index, PlotRenderingInfo info) {
+
+<span class="nc" id="L324">        PiePlotState state = super.initialise(g2, plotArea, plot, index, info);</span>
+<span class="nc" id="L325">        state.setPassesRequired(3);</span>
+<span class="nc" id="L326">        return state;</span>
+
+    }
+
+    /**
+     * Draws a single data item.
+     *
+     * @param g2  the graphics device (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param section  the section index.
+     * @param dataArea  the data plot area.
+     * @param state  state information for one chart.
+     * @param currentPass  the current pass index.
+     */
+    protected void drawItem(Graphics2D g2,
+                            int section,
+                            Rectangle2D dataArea,
+                            PiePlotState state,
+                            int currentPass) {
+
+<span class="nc" id="L345">        PieDataset dataset = getDataset();</span>
+<span class="nc" id="L346">        Number n = dataset.getValue(section);</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">        if (n == null) {</span>
+<span class="nc" id="L348">            return;</span>
+        }
+<span class="nc" id="L350">        double value = n.doubleValue();</span>
+<span class="nc" id="L351">        double angle1 = 0.0;</span>
+<span class="nc" id="L352">        double angle2 = 0.0;</span>
+
+<span class="nc" id="L354">        Rotation direction = getDirection();</span>
+<span class="nc bnc" id="L355" title="All 2 branches missed.">        if (direction == Rotation.CLOCKWISE) {</span>
+<span class="nc" id="L356">            angle1 = state.getLatestAngle();</span>
+<span class="nc" id="L357">            angle2 = angle1 - value / state.getTotal() * 360.0;</span>
+        }
+<span class="nc bnc" id="L359" title="All 2 branches missed.">        else if (direction == Rotation.ANTICLOCKWISE) {</span>
+<span class="nc" id="L360">            angle1 = state.getLatestAngle();</span>
+<span class="nc" id="L361">            angle2 = angle1 + value / state.getTotal() * 360.0;</span>
+        }
+        else {
+<span class="nc" id="L364">            throw new IllegalStateException(&quot;Rotation type not recognised.&quot;);</span>
+        }
+
+<span class="nc" id="L367">        double angle = (angle2 - angle1);</span>
+<span class="nc bnc" id="L368" title="All 2 branches missed.">        if (Math.abs(angle) &gt; getMinimumArcAngleToDraw()) {</span>
+<span class="nc" id="L369">            Comparable key = getSectionKey(section);</span>
+<span class="nc" id="L370">            double ep = 0.0;</span>
+<span class="nc" id="L371">            double mep = getMaximumExplodePercent();</span>
+<span class="nc bnc" id="L372" title="All 2 branches missed.">            if (mep &gt; 0.0) {</span>
+<span class="nc" id="L373">                ep = getExplodePercent(key) / mep;</span>
+            }
+<span class="nc" id="L375">            Rectangle2D arcBounds = getArcBounds(state.getPieArea(),</span>
+<span class="nc" id="L376">                    state.getExplodedPieArea(), angle1, angle, ep);</span>
+<span class="nc" id="L377">            Arc2D.Double arc = new Arc2D.Double(arcBounds, angle1, angle,</span>
+                    Arc2D.OPEN);
+
+            // create the bounds for the inner arc
+<span class="nc" id="L381">            double depth = this.sectionDepth / 2.0;</span>
+<span class="nc" id="L382">            RectangleInsets s = new RectangleInsets(UnitType.RELATIVE,</span>
+                depth, depth, depth, depth);
+<span class="nc" id="L384">            Rectangle2D innerArcBounds = new Rectangle2D.Double();</span>
+<span class="nc" id="L385">            innerArcBounds.setRect(arcBounds);</span>
+<span class="nc" id="L386">            s.trim(innerArcBounds);</span>
+            // calculate inner arc in reverse direction, for later
+            // GeneralPath construction
+<span class="nc" id="L389">            Arc2D.Double arc2 = new Arc2D.Double(innerArcBounds, angle1</span>
+                    + angle, -angle, Arc2D.OPEN);
+<span class="nc" id="L391">            GeneralPath path = new GeneralPath();</span>
+<span class="nc" id="L392">            path.moveTo((float) arc.getStartPoint().getX(),</span>
+<span class="nc" id="L393">                    (float) arc.getStartPoint().getY());</span>
+<span class="nc" id="L394">            path.append(arc.getPathIterator(null), false);</span>
+<span class="nc" id="L395">            path.append(arc2.getPathIterator(null), true);</span>
+<span class="nc" id="L396">            path.closePath();</span>
+
+<span class="nc" id="L398">            Line2D separator = new Line2D.Double(arc2.getEndPoint(),</span>
+<span class="nc" id="L399">                    arc.getStartPoint());</span>
+
+<span class="nc bnc" id="L401" title="All 2 branches missed.">            if (currentPass == 0) {</span>
+<span class="nc" id="L402">                Paint shadowPaint = getShadowPaint();</span>
+<span class="nc" id="L403">                double shadowXOffset = getShadowXOffset();</span>
+<span class="nc" id="L404">                double shadowYOffset = getShadowYOffset();</span>
+<span class="nc bnc" id="L405" title="All 4 branches missed.">                if (shadowPaint != null &amp;&amp; getShadowGenerator() == null) {</span>
+<span class="nc" id="L406">                    Shape shadowArc = ShapeUtilities.createTranslatedShape(</span>
+                            path, (float) shadowXOffset, (float) shadowYOffset);
+<span class="nc" id="L408">                    g2.setPaint(shadowPaint);</span>
+<span class="nc" id="L409">                    g2.fill(shadowArc);</span>
+                }
+<span class="nc" id="L411">            }</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">            else if (currentPass == 1) {</span>
+<span class="nc" id="L413">                Paint paint = lookupSectionPaint(key);</span>
+<span class="nc" id="L414">                g2.setPaint(paint);</span>
+<span class="nc" id="L415">                g2.fill(path);</span>
+<span class="nc" id="L416">                Paint outlinePaint = lookupSectionOutlinePaint(key);</span>
+<span class="nc" id="L417">                Stroke outlineStroke = lookupSectionOutlineStroke(key);</span>
+<span class="nc bnc" id="L418" title="All 6 branches missed.">                if (getSectionOutlinesVisible() &amp;&amp; outlinePaint != null </span>
+                        &amp;&amp; outlineStroke != null) {
+<span class="nc" id="L420">                    g2.setPaint(outlinePaint);</span>
+<span class="nc" id="L421">                    g2.setStroke(outlineStroke);</span>
+<span class="nc" id="L422">                    g2.draw(path);</span>
+                }
+
+                // add an entity for the pie section
+<span class="nc bnc" id="L426" title="All 2 branches missed.">                if (state.getInfo() != null) {</span>
+<span class="nc" id="L427">                    EntityCollection entities = state.getEntityCollection();</span>
+<span class="nc bnc" id="L428" title="All 2 branches missed.">                    if (entities != null) {</span>
+<span class="nc" id="L429">                        String tip = null;</span>
+<span class="nc" id="L430">                        PieToolTipGenerator toolTipGenerator</span>
+<span class="nc" id="L431">                                = getToolTipGenerator();</span>
+<span class="nc bnc" id="L432" title="All 2 branches missed.">                        if (toolTipGenerator != null) {</span>
+<span class="nc" id="L433">                            tip = toolTipGenerator.generateToolTip(dataset,</span>
+                                    key);
+                        }
+<span class="nc" id="L436">                        String url = null;</span>
+<span class="nc" id="L437">                        PieURLGenerator urlGenerator = getURLGenerator();</span>
+<span class="nc bnc" id="L438" title="All 2 branches missed.">                        if (urlGenerator != null) {</span>
+<span class="nc" id="L439">                            url = urlGenerator.generateURL(dataset, key,</span>
+<span class="nc" id="L440">                                    getPieIndex());</span>
+                        }
+<span class="nc" id="L442">                        PieSectionEntity entity = new PieSectionEntity(path,</span>
+<span class="nc" id="L443">                                dataset, getPieIndex(), section, key, tip,</span>
+                                url);
+<span class="nc" id="L445">                        entities.add(entity);</span>
+                    }
+                }
+<span class="nc" id="L448">            }</span>
+<span class="nc bnc" id="L449" title="All 2 branches missed.">            else if (currentPass == 2) {</span>
+<span class="nc bnc" id="L450" title="All 2 branches missed.">                if (this.separatorsVisible) {</span>
+<span class="nc" id="L451">                    Line2D extendedSeparator = extendLine(separator,</span>
+                        this.innerSeparatorExtension,
+                        this.outerSeparatorExtension);
+<span class="nc" id="L454">                    g2.setStroke(this.separatorStroke);</span>
+<span class="nc" id="L455">                    g2.setPaint(this.separatorPaint);</span>
+<span class="nc" id="L456">                    g2.draw(extendedSeparator);</span>
+                }
+            }
+        }
+<span class="nc" id="L460">        state.setLatestAngle(angle2);</span>
+<span class="nc" id="L461">    }</span>
+
+    /**
+     * This method overrides the default value for cases where the ring plot
+     * is very thin.  This fixes bug 2121818.
+     *
+     * @return The label link depth, as a percentage of the plot's radius.
+     */
+    protected double getLabelLinkDepth() {
+<span class="nc" id="L470">        return Math.min(super.getLabelLinkDepth(), getSectionDepth() / 2);</span>
+    }
+
+    /**
+     * Tests this plot for equality with an arbitrary object.
+     *
+     * @param obj  the object to test against (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L481" title="1 of 2 branches missed.">        if (this == obj) {</span>
+<span class="nc" id="L482">            return true;</span>
+        }
+<span class="fc bfc" id="L484" title="All 2 branches covered.">        if (!(obj instanceof RingPlot)) {</span>
+<span class="fc" id="L485">            return false;</span>
+        }
+<span class="fc" id="L487">        RingPlot that = (RingPlot) obj;</span>
+<span class="fc bfc" id="L488" title="All 2 branches covered.">        if (this.separatorsVisible != that.separatorsVisible) {</span>
+<span class="fc" id="L489">            return false;</span>
+        }
+<span class="fc bfc" id="L491" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.separatorStroke,</span>
+                that.separatorStroke)) {
+<span class="fc" id="L493">            return false;</span>
+        }
+<span class="fc bfc" id="L495" title="All 2 branches covered.">        if (!PaintUtilities.equal(this.separatorPaint, that.separatorPaint)) {</span>
+<span class="fc" id="L496">            return false;</span>
+        }
+<span class="fc bfc" id="L498" title="All 2 branches covered.">        if (this.innerSeparatorExtension != that.innerSeparatorExtension) {</span>
+<span class="fc" id="L499">            return false;</span>
+        }
+<span class="fc bfc" id="L501" title="All 2 branches covered.">        if (this.outerSeparatorExtension != that.outerSeparatorExtension) {</span>
+<span class="fc" id="L502">            return false;</span>
+        }
+<span class="fc bfc" id="L504" title="All 2 branches covered.">        if (this.sectionDepth != that.sectionDepth) {</span>
+<span class="fc" id="L505">            return false;</span>
+        }
+<span class="fc" id="L507">        return super.equals(obj);</span>
+    }
+
+    /**
+     * Creates a new line by extending an existing line.
+     *
+     * @param line  the line (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param startPercent  the amount to extend the line at the start point
+     *                      end.
+     * @param endPercent  the amount to extend the line at the end point end.
+     *
+     * @return A new line.
+     */
+    private Line2D extendLine(Line2D line, double startPercent,
+                              double endPercent) {
+<span class="nc bnc" id="L522" title="All 2 branches missed.">        if (line == null) {</span>
+<span class="nc" id="L523">            throw new IllegalArgumentException(&quot;Null 'line' argument.&quot;);</span>
+        }
+<span class="nc" id="L525">        double x1 = line.getX1();</span>
+<span class="nc" id="L526">        double x2 = line.getX2();</span>
+<span class="nc" id="L527">        double deltaX = x2 - x1;</span>
+<span class="nc" id="L528">        double y1 = line.getY1();</span>
+<span class="nc" id="L529">        double y2 = line.getY2();</span>
+<span class="nc" id="L530">        double deltaY = y2 - y1;</span>
+<span class="nc" id="L531">        x1 = x1 - (startPercent * deltaX);</span>
+<span class="nc" id="L532">        y1 = y1 - (startPercent * deltaY);</span>
+<span class="nc" id="L533">        x2 = x2 + (endPercent * deltaX);</span>
+<span class="nc" id="L534">        y2 = y2 + (endPercent * deltaY);</span>
+<span class="nc" id="L535">        return new Line2D.Double(x1, y1, x2, y2);</span>
+    }
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the output stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     */
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+<span class="fc" id="L546">        stream.defaultWriteObject();</span>
+<span class="fc" id="L547">        SerialUtilities.writeStroke(this.separatorStroke, stream);</span>
+<span class="fc" id="L548">        SerialUtilities.writePaint(this.separatorPaint, stream);</span>
+<span class="fc" id="L549">    }</span>
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the input stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     * @throws ClassNotFoundException  if there is a classpath problem.
+     */
+    private void readObject(ObjectInputStream stream)
+        throws IOException, ClassNotFoundException {
+<span class="fc" id="L561">        stream.defaultReadObject();</span>
+<span class="fc" id="L562">        this.separatorStroke = SerialUtilities.readStroke(stream);</span>
+<span class="fc" id="L563">        this.separatorPaint = SerialUtilities.readPaint(stream);</span>
+<span class="fc" id="L564">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

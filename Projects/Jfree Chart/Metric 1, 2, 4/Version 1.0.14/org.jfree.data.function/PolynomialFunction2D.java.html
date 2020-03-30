@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PolynomialFunction2D.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.function</a> &gt; <span class="el_source">PolynomialFunction2D.java</span></div><h1>PolynomialFunction2D.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------
+ * PolynomialFunction2D.java
+ * -------------------------
+ * (C) Copyright 2009, by Object Refinery Limited.
+ *
+ * Original Author:  Peter Kolb;
+ * Contributor(s):   David Gilbert (for Object Refinery Limited);
+ *
+ * Changes:
+ * --------
+ * 23-Mar-2009 : Version 1, patch 2795746 (PK);
+ * 28-May-2009 : Integrated in JFreeChart with modifications (DG);
+ *
+ */
+
+package org.jfree.data.function;
+
+import java.io.Serializable;
+import java.util.Arrays;
+import org.jfree.chart.HashUtilities;
+
+/**
+ * A function in the form &lt;code&gt;y = a0 + a1 * x + a2 * x^2 + ... + an *
+ * x^n&lt;/code&gt;.  Instances of this class are immutable.
+ *
+ * @since 1.0.14
+ */
+public class PolynomialFunction2D implements Function2D, Serializable {
+
+    /** The coefficients. */
+    private double[] coefficients;
+
+    /**
+     * Constructs a new polynomial function &lt;code&gt;y = a0 + a1 * x + a2 * x^2 +
+     * ... + an * x^n&lt;/code&gt;
+     *
+     * @param coefficients  an array with the coefficients [a0, a1, ..., an]
+     *         (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+<span class="fc" id="L66">    public PolynomialFunction2D(double[] coefficients) {</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        if (coefficients == null) {</span>
+<span class="fc" id="L68">            throw new IllegalArgumentException(&quot;Null 'coefficients' argument&quot;);</span>
+        }
+<span class="fc" id="L70">        this.coefficients = (double[]) coefficients.clone();</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * Returns a copy of the coefficients array that was specified in the
+     * constructor.
+     *
+     * @return The coefficients array.
+     */
+    public double[] getCoefficients() {
+<span class="fc" id="L80">        return (double[]) this.coefficients.clone();</span>
+    }
+
+    /**
+     * Returns the order of the polynomial.
+     *
+     * @return The order.
+     */
+    public int getOrder() {
+<span class="fc" id="L89">        return this.coefficients.length - 1;</span>
+    }
+
+    /**
+     * Returns the function value.
+     *
+     * @param x  the x-value.
+     *
+     * @return The value.
+     */
+    public double getValue(double x) {
+<span class="nc" id="L100">        double y = 0;</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        for(int i = 0; i &lt; coefficients.length; i++){</span>
+<span class="nc" id="L102">            y += coefficients[i] * Math.pow(x, i);</span>
+        }
+<span class="nc" id="L104">        return y;</span>
+    }
+
+    /**
+     * Tests this function for equality with an arbitrary object.
+     *
+     * @param obj  the object (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">        if (!(obj instanceof PolynomialFunction2D)) {</span>
+<span class="nc" id="L116">            return false;</span>
+        }
+<span class="fc" id="L118">        PolynomialFunction2D that = (PolynomialFunction2D) obj;</span>
+<span class="fc" id="L119">        return Arrays.equals(this.coefficients, that.coefficients);</span>
+    }
+
+    /**
+     * Returns a hash code for this instance.
+     *
+     * @return A hash code.
+     */
+    public int hashCode() {
+<span class="fc" id="L128">        return HashUtilities.hashCodeForDoubleArray(this.coefficients);</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

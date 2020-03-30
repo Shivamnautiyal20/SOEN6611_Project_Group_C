@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XYDifferenceRendererTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.xy.junit</a> &gt; <span class="el_source">XYDifferenceRendererTests.java</span></div><h1>XYDifferenceRendererTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------------------
+ * XYDifferenceRendererTests.java
+ * ------------------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 22-Oct-2003 : Version 1 (DG);
+ * 04-May-2005 : Improved equals() test (DG);
+ * 24-Jan-2007 : Added 'roundXCoordinates' to testEquals(), and improved
+ *               testClone() (DG);
+ * 17-May-2007 : Added testGetLegendItemSeriesIndex() (DG);
+ * 22-Apr-2008 : Added testPublicCloneable (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.xy.junit;
+
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Shape;
+import java.awt.geom.Line2D;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYDifferenceRenderer;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link XYDifferenceRenderer} class.
+ */
+public class XYDifferenceRendererTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        return new TestSuite(XYDifferenceRendererTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public XYDifferenceRendererTests(String name) {
+<span class="fc" id="L92">        super(name);</span>
+<span class="fc" id="L93">    }</span>
+
+    /**
+     * Check that the equals() method distinguishes all fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L99">        XYDifferenceRenderer r1 = new XYDifferenceRenderer(</span>
+                Color.red, Color.blue, false);
+<span class="fc" id="L101">        XYDifferenceRenderer r2 = new XYDifferenceRenderer(</span>
+                Color.red, Color.blue, false);
+<span class="fc" id="L103">        assertEquals(r1, r2);</span>
+
+        // positive paint
+<span class="fc" id="L106">        r1.setPositivePaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L108">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L109">        r2.setPositivePaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L111">        assertTrue(r1.equals(r2));</span>
+
+        // negative paint
+<span class="fc" id="L114">        r1.setNegativePaint(new GradientPaint(1.0f, 2.0f, Color.yellow,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L116">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L117">        r2.setNegativePaint(new GradientPaint(1.0f, 2.0f, Color.yellow,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L119">        assertTrue(r1.equals(r2));</span>
+
+        // shapesVisible
+<span class="fc" id="L122">        r1 = new XYDifferenceRenderer(Color.green, Color.yellow, true);</span>
+<span class="fc" id="L123">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L124">        r2 = new XYDifferenceRenderer(Color.green, Color.yellow, true);</span>
+<span class="fc" id="L125">        assertTrue(r1.equals(r2));</span>
+
+        // legendLine
+<span class="fc" id="L128">        r1.setLegendLine(new Line2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L129">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L130">        r2.setLegendLine(new Line2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L131">        assertTrue(r1.equals(r2));</span>
+
+        // roundXCoordinates
+<span class="fc" id="L134">        r1.setRoundXCoordinates(true);</span>
+<span class="fc" id="L135">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L136">        r2.setRoundXCoordinates(true);</span>
+<span class="fc" id="L137">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L139">        assertFalse(r1.equals(null));</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L146">        XYDifferenceRenderer r1</span>
+            = new XYDifferenceRenderer(Color.red, Color.blue, false);
+<span class="fc" id="L148">        XYDifferenceRenderer r2</span>
+            = new XYDifferenceRenderer(Color.red, Color.blue, false);
+<span class="fc" id="L150">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L151">        int h1 = r1.hashCode();</span>
+<span class="fc" id="L152">        int h2 = r2.hashCode();</span>
+<span class="fc" id="L153">        assertEquals(h1, h2);</span>
+<span class="fc" id="L154">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L160">        XYDifferenceRenderer r1 = new XYDifferenceRenderer(Color.red,</span>
+                Color.blue, false);
+<span class="fc" id="L162">        XYDifferenceRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L164">            r2 = (XYDifferenceRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L166">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L167">            e.printStackTrace();</span>
+<span class="fc" id="L168">        }</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L171">        assertTrue(r1.equals(r2));</span>
+
+        // check independence
+<span class="fc" id="L174">        Shape s = r1.getLegendLine();</span>
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">        if (s instanceof Line2D) {</span>
+<span class="fc" id="L176">            Line2D l = (Line2D) s;</span>
+<span class="fc" id="L177">            l.setLine(1.0, 2.0, 3.0, 4.0);</span>
+<span class="fc" id="L178">            assertFalse(r1.equals(r2));</span>
+        }
+<span class="fc" id="L180">    }</span>
+
+    /**
+     * Verify that this class implements {@link PublicCloneable}.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L186">        XYDifferenceRenderer r1 = new XYDifferenceRenderer();</span>
+<span class="fc" id="L187">        assertTrue(r1 instanceof PublicCloneable);</span>
+<span class="fc" id="L188">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L195">        XYDifferenceRenderer r1 = new XYDifferenceRenderer(Color.red,</span>
+                Color.blue, false);
+<span class="fc" id="L197">        XYDifferenceRenderer r2 = null;</span>
+
+        try {
+<span class="fc" id="L200">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L201">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L202">            out.writeObject(r1);</span>
+<span class="fc" id="L203">            out.close();</span>
+
+<span class="fc" id="L205">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L206">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L207">            r2 = (XYDifferenceRenderer) in.readObject();</span>
+<span class="fc" id="L208">            in.close();</span>
+        }
+<span class="nc" id="L210">        catch (Exception e) {</span>
+<span class="nc" id="L211">            e.printStackTrace();</span>
+<span class="fc" id="L212">        }</span>
+<span class="fc" id="L213">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L215">    }</span>
+
+    /**
+     * A check for the datasetIndex and seriesIndex fields in the LegendItem
+     * returned by the getLegendItem() method.
+     */
+    public void testGetLegendItemSeriesIndex() {
+<span class="fc" id="L222">        XYSeriesCollection d1 = new XYSeriesCollection();</span>
+<span class="fc" id="L223">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L224">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L225">        XYSeries s2 = new XYSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L226">        s2.add(1.0, 1.1);</span>
+<span class="fc" id="L227">        d1.addSeries(s1);</span>
+<span class="fc" id="L228">        d1.addSeries(s2);</span>
+
+<span class="fc" id="L230">        XYSeriesCollection d2 = new XYSeriesCollection();</span>
+<span class="fc" id="L231">        XYSeries s3 = new XYSeries(&quot;S3&quot;);</span>
+<span class="fc" id="L232">        s3.add(1.0, 1.1);</span>
+<span class="fc" id="L233">        XYSeries s4 = new XYSeries(&quot;S4&quot;);</span>
+<span class="fc" id="L234">        s4.add(1.0, 1.1);</span>
+<span class="fc" id="L235">        XYSeries s5 = new XYSeries(&quot;S5&quot;);</span>
+<span class="fc" id="L236">        s5.add(1.0, 1.1);</span>
+<span class="fc" id="L237">        d2.addSeries(s3);</span>
+<span class="fc" id="L238">        d2.addSeries(s4);</span>
+<span class="fc" id="L239">        d2.addSeries(s5);</span>
+
+<span class="fc" id="L241">        XYDifferenceRenderer r = new XYDifferenceRenderer();</span>
+<span class="fc" id="L242">        XYPlot plot = new XYPlot(d1, new NumberAxis(&quot;x&quot;),</span>
+                new NumberAxis(&quot;y&quot;), r);
+<span class="fc" id="L244">        plot.setDataset(1, d2);</span>
+<span class="fc" id="L245">        /*JFreeChart chart =*/ new JFreeChart(plot);</span>
+<span class="fc" id="L246">        LegendItem li = r.getLegendItem(1, 2);</span>
+<span class="fc" id="L247">        assertEquals(&quot;S5&quot;, li.getLabel());</span>
+<span class="fc" id="L248">        assertEquals(1, li.getDatasetIndex());</span>
+<span class="fc" id="L249">        assertEquals(2, li.getSeriesIndex());</span>
+<span class="fc" id="L250">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

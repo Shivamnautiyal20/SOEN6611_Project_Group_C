@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CompositeTitle.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.title</a> &gt; <span class="el_source">CompositeTitle.java</span></div><h1>CompositeTitle.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------
+ * CompositeTitle.java
+ * -------------------
+ * (C) Copyright 2005-2008, by David Gilbert and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Eric Penfold (patch 2006826);
+ *
+ * Changes
+ * -------
+ * 19-Nov-2004 : Version 1 (DG);
+ * 11-Jan-2005 : Removed deprecated code in preparation for 1.0.0 release (DG);
+ * 04-Feb-2005 : Implemented MAXIMUM_WIDTH in calculateSize (DG);
+ * 20-Apr-2005 : Added new draw() method (DG);
+ * 03-May-2005 : Implemented equals() method (DG);
+ * 02-Jul-2008 : Applied patch 2006826 by Eric Penfold, to enable chart
+ *               entities to be generated (DG);
+ * 09-Jul-2008 : Added backgroundPaint field (DG);
+ *
+ */
+
+package org.jfree.chart.title;
+
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import org.jfree.chart.block.BlockContainer;
+import org.jfree.chart.block.BorderArrangement;
+import org.jfree.chart.block.RectangleConstraint;
+import org.jfree.chart.event.TitleChangeEvent;
+import org.jfree.io.SerialUtilities;
+import org.jfree.ui.Size2D;
+import org.jfree.util.PaintUtilities;
+
+/**
+ * A title that contains multiple titles within a {@link BlockContainer}.
+ */
+public class CompositeTitle extends Title implements Cloneable, Serializable {
+
+    /** For serialization. */
+    private static final long serialVersionUID = -6770854036232562290L;
+
+    /**
+     * The background paint.
+     *
+     * @since 1.0.11
+     */
+    private transient Paint backgroundPaint;
+
+    /** A container for the individual titles. */
+    private BlockContainer container;
+
+    /**
+     * Creates a new composite title with a default border arrangement.
+     */
+    public CompositeTitle() {
+<span class="fc" id="L88">        this(new BlockContainer(new BorderArrangement()));</span>
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * Creates a new title using the specified container.
+     *
+     * @param container  the container (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+<span class="fc" id="L96">    public CompositeTitle(BlockContainer container) {</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">        if (container == null) {</span>
+<span class="nc" id="L98">            throw new IllegalArgumentException(&quot;Null 'container' argument.&quot;);</span>
+        }
+<span class="fc" id="L100">        this.container = container;</span>
+<span class="fc" id="L101">        this.backgroundPaint = null;</span>
+<span class="fc" id="L102">    }</span>
+
+    /**
+     * Returns the background paint.
+     *
+     * @return The paint (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @since 1.0.11
+     */
+    public Paint getBackgroundPaint() {
+<span class="fc" id="L112">        return this.backgroundPaint;</span>
+    }
+
+    /**
+     * Sets the background paint and sends a {@link TitleChangeEvent} to all
+     * registered listeners.  If you set this attribute to &lt;code&gt;null&lt;/code&gt;,
+     * no background is painted (which makes the title background transparent).
+     *
+     * @param paint  the background paint (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @since 1.0.11
+     */
+    public void setBackgroundPaint(Paint paint) {
+<span class="fc" id="L125">        this.backgroundPaint = paint;</span>
+<span class="fc" id="L126">        notifyListeners(new TitleChangeEvent(this));</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Returns the container holding the titles.
+     *
+     * @return The title container (never &lt;code&gt;null&lt;/code&gt;).
+     */
+    public BlockContainer getContainer() {
+<span class="fc" id="L135">        return this.container;</span>
+    }
+
+    /**
+     * Sets the title container.
+     *
+     * @param container  the container (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public void setTitleContainer(BlockContainer container) {
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (container == null) {</span>
+<span class="nc" id="L145">            throw new IllegalArgumentException(&quot;Null 'container' argument.&quot;);</span>
+        }
+<span class="nc" id="L147">        this.container = container;</span>
+<span class="nc" id="L148">    }</span>
+
+    /**
+     * Arranges the contents of the block, within the given constraints, and
+     * returns the block size.
+     *
+     * @param g2  the graphics device.
+     * @param constraint  the constraint (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @return The block size (in Java2D units, never &lt;code&gt;null&lt;/code&gt;).
+     */
+    public Size2D arrange(Graphics2D g2, RectangleConstraint constraint) {
+<span class="nc" id="L160">        RectangleConstraint contentConstraint = toContentConstraint(constraint);</span>
+<span class="nc" id="L161">        Size2D contentSize = this.container.arrange(g2, contentConstraint);</span>
+<span class="nc" id="L162">        return new Size2D(calculateTotalWidth(contentSize.getWidth()),</span>
+<span class="nc" id="L163">                calculateTotalHeight(contentSize.getHeight()));</span>
+    }
+
+    /**
+     * Draws the title on a Java 2D graphics device (such as the screen or a
+     * printer).
+     *
+     * @param g2  the graphics device.
+     * @param area  the area allocated for the title.
+     */
+    public void draw(Graphics2D g2, Rectangle2D area) {
+<span class="nc" id="L174">        draw(g2, area, null);</span>
+<span class="nc" id="L175">    }</span>
+
+    /**
+     * Draws the block within the specified area.
+     *
+     * @param g2  the graphics device.
+     * @param area  the area.
+     * @param params  ignored (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return Always &lt;code&gt;null&lt;/code&gt;.
+     */
+    public Object draw(Graphics2D g2, Rectangle2D area, Object params) {
+<span class="nc" id="L187">        area = trimMargin(area);</span>
+<span class="nc" id="L188">        drawBorder(g2, area);</span>
+<span class="nc" id="L189">        area = trimBorder(area);</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">        if (this.backgroundPaint != null) {</span>
+<span class="nc" id="L191">            g2.setPaint(this.backgroundPaint);</span>
+<span class="nc" id="L192">            g2.fill(area);</span>
+        }
+<span class="nc" id="L194">        area = trimPadding(area);</span>
+<span class="nc" id="L195">        return this.container.draw(g2, area, params);</span>
+    }
+
+    /**
+     * Tests this title for equality with an arbitrary object.
+     *
+     * @param obj  the object (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">        if (obj == this) {</span>
+<span class="nc" id="L207">            return true;</span>
+        }
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">        if (!(obj instanceof CompositeTitle)) {</span>
+<span class="nc" id="L210">            return false;</span>
+        }
+<span class="fc" id="L212">        CompositeTitle that = (CompositeTitle) obj;</span>
+<span class="fc bfc" id="L213" title="All 2 branches covered.">        if (!this.container.equals(that.container)) {</span>
+<span class="fc" id="L214">            return false;</span>
+        }
+<span class="fc bfc" id="L216" title="All 2 branches covered.">        if (!PaintUtilities.equal(this.backgroundPaint, that.backgroundPaint)) {</span>
+<span class="fc" id="L217">            return false;</span>
+        }
+<span class="fc" id="L219">        return super.equals(obj);</span>
+    }
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the output stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     */
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+<span class="fc" id="L230">        stream.defaultWriteObject();</span>
+<span class="fc" id="L231">        SerialUtilities.writePaint(this.backgroundPaint, stream);</span>
+<span class="fc" id="L232">    }</span>
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the input stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     * @throws ClassNotFoundException  if there is a classpath problem.
+     */
+    private void readObject(ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+<span class="fc" id="L244">        stream.defaultReadObject();</span>
+<span class="fc" id="L245">        this.backgroundPaint = SerialUtilities.readPaint(stream);</span>
+<span class="fc" id="L246">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

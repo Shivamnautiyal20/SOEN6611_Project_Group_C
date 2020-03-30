@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TimeSeriesCollectionTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.time.junit</a> &gt; <span class="el_source">TimeSeriesCollectionTests.java</span></div><h1>TimeSeriesCollectionTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------------------
+ * TimeSeriesCollectionTests.java
+ * ------------------------------
+ * (C) Copyright 2003-2009, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 01-May-2003 : Version 1 (DG);
+ * 04-Dec-2003 : Added a test for the getSurroundingItems() method (DG);
+ * 08-May-2007 : Added testIndexOf() method (DG);
+ * 18-May-2009 : Added testFindDomainBounds() (DG);
+ *
+ */
+
+package org.jfree.data.time.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import java.util.List;
+import java.util.TimeZone;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.Range;
+import org.jfree.data.general.DatasetUtilities;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.RegularTimePeriod;
+import org.jfree.data.time.TimePeriodAnchor;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.time.Year;
+
+/**
+ * A collection of test cases for the {@link TimeSeriesCollection} class.
+ */
+public class TimeSeriesCollectionTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        return new TestSuite(TimeSeriesCollectionTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public TimeSeriesCollectionTests(String name) {
+<span class="fc" id="L88">        super(name);</span>
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * Some tests for the equals() method.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L96">        TimeSeriesCollection c1 = new TimeSeriesCollection();</span>
+<span class="fc" id="L97">        TimeSeriesCollection c2 = new TimeSeriesCollection();</span>
+
+<span class="fc" id="L99">        TimeSeries s1 = new TimeSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L100">        TimeSeries s2 = new TimeSeries(&quot;Series 2&quot;);</span>
+
+        // newly created collections should be equal
+<span class="fc" id="L103">        boolean b1 = c1.equals(c2);</span>
+<span class="fc" id="L104">        assertTrue(&quot;b1&quot;, b1);</span>
+
+        // add series to collection 1, should be not equal
+<span class="fc" id="L107">        c1.addSeries(s1);</span>
+<span class="fc" id="L108">        c1.addSeries(s2);</span>
+<span class="fc" id="L109">        boolean b2 = c1.equals(c2);</span>
+<span class="fc" id="L110">        assertFalse(&quot;b2&quot;, b2);</span>
+
+        // now add the same series to collection 2 to make them equal again...
+<span class="fc" id="L113">        c2.addSeries(s1);</span>
+<span class="fc" id="L114">        c2.addSeries(s2);</span>
+<span class="fc" id="L115">        boolean b3 = c1.equals(c2);</span>
+<span class="fc" id="L116">        assertTrue(&quot;b3&quot;, b3);</span>
+
+        // now remove series 2 from collection 2
+<span class="fc" id="L119">        c2.removeSeries(s2);</span>
+<span class="fc" id="L120">        boolean b4 = c1.equals(c2);</span>
+<span class="fc" id="L121">        assertFalse(&quot;b4&quot;, b4);</span>
+
+        // now remove series 2 from collection 1 to make them equal again
+<span class="fc" id="L124">        c1.removeSeries(s2);</span>
+<span class="fc" id="L125">        boolean b5 = c1.equals(c2);</span>
+<span class="fc" id="L126">        assertTrue(&quot;b5&quot;, b5);</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Tests the remove series method.
+     */
+    public void testRemoveSeries() {
+
+<span class="fc" id="L134">        TimeSeriesCollection c1 = new TimeSeriesCollection();</span>
+
+<span class="fc" id="L136">        TimeSeries s1 = new TimeSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L137">        TimeSeries s2 = new TimeSeries(&quot;Series 2&quot;);</span>
+<span class="fc" id="L138">        TimeSeries s3 = new TimeSeries(&quot;Series 3&quot;);</span>
+<span class="fc" id="L139">        TimeSeries s4 = new TimeSeries(&quot;Series 4&quot;);</span>
+
+<span class="fc" id="L141">        c1.addSeries(s1);</span>
+<span class="fc" id="L142">        c1.addSeries(s2);</span>
+<span class="fc" id="L143">        c1.addSeries(s3);</span>
+<span class="fc" id="L144">        c1.addSeries(s4);</span>
+
+<span class="fc" id="L146">        c1.removeSeries(s3);</span>
+
+<span class="fc" id="L148">        TimeSeries s = c1.getSeries(2);</span>
+<span class="fc" id="L149">        boolean b1 = s.equals(s4);</span>
+<span class="fc" id="L150">        assertTrue(b1);</span>
+
+<span class="fc" id="L152">    }</span>
+
+    /**
+     * Some checks for the {@link TimeSeriesCollection#removeSeries(int)}
+     * method.
+     */
+    public void testRemoveSeries_int() {
+<span class="fc" id="L159">        TimeSeriesCollection c1 = new TimeSeriesCollection();</span>
+<span class="fc" id="L160">        TimeSeries s1 = new TimeSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L161">        TimeSeries s2 = new TimeSeries(&quot;Series 2&quot;);</span>
+<span class="fc" id="L162">        TimeSeries s3 = new TimeSeries(&quot;Series 3&quot;);</span>
+<span class="fc" id="L163">        TimeSeries s4 = new TimeSeries(&quot;Series 4&quot;);</span>
+<span class="fc" id="L164">        c1.addSeries(s1);</span>
+<span class="fc" id="L165">        c1.addSeries(s2);</span>
+<span class="fc" id="L166">        c1.addSeries(s3);</span>
+<span class="fc" id="L167">        c1.addSeries(s4);</span>
+<span class="fc" id="L168">        c1.removeSeries(2);</span>
+<span class="fc" id="L169">        assertTrue(c1.getSeries(2).equals(s4));</span>
+<span class="fc" id="L170">        c1.removeSeries(0);</span>
+<span class="fc" id="L171">        assertTrue(c1.getSeries(0).equals(s2));</span>
+<span class="fc" id="L172">        assertEquals(2, c1.getSeriesCount());</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Test the getSurroundingItems() method to ensure it is returning the
+     * values we expect.
+     */
+    public void testGetSurroundingItems() {
+
+<span class="fc" id="L181">        TimeSeries series = new TimeSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L182">        TimeSeriesCollection collection = new TimeSeriesCollection(series);</span>
+<span class="fc" id="L183">        collection.setXPosition(TimePeriodAnchor.MIDDLE);</span>
+
+        // for a series with no data, we expect {-1, -1}...
+<span class="fc" id="L186">        int[] result = collection.getSurroundingItems(0, 1000L);</span>
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">        assertTrue(result[0] == -1);</span>
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">        assertTrue(result[1] == -1);</span>
+
+        // now test with a single value in the series...
+<span class="fc" id="L191">        Day today = new Day();</span>
+<span class="fc" id="L192">        long start1 = today.getFirstMillisecond();</span>
+<span class="fc" id="L193">        long middle1 = today.getMiddleMillisecond();</span>
+<span class="fc" id="L194">        long end1 = today.getLastMillisecond();</span>
+
+<span class="fc" id="L196">        series.add(today, 99.9);</span>
+<span class="fc" id="L197">        result = collection.getSurroundingItems(0, start1);</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">        assertTrue(result[0] == -1);</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">        assertTrue(result[1] == 0);</span>
+
+<span class="fc" id="L201">        result = collection.getSurroundingItems(0, middle1);</span>
+<span class="pc bpc" id="L202" title="1 of 2 branches missed.">        assertTrue(result[0] == 0);</span>
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">        assertTrue(result[1] == 0);</span>
+
+<span class="fc" id="L205">        result = collection.getSurroundingItems(0, end1);</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">        assertTrue(result[0] == 0);</span>
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">        assertTrue(result[1] == -1);</span>
+
+        // now add a second value to the series...
+<span class="fc" id="L210">        Day tomorrow = (Day) today.next();</span>
+<span class="fc" id="L211">        long start2 = tomorrow.getFirstMillisecond();</span>
+<span class="fc" id="L212">        long middle2 = tomorrow.getMiddleMillisecond();</span>
+<span class="fc" id="L213">        long end2 = tomorrow.getLastMillisecond();</span>
+
+<span class="fc" id="L215">        series.add(tomorrow, 199.9);</span>
+<span class="fc" id="L216">        result = collection.getSurroundingItems(0, start2);</span>
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">        assertTrue(result[0] == 0);</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">        assertTrue(result[1] == 1);</span>
+
+<span class="fc" id="L220">        result = collection.getSurroundingItems(0, middle2);</span>
+<span class="pc bpc" id="L221" title="1 of 2 branches missed.">        assertTrue(result[0] == 1);</span>
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">        assertTrue(result[1] == 1);</span>
+
+<span class="fc" id="L224">        result = collection.getSurroundingItems(0, end2);</span>
+<span class="pc bpc" id="L225" title="1 of 2 branches missed.">        assertTrue(result[0] == 1);</span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">        assertTrue(result[1] == -1);</span>
+
+        // now add a third value to the series...
+<span class="fc" id="L229">        Day yesterday = (Day) today.previous();</span>
+<span class="fc" id="L230">        long start3 = yesterday.getFirstMillisecond();</span>
+<span class="fc" id="L231">        long middle3 = yesterday.getMiddleMillisecond();</span>
+<span class="fc" id="L232">        long end3 = yesterday.getLastMillisecond();</span>
+
+<span class="fc" id="L234">        series.add(yesterday, 1.23);</span>
+<span class="fc" id="L235">        result = collection.getSurroundingItems(0, start3);</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">        assertTrue(result[0] == -1);</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">        assertTrue(result[1] == 0);</span>
+
+<span class="fc" id="L239">        result = collection.getSurroundingItems(0, middle3);</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">        assertTrue(result[0] == 0);</span>
+<span class="pc bpc" id="L241" title="1 of 2 branches missed.">        assertTrue(result[1] == 0);</span>
+
+<span class="fc" id="L243">        result = collection.getSurroundingItems(0, end3);</span>
+<span class="pc bpc" id="L244" title="1 of 2 branches missed.">        assertTrue(result[0] == 0);</span>
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">        assertTrue(result[1] == 1);</span>
+
+<span class="fc" id="L247">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L253">        TimeSeriesCollection c1 = new TimeSeriesCollection(createSeries());</span>
+<span class="fc" id="L254">        TimeSeriesCollection c2 = null;</span>
+        try {
+<span class="fc" id="L256">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L257">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L258">            out.writeObject(c1);</span>
+<span class="fc" id="L259">            out.close();</span>
+
+<span class="fc" id="L261">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L262">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L263">            c2 = (TimeSeriesCollection) in.readObject();</span>
+<span class="fc" id="L264">            in.close();</span>
+        }
+<span class="nc" id="L266">        catch (Exception e) {</span>
+<span class="nc" id="L267">            e.printStackTrace();</span>
+<span class="fc" id="L268">        }</span>
+<span class="fc" id="L269">        assertEquals(c1, c2);</span>
+<span class="fc" id="L270">    }</span>
+
+    /**
+     * Creates a time series for testing.
+     *
+     * @return A time series.
+     */
+    private TimeSeries createSeries() {
+<span class="fc" id="L278">        RegularTimePeriod t = new Day();</span>
+<span class="fc" id="L279">        TimeSeries series = new TimeSeries(&quot;Test&quot;);</span>
+<span class="fc" id="L280">        series.add(t, 1.0);</span>
+<span class="fc" id="L281">        t = t.next();</span>
+<span class="fc" id="L282">        series.add(t, 2.0);</span>
+<span class="fc" id="L283">        t = t.next();</span>
+<span class="fc" id="L284">        series.add(t, null);</span>
+<span class="fc" id="L285">        t = t.next();</span>
+<span class="fc" id="L286">        series.add(t, 4.0);</span>
+<span class="fc" id="L287">        return series;</span>
+    }
+
+    /**
+     * A test for bug report 1170825.
+     */
+    public void test1170825() {
+<span class="fc" id="L294">        TimeSeries s1 = new TimeSeries(&quot;Series1&quot;);</span>
+<span class="fc" id="L295">        TimeSeriesCollection dataset = new TimeSeriesCollection();</span>
+<span class="fc" id="L296">        dataset.addSeries(s1);</span>
+        try {
+<span class="nc" id="L298">            /* TimeSeries s = */ dataset.getSeries(1);</span>
+        }
+<span class="fc" id="L300">        catch (IllegalArgumentException e) {</span>
+            // correct outcome
+        }
+<span class="nc" id="L303">        catch (IndexOutOfBoundsException e) {</span>
+<span class="nc" id="L304">            assertTrue(false);  // wrong outcome</span>
+<span class="pc" id="L305">        }</span>
+<span class="fc" id="L306">    }</span>
+
+    /**
+     * Some tests for the indexOf() method.
+     */
+    public void testIndexOf() {
+<span class="fc" id="L312">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L313">        TimeSeries s2 = new TimeSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L314">        TimeSeriesCollection dataset = new TimeSeriesCollection();</span>
+<span class="fc" id="L315">        assertEquals(-1, dataset.indexOf(s1));</span>
+<span class="fc" id="L316">        assertEquals(-1, dataset.indexOf(s2));</span>
+
+<span class="fc" id="L318">        dataset.addSeries(s1);</span>
+<span class="fc" id="L319">        assertEquals(0, dataset.indexOf(s1));</span>
+<span class="fc" id="L320">        assertEquals(-1, dataset.indexOf(s2));</span>
+
+<span class="fc" id="L322">        dataset.addSeries(s2);</span>
+<span class="fc" id="L323">        assertEquals(0, dataset.indexOf(s1));</span>
+<span class="fc" id="L324">        assertEquals(1, dataset.indexOf(s2));</span>
+
+<span class="fc" id="L326">        dataset.removeSeries(s1);</span>
+<span class="fc" id="L327">        assertEquals(-1, dataset.indexOf(s1));</span>
+<span class="fc" id="L328">        assertEquals(0, dataset.indexOf(s2));</span>
+
+<span class="fc" id="L330">        TimeSeries s2b = new TimeSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L331">        assertEquals(0, dataset.indexOf(s2b));</span>
+<span class="fc" id="L332">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * This method provides a check for the bounds calculated using the
+     * {@link DatasetUtilities#findDomainBounds(org.jfree.data.xy.XYDataset,
+     * java.util.List, boolean)} method.
+     */
+    public void testFindDomainBounds() {
+<span class="fc" id="L342">        TimeSeriesCollection dataset = new TimeSeriesCollection();</span>
+<span class="fc" id="L343">        List visibleSeriesKeys = new java.util.ArrayList();</span>
+<span class="fc" id="L344">        Range r = DatasetUtilities.findDomainBounds(dataset, visibleSeriesKeys,</span>
+                true);
+<span class="fc" id="L346">        assertNull(r);</span>
+
+<span class="fc" id="L348">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L349">        dataset.addSeries(s1);</span>
+<span class="fc" id="L350">        visibleSeriesKeys.add(&quot;S1&quot;);</span>
+<span class="fc" id="L351">        r = DatasetUtilities.findDomainBounds(dataset, visibleSeriesKeys, true);</span>
+<span class="fc" id="L352">        assertNull(r);</span>
+
+        // store the current time zone
+<span class="fc" id="L355">        TimeZone saved = TimeZone.getDefault();</span>
+<span class="fc" id="L356">        TimeZone.setDefault(TimeZone.getTimeZone(&quot;Europe/Paris&quot;));</span>
+
+<span class="fc" id="L358">        s1.add(new Year(2008), 8.0);</span>
+<span class="fc" id="L359">        r = DatasetUtilities.findDomainBounds(dataset, visibleSeriesKeys, true);</span>
+<span class="fc" id="L360">        assertEquals(1199142000000.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L361">        assertEquals(1230764399999.0, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L363">        TimeSeries s2 = new TimeSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L364">        dataset.addSeries(s2);</span>
+<span class="fc" id="L365">        s2.add(new Year(2009), 9.0);</span>
+<span class="fc" id="L366">        s2.add(new Year(2010), 10.0);</span>
+<span class="fc" id="L367">        r = DatasetUtilities.findDomainBounds(dataset, visibleSeriesKeys, true);</span>
+<span class="fc" id="L368">        assertEquals(1199142000000.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L369">        assertEquals(1230764399999.0, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L371">        visibleSeriesKeys.add(&quot;S2&quot;);</span>
+<span class="fc" id="L372">        r = DatasetUtilities.findDomainBounds(dataset, visibleSeriesKeys, true);</span>
+<span class="fc" id="L373">        assertEquals(1199142000000.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L374">        assertEquals(1293836399999.0, r.getUpperBound(), EPSILON);</span>
+
+        // restore the default time zone
+<span class="fc" id="L377">        TimeZone.setDefault(saved);</span>
+<span class="fc" id="L378">    }</span>
+
+    /**
+     * Basic checks for cloning.
+     */
+    public void testCloning() {
+<span class="fc" id="L384">        TimeSeries s1 = new TimeSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L385">        s1.add(new Year(2009), 1.1);</span>
+<span class="fc" id="L386">        TimeSeriesCollection c1 = new TimeSeriesCollection();</span>
+<span class="fc" id="L387">        c1.addSeries(s1);</span>
+<span class="fc" id="L388">        TimeSeriesCollection c2 = null;</span>
+        try {
+<span class="fc" id="L390">            c2 = (TimeSeriesCollection) c1.clone();</span>
+        }
+<span class="nc" id="L392">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L393">            e.printStackTrace();</span>
+<span class="fc" id="L394">        }</span>
+<span class="pc bpc" id="L395" title="1 of 2 branches missed.">        assertTrue(c1 != c2);</span>
+<span class="pc bpc" id="L396" title="1 of 2 branches missed.">        assertTrue(c1.getClass() == c2.getClass());</span>
+<span class="fc" id="L397">        assertTrue(c1.equals(c2));</span>
+
+        // check independence
+<span class="fc" id="L400">        s1.setDescription(&quot;XYZ&quot;);</span>
+<span class="fc" id="L401">        assertFalse(c1.equals(c2));</span>
+<span class="fc" id="L402">        c2.getSeries(0).setDescription(&quot;XYZ&quot;);</span>
+<span class="fc" id="L403">        assertTrue(c1.equals(c2));</span>
+<span class="fc" id="L404">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

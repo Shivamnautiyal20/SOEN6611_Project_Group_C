@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChartPanelTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.junit</a> &gt; <span class="el_source">ChartPanelTests.java</span></div><h1>ChartPanelTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------
+ * ChartPanelTests.java
+ * --------------------
+ * (C) Copyright 2004-2009, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 13-Jul-2004 : Version 1 (DG);
+ * 12-Jan-2009 : Added test2502355() (DG);
+ * 08-Jun-2009 : Added testSetMouseWheelEnabled() (DG);
+ */
+
+package org.jfree.chart.junit;
+
+import java.awt.geom.Rectangle2D;
+import java.util.EventListener;
+import java.util.List;
+
+import javax.swing.event.CaretListener;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.event.ChartChangeEvent;
+import org.jfree.chart.event.ChartChangeListener;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.xy.DefaultXYDataset;
+
+/**
+ * Tests for the {@link ChartPanel} class.
+ */
+public class ChartPanelTests extends TestCase
+        implements ChartChangeListener, ChartMouseListener {
+
+<span class="fc" id="L72">    private List chartChangeEvents = new java.util.ArrayList();</span>
+
+    /**
+     * Receives a chart change event and stores it in a list for later
+     * inspection.
+     *
+     * @param event  the event.
+     */
+    public void chartChanged(ChartChangeEvent event) {
+<span class="fc" id="L81">        this.chartChangeEvents.add(event);</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        return new TestSuite(ChartPanelTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public ChartPanelTests(String name) {
+<span class="fc" id="L99">        super(name);</span>
+<span class="fc" id="L100">    }</span>
+
+    /**
+     * Test that the constructor will accept a null chart.
+     */
+    public void testConstructor1() {
+<span class="fc" id="L106">        ChartPanel panel = new ChartPanel(null);</span>
+<span class="fc" id="L107">        assertEquals(null, panel.getChart());</span>
+<span class="fc" id="L108">    }</span>
+
+    /**
+     * Test that it is possible to set the panel's chart to null.
+     */
+    public void testSetChart() {
+<span class="fc" id="L114">        JFreeChart chart = new JFreeChart(new XYPlot());</span>
+<span class="fc" id="L115">        ChartPanel panel = new ChartPanel(chart);</span>
+<span class="fc" id="L116">        panel.setChart(null);</span>
+<span class="fc" id="L117">        assertEquals(null, panel.getChart());</span>
+<span class="fc" id="L118">    }</span>
+
+    /**
+     * Check the behaviour of the getListeners() method.
+     */
+    public void testGetListeners() {
+<span class="fc" id="L124">        ChartPanel p = new ChartPanel(null);</span>
+<span class="fc" id="L125">        p.addChartMouseListener(this);</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">        EventListener[] listeners = p.getListeners(ChartMouseListener.class);</span>
+<span class="fc" id="L127">        assertEquals(1, listeners.length);</span>
+<span class="fc" id="L128">        assertEquals(this, listeners[0]);</span>
+        // try a listener type that isn't registered
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        listeners = p.getListeners(CaretListener.class);</span>
+<span class="fc" id="L131">        assertEquals(0, listeners.length);</span>
+<span class="fc" id="L132">        p.removeChartMouseListener(this);</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">        listeners = p.getListeners(ChartMouseListener.class);</span>
+<span class="fc" id="L134">        assertEquals(0, listeners.length);</span>
+
+        // try a null argument
+<span class="fc" id="L137">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L139">            listeners = p.getListeners((Class) null);</span>
+        }
+<span class="fc" id="L141">        catch (NullPointerException e) {</span>
+<span class="fc" id="L142">            pass = true;</span>
+<span class="nc" id="L143">        }</span>
+<span class="fc" id="L144">        assertTrue(pass);</span>
+
+        // try a class that isn't a listener
+<span class="fc" id="L147">        pass = false;</span>
+        try {
+<span class="pc bfc" id="L149" title="All 2 branches covered.">            listeners = p.getListeners(Integer.class);</span>
+        }
+<span class="fc" id="L151">        catch (ClassCastException e) {</span>
+<span class="fc" id="L152">            pass = true;</span>
+<span class="nc" id="L153">        }</span>
+<span class="fc" id="L154">        assertTrue(pass);</span>
+<span class="fc" id="L155">    }</span>
+
+    /**
+     * Ignores a mouse click event.
+     *
+     * @param event  the event.
+     */
+    public void chartMouseClicked(ChartMouseEvent event) {
+        // ignore
+<span class="nc" id="L164">    }</span>
+
+    /**
+     * Ignores a mouse move event.
+     *
+     * @param event  the event.
+     */
+    public void chartMouseMoved(ChartMouseEvent event) {
+        // ignore
+<span class="nc" id="L173">    }</span>
+
+    /**
+     * Checks that a call to the zoom() method generates just one
+     * ChartChangeEvent.
+     */
+    public void test2502355_zoom() {
+<span class="fc" id="L180">        DefaultXYDataset dataset = new DefaultXYDataset();</span>
+<span class="fc" id="L181">        JFreeChart chart = ChartFactory.createXYLineChart(&quot;TestChart&quot;, &quot;X&quot;,</span>
+                &quot;Y&quot;, dataset, PlotOrientation.VERTICAL, false, false, false);
+<span class="fc" id="L183">        ChartPanel panel = new ChartPanel(chart);</span>
+<span class="fc" id="L184">        chart.addChangeListener(this);</span>
+<span class="fc" id="L185">        this.chartChangeEvents.clear();</span>
+<span class="fc" id="L186">        panel.zoom(new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L187">        assertEquals(1, this.chartChangeEvents.size());</span>
+<span class="fc" id="L188">    }</span>
+
+    /**
+     * Checks that a call to the zoomInBoth() method generates just one
+     * ChartChangeEvent.
+     */
+    public void test2502355_zoomInBoth() {
+<span class="fc" id="L195">        DefaultXYDataset dataset = new DefaultXYDataset();</span>
+<span class="fc" id="L196">        JFreeChart chart = ChartFactory.createXYLineChart(&quot;TestChart&quot;, &quot;X&quot;,</span>
+                &quot;Y&quot;, dataset, PlotOrientation.VERTICAL, false, false, false);
+<span class="fc" id="L198">        ChartPanel panel = new ChartPanel(chart);</span>
+<span class="fc" id="L199">        chart.addChangeListener(this);</span>
+<span class="fc" id="L200">        this.chartChangeEvents.clear();</span>
+<span class="fc" id="L201">        panel.zoomInBoth(1.0, 2.0);</span>
+<span class="fc" id="L202">        assertEquals(1, this.chartChangeEvents.size());</span>
+<span class="fc" id="L203">    }</span>
+
+    /**
+     * Checks that a call to the zoomOutBoth() method generates just one
+     * ChartChangeEvent.
+     */
+    public void test2502355_zoomOutBoth() {
+<span class="fc" id="L210">        DefaultXYDataset dataset = new DefaultXYDataset();</span>
+<span class="fc" id="L211">        JFreeChart chart = ChartFactory.createXYLineChart(&quot;TestChart&quot;, &quot;X&quot;,</span>
+                &quot;Y&quot;, dataset, PlotOrientation.VERTICAL, false, false, false);
+<span class="fc" id="L213">        ChartPanel panel = new ChartPanel(chart);</span>
+<span class="fc" id="L214">        chart.addChangeListener(this);</span>
+<span class="fc" id="L215">        this.chartChangeEvents.clear();</span>
+<span class="fc" id="L216">        panel.zoomOutBoth(1.0, 2.0);</span>
+<span class="fc" id="L217">        assertEquals(1, this.chartChangeEvents.size());</span>
+<span class="fc" id="L218">    }</span>
+
+    /**
+     * Checks that a call to the restoreAutoBounds() method generates just one
+     * ChartChangeEvent.
+     */
+    public void test2502355_restoreAutoBounds() {
+<span class="fc" id="L225">        DefaultXYDataset dataset = new DefaultXYDataset();</span>
+<span class="fc" id="L226">        JFreeChart chart = ChartFactory.createXYLineChart(&quot;TestChart&quot;, &quot;X&quot;,</span>
+                &quot;Y&quot;, dataset, PlotOrientation.VERTICAL, false, false, false);
+<span class="fc" id="L228">        ChartPanel panel = new ChartPanel(chart);</span>
+<span class="fc" id="L229">        chart.addChangeListener(this);</span>
+<span class="fc" id="L230">        this.chartChangeEvents.clear();</span>
+<span class="fc" id="L231">        panel.restoreAutoBounds();</span>
+<span class="fc" id="L232">        assertEquals(1, this.chartChangeEvents.size());</span>
+<span class="fc" id="L233">    }</span>
+
+    /**
+     * Checks that a call to the zoomInDomain() method, for a plot with more
+     * than one domain axis, generates just one ChartChangeEvent.
+     */
+    public void test2502355_zoomInDomain() {
+<span class="fc" id="L240">        DefaultXYDataset dataset = new DefaultXYDataset();</span>
+<span class="fc" id="L241">        JFreeChart chart = ChartFactory.createXYLineChart(&quot;TestChart&quot;, &quot;X&quot;,</span>
+                &quot;Y&quot;, dataset, PlotOrientation.VERTICAL, false, false, false);
+<span class="fc" id="L243">        XYPlot plot = (XYPlot) chart.getPlot();</span>
+<span class="fc" id="L244">        plot.setDomainAxis(1, new NumberAxis(&quot;X2&quot;));</span>
+<span class="fc" id="L245">        ChartPanel panel = new ChartPanel(chart);</span>
+<span class="fc" id="L246">        chart.addChangeListener(this);</span>
+<span class="fc" id="L247">        this.chartChangeEvents.clear();</span>
+<span class="fc" id="L248">        panel.zoomInDomain(1.0, 2.0);</span>
+<span class="fc" id="L249">        assertEquals(1, this.chartChangeEvents.size());</span>
+<span class="fc" id="L250">    }</span>
+
+    /**
+     * Checks that a call to the zoomInRange() method, for a plot with more
+     * than one range axis, generates just one ChartChangeEvent.
+     */
+    public void test2502355_zoomInRange() {
+<span class="fc" id="L257">        DefaultXYDataset dataset = new DefaultXYDataset();</span>
+<span class="fc" id="L258">        JFreeChart chart = ChartFactory.createXYLineChart(&quot;TestChart&quot;, &quot;X&quot;,</span>
+                &quot;Y&quot;, dataset, PlotOrientation.VERTICAL, false, false, false);
+<span class="fc" id="L260">        XYPlot plot = (XYPlot) chart.getPlot();</span>
+<span class="fc" id="L261">        plot.setRangeAxis(1, new NumberAxis(&quot;X2&quot;));</span>
+<span class="fc" id="L262">        ChartPanel panel = new ChartPanel(chart);</span>
+<span class="fc" id="L263">        chart.addChangeListener(this);</span>
+<span class="fc" id="L264">        this.chartChangeEvents.clear();</span>
+<span class="fc" id="L265">        panel.zoomInRange(1.0, 2.0);</span>
+<span class="fc" id="L266">        assertEquals(1, this.chartChangeEvents.size());</span>
+<span class="fc" id="L267">    }</span>
+
+    /**
+     * Checks that a call to the zoomOutDomain() method, for a plot with more
+     * than one domain axis, generates just one ChartChangeEvent.
+     */
+    public void test2502355_zoomOutDomain() {
+<span class="fc" id="L274">        DefaultXYDataset dataset = new DefaultXYDataset();</span>
+<span class="fc" id="L275">        JFreeChart chart = ChartFactory.createXYLineChart(&quot;TestChart&quot;, &quot;X&quot;,</span>
+                &quot;Y&quot;, dataset, PlotOrientation.VERTICAL, false, false, false);
+<span class="fc" id="L277">        XYPlot plot = (XYPlot) chart.getPlot();</span>
+<span class="fc" id="L278">        plot.setDomainAxis(1, new NumberAxis(&quot;X2&quot;));</span>
+<span class="fc" id="L279">        ChartPanel panel = new ChartPanel(chart);</span>
+<span class="fc" id="L280">        chart.addChangeListener(this);</span>
+<span class="fc" id="L281">        this.chartChangeEvents.clear();</span>
+<span class="fc" id="L282">        panel.zoomOutDomain(1.0, 2.0);</span>
+<span class="fc" id="L283">        assertEquals(1, this.chartChangeEvents.size());</span>
+<span class="fc" id="L284">    }</span>
+
+    /**
+     * Checks that a call to the zoomOutRange() method, for a plot with more
+     * than one range axis, generates just one ChartChangeEvent.
+     */
+    public void test2502355_zoomOutRange() {
+<span class="fc" id="L291">        DefaultXYDataset dataset = new DefaultXYDataset();</span>
+<span class="fc" id="L292">        JFreeChart chart = ChartFactory.createXYLineChart(&quot;TestChart&quot;, &quot;X&quot;,</span>
+                &quot;Y&quot;, dataset, PlotOrientation.VERTICAL, false, false, false);
+<span class="fc" id="L294">        XYPlot plot = (XYPlot) chart.getPlot();</span>
+<span class="fc" id="L295">        plot.setRangeAxis(1, new NumberAxis(&quot;X2&quot;));</span>
+<span class="fc" id="L296">        ChartPanel panel = new ChartPanel(chart);</span>
+<span class="fc" id="L297">        chart.addChangeListener(this);</span>
+<span class="fc" id="L298">        this.chartChangeEvents.clear();</span>
+<span class="fc" id="L299">        panel.zoomOutRange(1.0, 2.0);</span>
+<span class="fc" id="L300">        assertEquals(1, this.chartChangeEvents.size());</span>
+<span class="fc" id="L301">    }</span>
+
+    /**
+     * Checks that a call to the restoreAutoDomainBounds() method, for a plot
+     * with more than one range axis, generates just one ChartChangeEvent.
+     */
+    public void test2502355_restoreAutoDomainBounds() {
+<span class="fc" id="L308">        DefaultXYDataset dataset = new DefaultXYDataset();</span>
+<span class="fc" id="L309">        JFreeChart chart = ChartFactory.createXYLineChart(&quot;TestChart&quot;, &quot;X&quot;,</span>
+                &quot;Y&quot;, dataset, PlotOrientation.VERTICAL, false, false, false);
+<span class="fc" id="L311">        XYPlot plot = (XYPlot) chart.getPlot();</span>
+<span class="fc" id="L312">        plot.setDomainAxis(1, new NumberAxis(&quot;X2&quot;));</span>
+<span class="fc" id="L313">        ChartPanel panel = new ChartPanel(chart);</span>
+<span class="fc" id="L314">        chart.addChangeListener(this);</span>
+<span class="fc" id="L315">        this.chartChangeEvents.clear();</span>
+<span class="fc" id="L316">        panel.restoreAutoDomainBounds();</span>
+<span class="fc" id="L317">        assertEquals(1, this.chartChangeEvents.size());</span>
+<span class="fc" id="L318">    }</span>
+
+    /**
+     * Checks that a call to the restoreAutoRangeBounds() method, for a plot
+     * with more than one range axis, generates just one ChartChangeEvent.
+     */
+    public void test2502355_restoreAutoRangeBounds() {
+<span class="fc" id="L325">        DefaultXYDataset dataset = new DefaultXYDataset();</span>
+<span class="fc" id="L326">        JFreeChart chart = ChartFactory.createXYLineChart(&quot;TestChart&quot;, &quot;X&quot;,</span>
+                &quot;Y&quot;, dataset, PlotOrientation.VERTICAL, false, false, false);
+<span class="fc" id="L328">        XYPlot plot = (XYPlot) chart.getPlot();</span>
+<span class="fc" id="L329">        plot.setRangeAxis(1, new NumberAxis(&quot;X2&quot;));</span>
+<span class="fc" id="L330">        ChartPanel panel = new ChartPanel(chart);</span>
+<span class="fc" id="L331">        chart.addChangeListener(this);</span>
+<span class="fc" id="L332">        this.chartChangeEvents.clear();</span>
+<span class="fc" id="L333">        panel.restoreAutoRangeBounds();</span>
+<span class="fc" id="L334">        assertEquals(1, this.chartChangeEvents.size());</span>
+<span class="fc" id="L335">    }</span>
+
+    /**
+     * In version 1.0.13 there is a bug where enabling the mouse wheel handler
+     * twice would in fact disable it.
+     */
+    public void testSetMouseWheelEnabled() {
+<span class="fc" id="L342">        DefaultXYDataset dataset = new DefaultXYDataset();</span>
+<span class="fc" id="L343">        JFreeChart chart = ChartFactory.createXYLineChart(&quot;TestChart&quot;, &quot;X&quot;,</span>
+                &quot;Y&quot;, dataset, PlotOrientation.VERTICAL, false, false, false);
+<span class="fc" id="L345">        ChartPanel panel = new ChartPanel(chart);</span>
+<span class="fc" id="L346">        panel.setMouseWheelEnabled(true);</span>
+<span class="fc" id="L347">        assertTrue(panel.isMouseWheelEnabled());</span>
+<span class="fc" id="L348">        panel.setMouseWheelEnabled(true);</span>
+<span class="fc" id="L349">        assertTrue(panel.isMouseWheelEnabled());</span>
+<span class="fc" id="L350">        panel.setMouseWheelEnabled(false);</span>
+<span class="fc" id="L351">        assertFalse(panel.isMouseWheelEnabled());</span>
+<span class="fc" id="L352">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

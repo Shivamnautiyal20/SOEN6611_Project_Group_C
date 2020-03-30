@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataUtilitiesTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.junit</a> &gt; <span class="el_source">DataUtilitiesTests.java</span></div><h1>DataUtilitiesTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------------
+ * DataUtilitiesTests.java
+ * -----------------------
+ * (C) Copyright 2005-2009, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 03-Mar-2005 : Version 1 (DG);
+ * 28-Jan-2009 : Added tests for equal(double[][], double[][]) method (DG);
+ * 28-Jan-2009 : Added tests for clone(double[][]) (DG);
+ * 04-Feb-2009 : Added tests for new calculateColumnTotal/RowTotal methods (DG);
+ *
+ */
+
+package org.jfree.data.junit;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+
+import junit.framework.TestSuite;
+import org.jfree.data.DataUtilities;
+import org.jfree.data.DefaultKeyedValues2D;
+
+/**
+ * Some tests for the {@link DataUtilities} class.
+ */
+<span class="fc" id="L56">public class DataUtilitiesTests extends TestCase {</span>
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        return new TestSuite(DataUtilitiesTests.class);</span>
+    }
+
+    /**
+     * Tests the createNumberArray2D() method.
+     */
+    public void testCreateNumberArray2D() {
+<span class="fc" id="L71">        double[][] d = new double[2][];</span>
+<span class="fc" id="L72">        d[0] = new double[] {1.1, 2.2, 3.3, 4.4};</span>
+<span class="fc" id="L73">        d[1] = new double[] {1.1, 2.2, 3.3, 4.4, 5.5};</span>
+<span class="fc" id="L74">        Number[][] n = DataUtilities.createNumberArray2D(d);</span>
+<span class="fc" id="L75">        assertEquals(2, n.length);</span>
+<span class="fc" id="L76">        assertEquals(4, n[0].length);</span>
+<span class="fc" id="L77">        assertEquals(5, n[1].length);</span>
+<span class="fc" id="L78">    }</span>
+
+    private static final double EPSILON = 0.000000001;
+
+    /**
+     * Some checks for the calculateColumnTotal() method.
+     */
+    public void testCalculateColumnTotal() {
+<span class="fc" id="L86">        DefaultKeyedValues2D table = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L87">        table.addValue(new Double(1.0), &quot;R0&quot;, &quot;C0&quot;);</span>
+<span class="fc" id="L88">        table.addValue(new Double(2.0), &quot;R0&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L89">        table.addValue(new Double(3.0), &quot;R1&quot;, &quot;C0&quot;);</span>
+<span class="fc" id="L90">        table.addValue(new Double(4.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L91">        assertEquals(4.0, DataUtilities.calculateColumnTotal(table, 0), EPSILON);</span>
+<span class="fc" id="L92">        assertEquals(6.0, DataUtilities.calculateColumnTotal(table, 1), EPSILON);</span>
+<span class="fc" id="L93">        table.setValue(null, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L94">        assertEquals(2.0, DataUtilities.calculateColumnTotal(table, 1), EPSILON);</span>
+<span class="fc" id="L95">    }</span>
+
+    /**
+     * Some checks for the calculateColumnTotal() method.
+     */
+    public void testCalculateColumnTotal2() {
+<span class="fc" id="L101">        DefaultKeyedValues2D table = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L102">        table.addValue(new Double(1.0), &quot;R0&quot;, &quot;C0&quot;);</span>
+<span class="fc" id="L103">        table.addValue(new Double(2.0), &quot;R0&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L104">        table.addValue(new Double(3.0), &quot;R1&quot;, &quot;C0&quot;);</span>
+<span class="fc" id="L105">        table.addValue(new Double(4.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L106">        assertEquals(4.0, DataUtilities.calculateColumnTotal(table, 0,</span>
+                new int[] {0, 1}), EPSILON);
+<span class="fc" id="L108">        assertEquals(1.0, DataUtilities.calculateColumnTotal(table, 0,</span>
+                new int[] {0}), EPSILON);
+<span class="fc" id="L110">        assertEquals(3.0, DataUtilities.calculateColumnTotal(table, 0,</span>
+                new int[] {1}), EPSILON);
+<span class="fc" id="L112">        assertEquals(0.0, DataUtilities.calculateColumnTotal(table, 0,</span>
+                new int[] {}), EPSILON);
+
+<span class="fc" id="L115">        assertEquals(6.0, DataUtilities.calculateColumnTotal(table, 1,</span>
+                new int[] {0, 1}), EPSILON);
+<span class="fc" id="L117">        assertEquals(2.0, DataUtilities.calculateColumnTotal(table, 1,</span>
+                new int[] {0}), EPSILON);
+<span class="fc" id="L119">        assertEquals(4.0, DataUtilities.calculateColumnTotal(table, 1,</span>
+                new int[] {1}), EPSILON);
+
+<span class="fc" id="L122">        table.setValue(null, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L123">        assertEquals(2.0, DataUtilities.calculateColumnTotal(table, 1,</span>
+                new int[] {0, 1}), EPSILON);
+<span class="fc" id="L125">        assertEquals(0.0, DataUtilities.calculateColumnTotal(table, 1,</span>
+                new int[] {1}), EPSILON);
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Some checks for the calculateRowTotal() method.
+     */
+    public void testCalculateRowTotal() {
+<span class="fc" id="L133">        DefaultKeyedValues2D table = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L134">        table.addValue(new Double(1.0), &quot;R0&quot;, &quot;C0&quot;);</span>
+<span class="fc" id="L135">        table.addValue(new Double(2.0), &quot;R0&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L136">        table.addValue(new Double(3.0), &quot;R1&quot;, &quot;C0&quot;);</span>
+<span class="fc" id="L137">        table.addValue(new Double(4.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L138">        assertEquals(3.0, DataUtilities.calculateRowTotal(table, 0), EPSILON);</span>
+<span class="fc" id="L139">        assertEquals(7.0, DataUtilities.calculateRowTotal(table, 1), EPSILON);</span>
+<span class="fc" id="L140">        table.setValue(null, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L141">        assertEquals(3.0, DataUtilities.calculateRowTotal(table, 1), EPSILON);</span>
+<span class="fc" id="L142">    }</span>
+
+    /**
+     * Some checks for the calculateRowTotal() method.
+     */
+    public void testCalculateRowTotal2() {
+<span class="fc" id="L148">        DefaultKeyedValues2D table = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L149">        table.addValue(new Double(1.0), &quot;R0&quot;, &quot;C0&quot;);</span>
+<span class="fc" id="L150">        table.addValue(new Double(2.0), &quot;R0&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L151">        table.addValue(new Double(3.0), &quot;R1&quot;, &quot;C0&quot;);</span>
+<span class="fc" id="L152">        table.addValue(new Double(4.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L153">        assertEquals(3.0, DataUtilities.calculateRowTotal(table, 0,</span>
+                new int[] {0, 1}), EPSILON);
+<span class="fc" id="L155">        assertEquals(1.0, DataUtilities.calculateRowTotal(table, 0,</span>
+                new int[] {0}), EPSILON);
+<span class="fc" id="L157">        assertEquals(2.0, DataUtilities.calculateRowTotal(table, 0,</span>
+                new int[] {1}), EPSILON);
+<span class="fc" id="L159">        assertEquals(0.0, DataUtilities.calculateRowTotal(table, 0,</span>
+                new int[] {}), EPSILON);
+
+<span class="fc" id="L162">        assertEquals(7.0, DataUtilities.calculateRowTotal(table, 1,</span>
+                new int[] {0, 1}), EPSILON);
+<span class="fc" id="L164">        assertEquals(3.0, DataUtilities.calculateRowTotal(table, 1,</span>
+                new int[] {0}), EPSILON);
+<span class="fc" id="L166">        assertEquals(4.0, DataUtilities.calculateRowTotal(table, 1,</span>
+                new int[] {1}), EPSILON);
+<span class="fc" id="L168">        assertEquals(0.0, DataUtilities.calculateRowTotal(table, 1,</span>
+                new int[] {}), EPSILON);
+<span class="fc" id="L170">        table.setValue(null, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L171">        assertEquals(3.0, DataUtilities.calculateRowTotal(table, 1,</span>
+                new int[] {0, 1}), EPSILON);
+<span class="fc" id="L173">        assertEquals(0.0, DataUtilities.calculateRowTotal(table, 1,</span>
+                new int[] {1}), EPSILON);
+<span class="fc" id="L175">    }</span>
+
+    /**
+     * Some tests for the equal(double[][], double[][]) method.
+     */
+    public void testEqual() {
+<span class="fc" id="L181">        assertTrue(DataUtilities.equal(null, null));</span>
+        
+<span class="fc" id="L183">        double[][] a = new double[5][];</span>
+<span class="fc" id="L184">        double[][] b = new double[5][];</span>
+<span class="fc" id="L185">        assertTrue(DataUtilities.equal(a, b));</span>
+
+<span class="fc" id="L187">        a = new double[4][];</span>
+<span class="fc" id="L188">        assertFalse(DataUtilities.equal(a, b));</span>
+<span class="fc" id="L189">        b = new double[4][];</span>
+<span class="fc" id="L190">        assertTrue(DataUtilities.equal(a, b));</span>
+
+<span class="fc" id="L192">        a[0] = new double[6];</span>
+<span class="fc" id="L193">        assertFalse(DataUtilities.equal(a, b));</span>
+<span class="fc" id="L194">        b[0] = new double[6];</span>
+<span class="fc" id="L195">        assertTrue(DataUtilities.equal(a, b));</span>
+
+<span class="fc" id="L197">        a[0][0] = 1.0;</span>
+<span class="fc" id="L198">        assertFalse(DataUtilities.equal(a, b));</span>
+<span class="fc" id="L199">        b[0][0] = 1.0;</span>
+<span class="fc" id="L200">        assertTrue(DataUtilities.equal(a, b));</span>
+
+<span class="fc" id="L202">        a[0][1] = Double.NaN;</span>
+<span class="fc" id="L203">        assertFalse(DataUtilities.equal(a, b));</span>
+<span class="fc" id="L204">        b[0][1] = Double.NaN;</span>
+<span class="fc" id="L205">        assertTrue(DataUtilities.equal(a, b));</span>
+
+<span class="fc" id="L207">        a[0][2] = Double.NEGATIVE_INFINITY;</span>
+<span class="fc" id="L208">        assertFalse(DataUtilities.equal(a, b));</span>
+<span class="fc" id="L209">        b[0][2] = Double.NEGATIVE_INFINITY;</span>
+<span class="fc" id="L210">        assertTrue(DataUtilities.equal(a, b));</span>
+
+<span class="fc" id="L212">        a[0][3] = Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L213">        assertFalse(DataUtilities.equal(a, b));</span>
+<span class="fc" id="L214">        b[0][3] = Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L215">        assertTrue(DataUtilities.equal(a, b));</span>
+
+<span class="fc" id="L217">        a[0][4] = Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L218">        assertFalse(DataUtilities.equal(a, b));</span>
+<span class="fc" id="L219">        b[0][4] = Double.NEGATIVE_INFINITY;</span>
+<span class="fc" id="L220">        assertFalse(DataUtilities.equal(a, b));</span>
+<span class="fc" id="L221">        b[0][4] = Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L222">        assertTrue(DataUtilities.equal(a, b));</span>
+<span class="fc" id="L223">    }</span>
+
+    /**
+     * Some tests for the clone() method.
+     */
+    public void testClone() {
+<span class="fc" id="L229">        double[][] a = new double[1][];</span>
+<span class="fc" id="L230">        double[][] b = DataUtilities.clone(a);</span>
+<span class="fc" id="L231">        assertTrue(DataUtilities.equal(a, b));</span>
+<span class="fc" id="L232">        a[0] = new double[] { 3.0, 4.0 };</span>
+<span class="fc" id="L233">        assertFalse(DataUtilities.equal(a, b));</span>
+<span class="fc" id="L234">        b[0] = new double[] { 3.0, 4.0 };</span>
+<span class="fc" id="L235">        assertTrue(DataUtilities.equal(a, b));</span>
+
+<span class="fc" id="L237">        a = new double[2][3];</span>
+<span class="fc" id="L238">        a[0][0] = 1.23;</span>
+<span class="fc" id="L239">        a[1][1] = Double.NaN;</span>
+<span class="fc" id="L240">        b = DataUtilities.clone(a);</span>
+<span class="fc" id="L241">        assertTrue(DataUtilities.equal(a, b));</span>
+
+<span class="fc" id="L243">        a[0][0] = 99.9;</span>
+<span class="fc" id="L244">        assertFalse(DataUtilities.equal(a, b));</span>
+<span class="fc" id="L245">        b[0][0] = 99.9;</span>
+<span class="fc" id="L246">        assertTrue(DataUtilities.equal(a, b));</span>
+<span class="fc" id="L247">    }</span>
+
+    /**
+     * Runs the test suite using JUnit's text-based runner.
+     *
+     * @param args  ignored.
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L255">        junit.textui.TestRunner.run(suite());</span>
+<span class="nc" id="L256">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

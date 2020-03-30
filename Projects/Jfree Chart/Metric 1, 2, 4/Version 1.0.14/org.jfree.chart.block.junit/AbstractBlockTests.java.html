@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractBlockTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.block.junit</a> &gt; <span class="el_source">AbstractBlockTests.java</span></div><h1>AbstractBlockTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------------
+ * AbstractBlockTests.java
+ * -----------------------
+ * (C) Copyright 2007, 2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 16-Mar-2007 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.block.junit;
+
+import java.awt.Color;
+import java.awt.geom.Rectangle2D;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.block.AbstractBlock;
+import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.block.EmptyBlock;
+import org.jfree.ui.RectangleInsets;
+
+/**
+ * Tests for the {@link AbstractBlock} class.
+ */
+public class AbstractBlockTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        return new TestSuite(AbstractBlockTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public AbstractBlockTests(String name) {
+<span class="fc" id="L81">        super(name);</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Confirm that the equals() method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L88">        EmptyBlock b1 = new EmptyBlock(1.0, 2.0);</span>
+<span class="fc" id="L89">        EmptyBlock b2 = new EmptyBlock(1.0, 2.0);</span>
+<span class="fc" id="L90">        assertTrue(b1.equals(b2));</span>
+<span class="fc" id="L91">        assertTrue(b2.equals(b2));</span>
+
+<span class="fc" id="L93">        b1.setID(&quot;Test&quot;);</span>
+<span class="fc" id="L94">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L95">        b2.setID(&quot;Test&quot;);</span>
+<span class="fc" id="L96">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L98">        b1.setMargin(new RectangleInsets(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L99">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L100">        b2.setMargin(new RectangleInsets(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L101">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L103">        b1.setFrame(new BlockBorder(Color.red));</span>
+<span class="fc" id="L104">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L105">        b2.setFrame(new BlockBorder(Color.red));</span>
+<span class="fc" id="L106">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L108">        b1.setPadding(new RectangleInsets(2.0, 4.0, 6.0, 8.0));</span>
+<span class="fc" id="L109">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L110">        b2.setPadding(new RectangleInsets(2.0, 4.0, 6.0, 8.0));</span>
+<span class="fc" id="L111">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L113">        b1.setWidth(1.23);</span>
+<span class="fc" id="L114">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L115">        b2.setWidth(1.23);</span>
+<span class="fc" id="L116">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L118">        b1.setHeight(4.56);</span>
+<span class="fc" id="L119">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L120">        b2.setHeight(4.56);</span>
+<span class="fc" id="L121">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L123">        b1.setBounds(new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L124">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L125">        b2.setBounds(new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L126">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L128">        b1 = new EmptyBlock(1.1, 2.0);</span>
+<span class="fc" id="L129">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L130">        b2 = new EmptyBlock(1.1, 2.0);</span>
+<span class="fc" id="L131">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L133">        b1 = new EmptyBlock(1.1, 2.2);</span>
+<span class="fc" id="L134">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L135">        b2 = new EmptyBlock(1.1, 2.2);</span>
+<span class="fc" id="L136">        assertTrue(b1.equals(b2));</span>
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L143">        EmptyBlock b1 = new EmptyBlock(1.0, 2.0);</span>
+<span class="fc" id="L144">        Rectangle2D bounds1 = new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0);</span>
+<span class="fc" id="L145">        b1.setBounds(bounds1);</span>
+<span class="fc" id="L146">        EmptyBlock b2 = null;</span>
+
+        try {
+<span class="fc" id="L149">            b2 = (EmptyBlock) b1.clone();</span>
+        }
+<span class="nc" id="L151">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L152">            fail(e.toString());</span>
+<span class="fc" id="L153">        }</span>
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">        assertTrue(b1 != b2);</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        assertTrue(b1.getClass() == b2.getClass());</span>
+<span class="fc" id="L156">        assertTrue(b1.equals(b2));</span>
+
+<span class="fc" id="L158">        bounds1.setFrame(2.0, 4.0, 6.0, 8.0);</span>
+<span class="fc" id="L159">        assertFalse(b1.equals(b2));</span>
+<span class="fc" id="L160">        b2.setBounds(new Rectangle2D.Double(2.0, 4.0, 6.0, 8.0));</span>
+<span class="fc" id="L161">        assertTrue(b1.equals(b2));</span>
+<span class="fc" id="L162">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L168">        EmptyBlock b1 = new EmptyBlock(1.0, 2.0);</span>
+<span class="fc" id="L169">        EmptyBlock b2 = null;</span>
+        try {
+<span class="fc" id="L171">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L172">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L173">            out.writeObject(b1);</span>
+<span class="fc" id="L174">            out.close();</span>
+
+<span class="fc" id="L176">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L177">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L178">            b2 = (EmptyBlock) in.readObject();</span>
+<span class="fc" id="L179">            in.close();</span>
+        }
+<span class="nc" id="L181">        catch (Exception e) {</span>
+<span class="nc" id="L182">            fail(e.toString());</span>
+<span class="fc" id="L183">        }</span>
+<span class="fc" id="L184">        assertEquals(b1, b2);</span>
+<span class="fc" id="L185">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

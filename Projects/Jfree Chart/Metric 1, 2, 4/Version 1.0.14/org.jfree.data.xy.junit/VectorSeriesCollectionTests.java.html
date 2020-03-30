@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VectorSeriesCollectionTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.xy.junit</a> &gt; <span class="el_source">VectorSeriesCollectionTests.java</span></div><h1>VectorSeriesCollectionTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------------------
+ * VectorSeriesCollectionTests.java
+ * --------------------------------
+ * (C) Copyright 2007, 2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 30-Jan-2007 : Version 1 (DG);
+ * 24-May-2007 : Added testRemoveSeries() (DG);
+ * 22-Apr-2008 : Added testPublicCloneable (DG);
+ *
+ */
+
+package org.jfree.data.xy.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.xy.VectorSeries;
+import org.jfree.data.xy.VectorSeriesCollection;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link VectorSeriesCollection} class.
+ */
+public class VectorSeriesCollectionTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        return new TestSuite(VectorSeriesCollectionTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public VectorSeriesCollectionTests(String name) {
+<span class="fc" id="L80">        super(name);</span>
+<span class="fc" id="L81">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L87">        VectorSeries s1 = new VectorSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L88">        s1.add(1.0, 1.1, 1.2, 1.3);</span>
+<span class="fc" id="L89">        VectorSeriesCollection c1 = new VectorSeriesCollection();</span>
+<span class="fc" id="L90">        c1.addSeries(s1);</span>
+<span class="fc" id="L91">        VectorSeries s2 = new VectorSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L92">        s2.add(1.0, 1.1, 1.2, 1.3);</span>
+<span class="fc" id="L93">        VectorSeriesCollection c2 = new VectorSeriesCollection();</span>
+<span class="fc" id="L94">        c2.addSeries(s2);</span>
+<span class="fc" id="L95">        assertTrue(c1.equals(c2));</span>
+<span class="fc" id="L96">        assertTrue(c2.equals(c1));</span>
+
+<span class="fc" id="L98">        c1.addSeries(new VectorSeries(&quot;Empty Series&quot;));</span>
+<span class="fc" id="L99">        assertFalse(c1.equals(c2));</span>
+
+<span class="fc" id="L101">        c2.addSeries(new VectorSeries(&quot;Empty Series&quot;));</span>
+<span class="fc" id="L102">        assertTrue(c1.equals(c2));</span>
+<span class="fc" id="L103">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L109">        VectorSeries s1 = new VectorSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L110">        s1.add(1.0, 1.1, 1.2, 1.3);</span>
+<span class="fc" id="L111">        VectorSeriesCollection c1 = new VectorSeriesCollection();</span>
+<span class="fc" id="L112">        c1.addSeries(s1);</span>
+<span class="fc" id="L113">        VectorSeriesCollection c2 = null;</span>
+        try {
+<span class="fc" id="L115">            c2 = (VectorSeriesCollection) c1.clone();</span>
+        }
+<span class="nc" id="L117">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L118">            e.printStackTrace();</span>
+<span class="fc" id="L119">        }</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        assertTrue(c1 != c2);</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">        assertTrue(c1.getClass() == c2.getClass());</span>
+<span class="fc" id="L122">        assertTrue(c1.equals(c2));</span>
+
+        // check independence
+<span class="fc" id="L125">        s1.setDescription(&quot;XYZ&quot;);</span>
+<span class="fc" id="L126">        assertFalse(c1.equals(c2));</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Verify that this class implements {@link PublicCloneable}.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L133">        VectorSeriesCollection d1 = new VectorSeriesCollection();</span>
+<span class="fc" id="L134">        assertTrue(d1 instanceof PublicCloneable);</span>
+<span class="fc" id="L135">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L141">        VectorSeries s1 = new VectorSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L142">        s1.add(1.0, 1.1, 1.2, 1.3);</span>
+<span class="fc" id="L143">        VectorSeriesCollection c1 = new VectorSeriesCollection();</span>
+<span class="fc" id="L144">        c1.addSeries(s1);</span>
+<span class="fc" id="L145">        VectorSeriesCollection c2 = null;</span>
+
+        try {
+<span class="fc" id="L148">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L149">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L150">            out.writeObject(c1);</span>
+<span class="fc" id="L151">            out.close();</span>
+
+<span class="fc" id="L153">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L154">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L155">            c2 = (VectorSeriesCollection) in.readObject();</span>
+<span class="fc" id="L156">            in.close();</span>
+        }
+<span class="nc" id="L158">        catch (Exception e) {</span>
+<span class="nc" id="L159">            e.printStackTrace();</span>
+<span class="fc" id="L160">        }</span>
+<span class="fc" id="L161">        assertEquals(c1, c2);</span>
+<span class="fc" id="L162">    }</span>
+
+    /**
+     * Some checks for the removeSeries() method.
+     */
+    public void testRemoveSeries() {
+<span class="fc" id="L168">        VectorSeries s1 = new VectorSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L169">        VectorSeries s2 = new VectorSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L170">        VectorSeriesCollection vsc = new VectorSeriesCollection();</span>
+<span class="fc" id="L171">        vsc.addSeries(s1);</span>
+<span class="fc" id="L172">        vsc.addSeries(s2);</span>
+<span class="fc" id="L173">        assertEquals(2, vsc.getSeriesCount());</span>
+<span class="fc" id="L174">        boolean b = vsc.removeSeries(s1);</span>
+<span class="fc" id="L175">        assertTrue(b);</span>
+<span class="fc" id="L176">        assertEquals(1, vsc.getSeriesCount());</span>
+<span class="fc" id="L177">        assertEquals(&quot;S2&quot;, vsc.getSeriesKey(0));</span>
+<span class="fc" id="L178">        b = vsc.removeSeries(new VectorSeries(&quot;NotInDataset&quot;));</span>
+<span class="fc" id="L179">        assertFalse(b);</span>
+<span class="fc" id="L180">        assertEquals(1, vsc.getSeriesCount());</span>
+<span class="fc" id="L181">        b = vsc.removeSeries(s2);</span>
+<span class="fc" id="L182">        assertTrue(b);</span>
+<span class="fc" id="L183">        assertEquals(0, vsc.getSeriesCount());</span>
+<span class="fc" id="L184">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

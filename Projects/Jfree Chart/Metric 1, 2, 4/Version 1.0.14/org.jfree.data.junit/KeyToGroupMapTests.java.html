@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KeyToGroupMapTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.junit</a> &gt; <span class="el_source">KeyToGroupMapTests.java</span></div><h1>KeyToGroupMapTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------------
+ * KeyToGroupMapTests.java
+ * -----------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 29-Apr-2004 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.data.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.KeyToGroupMap;
+
+/**
+ * Tests for the {@link KeyToGroupMap} class.
+ */
+public class KeyToGroupMapTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        return new TestSuite(KeyToGroupMapTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public KeyToGroupMapTests(String name) {
+<span class="fc" id="L76">        super(name);</span>
+<span class="fc" id="L77">    }</span>
+
+    /**
+     * Tests the mapKeyToGroup() method.
+     */
+    public void testMapKeyToGroup() {
+<span class="fc" id="L83">        KeyToGroupMap m1 = new KeyToGroupMap(&quot;G1&quot;);</span>
+
+        // map a key to the default group
+<span class="fc" id="L86">        m1.mapKeyToGroup(&quot;K1&quot;, &quot;G1&quot;);</span>
+<span class="fc" id="L87">        assertEquals(&quot;G1&quot;, m1.getGroup(&quot;K1&quot;));</span>
+
+        // map a key to a new group
+<span class="fc" id="L90">        m1.mapKeyToGroup(&quot;K2&quot;, &quot;G2&quot;);</span>
+<span class="fc" id="L91">        assertEquals(&quot;G2&quot;, m1.getGroup(&quot;K2&quot;));</span>
+
+        // clear a mapping
+<span class="fc" id="L94">        m1.mapKeyToGroup(&quot;K2&quot;, null);</span>
+<span class="fc" id="L95">        assertEquals(&quot;G1&quot;, m1.getGroup(&quot;K2&quot;));  // after clearing, reverts to</span>
+                                                // default group
+
+        // check handling of null key
+<span class="fc" id="L99">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L101">            m1.mapKeyToGroup(null, &quot;G1&quot;);</span>
+        }
+<span class="fc" id="L103">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L104">            pass = true;</span>
+<span class="nc" id="L105">        }</span>
+<span class="fc" id="L106">        assertTrue(pass);</span>
+<span class="fc" id="L107">    }</span>
+
+    /**
+     * Tests that the getGroupCount() method returns the correct values under
+     * various circumstances.
+     */
+    public void testGroupCount() {
+<span class="fc" id="L114">        KeyToGroupMap m1 = new KeyToGroupMap(&quot;Default Group&quot;);</span>
+
+        // a new map always has 1 group (the default group)
+<span class="fc" id="L117">        assertEquals(1, m1.getGroupCount());</span>
+
+        // if the default group is not mapped to, it should still count towards
+        // the group count...
+<span class="fc" id="L121">        m1.mapKeyToGroup(&quot;C1&quot;, &quot;G1&quot;);</span>
+<span class="fc" id="L122">        assertEquals(2, m1.getGroupCount());</span>
+
+        // now when the default group is mapped to, it shouldn't increase the
+        // group count...
+<span class="fc" id="L126">        m1.mapKeyToGroup(&quot;C2&quot;, &quot;Default Group&quot;);</span>
+<span class="fc" id="L127">        assertEquals(2, m1.getGroupCount());</span>
+
+        // complicate things a little...
+<span class="fc" id="L130">        m1.mapKeyToGroup(&quot;C3&quot;, &quot;Default Group&quot;);</span>
+<span class="fc" id="L131">        m1.mapKeyToGroup(&quot;C4&quot;, &quot;G2&quot;);</span>
+<span class="fc" id="L132">        m1.mapKeyToGroup(&quot;C5&quot;, &quot;G2&quot;);</span>
+<span class="fc" id="L133">        m1.mapKeyToGroup(&quot;C6&quot;, &quot;Default Group&quot;);</span>
+<span class="fc" id="L134">        assertEquals(3, m1.getGroupCount());</span>
+
+        // now overwrite group &quot;G2&quot;...
+<span class="fc" id="L137">        m1.mapKeyToGroup(&quot;C4&quot;, &quot;G1&quot;);</span>
+<span class="fc" id="L138">        m1.mapKeyToGroup(&quot;C5&quot;, &quot;G1&quot;);</span>
+<span class="fc" id="L139">        assertEquals(2, m1.getGroupCount());</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * Tests that the getKeyCount() method returns the correct values under
+     * various circumstances.
+     */
+    public void testKeyCount() {
+<span class="fc" id="L147">        KeyToGroupMap m1 = new KeyToGroupMap(&quot;Default Group&quot;);</span>
+
+        // a new map always has 1 group (the default group)
+<span class="fc" id="L150">        assertEquals(0, m1.getKeyCount(&quot;Default Group&quot;));</span>
+
+        // simple case
+<span class="fc" id="L153">        m1.mapKeyToGroup(&quot;K1&quot;, &quot;G1&quot;);</span>
+<span class="fc" id="L154">        assertEquals(1, m1.getKeyCount(&quot;G1&quot;));</span>
+<span class="fc" id="L155">        m1.mapKeyToGroup(&quot;K1&quot;, null);</span>
+<span class="fc" id="L156">        assertEquals(0, m1.getKeyCount(&quot;G1&quot;));</span>
+
+        // if there is an explicit mapping to the default group, it is counted
+<span class="fc" id="L159">        m1.mapKeyToGroup(&quot;K2&quot;, &quot;Default Group&quot;);</span>
+<span class="fc" id="L160">        assertEquals(1, m1.getKeyCount(&quot;Default Group&quot;));</span>
+
+        // complicate things a little...
+<span class="fc" id="L163">        m1.mapKeyToGroup(&quot;K3&quot;, &quot;Default Group&quot;);</span>
+<span class="fc" id="L164">        m1.mapKeyToGroup(&quot;K4&quot;, &quot;G2&quot;);</span>
+<span class="fc" id="L165">        m1.mapKeyToGroup(&quot;K5&quot;, &quot;G2&quot;);</span>
+<span class="fc" id="L166">        m1.mapKeyToGroup(&quot;K6&quot;, &quot;Default Group&quot;);</span>
+<span class="fc" id="L167">        assertEquals(3, m1.getKeyCount(&quot;Default Group&quot;));</span>
+<span class="fc" id="L168">        assertEquals(2, m1.getKeyCount(&quot;G2&quot;));</span>
+
+        // now overwrite group &quot;G2&quot;...
+<span class="fc" id="L171">        m1.mapKeyToGroup(&quot;K4&quot;, &quot;G1&quot;);</span>
+<span class="fc" id="L172">        m1.mapKeyToGroup(&quot;K5&quot;, &quot;G1&quot;);</span>
+<span class="fc" id="L173">        assertEquals(2, m1.getKeyCount(&quot;G1&quot;));</span>
+<span class="fc" id="L174">        assertEquals(0, m1.getKeyCount(&quot;G2&quot;));</span>
+<span class="fc" id="L175">    }</span>
+
+    /**
+     * Tests the getGroupIndex() method.
+     */
+    public void testGetGroupIndex() {
+<span class="fc" id="L181">        KeyToGroupMap m1 = new KeyToGroupMap(&quot;Default Group&quot;);</span>
+
+        // the default group is always at index 0
+<span class="fc" id="L184">        assertEquals(0, m1.getGroupIndex(&quot;Default Group&quot;));</span>
+
+        // a non-existent group should return -1
+<span class="fc" id="L187">        assertEquals(-1, m1.getGroupIndex(&quot;G3&quot;));</span>
+
+        // indices are assigned in the order that groups are originally mapped
+<span class="fc" id="L190">        m1.mapKeyToGroup(&quot;K3&quot;, &quot;G3&quot;);</span>
+<span class="fc" id="L191">        m1.mapKeyToGroup(&quot;K1&quot;, &quot;G1&quot;);</span>
+<span class="fc" id="L192">        m1.mapKeyToGroup(&quot;K2&quot;, &quot;G2&quot;);</span>
+<span class="fc" id="L193">        assertEquals(1, m1.getGroupIndex(&quot;G3&quot;));</span>
+<span class="fc" id="L194">        assertEquals(2, m1.getGroupIndex(&quot;G1&quot;));</span>
+<span class="fc" id="L195">        assertEquals(3, m1.getGroupIndex(&quot;G2&quot;));</span>
+<span class="fc" id="L196">    }</span>
+
+    /**
+     * Tests the getGroup() method.
+     */
+    public void testGetGroup() {
+<span class="fc" id="L202">        KeyToGroupMap m1 = new KeyToGroupMap(&quot;Default Group&quot;);</span>
+
+        // a key that hasn't been mapped should return the default group
+<span class="fc" id="L205">        assertEquals(&quot;Default Group&quot;, m1.getGroup(&quot;K1&quot;));</span>
+
+<span class="fc" id="L207">        m1.mapKeyToGroup(&quot;K1&quot;, &quot;G1&quot;);</span>
+<span class="fc" id="L208">        assertEquals(&quot;G1&quot;, m1.getGroup(&quot;K1&quot;));</span>
+<span class="fc" id="L209">        m1.mapKeyToGroup(&quot;K1&quot;, &quot;G2&quot;);</span>
+<span class="fc" id="L210">        assertEquals(&quot;G2&quot;, m1.getGroup(&quot;K1&quot;));</span>
+<span class="fc" id="L211">        m1.mapKeyToGroup(&quot;K1&quot;, null);</span>
+<span class="fc" id="L212">        assertEquals(&quot;Default Group&quot;, m1.getGroup(&quot;K1&quot;));</span>
+
+        // a null argument should throw an exception
+<span class="fc" id="L215">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L217">            Comparable g = m1.getGroup(null);</span>
+<span class="nc" id="L218">            System.out.println(g);</span>
+        }
+<span class="fc" id="L220">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L221">            pass = true;</span>
+<span class="nc" id="L222">        }</span>
+<span class="fc" id="L223">        assertTrue(pass);</span>
+<span class="fc" id="L224">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L230">        KeyToGroupMap m1 = new KeyToGroupMap(&quot;Default Group&quot;);</span>
+<span class="fc" id="L231">        KeyToGroupMap m2 = new KeyToGroupMap(&quot;Default Group&quot;);</span>
+<span class="fc" id="L232">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L233">        assertTrue(m2.equals(m1));</span>
+
+<span class="fc" id="L235">        m1.mapKeyToGroup(&quot;K1&quot;, &quot;G1&quot;);</span>
+<span class="fc" id="L236">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L237">        m2.mapKeyToGroup(&quot;K1&quot;, &quot;G1&quot;);</span>
+<span class="fc" id="L238">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L239">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L245">        KeyToGroupMap m1 = new KeyToGroupMap(&quot;Test&quot;);</span>
+<span class="fc" id="L246">        m1.mapKeyToGroup(&quot;K1&quot;, &quot;G1&quot;);</span>
+<span class="fc" id="L247">        KeyToGroupMap m2 = null;</span>
+        try {
+<span class="fc" id="L249">            m2 = (KeyToGroupMap) m1.clone();</span>
+        }
+<span class="nc" id="L251">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L252">            System.err.println(&quot;Failed to clone.&quot;);</span>
+<span class="fc" id="L253">        }</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">        assertTrue(m1 != m2);</span>
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">        assertTrue(m1.getClass() == m2.getClass());</span>
+<span class="fc" id="L256">        assertTrue(m1.equals(m2));</span>
+
+        // a small check for independence
+<span class="fc" id="L259">        m1.mapKeyToGroup(&quot;K1&quot;, &quot;G2&quot;);</span>
+<span class="fc" id="L260">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L261">        m2.mapKeyToGroup(&quot;K1&quot;, &quot;G2&quot;);</span>
+<span class="fc" id="L262">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L263">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L270">        KeyToGroupMap m1 = new KeyToGroupMap(&quot;Test&quot;);</span>
+<span class="fc" id="L271">        KeyToGroupMap m2 = null;</span>
+
+        try {
+<span class="fc" id="L274">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L275">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L276">            out.writeObject(m1);</span>
+<span class="fc" id="L277">            out.close();</span>
+
+<span class="fc" id="L279">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L280">                new ByteArrayInputStream(buffer.toByteArray())</span>
+            );
+<span class="fc" id="L282">            m2 = (KeyToGroupMap) in.readObject();</span>
+<span class="fc" id="L283">            in.close();</span>
+        }
+<span class="nc" id="L285">        catch (Exception e) {</span>
+<span class="nc" id="L286">            System.out.println(e.toString());</span>
+<span class="fc" id="L287">        }</span>
+<span class="fc" id="L288">        assertEquals(m1, m2);</span>
+
+<span class="fc" id="L290">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

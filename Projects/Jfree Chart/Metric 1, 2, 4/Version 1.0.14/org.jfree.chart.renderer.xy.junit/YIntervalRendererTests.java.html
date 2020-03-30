@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>YIntervalRendererTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.xy.junit</a> &gt; <span class="el_source">YIntervalRendererTests.java</span></div><h1>YIntervalRendererTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------------
+ * YIntervalRendererTests.java
+ * ---------------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 25-Mar-2003 : Version 1 (DG);
+ * 20-Feb-2007 : Extended the testEquals() checks (DG);
+ * 17-May-2007 : Added testGetLegendItemSeriesIndex() (DG);
+ * 22-Apr-2008 : Added testPublicCloneable() (DG);
+ * 26-May-2008 : Extended testEquals() (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.xy.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.annotations.XYTextAnnotation;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.IntervalXYItemLabelGenerator;
+import org.jfree.chart.labels.StandardXYItemLabelGenerator;
+import org.jfree.chart.labels.StandardXYSeriesLabelGenerator;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.YIntervalRenderer;
+import org.jfree.chart.urls.StandardXYURLGenerator;
+import org.jfree.data.xy.YIntervalSeries;
+import org.jfree.data.xy.YIntervalSeriesCollection;
+import org.jfree.ui.Layer;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link YIntervalRenderer} class.
+ */
+public class YIntervalRendererTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        return new TestSuite(YIntervalRendererTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public YIntervalRendererTests(String name) {
+<span class="fc" id="L94">        super(name);</span>
+<span class="fc" id="L95">    }</span>
+
+    /**
+     * Check that the equals() method distinguishes all fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L101">        YIntervalRenderer r1 = new YIntervalRenderer();</span>
+<span class="fc" id="L102">        YIntervalRenderer r2 = new YIntervalRenderer();</span>
+<span class="fc" id="L103">        assertEquals(r1, r2);</span>
+
+        // the following fields are inherited from the AbstractXYItemRenderer
+<span class="fc" id="L106">        r1.setItemLabelGenerator(new StandardXYItemLabelGenerator());</span>
+<span class="fc" id="L107">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L108">        r2.setItemLabelGenerator(new StandardXYItemLabelGenerator());</span>
+<span class="fc" id="L109">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L111">        r1.setSeriesItemLabelGenerator(0, new StandardXYItemLabelGenerator());</span>
+<span class="fc" id="L112">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L113">        r2.setSeriesItemLabelGenerator(0, new StandardXYItemLabelGenerator());</span>
+<span class="fc" id="L114">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L116">        r1.setBaseItemLabelGenerator(new StandardXYItemLabelGenerator());</span>
+<span class="fc" id="L117">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L118">        r2.setBaseItemLabelGenerator(new StandardXYItemLabelGenerator());</span>
+<span class="fc" id="L119">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L121">        r1.setToolTipGenerator(new StandardXYToolTipGenerator());</span>
+<span class="fc" id="L122">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L123">        r2.setToolTipGenerator(new StandardXYToolTipGenerator());</span>
+<span class="fc" id="L124">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L126">        r1.setSeriesToolTipGenerator(0, new StandardXYToolTipGenerator());</span>
+<span class="fc" id="L127">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L128">        r2.setSeriesToolTipGenerator(0, new StandardXYToolTipGenerator());</span>
+<span class="fc" id="L129">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L131">        r1.setBaseToolTipGenerator(new StandardXYToolTipGenerator());</span>
+<span class="fc" id="L132">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L133">        r2.setBaseToolTipGenerator(new StandardXYToolTipGenerator());</span>
+<span class="fc" id="L134">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L136">        r1.setURLGenerator(new StandardXYURLGenerator());</span>
+<span class="fc" id="L137">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L138">        r2.setURLGenerator(new StandardXYURLGenerator());</span>
+<span class="fc" id="L139">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L141">        r1.addAnnotation(new XYTextAnnotation(&quot;X&quot;, 1.0, 2.0), Layer.FOREGROUND);</span>
+<span class="fc" id="L142">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L143">        r2.addAnnotation(new XYTextAnnotation(&quot;X&quot;, 1.0, 2.0), Layer.FOREGROUND);</span>
+<span class="fc" id="L144">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L146">        r1.addAnnotation(new XYTextAnnotation(&quot;X&quot;, 1.0, 2.0), Layer.BACKGROUND);</span>
+<span class="fc" id="L147">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L148">        r2.addAnnotation(new XYTextAnnotation(&quot;X&quot;, 1.0, 2.0), Layer.BACKGROUND);</span>
+<span class="fc" id="L149">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L151">        r1.setDefaultEntityRadius(99);</span>
+<span class="fc" id="L152">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L153">        r2.setDefaultEntityRadius(99);</span>
+<span class="fc" id="L154">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L156">        r1.setLegendItemLabelGenerator(new StandardXYSeriesLabelGenerator(</span>
+                &quot;{0} {1}&quot;));
+<span class="fc" id="L158">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L159">        r2.setLegendItemLabelGenerator(new StandardXYSeriesLabelGenerator(</span>
+                &quot;{0} {1}&quot;));
+<span class="fc" id="L161">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L163">        r1.setLegendItemToolTipGenerator(new StandardXYSeriesLabelGenerator());</span>
+<span class="fc" id="L164">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L165">        r2.setLegendItemToolTipGenerator(new StandardXYSeriesLabelGenerator());</span>
+<span class="fc" id="L166">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L168">        r1.setLegendItemURLGenerator(new StandardXYSeriesLabelGenerator());</span>
+<span class="fc" id="L169">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L170">        r2.setLegendItemURLGenerator(new StandardXYSeriesLabelGenerator());</span>
+<span class="fc" id="L171">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L173">        r1.setAdditionalItemLabelGenerator(new IntervalXYItemLabelGenerator());</span>
+<span class="fc" id="L174">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L175">        r2.setAdditionalItemLabelGenerator(new IntervalXYItemLabelGenerator());</span>
+<span class="fc" id="L176">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L178">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L184">        YIntervalRenderer r1 = new YIntervalRenderer();</span>
+<span class="fc" id="L185">        YIntervalRenderer r2 = new YIntervalRenderer();</span>
+<span class="fc" id="L186">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L187">        int h1 = r1.hashCode();</span>
+<span class="fc" id="L188">        int h2 = r2.hashCode();</span>
+<span class="fc" id="L189">        assertEquals(h1, h2);</span>
+<span class="fc" id="L190">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L196">        YIntervalRenderer r1 = new YIntervalRenderer();</span>
+<span class="fc" id="L197">        YIntervalRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L199">            r2 = (YIntervalRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L201">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L202">            e.printStackTrace();</span>
+<span class="fc" id="L203">        }</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L206">        assertTrue(r1.equals(r2));</span>
+
+        // check independence
+<span class="fc" id="L209">        r1.setSeriesItemLabelGenerator(0, new StandardXYItemLabelGenerator());</span>
+<span class="fc" id="L210">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L211">        r2.setSeriesItemLabelGenerator(0, new StandardXYItemLabelGenerator());</span>
+<span class="fc" id="L212">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L214">        r1.setSeriesToolTipGenerator(0, new StandardXYToolTipGenerator());</span>
+<span class="fc" id="L215">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L216">        r2.setSeriesToolTipGenerator(0, new StandardXYToolTipGenerator());</span>
+<span class="fc" id="L217">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L219">        r1.addAnnotation(new XYTextAnnotation(&quot;ABC&quot;, 1.0, 2.0),</span>
+                Layer.FOREGROUND);
+<span class="fc" id="L221">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L222">        r2.addAnnotation(new XYTextAnnotation(&quot;ABC&quot;, 1.0, 2.0),</span>
+                Layer.FOREGROUND);
+<span class="fc" id="L224">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L226">        r1.addAnnotation(new XYTextAnnotation(&quot;ABC&quot;, 1.0, 2.0),</span>
+                Layer.BACKGROUND);
+<span class="fc" id="L228">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L229">        r2.addAnnotation(new XYTextAnnotation(&quot;ABC&quot;, 1.0, 2.0),</span>
+                Layer.BACKGROUND);
+<span class="fc" id="L231">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L233">    }</span>
+
+    /**
+     * Verify that this class implements {@link PublicCloneable}.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L239">        YIntervalRenderer r1 = new YIntervalRenderer();</span>
+<span class="fc" id="L240">        assertTrue(r1 instanceof PublicCloneable);</span>
+<span class="fc" id="L241">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L248">        YIntervalRenderer r1 = new YIntervalRenderer();</span>
+<span class="fc" id="L249">        YIntervalRenderer r2 = null;</span>
+
+        try {
+<span class="fc" id="L252">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L253">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L254">            out.writeObject(r1);</span>
+<span class="fc" id="L255">            out.close();</span>
+
+<span class="fc" id="L257">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L258">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L259">            r2 = (YIntervalRenderer) in.readObject();</span>
+<span class="fc" id="L260">            in.close();</span>
+        }
+<span class="nc" id="L262">        catch (Exception e) {</span>
+<span class="nc" id="L263">            e.printStackTrace();</span>
+<span class="fc" id="L264">        }</span>
+<span class="fc" id="L265">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L267">    }</span>
+
+    /**
+     * A check for the datasetIndex and seriesIndex fields in the LegendItem
+     * returned by the getLegendItem() method.
+     */
+    public void testGetLegendItemSeriesIndex() {
+<span class="fc" id="L274">        YIntervalSeriesCollection d1 = new YIntervalSeriesCollection();</span>
+<span class="fc" id="L275">        YIntervalSeries s1 = new YIntervalSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L276">        s1.add(1.0, 1.1, 1.2, 1.3);</span>
+<span class="fc" id="L277">        YIntervalSeries s2 = new YIntervalSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L278">        s2.add(1.0, 1.1, 1.2, 1.3);</span>
+<span class="fc" id="L279">        d1.addSeries(s1);</span>
+<span class="fc" id="L280">        d1.addSeries(s2);</span>
+
+<span class="fc" id="L282">        YIntervalSeriesCollection d2 = new YIntervalSeriesCollection();</span>
+<span class="fc" id="L283">        YIntervalSeries s3 = new YIntervalSeries(&quot;S3&quot;);</span>
+<span class="fc" id="L284">        s3.add(1.0, 1.1, 1.2, 1.3);</span>
+<span class="fc" id="L285">        YIntervalSeries s4 = new YIntervalSeries(&quot;S4&quot;);</span>
+<span class="fc" id="L286">        s4.add(1.0, 1.1, 1.2, 1.3);</span>
+<span class="fc" id="L287">        YIntervalSeries s5 = new YIntervalSeries(&quot;S5&quot;);</span>
+<span class="fc" id="L288">        s5.add(1.0, 1.1, 1.2, 1.3);</span>
+<span class="fc" id="L289">        d2.addSeries(s3);</span>
+<span class="fc" id="L290">        d2.addSeries(s4);</span>
+<span class="fc" id="L291">        d2.addSeries(s5);</span>
+
+<span class="fc" id="L293">        YIntervalRenderer r = new YIntervalRenderer();</span>
+<span class="fc" id="L294">        XYPlot plot = new XYPlot(d1, new NumberAxis(&quot;x&quot;),</span>
+                new NumberAxis(&quot;y&quot;), r);
+<span class="fc" id="L296">        plot.setDataset(1, d2);</span>
+<span class="fc" id="L297">        /*JFreeChart chart =*/ new JFreeChart(plot);</span>
+<span class="fc" id="L298">        LegendItem li = r.getLegendItem(1, 2);</span>
+<span class="fc" id="L299">        assertEquals(&quot;S5&quot;, li.getLabel());</span>
+<span class="fc" id="L300">        assertEquals(1, li.getDatasetIndex());</span>
+<span class="fc" id="L301">        assertEquals(2, li.getSeriesIndex());</span>
+<span class="fc" id="L302">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LineUtilitiesTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.util.junit</a> &gt; <span class="el_source">LineUtilitiesTests.java</span></div><h1>LineUtilitiesTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------------
+ * LineUtilitiesTests.java
+ * -----------------------
+ * (C) Copyright 2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 05-Nov-2008 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.util.junit;
+
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.util.LineUtilities;
+
+/**
+ * Tests for the {@link LineUtilities} class.
+ */
+public class LineUtilitiesTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        return new TestSuite(LineUtilitiesTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public LineUtilitiesTests(String name) {
+<span class="fc" id="L72">        super(name);</span>
+<span class="fc" id="L73">    }</span>
+
+    private boolean lineEquals(Line2D line, double x1, double y1, double x2,
+            double y2) {
+<span class="fc" id="L77">        boolean result = true;</span>
+<span class="fc" id="L78">        double epsilon = 0.0000000001;</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        if (Math.abs(line.getX1() - x1) &gt; epsilon) result = false;</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (Math.abs(line.getY1() - y1) &gt; epsilon) result = false;</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">        if (Math.abs(line.getX2() - x2) &gt; epsilon) result = false;</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (Math.abs(line.getY2() - y2) &gt; epsilon) result = false;</span>
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">        if (result == false) {</span>
+<span class="nc" id="L84">            System.out.println(line.getX1() + &quot;, &quot; + line.getY1() + &quot;, &quot;</span>
+<span class="nc" id="L85">                    + line.getX2() + &quot;, &quot; + line.getY2());</span>
+        }
+<span class="fc" id="L87">        return result;</span>
+    }
+
+    public void testClipLine() {
+<span class="fc" id="L91">        Rectangle2D rect = new Rectangle2D.Double(1.0, 1.0, 1.0, 1.0);</span>
+<span class="fc" id="L92">        Line2D line = new Line2D.Double();</span>
+
+<span class="fc" id="L94">        assertFalse(LineUtilities.clipLine(line, rect));</span>
+<span class="fc" id="L95">        assertTrue(lineEquals(line, 0.0, 0.0, 0.0, 0.0));</span>
+
+<span class="fc" id="L97">        line.setLine(0.5, 0.5, 0.6, 0.6);</span>
+<span class="fc" id="L98">        assertFalse(LineUtilities.clipLine(line, rect));</span>
+<span class="fc" id="L99">        assertTrue(lineEquals(line, 0.5, 0.5, 0.6, 0.6));</span>
+
+<span class="fc" id="L101">        line.setLine(0.5, 0.5, 1.6, 0.6);</span>
+<span class="fc" id="L102">        assertFalse(LineUtilities.clipLine(line, rect));</span>
+<span class="fc" id="L103">        assertTrue(lineEquals(line, 0.5, 0.5, 1.6, 0.6));</span>
+
+<span class="fc" id="L105">        line.setLine(0.5, 0.5, 2.6, 0.6);</span>
+<span class="fc" id="L106">        assertFalse(LineUtilities.clipLine(line, rect));</span>
+<span class="fc" id="L107">        assertTrue(lineEquals(line, 0.5, 0.5, 2.6, 0.6));</span>
+
+<span class="fc" id="L109">        line.setLine(0.5, 0.5, 0.6, 1.6);</span>
+<span class="fc" id="L110">        assertFalse(LineUtilities.clipLine(line, rect));</span>
+<span class="fc" id="L111">        assertTrue(lineEquals(line, 0.5, 0.5, 0.6, 1.6));</span>
+
+<span class="fc" id="L113">        line.setLine(0.5, 0.5, 1.6, 1.6);</span>
+<span class="fc" id="L114">        assertTrue(LineUtilities.clipLine(line, rect));</span>
+<span class="fc" id="L115">        assertTrue(lineEquals(line, 1.0, 1.0, 1.6, 1.6));</span>
+
+<span class="fc" id="L117">        line.setLine(0.5, 0.5, 2.6, 1.6);</span>
+<span class="fc" id="L118">        assertTrue(LineUtilities.clipLine(line, rect));</span>
+<span class="fc" id="L119">        assertTrue(lineEquals(line, 1.4545454545454546, 1.0, 2.0,</span>
+                1.2857142857142858));
+
+<span class="fc" id="L122">        line.setLine(0.5, 0.5, 0.5, 2.6);</span>
+<span class="fc" id="L123">        assertFalse(LineUtilities.clipLine(line, rect));</span>
+<span class="fc" id="L124">        assertTrue(lineEquals(line, 0.5, 0.5, 0.5, 2.6));</span>
+
+<span class="fc" id="L126">        line.setLine(0.5, 0.5, 1.5, 2.6);</span>
+<span class="fc" id="L127">        assertTrue(LineUtilities.clipLine(line, rect));</span>
+<span class="fc" id="L128">        assertTrue(lineEquals(line, 1.0, 1.55, 1.2142857142857142, 2.0));</span>
+
+<span class="fc" id="L130">        line.setLine(0.5, 0.5, 2.5, 2.6);</span>
+<span class="fc" id="L131">        assertTrue(LineUtilities.clipLine(line, rect));</span>
+<span class="fc" id="L132">        assertTrue(lineEquals(line, 1.0, 1.025, 1.9285714285714284, 2.0));</span>
+
+<span class="fc" id="L134">        line.setLine(0.5, 0.5, 1.5, 1.5);</span>
+<span class="fc" id="L135">        assertTrue(LineUtilities.clipLine(line, rect));</span>
+<span class="fc" id="L136">        assertTrue(lineEquals(line, 1.0, 1.0, 1.5, 1.5));</span>
+
+<span class="fc" id="L138">        line.setLine(2.5, 1.0, 1.5, 1.5);</span>
+<span class="fc" id="L139">        assertTrue(LineUtilities.clipLine(line, rect));</span>
+<span class="fc" id="L140">        assertTrue(lineEquals(line, 2.0, 1.25, 1.5, 1.5));</span>
+
+<span class="fc" id="L142">        line.setLine(1.5, 1.5, 2.5, 1.0);</span>
+<span class="fc" id="L143">        assertTrue(LineUtilities.clipLine(line, rect));</span>
+<span class="fc" id="L144">        assertTrue(lineEquals(line, 1.5, 1.5, 2.0, 1.25));</span>
+<span class="fc" id="L145">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

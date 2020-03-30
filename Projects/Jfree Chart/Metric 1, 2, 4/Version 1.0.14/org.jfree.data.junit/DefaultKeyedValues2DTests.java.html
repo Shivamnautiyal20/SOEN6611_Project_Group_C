@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultKeyedValues2DTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.junit</a> &gt; <span class="el_source">DefaultKeyedValues2DTests.java</span></div><h1>DefaultKeyedValues2DTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------------------
+ * DefaultKeyedValues2DTests.java
+ * ------------------------------
+ * (C) Copyright 2003-2008 by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 13-Mar-2003 : Version 1 (DG);
+ * 15-Sep-2004 : Updated cloning test (DG);
+ * 06-Oct-2005 : Added testEquals() (DG);
+ * 18-Jan-2007 : Added testSparsePopulation() (DG);
+ * 26-Feb-2007 : Added some basic tests (DG);
+ * 30-Mar-2007 : Added a test for bug 1690654 (DG);
+ * 21-Nov-2007 : Added testRemoveColumnByKey() method (DG);
+ *
+ */
+
+package org.jfree.data.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.DefaultKeyedValues2D;
+import org.jfree.data.UnknownKeyException;
+
+/**
+ * Tests for the {@link DefaultKeyedValues2D} class.
+ */
+public class DefaultKeyedValues2DTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        return new TestSuite(DefaultKeyedValues2DTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DefaultKeyedValues2DTests(String name) {
+<span class="fc" id="L83">        super(name);</span>
+<span class="fc" id="L84">    }</span>
+
+    /**
+     * Some checks for the getValue() method.
+     */
+    public void testGetValue() {
+<span class="fc" id="L90">        DefaultKeyedValues2D d = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L91">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L92">        assertEquals(new Double(1.0), d.getValue(&quot;R1&quot;, &quot;C1&quot;));</span>
+<span class="fc" id="L93">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L95">            d.getValue(&quot;XX&quot;, &quot;C1&quot;);</span>
+        }
+<span class="fc" id="L97">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L98">            pass = true;</span>
+<span class="nc" id="L99">        }</span>
+<span class="fc" id="L100">        assertTrue(pass);</span>
+
+<span class="fc" id="L102">        pass = false;</span>
+        try {
+<span class="nc" id="L104">            d.getValue(&quot;R1&quot;, &quot;XX&quot;);</span>
+        }
+<span class="fc" id="L106">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L107">            pass = true;</span>
+<span class="nc" id="L108">        }</span>
+<span class="fc" id="L109">        assertTrue(pass);</span>
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Some checks for the clone() method.
+     */
+    public void testCloning() {
+<span class="fc" id="L116">        DefaultKeyedValues2D v1 = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L117">        v1.setValue(new Integer(1), &quot;V1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L118">        v1.setValue(null, &quot;V2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L119">        v1.setValue(new Integer(3), &quot;V3&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L120">        DefaultKeyedValues2D v2 = null;</span>
+        try {
+<span class="fc" id="L122">            v2 = (DefaultKeyedValues2D) v1.clone();</span>
+        }
+<span class="nc" id="L124">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L125">            e.printStackTrace();</span>
+<span class="fc" id="L126">        }</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">        assertTrue(v1 != v2);</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">        assertTrue(v1.getClass() == v2.getClass());</span>
+<span class="fc" id="L129">        assertTrue(v1.equals(v2));</span>
+
+        // check that clone is independent of the original
+<span class="fc" id="L132">        v2.setValue(new Integer(2), &quot;V2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L133">        assertFalse(v1.equals(v2));</span>
+<span class="fc" id="L134">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L141">        DefaultKeyedValues2D kv2D1 = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L142">        kv2D1.addValue(new Double(234.2), &quot;Row1&quot;, &quot;Col1&quot;);</span>
+<span class="fc" id="L143">        kv2D1.addValue(null, &quot;Row1&quot;, &quot;Col2&quot;);</span>
+<span class="fc" id="L144">        kv2D1.addValue(new Double(345.9), &quot;Row2&quot;, &quot;Col1&quot;);</span>
+<span class="fc" id="L145">        kv2D1.addValue(new Double(452.7), &quot;Row2&quot;, &quot;Col2&quot;);</span>
+
+<span class="fc" id="L147">        DefaultKeyedValues2D kv2D2 = null;</span>
+
+        try {
+<span class="fc" id="L150">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L151">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L152">            out.writeObject(kv2D1);</span>
+<span class="fc" id="L153">            out.close();</span>
+
+<span class="fc" id="L155">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L156">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L157">            kv2D2 = (DefaultKeyedValues2D) in.readObject();</span>
+<span class="fc" id="L158">            in.close();</span>
+        }
+<span class="nc" id="L160">        catch (Exception e) {</span>
+<span class="nc" id="L161">            e.printStackTrace();</span>
+<span class="fc" id="L162">        }</span>
+<span class="fc" id="L163">        assertEquals(kv2D1, kv2D2);</span>
+
+<span class="fc" id="L165">    }</span>
+
+    /**
+     * Some checks for the equals() method.
+     */
+    public void testEquals() {
+<span class="fc" id="L171">        DefaultKeyedValues2D d1 = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L172">        DefaultKeyedValues2D d2 = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L173">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L174">        assertTrue(d2.equals(d1));</span>
+
+<span class="fc" id="L176">        d1.addValue(new Double(1.0), new Double(2.0), &quot;S1&quot;);</span>
+<span class="fc" id="L177">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L178">        d2.addValue(new Double(1.0), new Double(2.0), &quot;S1&quot;);</span>
+<span class="fc" id="L179">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L180">    }</span>
+
+    /**
+     * Populates a data structure with sparse entries, then checks that
+     * the unspecified entries return null.
+     */
+    public void testSparsePopulation() {
+<span class="fc" id="L187">        DefaultKeyedValues2D d = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L188">        d.addValue(new Integer(11), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L189">        d.addValue(new Integer(22), &quot;R2&quot;, &quot;C2&quot;);</span>
+
+<span class="fc" id="L191">        assertEquals(new Integer(11), d.getValue(&quot;R1&quot;, &quot;C1&quot;));</span>
+<span class="fc" id="L192">        assertNull(d.getValue(&quot;R1&quot;, &quot;C2&quot;));</span>
+<span class="fc" id="L193">        assertEquals(new Integer(22), d.getValue(&quot;R2&quot;, &quot;C2&quot;));</span>
+<span class="fc" id="L194">        assertNull(d.getValue(&quot;R2&quot;, &quot;C1&quot;));</span>
+<span class="fc" id="L195">    }</span>
+
+    /**
+     * Some basic checks for the getRowCount() method.
+     */
+    public void testRowCount() {
+<span class="fc" id="L201">        DefaultKeyedValues2D d = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L202">        assertEquals(0, d.getRowCount());</span>
+<span class="fc" id="L203">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L204">        assertEquals(1, d.getRowCount());</span>
+<span class="fc" id="L205">        d.addValue(new Double(2.0), &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L206">        assertEquals(2, d.getRowCount());</span>
+<span class="fc" id="L207">    }</span>
+
+    /**
+     * Some basic checks for the getColumnCount() method.
+     */
+    public void testColumnCount() {
+<span class="fc" id="L213">        DefaultKeyedValues2D d = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L214">        assertEquals(0, d.getColumnCount());</span>
+<span class="fc" id="L215">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L216">        assertEquals(1, d.getColumnCount());</span>
+<span class="fc" id="L217">        d.addValue(new Double(2.0), &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L218">        assertEquals(2, d.getColumnCount());</span>
+<span class="fc" id="L219">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * Some basic checks for the getValue(int, int) method.
+     */
+    public void testGetValue2() {
+<span class="fc" id="L227">        DefaultKeyedValues2D d = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L228">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L230">            d.getValue(0, 0);</span>
+        }
+<span class="fc" id="L232">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L233">            pass = true;</span>
+<span class="nc" id="L234">        }</span>
+<span class="fc" id="L235">        assertTrue(pass);</span>
+<span class="fc" id="L236">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L237">        assertEquals(1.0, d.getValue(0, 0).doubleValue(), EPSILON);</span>
+<span class="fc" id="L238">        d.addValue(new Double(2.0), &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L239">        assertEquals(2.0, d.getValue(1, 1).doubleValue(), EPSILON);</span>
+<span class="fc" id="L240">        assertNull(d.getValue(1, 0));</span>
+<span class="fc" id="L241">        assertNull(d.getValue(0, 1));</span>
+
+<span class="fc" id="L243">        pass = false;</span>
+        try {
+<span class="nc" id="L245">            d.getValue(2, 0);</span>
+        }
+<span class="fc" id="L247">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L248">            pass = true;</span>
+<span class="nc" id="L249">        }</span>
+<span class="fc" id="L250">        assertTrue(pass);</span>
+<span class="fc" id="L251">    }</span>
+
+    /**
+     * Some basic checks for the getRowKey() method.
+     */
+    public void testGetRowKey() {
+<span class="fc" id="L257">        DefaultKeyedValues2D d = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L258">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L260">            d.getRowKey(0);</span>
+        }
+<span class="fc" id="L262">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L263">            pass = true;</span>
+<span class="nc" id="L264">        }</span>
+<span class="fc" id="L265">        assertTrue(pass);</span>
+<span class="fc" id="L266">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L267">        d.addValue(new Double(1.0), &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L268">        assertEquals(&quot;R1&quot;, d.getRowKey(0));</span>
+<span class="fc" id="L269">        assertEquals(&quot;R2&quot;, d.getRowKey(1));</span>
+
+        // check sorted rows
+<span class="fc" id="L272">        d = new DefaultKeyedValues2D(true);</span>
+<span class="fc" id="L273">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L274">        assertEquals(&quot;R1&quot;, d.getRowKey(0));</span>
+<span class="fc" id="L275">        d.addValue(new Double(0.0), &quot;R0&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L276">        assertEquals(&quot;R0&quot;, d.getRowKey(0));</span>
+<span class="fc" id="L277">        assertEquals(&quot;R1&quot;, d.getRowKey(1));</span>
+<span class="fc" id="L278">    }</span>
+
+    /**
+     * Some basic checks for the getColumnKey() method.
+     */
+    public void testGetColumnKey() {
+<span class="fc" id="L284">        DefaultKeyedValues2D d = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L285">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L287">            d.getColumnKey(0);</span>
+        }
+<span class="fc" id="L289">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L290">            pass = true;</span>
+<span class="nc" id="L291">        }</span>
+<span class="fc" id="L292">        assertTrue(pass);</span>
+<span class="fc" id="L293">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L294">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L295">        assertEquals(&quot;C1&quot;, d.getColumnKey(0));</span>
+<span class="fc" id="L296">        assertEquals(&quot;C2&quot;, d.getColumnKey(1));</span>
+<span class="fc" id="L297">    }</span>
+
+    /**
+     * Some basic checks for the removeValue() method.
+     */
+    public void testRemoveValue() {
+<span class="fc" id="L303">        DefaultKeyedValues2D d = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L304">        d.removeValue(&quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L305">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L306">        d.removeValue(&quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L307">        assertEquals(0, d.getRowCount());</span>
+<span class="fc" id="L308">        assertEquals(0, d.getColumnCount());</span>
+
+<span class="fc" id="L310">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L311">        d.addValue(new Double(2.0), &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L312">        d.removeValue(&quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L313">        assertEquals(new Double(2.0), d.getValue(0, 0));</span>
+<span class="fc" id="L314">    }</span>
+
+    /**
+     * A test for bug 1690654.
+     */
+    public void testRemoveValueBug1690654() {
+<span class="fc" id="L320">        DefaultKeyedValues2D d = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L321">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L322">        d.addValue(new Double(2.0), &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L323">        assertEquals(2, d.getColumnCount());</span>
+<span class="fc" id="L324">        assertEquals(2, d.getRowCount());</span>
+<span class="fc" id="L325">        d.removeValue(&quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L326">        assertEquals(1, d.getColumnCount());</span>
+<span class="fc" id="L327">        assertEquals(1, d.getRowCount());</span>
+<span class="fc" id="L328">        assertEquals(new Double(1.0), d.getValue(0, 0));</span>
+<span class="fc" id="L329">    }</span>
+
+    /**
+     * Some basic checks for the removeRow() method.
+     */
+    public void testRemoveRow() {
+<span class="fc" id="L335">        DefaultKeyedValues2D d = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L336">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L338">            d.removeRow(0);</span>
+        }
+<span class="fc" id="L340">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L341">            pass = true;</span>
+<span class="nc" id="L342">        }</span>
+<span class="fc" id="L343">        assertTrue(pass);</span>
+<span class="fc" id="L344">    }</span>
+
+    /**
+     * Some basic checks for the removeColumn(Comparable) method.
+     */
+    public void testRemoveColumnByKey() {
+<span class="fc" id="L350">        DefaultKeyedValues2D d = new DefaultKeyedValues2D();</span>
+<span class="fc" id="L351">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L352">        d.addValue(new Double(2.0), &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L353">        d.removeColumn(&quot;C2&quot;);</span>
+<span class="fc" id="L354">        d.addValue(new Double(3.0), &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L355">        assertEquals(3.0, d.getValue(&quot;R2&quot;, &quot;C2&quot;).doubleValue(), EPSILON);</span>
+
+        // check for unknown column
+<span class="fc" id="L358">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L360">            d.removeColumn(&quot;XXX&quot;);</span>
+        }
+<span class="fc" id="L362">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L363">            pass = true;</span>
+<span class="nc" id="L364">        }</span>
+<span class="fc" id="L365">        assertTrue(pass);</span>
+<span class="fc" id="L366">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

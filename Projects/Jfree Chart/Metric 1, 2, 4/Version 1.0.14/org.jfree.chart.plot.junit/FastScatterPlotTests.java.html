@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FastScatterPlotTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot.junit</a> &gt; <span class="el_source">FastScatterPlotTests.java</span></div><h1>FastScatterPlotTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------
+ * FastScatterPlotTests.java
+ * -------------------------
+ * (C) Copyright 2003-2009, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 18-Mar-2003 : Version 1 (DG);
+ * 29-Jan-2009 : Updated testEquals() (DG);
+ * 26-Mar-2009 : Updated testEquals() for new panning fields (DG);
+ *
+ */
+
+package org.jfree.chart.plot.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Stroke;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.FastScatterPlot;
+
+/**
+ * Tests for the {@link FastScatterPlot} class.
+ */
+public class FastScatterPlotTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        return new TestSuite(FastScatterPlotTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public FastScatterPlotTests(String name) {
+<span class="fc" id="L85">        super(name);</span>
+<span class="fc" id="L86">    }</span>
+
+    /**
+     * Some checks for the equals() method.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L93">        FastScatterPlot plot1 = new FastScatterPlot();</span>
+<span class="fc" id="L94">        FastScatterPlot plot2 = new FastScatterPlot();</span>
+<span class="fc" id="L95">        assertTrue(plot1.equals(plot2));</span>
+<span class="fc" id="L96">        assertTrue(plot2.equals(plot1));</span>
+
+<span class="fc" id="L98">        plot1.setPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L100">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L101">        plot2.setPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L103">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L105">        plot1.setDomainGridlinesVisible(false);</span>
+<span class="fc" id="L106">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L107">        plot2.setDomainGridlinesVisible(false);</span>
+<span class="fc" id="L108">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L110">        plot1.setDomainGridlinePaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L112">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L113">        plot2.setDomainGridlinePaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L115">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L117">        Stroke s = new BasicStroke(1.5f);</span>
+<span class="fc" id="L118">        plot1.setDomainGridlineStroke(s);</span>
+<span class="fc" id="L119">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L120">        plot2.setDomainGridlineStroke(s);</span>
+<span class="fc" id="L121">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L123">        plot1.setRangeGridlinesVisible(false);</span>
+<span class="fc" id="L124">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L125">        plot2.setRangeGridlinesVisible(false);</span>
+<span class="fc" id="L126">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L128">        plot1.setRangeGridlinePaint(new GradientPaint(1.0f, 2.0f, Color.green,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L130">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L131">        plot2.setRangeGridlinePaint(new GradientPaint(1.0f, 2.0f, Color.green,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L133">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L135">        Stroke s2 = new BasicStroke(1.5f);</span>
+<span class="fc" id="L136">        plot1.setRangeGridlineStroke(s2);</span>
+<span class="fc" id="L137">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L138">        plot2.setRangeGridlineStroke(s2);</span>
+<span class="fc" id="L139">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L141">        plot1.setDomainPannable(true);</span>
+<span class="fc" id="L142">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L143">        plot2.setDomainPannable(true);</span>
+<span class="fc" id="L144">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L146">        plot1.setRangePannable(true);</span>
+<span class="fc" id="L147">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L148">        plot2.setRangePannable(true);</span>
+<span class="fc" id="L149">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L151">    }</span>
+
+    /**
+     * Some tests for the data array equality in the equals() method.
+     */
+    public void testEquals2() {
+<span class="fc" id="L157">        FastScatterPlot plot1 = new FastScatterPlot();</span>
+<span class="fc" id="L158">        FastScatterPlot plot2 = new FastScatterPlot();</span>
+<span class="fc" id="L159">        assertTrue(plot1.equals(plot2));</span>
+<span class="fc" id="L160">        assertTrue(plot2.equals(plot1));</span>
+
+<span class="fc" id="L162">        float[][] a = new float[2][];</span>
+<span class="fc" id="L163">        float[][] b = new float[2][];</span>
+<span class="fc" id="L164">        plot1.setData(a);</span>
+<span class="fc" id="L165">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L166">        plot2.setData(b);</span>
+<span class="fc" id="L167">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L169">        a[0] = new float[6];</span>
+<span class="fc" id="L170">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L171">        b[0] = new float[6];</span>
+<span class="fc" id="L172">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L174">        a[0][0] = 1.0f;</span>
+<span class="fc" id="L175">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L176">        b[0][0] = 1.0f;</span>
+<span class="fc" id="L177">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L179">        a[0][1] = Float.NaN;</span>
+<span class="fc" id="L180">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L181">        b[0][1] = Float.NaN;</span>
+<span class="fc" id="L182">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L184">        a[0][2] = Float.POSITIVE_INFINITY;</span>
+<span class="fc" id="L185">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L186">        b[0][2] = Float.POSITIVE_INFINITY;</span>
+<span class="fc" id="L187">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L189">        a[0][3] = Float.NEGATIVE_INFINITY;</span>
+<span class="fc" id="L190">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L191">        b[0][3] = Float.NEGATIVE_INFINITY;</span>
+<span class="fc" id="L192">        assertTrue(plot1.equals(plot2));</span>
+<span class="fc" id="L193">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L199">        FastScatterPlot p1 = new FastScatterPlot();</span>
+<span class="fc" id="L200">        FastScatterPlot p2 = null;</span>
+        try {
+<span class="fc" id="L202">            p2 = (FastScatterPlot) p1.clone();</span>
+        }
+<span class="nc" id="L204">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L205">            e.printStackTrace();</span>
+<span class="fc" id="L206">        }</span>
+<span class="pc bpc" id="L207" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L209">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L210">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L216">        float[][] data = createData();</span>
+<span class="fc" id="L217">        ValueAxis domainAxis = new NumberAxis(&quot;X&quot;);</span>
+<span class="fc" id="L218">        ValueAxis rangeAxis = new NumberAxis(&quot;Y&quot;);</span>
+<span class="fc" id="L219">        FastScatterPlot p1 = new FastScatterPlot(data, domainAxis, rangeAxis);</span>
+<span class="fc" id="L220">        FastScatterPlot p2 = null;</span>
+
+        try {
+<span class="fc" id="L223">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L224">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L225">            out.writeObject(p1);</span>
+<span class="fc" id="L226">            out.close();</span>
+
+<span class="fc" id="L228">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L229">                    buffer.toByteArray()));</span>
+<span class="fc" id="L230">            p2 = (FastScatterPlot) in.readObject();</span>
+<span class="fc" id="L231">            in.close();</span>
+        }
+<span class="nc" id="L233">        catch (Exception e) {</span>
+<span class="nc" id="L234">            e.printStackTrace();</span>
+<span class="fc" id="L235">        }</span>
+<span class="fc" id="L236">        assertEquals(p1, p2);</span>
+<span class="fc" id="L237">    }</span>
+
+    /**
+     * Draws the chart with a &lt;code&gt;null&lt;/code&gt; info object to make sure that
+     * no exceptions are thrown.
+     */
+    public void testDrawWithNullInfo() {
+<span class="fc" id="L244">        boolean success = false;</span>
+        try {
+<span class="fc" id="L246">            float[][] data = createData();</span>
+
+<span class="fc" id="L248">            ValueAxis domainAxis = new NumberAxis(&quot;X&quot;);</span>
+<span class="fc" id="L249">            ValueAxis rangeAxis = new NumberAxis(&quot;Y&quot;);</span>
+<span class="fc" id="L250">            FastScatterPlot plot = new FastScatterPlot(data, domainAxis,</span>
+                    rangeAxis);
+<span class="fc" id="L252">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L253">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    null);
+<span class="fc" id="L255">            success = true;</span>
+        }
+<span class="nc" id="L257">        catch (NullPointerException e) {</span>
+<span class="nc" id="L258">            e.printStackTrace();</span>
+<span class="nc" id="L259">            success = false;</span>
+<span class="fc" id="L260">        }</span>
+<span class="fc" id="L261">        assertTrue(success);</span>
+<span class="fc" id="L262">    }</span>
+
+    /**
+     * Populates the data array with random values.
+     *
+     * @return Random data.
+     */
+    private float[][] createData() {
+<span class="fc" id="L270">        float[][] result = new float[2][1000];</span>
+<span class="fc bfc" id="L271" title="All 2 branches covered.">        for (int i = 0; i &lt; result[0].length; i++) {</span>
+<span class="fc" id="L272">            float x = (float) i + 100;</span>
+<span class="fc" id="L273">            result[0][i] = x;</span>
+<span class="fc" id="L274">            result[1][i] = 100 + (float) Math.random() * 1000;</span>
+        }
+<span class="fc" id="L276">        return result;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SamplingXYLineRenderer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.xy</a> &gt; <span class="el_source">SamplingXYLineRenderer.java</span></div><h1>SamplingXYLineRenderer.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2011, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------------
+ * SamplingXYLineRenderer.java
+ * ---------------------------
+ * (C) Copyright 2008, 2009, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes:
+ * --------
+ * 02-Oct-2008 : Version 1 (DG);
+ * 28-Apr-2009 : Fixed bug in legend shape display, and deprecated
+ *               getLegendLine() and setLegendLine() - these methods
+ *               are unnecessary because a mechanism already exists in the
+ *               superclass for specifying a custom legend shape (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.xy;
+
+import java.awt.Graphics2D;
+import java.awt.Shape;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.event.RendererChangeEvent;
+import org.jfree.chart.plot.CrosshairState;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.PlotRenderingInfo;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.io.SerialUtilities;
+import org.jfree.ui.RectangleEdge;
+import org.jfree.util.PublicCloneable;
+import org.jfree.util.ShapeUtilities;
+
+/**
+ * A renderer that draws line charts.  The renderer doesn't necessarily plot
+ * every data item - instead, it tries to plot only those data items that
+ * make a difference to the visual output (the other data items are skipped).  
+ * This renderer is designed for use with the {@link XYPlot} class.
+ *
+ * @since 1.0.13
+ */
+public class SamplingXYLineRenderer extends AbstractXYItemRenderer
+        implements XYItemRenderer, Cloneable, PublicCloneable, Serializable {
+
+    /** The shape that is used to represent a line in the legend. */
+    private transient Shape legendLine;
+
+    /**
+     * Creates a new renderer.
+     */
+<span class="nc" id="L87">    public SamplingXYLineRenderer() {</span>
+<span class="nc" id="L88">        this.legendLine = new Line2D.Double(-7.0, 0.0, 7.0, 0.0);</span>
+<span class="nc" id="L89">        setBaseLegendShape(this.legendLine);</span>
+<span class="nc" id="L90">        setTreatLegendShapeAsLine(true);</span>
+<span class="nc" id="L91">    }</span>
+
+    /**
+     * Returns the shape used to represent a line in the legend.
+     *
+     * @return The legend line (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setLegendLine(Shape)
+     *
+     * @deprecated As of version 1.0.14, this method is deprecated.  You
+     * should use the {@link #getBaseLegendShape()} method instead.
+     */
+    public Shape getLegendLine() {
+<span class="nc" id="L104">        return this.legendLine;</span>
+    }
+
+    /**
+     * Sets the shape used as a line in each legend item and sends a
+     * {@link RendererChangeEvent} to all registered listeners.
+     *
+     * @param line  the line (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #getLegendLine()
+     *
+     * @deprecated As of version 1.0.14, this method is deprecated.  You should
+     * use the {@link #setBaseLegendShape(java.awt.Shape)} method instead.
+     */
+    public void setLegendLine(Shape line) {
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (line == null) {</span>
+<span class="nc" id="L120">            throw new IllegalArgumentException(&quot;Null 'line' argument.&quot;);</span>
+        }
+<span class="nc" id="L122">        this.legendLine = line;</span>
+<span class="nc" id="L123">        fireChangeEvent();</span>
+<span class="nc" id="L124">    }</span>
+
+    /**
+     * Returns the number of passes through the data that the renderer requires
+     * in order to draw the chart.  Most charts will require a single pass, but
+     * some require two passes.
+     *
+     * @return The pass count.
+     */
+    public int getPassCount() {
+<span class="nc" id="L134">        return 1;</span>
+    }
+
+    /**
+     * Records the state for the renderer.  This is used to preserve state
+     * information between calls to the drawItem() method for a single chart
+     * drawing.
+     */
+    public static class State extends XYItemRendererState {
+
+        /** The path for the current series. */
+        GeneralPath seriesPath;
+
+        /**
+         * A second path that draws vertical intervals to cover any extreme
+         * values.
+         */
+        GeneralPath intervalPath;
+
+        /**
+         * The minimum change in the x-value needed to trigger an update to
+         * the seriesPath.
+         */
+<span class="nc" id="L157">        double dX = 1.0;</span>
+
+        /** The last x-coordinate visited by the seriesPath. */
+        double lastX;
+
+        /** The initial y-coordinate for the current x-coordinate. */
+<span class="nc" id="L163">        double openY = 0.0;</span>
+
+        /** The highest y-coordinate for the current x-coordinate. */
+<span class="nc" id="L166">        double highY = 0.0;</span>
+
+        /** The lowest y-coordinate for the current x-coordinate. */
+<span class="nc" id="L169">        double lowY = 0.0;</span>
+
+        /** The final y-coordinate for the current x-coordinate. */
+<span class="nc" id="L172">        double closeY = 0.0;</span>
+
+        /**
+         * A flag that indicates if the last (x, y) point was 'good'
+         * (non-null).
+         */
+        boolean lastPointGood;
+
+        /**
+         * Creates a new state instance.
+         *
+         * @param info  the plot rendering info.
+         */
+        public State(PlotRenderingInfo info) {
+<span class="nc" id="L186">            super(info);</span>
+<span class="nc" id="L187">        }</span>
+
+        /**
+         * This method is called by the {@link XYPlot} at the start of each
+         * series pass.  We reset the state for the current series.
+         *
+         * @param dataset  the dataset.
+         * @param series  the series index.
+         * @param firstItem  the first item index for this pass.
+         * @param lastItem  the last item index for this pass.
+         * @param pass  the current pass index.
+         * @param passCount  the number of passes.
+         */
+        public void startSeriesPass(XYDataset dataset, int series,
+                int firstItem, int lastItem, int pass, int passCount) {
+<span class="nc" id="L202">            this.seriesPath.reset();</span>
+<span class="nc" id="L203">            this.intervalPath.reset();</span>
+<span class="nc" id="L204">            this.lastPointGood = false;</span>
+<span class="nc" id="L205">            super.startSeriesPass(dataset, series, firstItem, lastItem, pass,</span>
+                    passCount);
+<span class="nc" id="L207">        }</span>
+
+    }
+
+    /**
+     * Initialises the renderer.
+     * &lt;P&gt;
+     * This method will be called before the first item is rendered, giving the
+     * renderer an opportunity to initialise any state information it wants to
+     * maintain.  The renderer can do nothing if it chooses.
+     *
+     * @param g2  the graphics device.
+     * @param dataArea  the area inside the axes.
+     * @param plot  the plot.
+     * @param data  the data.
+     * @param info  an optional info collection object to return data back to
+     *              the caller.
+     *
+     * @return The renderer state.
+     */
+    public XYItemRendererState initialise(Graphics2D g2,
+            Rectangle2D dataArea, XYPlot plot, XYDataset data,
+            PlotRenderingInfo info) {
+
+<span class="nc" id="L231">        double dpi = 72;</span>
+    //        Integer dpiVal = (Integer) g2.getRenderingHint(HintKey.DPI);
+    //        if (dpiVal != null) {
+    //            dpi = dpiVal.intValue();
+    //        }
+<span class="nc" id="L236">        State state = new State(info);</span>
+<span class="nc" id="L237">        state.seriesPath = new GeneralPath();</span>
+<span class="nc" id="L238">        state.intervalPath = new GeneralPath();</span>
+<span class="nc" id="L239">        state.dX = 72.0 / dpi;</span>
+<span class="nc" id="L240">        return state;</span>
+    }
+
+    /**
+     * Draws the visual representation of a single data item.
+     *
+     * @param g2  the graphics device.
+     * @param state  the renderer state.
+     * @param dataArea  the area within which the data is being drawn.
+     * @param info  collects information about the drawing.
+     * @param plot  the plot (can be used to obtain standard color
+     *              information etc).
+     * @param domainAxis  the domain axis.
+     * @param rangeAxis  the range axis.
+     * @param dataset  the dataset.
+     * @param series  the series index (zero-based).
+     * @param item  the item index (zero-based).
+     * @param crosshairState  crosshair information for the plot
+     *                        (&lt;code&gt;null&lt;/code&gt; permitted).
+     * @param pass  the pass index.
+     */
+    public void drawItem(Graphics2D g2,
+                         XYItemRendererState state,
+                         Rectangle2D dataArea,
+                         PlotRenderingInfo info,
+                         XYPlot plot,
+                         ValueAxis domainAxis,
+                         ValueAxis rangeAxis,
+                         XYDataset dataset,
+                         int series,
+                         int item,
+                         CrosshairState crosshairState,
+                         int pass) {
+
+        // do nothing if item is not visible
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        if (!getItemVisible(series, item)) {</span>
+<span class="nc" id="L276">            return;</span>
+        }
+<span class="nc" id="L278">        RectangleEdge xAxisLocation = plot.getDomainAxisEdge();</span>
+<span class="nc" id="L279">        RectangleEdge yAxisLocation = plot.getRangeAxisEdge();</span>
+
+        // get the data point...
+<span class="nc" id="L282">        double x1 = dataset.getXValue(series, item);</span>
+<span class="nc" id="L283">        double y1 = dataset.getYValue(series, item);</span>
+<span class="nc" id="L284">        double transX1 = domainAxis.valueToJava2D(x1, dataArea, xAxisLocation);</span>
+<span class="nc" id="L285">        double transY1 = rangeAxis.valueToJava2D(y1, dataArea, yAxisLocation);</span>
+
+<span class="nc" id="L287">        State s = (State) state;</span>
+        // update path to reflect latest point
+<span class="nc bnc" id="L289" title="All 4 branches missed.">        if (!Double.isNaN(transX1) &amp;&amp; !Double.isNaN(transY1)) {</span>
+<span class="nc" id="L290">            float x = (float) transX1;</span>
+<span class="nc" id="L291">            float y = (float) transY1;</span>
+<span class="nc" id="L292">            PlotOrientation orientation = plot.getOrientation();</span>
+<span class="nc bnc" id="L293" title="All 2 branches missed.">            if (orientation == PlotOrientation.HORIZONTAL) {</span>
+<span class="nc" id="L294">                x = (float) transY1;</span>
+<span class="nc" id="L295">                y = (float) transX1;</span>
+            }
+<span class="nc bnc" id="L297" title="All 2 branches missed.">            if (s.lastPointGood) {</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">                if ((Math.abs(x - s.lastX) &gt; s.dX)) {</span>
+<span class="nc" id="L299">                    s.seriesPath.lineTo(x, y);</span>
+<span class="nc bnc" id="L300" title="All 2 branches missed.">                    if (s.lowY &lt; s.highY) {</span>
+<span class="nc" id="L301">                        s.intervalPath.moveTo((float) s.lastX, (float) s.lowY);</span>
+<span class="nc" id="L302">                        s.intervalPath.lineTo((float) s.lastX, (float) s.highY);</span>
+                    }
+<span class="nc" id="L304">                    s.lastX = x;</span>
+<span class="nc" id="L305">                    s.openY = y;</span>
+<span class="nc" id="L306">                    s.highY = y;</span>
+<span class="nc" id="L307">                    s.lowY = y;</span>
+<span class="nc" id="L308">                    s.closeY = y;</span>
+                }
+                else {
+<span class="nc" id="L311">                    s.highY = Math.max(s.highY, y);</span>
+<span class="nc" id="L312">                    s.lowY = Math.min(s.lowY, y);</span>
+<span class="nc" id="L313">                    s.closeY = y;</span>
+                }
+            }
+            else {
+<span class="nc" id="L317">                s.seriesPath.moveTo(x, y);</span>
+<span class="nc" id="L318">                s.lastX = x;</span>
+<span class="nc" id="L319">                s.openY = y;</span>
+<span class="nc" id="L320">                s.highY = y;</span>
+<span class="nc" id="L321">                s.lowY = y;</span>
+<span class="nc" id="L322">                s.closeY = y;</span>
+            }
+<span class="nc" id="L324">            s.lastPointGood = true;</span>
+<span class="nc" id="L325">        }</span>
+        else {
+<span class="nc" id="L327">            s.lastPointGood = false;</span>
+        }
+        // if this is the last item, draw the path ...
+<span class="nc bnc" id="L330" title="All 2 branches missed.">        if (item == s.getLastItemIndex()) {</span>
+            // draw path
+<span class="nc" id="L332">            PathIterator pi = s.seriesPath.getPathIterator(null);</span>
+<span class="nc" id="L333">            int count = 0;</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">            while (!pi.isDone()) {</span>
+<span class="nc" id="L335">                count++;</span>
+<span class="nc" id="L336">                pi.next();</span>
+            }
+<span class="nc" id="L338">            g2.setStroke(getItemStroke(series, item));</span>
+<span class="nc" id="L339">            g2.setPaint(getItemPaint(series, item));</span>
+<span class="nc" id="L340">            g2.draw(s.seriesPath);</span>
+<span class="nc" id="L341">            g2.draw(s.intervalPath);</span>
+        }
+<span class="nc" id="L343">    }</span>
+
+    /**
+     * Returns a clone of the renderer.
+     *
+     * @return A clone.
+     *
+     * @throws CloneNotSupportedException if the clone cannot be created.
+     */
+    public Object clone() throws CloneNotSupportedException {
+<span class="nc" id="L353">        SamplingXYLineRenderer clone = (SamplingXYLineRenderer) super.clone();</span>
+<span class="nc bnc" id="L354" title="All 2 branches missed.">        if (this.legendLine != null) {</span>
+<span class="nc" id="L355">            clone.legendLine = ShapeUtilities.clone(this.legendLine);</span>
+        }
+<span class="nc" id="L357">        return clone;</span>
+    }
+
+    /**
+     * Tests this renderer for equality with an arbitrary object.
+     *
+     * @param obj  the object (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return &lt;code&gt;true&lt;/code&gt; or &lt;code&gt;false&lt;/code&gt;.
+     */
+    public boolean equals(Object obj) {
+<span class="nc bnc" id="L368" title="All 2 branches missed.">        if (obj == this) {</span>
+<span class="nc" id="L369">            return true;</span>
+        }
+<span class="nc bnc" id="L371" title="All 2 branches missed.">        if (!(obj instanceof SamplingXYLineRenderer)) {</span>
+<span class="nc" id="L372">            return false;</span>
+        }
+<span class="nc bnc" id="L374" title="All 2 branches missed.">        if (!super.equals(obj)) {</span>
+<span class="nc" id="L375">            return false;</span>
+        }
+<span class="nc" id="L377">        SamplingXYLineRenderer that = (SamplingXYLineRenderer) obj;</span>
+<span class="nc bnc" id="L378" title="All 2 branches missed.">        if (!ShapeUtilities.equal(this.legendLine, that.legendLine)) {</span>
+<span class="nc" id="L379">            return false;</span>
+        }
+<span class="nc" id="L381">        return true;</span>
+    }
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the input stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     * @throws ClassNotFoundException  if there is a classpath problem.
+     */
+    private void readObject(ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+<span class="nc" id="L394">        stream.defaultReadObject();</span>
+<span class="nc" id="L395">        this.legendLine = SerialUtilities.readShape(stream);</span>
+<span class="nc" id="L396">    }</span>
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the output stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     */
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+<span class="nc" id="L406">        stream.defaultWriteObject();</span>
+<span class="nc" id="L407">        SerialUtilities.writeShape(this.legendLine, stream);</span>
+<span class="nc" id="L408">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
