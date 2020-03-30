@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KeyedObjectsTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.junit</a> &gt; <span class="el_source">KeyedObjectsTests.java</span></div><h1>KeyedObjectsTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------
+ * KeyedObjectsTests.java
+ * ----------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 27-Jan-2004 : Version 1 (DG);
+ * 28-Sep-2007 : Added testCloning2() (DG);
+ * 03-Oct-2007 : New tests (DG);
+ *
+ */
+
+package org.jfree.data.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.KeyedObjects;
+import org.jfree.data.UnknownKeyException;
+import org.jfree.data.general.DefaultPieDataset;
+
+/**
+ * Tests for the {@link KeyedObjects} class.
+ */
+public class KeyedObjectsTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L72">        return new TestSuite(KeyedObjectsTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public KeyedObjectsTests(String name) {
+<span class="fc" id="L81">        super(name);</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Common test setup.
+     */
+    protected void setUp() {
+        // no setup required
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L95">        KeyedObjects ko1 = new KeyedObjects();</span>
+<span class="fc" id="L96">        ko1.addObject(&quot;V1&quot;, new Integer(1));</span>
+<span class="fc" id="L97">        ko1.addObject(&quot;V2&quot;, null);</span>
+<span class="fc" id="L98">        ko1.addObject(&quot;V3&quot;, new Integer(3));</span>
+<span class="fc" id="L99">        KeyedObjects ko2 = null;</span>
+        try {
+<span class="fc" id="L101">            ko2 = (KeyedObjects) ko1.clone();</span>
+        }
+<span class="nc" id="L103">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L104">            System.err.println(&quot;Failed to clone.&quot;);</span>
+<span class="fc" id="L105">        }</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">        assertTrue(ko1 != ko2);</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">        assertTrue(ko1.getClass() == ko2.getClass());</span>
+<span class="fc" id="L108">        assertTrue(ko1.equals(ko2));</span>
+<span class="fc" id="L109">    }</span>
+
+    /**
+     * Confirm special features of cloning.
+     */
+    public void testCloning2() {
+        // case 1 - object is mutable but not PublicCloneable
+<span class="fc" id="L116">        Object obj1 = new ArrayList();</span>
+<span class="fc" id="L117">        KeyedObjects ko1 = new KeyedObjects();</span>
+<span class="fc" id="L118">        ko1.addObject(&quot;K1&quot;, obj1);</span>
+<span class="fc" id="L119">        KeyedObjects ko2 = null;</span>
+        try {
+<span class="fc" id="L121">            ko2 = (KeyedObjects) ko1.clone();</span>
+        }
+<span class="nc" id="L123">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L124">            e.printStackTrace();</span>
+<span class="fc" id="L125">        }</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        assertTrue(ko1 != ko2);</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">        assertTrue(ko1.getClass() == ko2.getClass());</span>
+<span class="fc" id="L128">        assertTrue(ko1.equals(ko2));</span>
+
+        // the clone contains a reference to the original object
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        assertTrue(ko2.getObject(&quot;K1&quot;) == obj1);</span>
+
+        // CASE 2 - object is mutable AND PublicCloneable
+<span class="fc" id="L134">        obj1 = new DefaultPieDataset();</span>
+<span class="fc" id="L135">        ko1 = new KeyedObjects();</span>
+<span class="fc" id="L136">        ko1.addObject(&quot;K1&quot;, obj1);</span>
+<span class="fc" id="L137">        ko2 = null;</span>
+        try {
+<span class="fc" id="L139">            ko2 = (KeyedObjects) ko1.clone();</span>
+        }
+<span class="nc" id="L141">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L142">            e.printStackTrace();</span>
+<span class="fc" id="L143">        }</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">        assertTrue(ko1 != ko2);</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">        assertTrue(ko1.getClass() == ko2.getClass());</span>
+<span class="fc" id="L146">        assertTrue(ko1.equals(ko2));</span>
+
+        // the clone contains a reference to a CLONE of the original object
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">        assertTrue(ko2.getObject(&quot;K1&quot;) != obj1);</span>
+<span class="fc" id="L150">    }</span>
+
+    /**
+     * Check that inserting and retrieving values works as expected.
+     */
+    public void testInsertAndRetrieve() {
+
+<span class="fc" id="L157">        KeyedObjects data = new KeyedObjects();</span>
+<span class="fc" id="L158">        data.addObject(&quot;A&quot;, new Double(1.0));</span>
+<span class="fc" id="L159">        data.addObject(&quot;B&quot;, new Double(2.0));</span>
+<span class="fc" id="L160">        data.addObject(&quot;C&quot;, new Double(3.0));</span>
+<span class="fc" id="L161">        data.addObject(&quot;D&quot;, null);</span>
+
+        // check key order
+<span class="fc" id="L164">        assertEquals(data.getKey(0), &quot;A&quot;);</span>
+<span class="fc" id="L165">        assertEquals(data.getKey(1), &quot;B&quot;);</span>
+<span class="fc" id="L166">        assertEquals(data.getKey(2), &quot;C&quot;);</span>
+<span class="fc" id="L167">        assertEquals(data.getKey(3), &quot;D&quot;);</span>
+
+        // check retrieve value by key
+<span class="fc" id="L170">        assertEquals(data.getObject(&quot;A&quot;), new Double(1.0));</span>
+<span class="fc" id="L171">        assertEquals(data.getObject(&quot;B&quot;), new Double(2.0));</span>
+<span class="fc" id="L172">        assertEquals(data.getObject(&quot;C&quot;), new Double(3.0));</span>
+<span class="fc" id="L173">        assertEquals(data.getObject(&quot;D&quot;), null);</span>
+
+<span class="fc" id="L175">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L177">            data.getObject(&quot;Not a key&quot;);</span>
+        }
+<span class="fc" id="L179">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L180">            pass = true;</span>
+<span class="nc" id="L181">        }</span>
+<span class="fc" id="L182">        assertTrue(pass);</span>
+
+        // check retrieve value by index
+<span class="fc" id="L185">        assertEquals(data.getObject(0), new Double(1.0));</span>
+<span class="fc" id="L186">        assertEquals(data.getObject(1), new Double(2.0));</span>
+<span class="fc" id="L187">        assertEquals(data.getObject(2), new Double(3.0));</span>
+<span class="fc" id="L188">        assertEquals(data.getObject(3), null);</span>
+
+<span class="fc" id="L190">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L197">        KeyedObjects ko1 = new KeyedObjects();</span>
+<span class="fc" id="L198">        ko1.addObject(&quot;Key 1&quot;, &quot;Object 1&quot;);</span>
+<span class="fc" id="L199">        ko1.addObject(&quot;Key 2&quot;, null);</span>
+<span class="fc" id="L200">        ko1.addObject(&quot;Key 3&quot;, &quot;Object 2&quot;);</span>
+
+<span class="fc" id="L202">        KeyedObjects ko2 = null;</span>
+
+        try {
+<span class="fc" id="L205">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L206">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L207">            out.writeObject(ko1);</span>
+<span class="fc" id="L208">            out.close();</span>
+
+<span class="fc" id="L210">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L211">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L212">            ko2 = (KeyedObjects) in.readObject();</span>
+<span class="fc" id="L213">            in.close();</span>
+        }
+<span class="nc" id="L215">        catch (Exception e) {</span>
+<span class="nc" id="L216">            e.printStackTrace();</span>
+<span class="fc" id="L217">        }</span>
+<span class="fc" id="L218">        assertEquals(ko1, ko2);</span>
+
+<span class="fc" id="L220">    }</span>
+
+    /**
+     * Simple checks for the getObject(int) method.
+     */
+    public void testGetObject() {
+        // retrieve an item
+<span class="fc" id="L227">        KeyedObjects ko1 = new KeyedObjects();</span>
+<span class="fc" id="L228">        ko1.addObject(&quot;Key 1&quot;, &quot;Object 1&quot;);</span>
+<span class="fc" id="L229">        ko1.addObject(&quot;Key 2&quot;, null);</span>
+<span class="fc" id="L230">        ko1.addObject(&quot;Key 3&quot;, &quot;Object 2&quot;);</span>
+<span class="fc" id="L231">        assertEquals(&quot;Object 1&quot;, ko1.getObject(0));</span>
+<span class="fc" id="L232">        assertNull(ko1.getObject(1));</span>
+<span class="fc" id="L233">        assertEquals(&quot;Object 2&quot;, ko1.getObject(2));</span>
+
+        // request with a negative index
+<span class="fc" id="L236">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L238">            ko1.getObject(-1);</span>
+        }
+<span class="fc" id="L240">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L241">            pass = true;</span>
+<span class="nc" id="L242">        }</span>
+<span class="fc" id="L243">        assertTrue(pass);</span>
+
+        // request width index == itemCount
+<span class="fc" id="L246">        pass = false;</span>
+        try {
+<span class="nc" id="L248">            ko1.getObject(3);</span>
+        }
+<span class="fc" id="L250">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L251">            pass = true;</span>
+<span class="nc" id="L252">        }</span>
+<span class="fc" id="L253">        assertTrue(pass);</span>
+<span class="fc" id="L254">    }</span>
+
+    /**
+     * Simple checks for the getKey(int) method.
+     */
+    public void testGetKey() {
+        // retrieve an item
+<span class="fc" id="L261">        KeyedObjects ko1 = new KeyedObjects();</span>
+<span class="fc" id="L262">        ko1.addObject(&quot;Key 1&quot;, &quot;Object 1&quot;);</span>
+<span class="fc" id="L263">        ko1.addObject(&quot;Key 2&quot;, null);</span>
+<span class="fc" id="L264">        ko1.addObject(&quot;Key 3&quot;, &quot;Object 2&quot;);</span>
+<span class="fc" id="L265">        assertEquals(&quot;Key 1&quot;, ko1.getKey(0));</span>
+<span class="fc" id="L266">        assertEquals(&quot;Key 2&quot;, ko1.getKey(1));</span>
+<span class="fc" id="L267">        assertEquals(&quot;Key 3&quot;, ko1.getKey(2));</span>
+
+        // request with a negative index
+<span class="fc" id="L270">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L272">            ko1.getKey(-1);</span>
+        }
+<span class="fc" id="L274">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L275">            pass = true;</span>
+<span class="nc" id="L276">        }</span>
+<span class="fc" id="L277">        assertTrue(pass);</span>
+
+        // request width index == itemCount
+<span class="fc" id="L280">        pass = false;</span>
+        try {
+<span class="nc" id="L282">            ko1.getKey(3);</span>
+        }
+<span class="fc" id="L284">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L285">            pass = true;</span>
+<span class="nc" id="L286">        }</span>
+<span class="fc" id="L287">        assertTrue(pass);</span>
+<span class="fc" id="L288">    }</span>
+
+    /**
+     * Simple checks for the getIndex(Comparable) method.
+     */
+    public void testGetIndex() {
+<span class="fc" id="L294">        KeyedObjects ko1 = new KeyedObjects();</span>
+<span class="fc" id="L295">        ko1.addObject(&quot;Key 1&quot;, &quot;Object 1&quot;);</span>
+<span class="fc" id="L296">        ko1.addObject(&quot;Key 2&quot;, null);</span>
+<span class="fc" id="L297">        ko1.addObject(&quot;Key 3&quot;, &quot;Object 2&quot;);</span>
+<span class="fc" id="L298">        assertEquals(0, ko1.getIndex(&quot;Key 1&quot;));</span>
+<span class="fc" id="L299">        assertEquals(1, ko1.getIndex(&quot;Key 2&quot;));</span>
+<span class="fc" id="L300">        assertEquals(2, ko1.getIndex(&quot;Key 3&quot;));</span>
+
+        // check null argument
+<span class="fc" id="L303">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L305">            ko1.getIndex(null);</span>
+        }
+<span class="fc" id="L307">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L308">            pass = true;</span>
+<span class="nc" id="L309">        }</span>
+<span class="fc" id="L310">        assertTrue(pass);</span>
+<span class="fc" id="L311">    }</span>
+
+    /**
+     * Some checks for the setObject(Comparable, Object) method.
+     */
+    public void testSetObject() {
+<span class="fc" id="L317">        KeyedObjects ko1 = new KeyedObjects();</span>
+<span class="fc" id="L318">        ko1.setObject(&quot;Key 1&quot;, &quot;Object 1&quot;);</span>
+<span class="fc" id="L319">        ko1.setObject(&quot;Key 2&quot;, null);</span>
+<span class="fc" id="L320">        ko1.setObject(&quot;Key 3&quot;, &quot;Object 2&quot;);</span>
+
+<span class="fc" id="L322">        assertEquals(&quot;Object 1&quot;, ko1.getObject(&quot;Key 1&quot;));</span>
+<span class="fc" id="L323">        assertEquals(null, ko1.getObject(&quot;Key 2&quot;));</span>
+<span class="fc" id="L324">        assertEquals(&quot;Object 2&quot;, ko1.getObject(&quot;Key 3&quot;));</span>
+
+        // replace an existing value
+<span class="fc" id="L327">        ko1.setObject(&quot;Key 2&quot;, &quot;AAA&quot;);</span>
+<span class="fc" id="L328">        ko1.setObject(&quot;Key 3&quot;, &quot;BBB&quot;);</span>
+<span class="fc" id="L329">        assertEquals(&quot;AAA&quot;, ko1.getObject(&quot;Key 2&quot;));</span>
+<span class="fc" id="L330">        assertEquals(&quot;BBB&quot;, ko1.getObject(&quot;Key 3&quot;));</span>
+
+        // try a null key - should throw an exception
+<span class="fc" id="L333">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L335">            ko1.setObject(null, &quot;XX&quot;);</span>
+        }
+<span class="fc" id="L337">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L338">            pass = true;</span>
+<span class="nc" id="L339">        }</span>
+<span class="fc" id="L340">        assertTrue(pass);</span>
+<span class="fc" id="L341">    }</span>
+
+    /**
+     * Some checks for the removeValue() methods.
+     */
+    public void testRemoveValue() {
+<span class="fc" id="L347">        KeyedObjects ko1 = new KeyedObjects();</span>
+<span class="fc" id="L348">        ko1.setObject(&quot;Key 1&quot;, &quot;Object 1&quot;);</span>
+<span class="fc" id="L349">        ko1.setObject(&quot;Key 2&quot;, null);</span>
+<span class="fc" id="L350">        ko1.setObject(&quot;Key 3&quot;, &quot;Object 2&quot;);</span>
+
+<span class="fc" id="L352">        ko1.removeValue(1);</span>
+<span class="fc" id="L353">        assertEquals(2, ko1.getItemCount());</span>
+<span class="fc" id="L354">        assertEquals(1, ko1.getIndex(&quot;Key 3&quot;));</span>
+
+<span class="fc" id="L356">        ko1.removeValue(&quot;Key 1&quot;);</span>
+<span class="fc" id="L357">        assertEquals(1, ko1.getItemCount());</span>
+<span class="fc" id="L358">        assertEquals(0, ko1.getIndex(&quot;Key 3&quot;));</span>
+
+        // try unknown key
+<span class="fc" id="L361">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L363">            ko1.removeValue(&quot;UNKNOWN&quot;);</span>
+        }
+<span class="fc" id="L365">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L366">            pass = true;</span>
+<span class="nc" id="L367">        }</span>
+<span class="fc" id="L368">        assertTrue(pass);</span>
+
+        // try null argument
+<span class="fc" id="L371">        pass = false;</span>
+        try {
+<span class="nc" id="L373">            ko1.removeValue(null);</span>
+        }
+<span class="fc" id="L375">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L376">            pass = true;</span>
+<span class="nc" id="L377">        }</span>
+<span class="fc" id="L378">        assertTrue(pass);</span>
+<span class="fc" id="L379">    }</span>
+
+    /**
+     * Some checks for the removeValue(int) method.
+     */
+    public void testRemoveValueInt() {
+<span class="fc" id="L385">        KeyedObjects ko1 = new KeyedObjects();</span>
+<span class="fc" id="L386">        ko1.setObject(&quot;Key 1&quot;, &quot;Object 1&quot;);</span>
+<span class="fc" id="L387">        ko1.setObject(&quot;Key 2&quot;, null);</span>
+<span class="fc" id="L388">        ko1.setObject(&quot;Key 3&quot;, &quot;Object 2&quot;);</span>
+
+<span class="fc" id="L390">        ko1.removeValue(1);</span>
+<span class="fc" id="L391">        assertEquals(2, ko1.getItemCount());</span>
+<span class="fc" id="L392">        assertEquals(1, ko1.getIndex(&quot;Key 3&quot;));</span>
+
+
+        // try negative key index
+<span class="fc" id="L396">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L398">            ko1.removeValue(-1);</span>
+        }
+<span class="fc" id="L400">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L401">            pass = true;</span>
+<span class="nc" id="L402">        }</span>
+<span class="fc" id="L403">        assertTrue(pass);</span>
+
+        // try key index == itemCount
+<span class="fc" id="L406">        pass = false;</span>
+        try {
+<span class="nc" id="L408">            ko1.removeValue(2);</span>
+        }
+<span class="fc" id="L410">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L411">            pass = true;</span>
+<span class="nc" id="L412">        }</span>
+<span class="fc" id="L413">        assertTrue(pass);</span>
+<span class="fc" id="L414">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

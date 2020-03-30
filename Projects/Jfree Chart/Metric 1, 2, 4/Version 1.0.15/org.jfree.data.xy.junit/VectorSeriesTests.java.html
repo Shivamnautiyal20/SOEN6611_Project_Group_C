@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VectorSeriesTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.xy.junit</a> &gt; <span class="el_source">VectorSeriesTests.java</span></div><h1>VectorSeriesTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------
+ * VectorSeriesTests.java
+ * ----------------------
+ * (C) Copyright 2007, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 30-Jan-2007 : Version 1, based on XYSeriesTests (DG);
+ * 24-May-2007 : Updated for modified method names (DG);
+ * 27-Nov-2007 : Added testClear() method (DG);
+ *
+ */
+
+package org.jfree.data.xy.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.general.SeriesChangeEvent;
+import org.jfree.data.general.SeriesChangeListener;
+import org.jfree.data.xy.VectorSeries;
+import org.jfree.data.xy.XYCoordinate;
+
+/**
+ * Tests for the {@link VectorSeries} class.
+ */
+public class VectorSeriesTests extends TestCase
+        implements SeriesChangeListener {
+
+    SeriesChangeEvent lastEvent;
+
+    /**
+     * Records the last event.
+     *
+     * @param event  the event.
+     */
+    public void seriesChanged(SeriesChangeEvent event) {
+<span class="fc" id="L75">        this.lastEvent = event;</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L84">        return new TestSuite(VectorSeriesTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public VectorSeriesTests(String name) {
+<span class="fc" id="L93">        super(name);</span>
+<span class="fc" id="L94">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L101">        VectorSeries s1 = new VectorSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L102">        VectorSeries s2 = new VectorSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L103">        assertTrue(s1.equals(s2));</span>
+
+        // seriesKey
+<span class="fc" id="L106">        s1 = new VectorSeries(&quot;s2&quot;);</span>
+<span class="fc" id="L107">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L108">        s2 = new VectorSeries(&quot;s2&quot;);</span>
+<span class="fc" id="L109">        assertTrue(s1.equals(s2));</span>
+
+        // autoSort
+<span class="fc" id="L112">        s1 = new VectorSeries(&quot;s2&quot;, true, true);</span>
+<span class="fc" id="L113">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L114">        s2 = new VectorSeries(&quot;s2&quot;, true, true);</span>
+<span class="fc" id="L115">        assertTrue(s1.equals(s2));</span>
+
+        // allowDuplicateValues
+<span class="fc" id="L118">        s1 = new VectorSeries(&quot;s2&quot;, false, false);</span>
+<span class="fc" id="L119">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L120">        s2 = new VectorSeries(&quot;s2&quot;, false, false);</span>
+<span class="fc" id="L121">        assertTrue(s1.equals(s2));</span>
+
+        // add a value
+<span class="fc" id="L124">        s1.add(1.0, 0.5, 1.5, 2.0);</span>
+<span class="fc" id="L125">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L126">        s2.add(1.0, 0.5, 1.5, 2.0);</span>
+<span class="fc" id="L127">        assertTrue(s2.equals(s1));</span>
+
+        // add another value
+<span class="fc" id="L130">        s1.add(2.0, 0.5, 1.5, 2.0);</span>
+<span class="fc" id="L131">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L132">        s2.add(2.0, 0.5, 1.5, 2.0);</span>
+<span class="fc" id="L133">        assertTrue(s2.equals(s1));</span>
+
+        // remove a value
+<span class="fc" id="L136">        s1.remove(new XYCoordinate(1.0, 0.5));</span>
+<span class="fc" id="L137">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L138">        s2.remove(new XYCoordinate(1.0, 0.5));</span>
+<span class="fc" id="L139">        assertTrue(s2.equals(s1));</span>
+
+<span class="fc" id="L141">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L147">        VectorSeries s1 = new VectorSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L148">        s1.add(1.0, 0.5, 1.5, 2.0);</span>
+<span class="fc" id="L149">        VectorSeries s2 = null;</span>
+        try {
+<span class="fc" id="L151">            s2 = (VectorSeries) s1.clone();</span>
+        }
+<span class="nc" id="L153">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L154">            e.printStackTrace();</span>
+<span class="fc" id="L155">        }</span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">        assertTrue(s1 != s2);</span>
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">        assertTrue(s1.getClass() == s2.getClass());</span>
+<span class="fc" id="L158">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L159">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L165">        VectorSeries s1 = new VectorSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L166">        s1.add(1.0, 0.5, 1.5, 2.0);</span>
+<span class="fc" id="L167">        VectorSeries s2 = null;</span>
+        try {
+<span class="fc" id="L169">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L170">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L171">            out.writeObject(s1);</span>
+<span class="fc" id="L172">            out.close();</span>
+
+<span class="fc" id="L174">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L175">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L176">            s2 = (VectorSeries) in.readObject();</span>
+<span class="fc" id="L177">            in.close();</span>
+        }
+<span class="nc" id="L179">        catch (Exception e) {</span>
+<span class="nc" id="L180">            e.printStackTrace();</span>
+<span class="fc" id="L181">        }</span>
+<span class="fc" id="L182">        assertEquals(s1, s2);</span>
+
+<span class="fc" id="L184">    }</span>
+
+    /**
+     * Simple test for the indexOf() method.
+     */
+    public void testIndexOf() {
+<span class="fc" id="L190">        VectorSeries s1 = new VectorSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L191">        s1.add(1.0, 1.0, 1.0, 2.0);</span>
+<span class="fc" id="L192">        s1.add(2.0, 2.0, 2.0, 3.0);</span>
+<span class="fc" id="L193">        s1.add(3.0, 3.0, 3.0, 4.0);</span>
+<span class="fc" id="L194">        assertEquals(0, s1.indexOf(new XYCoordinate(1.0, 1.0)));</span>
+<span class="fc" id="L195">    }</span>
+
+    /**
+     * A check for the indexOf() method for an unsorted series.
+     */
+    public void testIndexOf2() {
+<span class="fc" id="L201">        VectorSeries s1 = new VectorSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L202">        s1.add(1.0, 1.0, 1.0, 2.0);</span>
+<span class="fc" id="L203">        s1.add(3.0, 3.0, 3.0, 3.0);</span>
+<span class="fc" id="L204">        s1.add(2.0, 2.0, 2.0, 2.0);</span>
+<span class="fc" id="L205">        assertEquals(0, s1.indexOf(new XYCoordinate(1.0, 1.0)));</span>
+<span class="fc" id="L206">        assertEquals(1, s1.indexOf(new XYCoordinate(3.0, 3.0)));</span>
+<span class="fc" id="L207">        assertEquals(2, s1.indexOf(new XYCoordinate(2.0, 2.0)));</span>
+<span class="fc" id="L208">    }</span>
+
+    /**
+     * Simple test for the remove() method.
+     */
+    public void testRemove() {
+<span class="fc" id="L214">        VectorSeries s1 = new VectorSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L215">        s1.add(1.0, 1.0, 1.0, 2.0);</span>
+<span class="fc" id="L216">        s1.add(3.0, 3.0, 3.0, 3.0);</span>
+<span class="fc" id="L217">        s1.add(2.0, 2.0, 2.0, 2.0);</span>
+<span class="fc" id="L218">        assertEquals(3, s1.getItemCount());</span>
+
+<span class="fc" id="L220">        s1.remove(new XYCoordinate(2.0, 2.0));</span>
+<span class="fc" id="L221">        assertEquals(3.0, s1.getXValue(1), EPSILON);</span>
+
+<span class="fc" id="L223">        s1.remove(new XYCoordinate(1.0, 1.0));</span>
+<span class="fc" id="L224">        assertEquals(3.0, s1.getXValue(0), EPSILON);</span>
+<span class="fc" id="L225">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * When items are added with duplicate x-values, we expect them to remain
+     * in the order they were added.
+     */
+    public void testAdditionOfDuplicateXValues() {
+<span class="fc" id="L234">        VectorSeries s1 = new VectorSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L235">        s1.add(1.0, 1.0, 1.0, 1.0);</span>
+<span class="fc" id="L236">        s1.add(2.0, 2.0, 2.0, 2.0);</span>
+<span class="fc" id="L237">        s1.add(2.0, 2.0, 3.0, 3.0);</span>
+<span class="fc" id="L238">        s1.add(2.0, 3.0, 4.0, 4.0);</span>
+<span class="fc" id="L239">        s1.add(3.0, 5.0, 5.0, 5.0);</span>
+<span class="fc" id="L240">        assertEquals(1.0, s1.getVectorXValue(0), EPSILON);</span>
+<span class="fc" id="L241">        assertEquals(2.0, s1.getVectorXValue(1), EPSILON);</span>
+<span class="fc" id="L242">        assertEquals(3.0, s1.getVectorXValue(2), EPSILON);</span>
+<span class="fc" id="L243">        assertEquals(4.0, s1.getVectorXValue(3), EPSILON);</span>
+<span class="fc" id="L244">        assertEquals(5.0, s1.getVectorXValue(4), EPSILON);</span>
+<span class="fc" id="L245">    }</span>
+
+    /**
+     * Some checks for the add() method for an UNSORTED series.
+     */
+    public void testAdd() {
+<span class="fc" id="L251">        VectorSeries series = new VectorSeries(&quot;Series&quot;, false, true);</span>
+<span class="fc" id="L252">        series.add(5.0, 5.50, 5.50, 5.50);</span>
+<span class="fc" id="L253">        series.add(5.1, 5.51, 5.51, 5.51);</span>
+<span class="fc" id="L254">        series.add(6.0, 6.6, 6.6, 6.6);</span>
+<span class="fc" id="L255">        series.add(3.0, 3.3, 3.3, 3.3);</span>
+<span class="fc" id="L256">        series.add(4.0, 4.4, 4.4, 4.4);</span>
+<span class="fc" id="L257">        series.add(2.0, 2.2, 2.2, 2.2);</span>
+<span class="fc" id="L258">        series.add(1.0, 1.1, 1.1, 1.1);</span>
+<span class="fc" id="L259">        assertEquals(5.5, series.getVectorXValue(0), EPSILON);</span>
+<span class="fc" id="L260">        assertEquals(5.51, series.getVectorXValue(1), EPSILON);</span>
+<span class="fc" id="L261">        assertEquals(6.6, series.getVectorXValue(2), EPSILON);</span>
+<span class="fc" id="L262">        assertEquals(3.3, series.getVectorXValue(3), EPSILON);</span>
+<span class="fc" id="L263">        assertEquals(4.4, series.getVectorXValue(4), EPSILON);</span>
+<span class="fc" id="L264">        assertEquals(2.2, series.getVectorXValue(5), EPSILON);</span>
+<span class="fc" id="L265">        assertEquals(1.1, series.getVectorXValue(6), EPSILON);</span>
+<span class="fc" id="L266">    }</span>
+
+    /**
+     * A simple check that the maximumItemCount attribute is working.
+     */
+    public void testSetMaximumItemCount() {
+<span class="fc" id="L272">        VectorSeries s1 = new VectorSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L273">        assertEquals(Integer.MAX_VALUE, s1.getMaximumItemCount());</span>
+<span class="fc" id="L274">        s1.setMaximumItemCount(2);</span>
+<span class="fc" id="L275">        assertEquals(2, s1.getMaximumItemCount());</span>
+<span class="fc" id="L276">        s1.add(1.0, 1.1, 1.1, 1.1);</span>
+<span class="fc" id="L277">        s1.add(2.0, 2.2, 2.2, 2.2);</span>
+<span class="fc" id="L278">        s1.add(3.0, 3.3, 3.3, 3.3);</span>
+<span class="fc" id="L279">        assertEquals(2.0, s1.getXValue(0), EPSILON);</span>
+<span class="fc" id="L280">        assertEquals(3.0, s1.getXValue(1), EPSILON);</span>
+<span class="fc" id="L281">    }</span>
+
+    /**
+     * Check that the maximum item count can be applied retrospectively.
+     */
+    public void testSetMaximumItemCount2() {
+<span class="fc" id="L287">        VectorSeries s1 = new VectorSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L288">        s1.add(1.0, 1.1, 1.1, 1.1);</span>
+<span class="fc" id="L289">        s1.add(2.0, 2.2, 2.2, 2.2);</span>
+<span class="fc" id="L290">        s1.add(3.0, 3.3, 3.3, 3.3);</span>
+<span class="fc" id="L291">        s1.setMaximumItemCount(2);</span>
+<span class="fc" id="L292">        assertEquals(2.0, s1.getXValue(0), EPSILON);</span>
+<span class="fc" id="L293">        assertEquals(3.0, s1.getXValue(1), EPSILON);</span>
+<span class="fc" id="L294">    }</span>
+
+    /**
+     * Some checks for the clear() method.
+     */
+    public void testClear() {
+<span class="fc" id="L300">        VectorSeries s1 = new VectorSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L301">        s1.addChangeListener(this);</span>
+<span class="fc" id="L302">        s1.clear();</span>
+<span class="fc" id="L303">        assertNull(this.lastEvent);</span>
+<span class="fc" id="L304">        assertTrue(s1.isEmpty());</span>
+<span class="fc" id="L305">        s1.add(1.0, 2.0, 3.0, 4.0);</span>
+<span class="fc" id="L306">        assertFalse(s1.isEmpty());</span>
+<span class="fc" id="L307">        s1.clear();</span>
+<span class="fc" id="L308">        assertNotNull(this.lastEvent);</span>
+<span class="fc" id="L309">        assertTrue(s1.isEmpty());</span>
+<span class="fc" id="L310">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

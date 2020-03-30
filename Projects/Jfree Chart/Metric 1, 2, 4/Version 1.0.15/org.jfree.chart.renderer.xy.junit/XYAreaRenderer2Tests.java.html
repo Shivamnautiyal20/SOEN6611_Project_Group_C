@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XYAreaRenderer2Tests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.xy.junit</a> &gt; <span class="el_source">XYAreaRenderer2Tests.java</span></div><h1>XYAreaRenderer2Tests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------
+ * AreaXYRenderer2Tests.java
+ * -------------------------
+ * (C) Copyright 2005-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 24-May-2005 : Version 1 (DG);
+ * 30-Nov-2006 : Extended testEquals() and testCloning() (DG);
+ * 17-May-2007 : Added testGetLegendItemSeriesIndex() (DG);
+ * 22-Apr-2008 : Added testPublicCloneable (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.xy.junit;
+
+import java.awt.Rectangle;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYAreaRenderer2;
+import org.jfree.data.xy.DefaultTableXYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link XYAreaRenderer2} class.
+ */
+public class XYAreaRenderer2Tests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L79">        return new TestSuite(XYAreaRenderer2Tests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public XYAreaRenderer2Tests(String name) {
+<span class="fc" id="L88">        super(name);</span>
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * Check that the equals() method distinguishes all fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L95">        XYAreaRenderer2 r1 = new XYAreaRenderer2();</span>
+<span class="fc" id="L96">        XYAreaRenderer2 r2 = new XYAreaRenderer2();</span>
+<span class="fc" id="L97">        assertEquals(r1, r2);</span>
+
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">        r1.setOutline(!r1.isOutline());</span>
+<span class="fc" id="L100">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L101">        r2.setOutline(r1.isOutline());</span>
+<span class="fc" id="L102">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L104">        r1.setLegendArea(new Rectangle(1, 2, 3, 4));</span>
+<span class="fc" id="L105">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L106">        r2.setLegendArea(new Rectangle(1, 2, 3, 4));</span>
+<span class="fc" id="L107">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L108">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L114">        XYAreaRenderer2 r1 = new XYAreaRenderer2();</span>
+<span class="fc" id="L115">        XYAreaRenderer2 r2 = new XYAreaRenderer2();</span>
+<span class="fc" id="L116">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L117">        int h1 = r1.hashCode();</span>
+<span class="fc" id="L118">        int h2 = r2.hashCode();</span>
+<span class="fc" id="L119">        assertEquals(h1, h2);</span>
+<span class="fc" id="L120">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L126">        XYAreaRenderer2 r1 = new XYAreaRenderer2();</span>
+<span class="fc" id="L127">        Rectangle rect = new Rectangle(1, 2, 3, 4);</span>
+<span class="fc" id="L128">        r1.setLegendArea(rect);</span>
+<span class="fc" id="L129">        XYAreaRenderer2 r2 = null;</span>
+        try {
+<span class="fc" id="L131">            r2 = (XYAreaRenderer2) r1.clone();</span>
+        }
+<span class="nc" id="L133">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L134">            e.printStackTrace();</span>
+<span class="fc" id="L135">        }</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L138">        assertTrue(r1.equals(r2));</span>
+
+        // check independence
+<span class="fc" id="L141">        rect.setBounds(99, 99, 99, 99);</span>
+<span class="fc" id="L142">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L143">    }</span>
+
+    /**
+     * Verify that this class implements {@link PublicCloneable}.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L149">        XYAreaRenderer2 r1 = new XYAreaRenderer2();</span>
+<span class="fc" id="L150">        assertTrue(r1 instanceof PublicCloneable);</span>
+<span class="fc" id="L151">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L158">        XYAreaRenderer2 r1 = new XYAreaRenderer2();</span>
+<span class="fc" id="L159">        XYAreaRenderer2 r2 = null;</span>
+
+        try {
+<span class="fc" id="L162">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L163">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L164">            out.writeObject(r1);</span>
+<span class="fc" id="L165">            out.close();</span>
+
+<span class="fc" id="L167">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L168">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L169">            r2 = (XYAreaRenderer2) in.readObject();</span>
+<span class="fc" id="L170">            in.close();</span>
+        }
+<span class="nc" id="L172">        catch (Exception e) {</span>
+<span class="nc" id="L173">            fail(e.toString());</span>
+<span class="fc" id="L174">        }</span>
+<span class="fc" id="L175">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L177">    }</span>
+
+    /**
+     * Draws the chart with a &lt;code&gt;null&lt;/code&gt; info object to make sure that
+     * no exceptions are thrown (particularly by code in the renderer).
+     */
+    public void testDrawWithNullInfo() {
+<span class="fc" id="L184">        boolean success = false;</span>
+        try {
+<span class="fc" id="L186">            DefaultTableXYDataset dataset = new DefaultTableXYDataset();</span>
+
+<span class="fc" id="L188">            XYSeries s1 = new XYSeries(&quot;Series 1&quot;, true, false);</span>
+<span class="fc" id="L189">            s1.add(5.0, 5.0);</span>
+<span class="fc" id="L190">            s1.add(10.0, 15.5);</span>
+<span class="fc" id="L191">            s1.add(15.0, 9.5);</span>
+<span class="fc" id="L192">            s1.add(20.0, 7.5);</span>
+<span class="fc" id="L193">            dataset.addSeries(s1);</span>
+
+<span class="fc" id="L195">            XYSeries s2 = new XYSeries(&quot;Series 2&quot;, true, false);</span>
+<span class="fc" id="L196">            s2.add(5.0, 5.0);</span>
+<span class="fc" id="L197">            s2.add(10.0, 15.5);</span>
+<span class="fc" id="L198">            s2.add(15.0, 9.5);</span>
+<span class="fc" id="L199">            s2.add(20.0, 3.5);</span>
+<span class="fc" id="L200">            dataset.addSeries(s2);</span>
+<span class="fc" id="L201">            XYPlot plot = new XYPlot(dataset,</span>
+                    new NumberAxis(&quot;X&quot;), new NumberAxis(&quot;Y&quot;),
+                    new XYAreaRenderer2());
+<span class="fc" id="L204">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L205">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    null);
+<span class="fc" id="L207">            success = true;</span>
+        }
+<span class="nc" id="L209">        catch (NullPointerException e) {</span>
+<span class="nc" id="L210">            e.printStackTrace();</span>
+<span class="nc" id="L211">            success = false;</span>
+<span class="fc" id="L212">        }</span>
+<span class="fc" id="L213">        assertTrue(success);</span>
+<span class="fc" id="L214">    }</span>
+
+    /**
+     * A check for the datasetIndex and seriesIndex fields in the LegendItem
+     * returned by the getLegendItem() method.
+     */
+    public void testGetLegendItemSeriesIndex() {
+<span class="fc" id="L221">        XYSeriesCollection d1 = new XYSeriesCollection();</span>
+<span class="fc" id="L222">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L223">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L224">        XYSeries s2 = new XYSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L225">        s2.add(1.0, 1.1);</span>
+<span class="fc" id="L226">        d1.addSeries(s1);</span>
+<span class="fc" id="L227">        d1.addSeries(s2);</span>
+
+<span class="fc" id="L229">        XYSeriesCollection d2 = new XYSeriesCollection();</span>
+<span class="fc" id="L230">        XYSeries s3 = new XYSeries(&quot;S3&quot;);</span>
+<span class="fc" id="L231">        s3.add(1.0, 1.1);</span>
+<span class="fc" id="L232">        XYSeries s4 = new XYSeries(&quot;S4&quot;);</span>
+<span class="fc" id="L233">        s4.add(1.0, 1.1);</span>
+<span class="fc" id="L234">        XYSeries s5 = new XYSeries(&quot;S5&quot;);</span>
+<span class="fc" id="L235">        s5.add(1.0, 1.1);</span>
+<span class="fc" id="L236">        d2.addSeries(s3);</span>
+<span class="fc" id="L237">        d2.addSeries(s4);</span>
+<span class="fc" id="L238">        d2.addSeries(s5);</span>
+
+<span class="fc" id="L240">        XYAreaRenderer2 r = new XYAreaRenderer2();</span>
+<span class="fc" id="L241">        XYPlot plot = new XYPlot(d1, new NumberAxis(&quot;x&quot;),</span>
+                new NumberAxis(&quot;y&quot;), r);
+<span class="fc" id="L243">        plot.setDataset(1, d2);</span>
+<span class="fc" id="L244">        /*JFreeChart chart =*/ new JFreeChart(plot);</span>
+<span class="fc" id="L245">        LegendItem li = r.getLegendItem(1, 2);</span>
+<span class="fc" id="L246">        assertEquals(&quot;S5&quot;, li.getLabel());</span>
+<span class="fc" id="L247">        assertEquals(1, li.getDatasetIndex());</span>
+<span class="fc" id="L248">        assertEquals(2, li.getSeriesIndex());</span>
+<span class="fc" id="L249">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OHLCItemTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.time.ohlc.junit</a> &gt; <span class="el_source">OHLCItemTests.java</span></div><h1>OHLCItemTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------
+ * OHLCItemTests.java
+ * ------------------
+ * (C) Copyright 2006-2009, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 04-Dec-2006 : Version 1 (DG);
+ * 23-May-2009 : Added testHashCode() (DG);
+ *
+ */
+
+package org.jfree.data.time.ohlc.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.time.Year;
+import org.jfree.data.time.ohlc.OHLCItem;
+
+/**
+ * Tests for the {@link OHLCItem} class.
+ */
+public class OHLCItemTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L69">        return new TestSuite(OHLCItemTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public OHLCItemTests(String name) {
+<span class="fc" id="L78">        super(name);</span>
+<span class="fc" id="L79">    }</span>
+
+    private static final double EPSILON = 0.00000000001;
+
+    /**
+     * Some checks for the constructor.
+     */
+    public void testConstructor1() {
+<span class="fc" id="L87">        OHLCItem item1 = new OHLCItem(new Year(2006), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L88">        assertEquals(new Year(2006), item1.getPeriod());</span>
+<span class="fc" id="L89">        assertEquals(2.0, item1.getOpenValue(), EPSILON);</span>
+<span class="fc" id="L90">        assertEquals(4.0, item1.getHighValue(), EPSILON);</span>
+<span class="fc" id="L91">        assertEquals(1.0, item1.getLowValue(), EPSILON);</span>
+<span class="fc" id="L92">        assertEquals(3.0, item1.getCloseValue(), EPSILON);</span>
+<span class="fc" id="L93">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L99">        OHLCItem item1 = new OHLCItem(new Year(2006), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L100">        OHLCItem item2 = new OHLCItem(new Year(2006), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L101">        assertTrue(item1.equals(item2));</span>
+<span class="fc" id="L102">        assertTrue(item2.equals(item1));</span>
+
+        // period
+<span class="fc" id="L105">        item1 = new OHLCItem(new Year(2007), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L106">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L107">        item2 = new OHLCItem(new Year(2007), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L108">        assertTrue(item1.equals(item2));</span>
+
+        // open
+<span class="fc" id="L111">        item1 = new OHLCItem(new Year(2007), 2.2, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L112">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L113">        item2 = new OHLCItem(new Year(2007), 2.2, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L114">        assertTrue(item1.equals(item2));</span>
+
+        // high
+<span class="fc" id="L117">        item1 = new OHLCItem(new Year(2007), 2.2, 4.4, 1.0, 3.0);</span>
+<span class="fc" id="L118">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L119">        item2 = new OHLCItem(new Year(2007), 2.2, 4.4, 1.0, 3.0);</span>
+<span class="fc" id="L120">        assertTrue(item1.equals(item2));</span>
+
+        // low
+<span class="fc" id="L123">        item1 = new OHLCItem(new Year(2007), 2.2, 4.4, 1.1, 3.0);</span>
+<span class="fc" id="L124">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L125">        item2 = new OHLCItem(new Year(2007), 2.2, 4.4, 1.1, 3.0);</span>
+<span class="fc" id="L126">        assertTrue(item1.equals(item2));</span>
+
+        // close
+<span class="fc" id="L129">        item1 = new OHLCItem(new Year(2007), 2.2, 4.4, 1.1, 3.3);</span>
+<span class="fc" id="L130">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L131">        item2 = new OHLCItem(new Year(2007), 2.2, 4.4, 1.1, 3.3);</span>
+<span class="fc" id="L132">        assertTrue(item1.equals(item2));</span>
+<span class="fc" id="L133">    }</span>
+
+    /**
+     * Some checks for the clone() method.
+     */
+    public void testCloning() {
+<span class="fc" id="L139">        OHLCItem item1 = new OHLCItem(new Year(2006), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L140">        OHLCItem item2 = null;</span>
+        try {
+<span class="fc" id="L142">            item2 = (OHLCItem) item1.clone();</span>
+        }
+<span class="nc" id="L144">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L145">            e.printStackTrace();</span>
+<span class="fc" id="L146">        }</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        assertTrue(item1 != item2);</span>
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">        assertTrue(item1.getClass() == item2.getClass());</span>
+<span class="fc" id="L149">        assertTrue(item1.equals(item2));</span>
+<span class="fc" id="L150">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L156">        OHLCItem item1 = new OHLCItem(new Year(2006), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L157">        OHLCItem item2 = null;</span>
+        try {
+<span class="fc" id="L159">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L160">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L161">            out.writeObject(item1);</span>
+<span class="fc" id="L162">            out.close();</span>
+
+<span class="fc" id="L164">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L165">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L166">            item2 = (OHLCItem) in.readObject();</span>
+<span class="fc" id="L167">            in.close();</span>
+        }
+<span class="nc" id="L169">        catch (Exception e) {</span>
+<span class="nc" id="L170">            e.printStackTrace();</span>
+<span class="fc" id="L171">        }</span>
+<span class="fc" id="L172">        assertEquals(item1, item2);</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L179">        OHLCItem i1 = new OHLCItem(new Year(2009), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L180">        OHLCItem i2 = new OHLCItem(new Year(2009), 2.0, 4.0, 1.0, 3.0);</span>
+<span class="fc" id="L181">        assertTrue(i1.equals(i2));</span>
+<span class="fc" id="L182">        int h1 = i1.hashCode();</span>
+<span class="fc" id="L183">        int h2 = i2.hashCode();</span>
+<span class="fc" id="L184">        assertEquals(h1, h2);</span>
+<span class="fc" id="L185">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

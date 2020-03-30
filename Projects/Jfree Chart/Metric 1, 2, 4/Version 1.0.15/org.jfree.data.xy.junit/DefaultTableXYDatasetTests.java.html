@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultTableXYDatasetTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.xy.junit</a> &gt; <span class="el_source">DefaultTableXYDatasetTests.java</span></div><h1>DefaultTableXYDatasetTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------------
+ * DefaultTableXYDatasetTests.java
+ * -------------------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 23-Dec-2003 : Version 1 (DG);
+ * 06-Oct-2005 : Added test for new data updating interval width (DG);
+ * 08-Mar-2007 : Added testGetSeries() (DG);
+ * 22-Apr-2008 : Added testPublicCloneable (DG);
+ *
+ */
+
+package org.jfree.data.xy.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.xy.DefaultTableXYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link DefaultTableXYDataset} class.
+ */
+public class DefaultTableXYDatasetTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L72">        return new TestSuite(DefaultTableXYDatasetTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DefaultTableXYDatasetTests(String name) {
+<span class="fc" id="L81">        super(name);</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L89">        DefaultTableXYDataset d1 = new DefaultTableXYDataset();</span>
+<span class="fc" id="L90">        XYSeries s1 = new XYSeries(&quot;Series 1&quot;, true, false);</span>
+<span class="fc" id="L91">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L92">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L93">        d1.addSeries(s1);</span>
+
+<span class="fc" id="L95">        DefaultTableXYDataset d2 = new DefaultTableXYDataset();</span>
+<span class="fc" id="L96">        XYSeries s2 = new XYSeries(&quot;Series 1&quot;, true, false);</span>
+<span class="fc" id="L97">        s2.add(1.0, 1.1);</span>
+<span class="fc" id="L98">        s2.add(2.0, 2.2);</span>
+<span class="fc" id="L99">        d2.addSeries(s2);</span>
+
+<span class="fc" id="L101">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L102">        assertTrue(d2.equals(d1));</span>
+
+<span class="fc" id="L104">        s1.add(3.0, 3.3);</span>
+<span class="fc" id="L105">        assertFalse(d1.equals(d2));</span>
+
+<span class="fc" id="L107">        s2.add(3.0, 3.3);</span>
+<span class="fc" id="L108">        assertTrue(d1.equals(d2));</span>
+
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L116">        DefaultTableXYDataset d1 = new DefaultTableXYDataset();</span>
+<span class="fc" id="L117">        XYSeries s1 = new XYSeries(&quot;Series 1&quot;, true, false);</span>
+<span class="fc" id="L118">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L119">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L120">        d1.addSeries(s1);</span>
+
+<span class="fc" id="L122">        DefaultTableXYDataset d2 = null;</span>
+        try {
+<span class="fc" id="L124">            d2 = (DefaultTableXYDataset) d1.clone();</span>
+        }
+<span class="nc" id="L126">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L127">            e.printStackTrace();</span>
+<span class="fc" id="L128">        }</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="fc" id="L131">        assertTrue(d1.equals(d2));</span>
+
+<span class="fc" id="L133">        s1.add(3.0, 3.3);</span>
+<span class="fc" id="L134">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L135">    }</span>
+
+    /**
+     * Verify that this class implements {@link PublicCloneable}.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L141">        DefaultTableXYDataset d1 = new DefaultTableXYDataset();</span>
+<span class="fc" id="L142">        assertTrue(d1 instanceof PublicCloneable);</span>
+<span class="fc" id="L143">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L150">        DefaultTableXYDataset d1 = new DefaultTableXYDataset();</span>
+<span class="fc" id="L151">        XYSeries s1 = new XYSeries(&quot;Series 1&quot;, true, false);</span>
+<span class="fc" id="L152">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L153">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L154">        d1.addSeries(s1);</span>
+
+<span class="fc" id="L156">        DefaultTableXYDataset d2 = null;</span>
+
+        try {
+<span class="fc" id="L159">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L160">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L161">            out.writeObject(d1);</span>
+<span class="fc" id="L162">            out.close();</span>
+
+<span class="fc" id="L164">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L165">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L166">            d2 = (DefaultTableXYDataset) in.readObject();</span>
+<span class="fc" id="L167">            in.close();</span>
+        }
+<span class="nc" id="L169">        catch (Exception e) {</span>
+<span class="nc" id="L170">            e.printStackTrace();</span>
+<span class="fc" id="L171">        }</span>
+<span class="fc" id="L172">        assertEquals(d1, d2);</span>
+
+<span class="fc" id="L174">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * This is a test for bug 1312066 - adding a new series should trigger a
+     * recalculation of the interval width, if it is being automatically
+     * calculated.
+     */
+    public void testAddSeries() {
+<span class="fc" id="L184">        DefaultTableXYDataset d1 = new DefaultTableXYDataset();</span>
+<span class="fc" id="L185">        d1.setAutoWidth(true);</span>
+<span class="fc" id="L186">        XYSeries s1 = new XYSeries(&quot;Series 1&quot;, true, false);</span>
+<span class="fc" id="L187">        s1.add(3.0, 1.1);</span>
+<span class="fc" id="L188">        s1.add(7.0, 2.2);</span>
+<span class="fc" id="L189">        d1.addSeries(s1);</span>
+<span class="fc" id="L190">        assertEquals(3.0, d1.getXValue(0, 0), EPSILON);</span>
+<span class="fc" id="L191">        assertEquals(7.0, d1.getXValue(0, 1), EPSILON);</span>
+<span class="fc" id="L192">        assertEquals(1.0, d1.getStartXValue(0, 0), EPSILON);</span>
+<span class="fc" id="L193">        assertEquals(5.0, d1.getStartXValue(0, 1), EPSILON);</span>
+<span class="fc" id="L194">        assertEquals(5.0, d1.getEndXValue(0, 0), EPSILON);</span>
+<span class="fc" id="L195">        assertEquals(9.0, d1.getEndXValue(0, 1), EPSILON);</span>
+
+        // now add another series
+<span class="fc" id="L198">        XYSeries s2 = new XYSeries(&quot;Series 2&quot;, true, false);</span>
+<span class="fc" id="L199">        s2.add(7.5, 1.1);</span>
+<span class="fc" id="L200">        s2.add(9.0, 2.2);</span>
+<span class="fc" id="L201">        d1.addSeries(s2);</span>
+
+<span class="fc" id="L203">        assertEquals(3.0, d1.getXValue(1, 0), EPSILON);</span>
+<span class="fc" id="L204">        assertEquals(7.0, d1.getXValue(1, 1), EPSILON);</span>
+<span class="fc" id="L205">        assertEquals(7.5, d1.getXValue(1, 2), EPSILON);</span>
+<span class="fc" id="L206">        assertEquals(9.0, d1.getXValue(1, 3), EPSILON);</span>
+
+<span class="fc" id="L208">        assertEquals(7.25, d1.getStartXValue(1, 2), EPSILON);</span>
+<span class="fc" id="L209">        assertEquals(8.75, d1.getStartXValue(1, 3), EPSILON);</span>
+<span class="fc" id="L210">        assertEquals(7.75, d1.getEndXValue(1, 2), EPSILON);</span>
+<span class="fc" id="L211">        assertEquals(9.25, d1.getEndXValue(1, 3), EPSILON);</span>
+
+        // and check the first series too...
+<span class="fc" id="L214">        assertEquals(2.75, d1.getStartXValue(0, 0), EPSILON);</span>
+<span class="fc" id="L215">        assertEquals(6.75, d1.getStartXValue(0, 1), EPSILON);</span>
+<span class="fc" id="L216">        assertEquals(3.25, d1.getEndXValue(0, 0), EPSILON);</span>
+<span class="fc" id="L217">        assertEquals(7.25, d1.getEndXValue(0, 1), EPSILON);</span>
+<span class="fc" id="L218">    }</span>
+
+    /**
+     * Some basic checks for the getSeries() method.
+     */
+    public void testGetSeries() {
+<span class="fc" id="L224">        DefaultTableXYDataset d1 = new DefaultTableXYDataset();</span>
+<span class="fc" id="L225">        XYSeries s1 = new XYSeries(&quot;Series 1&quot;, true, false);</span>
+<span class="fc" id="L226">        d1.addSeries(s1);</span>
+<span class="fc" id="L227">        assertEquals(&quot;Series 1&quot;, d1.getSeries(0).getKey());</span>
+
+<span class="fc" id="L229">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L231">            d1.getSeries(-1);</span>
+        }
+<span class="fc" id="L233">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L234">            pass = true;</span>
+<span class="nc" id="L235">        }</span>
+<span class="fc" id="L236">        assertTrue(pass);</span>
+
+<span class="fc" id="L238">        pass = false;</span>
+        try {
+<span class="nc" id="L240">            d1.getSeries(1);</span>
+        }
+<span class="fc" id="L242">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L243">            pass = true;</span>
+<span class="nc" id="L244">        }</span>
+<span class="fc" id="L245">        assertTrue(pass);</span>
+<span class="fc" id="L246">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

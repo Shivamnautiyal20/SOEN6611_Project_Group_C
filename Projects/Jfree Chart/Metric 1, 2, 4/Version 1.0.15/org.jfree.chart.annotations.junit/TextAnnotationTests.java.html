@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TextAnnotationTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.annotations.junit</a> &gt; <span class="el_source">TextAnnotationTests.java</span></div><h1>TextAnnotationTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------------
+ * TextAnnotationTests.java
+ * ------------------------
+ * (C) Copyright 2003-2013, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Martin Hoeller;
+ *
+ * Changes
+ * -------
+ * 19-Aug-2003 : Version 1 (DG);
+ * 07-Jan-2005 : Added testHashCode() method (DG);
+ * 28-Oct-2011 : Added testSetRotationAnchor() method for bug #3428870 (MH);
+ * 01-Jul-2013 : Added testChangeEvents() (DG);
+ * 
+ */
+
+package org.jfree.chart.annotations.junit;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GradientPaint;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.annotations.CategoryTextAnnotation;
+import org.jfree.chart.annotations.TextAnnotation;
+import org.jfree.chart.event.AnnotationChangeEvent;
+import org.jfree.chart.event.AnnotationChangeListener;
+import org.jfree.ui.TextAnchor;
+
+/**
+ * Tests for the {@link TextAnnotation} class.
+ */
+public class TextAnnotationTests extends TestCase 
+        implements AnnotationChangeListener {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L72">        return new TestSuite(TextAnnotationTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public TextAnnotationTests(String name) {
+<span class="fc" id="L81">        super(name);</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L89">        TextAnnotation a1 = new CategoryTextAnnotation(&quot;Test&quot;, &quot;Category&quot;, 1.0);</span>
+<span class="fc" id="L90">        TextAnnotation a2 = new CategoryTextAnnotation(&quot;Test&quot;, &quot;Category&quot;, 1.0);</span>
+<span class="fc" id="L91">        assertTrue(a1.equals(a2));</span>
+
+        // text
+<span class="fc" id="L94">        a1.setText(&quot;Text&quot;);</span>
+<span class="fc" id="L95">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L96">        a2.setText(&quot;Text&quot;);</span>
+<span class="fc" id="L97">        assertTrue(a1.equals(a2));</span>
+
+        // font
+<span class="fc" id="L100">        a1.setFont(new Font(&quot;Serif&quot;, Font.BOLD, 18));</span>
+<span class="fc" id="L101">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L102">        a2.setFont(new Font(&quot;Serif&quot;, Font.BOLD, 18));</span>
+<span class="fc" id="L103">        assertTrue(a1.equals(a2));</span>
+
+        // paint
+<span class="fc" id="L106">        a1.setPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.pink));
+<span class="fc" id="L108">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L109">        a2.setPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.pink));
+<span class="fc" id="L111">        assertTrue(a1.equals(a2));</span>
+
+        // textAnchor
+<span class="fc" id="L114">        a1.setTextAnchor(TextAnchor.BOTTOM_LEFT);</span>
+<span class="fc" id="L115">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L116">        a2.setTextAnchor(TextAnchor.BOTTOM_LEFT);</span>
+<span class="fc" id="L117">        assertTrue(a1.equals(a2));</span>
+
+        // rotationAnchor
+<span class="fc" id="L120">        a1.setRotationAnchor(TextAnchor.BOTTOM_LEFT);</span>
+<span class="fc" id="L121">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L122">        a2.setRotationAnchor(TextAnchor.BOTTOM_LEFT);</span>
+<span class="fc" id="L123">        assertTrue(a1.equals(a2));</span>
+
+        // rotationAngle
+<span class="fc" id="L126">        a1.setRotationAngle(Math.PI);</span>
+<span class="fc" id="L127">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L128">        a2.setRotationAngle(Math.PI);</span>
+<span class="fc" id="L129">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashCode() {
+<span class="fc" id="L137">        TextAnnotation a1 = new CategoryTextAnnotation(&quot;Test&quot;, &quot;Category&quot;, 1.0);</span>
+<span class="fc" id="L138">        TextAnnotation a2 = new CategoryTextAnnotation(&quot;Test&quot;, &quot;Category&quot;, 1.0);</span>
+<span class="fc" id="L139">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L140">        int h1 = a1.hashCode();</span>
+<span class="fc" id="L141">        int h2 = a2.hashCode();</span>
+<span class="fc" id="L142">        assertEquals(h1, h2);</span>
+<span class="fc" id="L143">    }</span>
+
+    /**
+     * Test null-argument (Bug #3428870).
+     */
+    public void testSetRotationAnchor() {
+<span class="fc" id="L149">        TextAnnotation a = new CategoryTextAnnotation(&quot;Test&quot;, &quot;Category&quot;, 1.0);</span>
+        try {
+<span class="nc" id="L151">            a.setRotationAnchor(null);</span>
+<span class="nc" id="L152">            fail(&quot;Should have thrown Exception.&quot;);</span>
+<span class="fc" id="L153">        } catch (IllegalArgumentException e) {</span>
+            // ok, exception is expected
+<span class="nc" id="L155">        }</span>
+<span class="fc" id="L156">    }</span>
+ 
+    /**
+     * Some tests to ensure that change events are generated as expected.
+     */
+    public void testChangeEvents() {
+<span class="fc" id="L162">        TextAnnotation a = new CategoryTextAnnotation(&quot;Test&quot;, &quot;A&quot;, 1.0);</span>
+<span class="fc" id="L163">        a.addChangeListener(this);</span>
+<span class="fc" id="L164">        this.lastEvent = null;</span>
+<span class="fc" id="L165">        a.setText(&quot;B&quot;);</span>
+<span class="fc" id="L166">        assertNotNull(this.lastEvent);</span>
+<span class="fc" id="L167">                this.lastEvent = null;</span>
+<span class="fc" id="L168">        a.setText(&quot;B&quot;);</span>
+<span class="fc" id="L169">        assertNotNull(this.lastEvent);</span>
+        
+<span class="fc" id="L171">        this.lastEvent = null;</span>
+<span class="fc" id="L172">        a.setFont(new Font(&quot;SansSerif&quot;, Font.PLAIN, 12));</span>
+<span class="fc" id="L173">        assertNotNull(this.lastEvent);</span>
+
+<span class="fc" id="L175">        this.lastEvent = null;</span>
+<span class="fc" id="L176">        a.setPaint(Color.BLUE);</span>
+<span class="fc" id="L177">        assertNotNull(this.lastEvent);</span>
+        
+<span class="fc" id="L179">        this.lastEvent = null;</span>
+<span class="fc" id="L180">        a.setTextAnchor(TextAnchor.CENTER_LEFT);</span>
+<span class="fc" id="L181">        assertNotNull(this.lastEvent);</span>
+        
+<span class="fc" id="L183">        this.lastEvent = null;</span>
+<span class="fc" id="L184">        a.setRotationAnchor(TextAnchor.CENTER_LEFT);</span>
+<span class="fc" id="L185">        assertNotNull(this.lastEvent);</span>
+
+<span class="fc" id="L187">        this.lastEvent = null;</span>
+<span class="fc" id="L188">        a.setRotationAngle(123.4);</span>
+<span class="fc" id="L189">        assertNotNull(this.lastEvent);</span>
+<span class="fc" id="L190">   }</span>
+
+    private AnnotationChangeEvent lastEvent;
+    
+    /**
+     * Receives notification of a change to an annotation.
+     * 
+     * @param event  the event. 
+     */
+    public void annotationChanged(AnnotationChangeEvent event) {
+<span class="fc" id="L200">        this.lastEvent = event;  </span>
+<span class="fc" id="L201">    }</span>
+ 
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

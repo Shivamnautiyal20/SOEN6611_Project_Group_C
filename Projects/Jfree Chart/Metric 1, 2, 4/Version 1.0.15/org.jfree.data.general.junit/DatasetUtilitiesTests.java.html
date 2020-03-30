@@ -1,0 +1,1309 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DatasetUtilitiesTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.general.junit</a> &gt; <span class="el_source">DatasetUtilitiesTests.java</span></div><h1>DatasetUtilitiesTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------------
+ * DatasetUtilitiesTests.java
+ * --------------------------
+ * (C) Copyright 2003-2009, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 18-Sep-2003 : Version 1 (DG);
+ * 23-Mar-2004 : Added test for maximumStackedRangeValue() method (DG);
+ * 04-Oct-2004 : Eliminated NumberUtils usage (DG);
+ * 07-Jan-2005 : Updated for method name changes (DG);
+ * 03-Feb-2005 : Added testFindStackedRangeBounds2() method (DG);
+ * 26-Sep-2007 : Added testIsEmptyOrNullXYDataset() method (DG);
+ * 28-Mar-2008 : Added and renamed various tests (DG);
+ * 08-Oct-2008 : New tests to support patch 2131001 and related 
+ *               changes (DG);
+ * 25-Mar-2009 : Added tests for new iterateToFindRangeBounds() method (DG);
+ * 16-May-2009 : Added
+ *               testIterateToFindRangeBounds_MultiValueCategoryDataset() (DG);
+ * 10-Sep-2009 : Added tests for bug 2849731 (DG);
+ *
+ */
+
+package org.jfree.data.general.junit;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.KeyToGroupMap;
+import org.jfree.data.Range;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.category.DefaultIntervalCategoryDataset;
+import org.jfree.data.function.Function2D;
+import org.jfree.data.function.LineFunction2D;
+import org.jfree.data.general.DatasetUtilities;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.PieDataset;
+import org.jfree.data.statistics.BoxAndWhiskerItem;
+import org.jfree.data.statistics.DefaultBoxAndWhiskerXYDataset;
+import org.jfree.data.statistics.DefaultMultiValueCategoryDataset;
+import org.jfree.data.statistics.DefaultStatisticalCategoryDataset;
+import org.jfree.data.statistics.MultiValueCategoryDataset;
+import org.jfree.data.xy.DefaultIntervalXYDataset;
+import org.jfree.data.xy.DefaultTableXYDataset;
+import org.jfree.data.xy.DefaultXYDataset;
+import org.jfree.data.xy.IntervalXYDataset;
+import org.jfree.data.xy.TableXYDataset;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYIntervalSeries;
+import org.jfree.data.xy.XYIntervalSeriesCollection;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.xy.YIntervalSeries;
+import org.jfree.data.xy.YIntervalSeriesCollection;
+
+/**
+ * Tests for the {@link DatasetUtilities} class.
+ */
+public class DatasetUtilitiesTests extends TestCase {
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L104">        return new TestSuite(DatasetUtilitiesTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DatasetUtilitiesTests(String name) {
+<span class="fc" id="L113">        super(name);</span>
+<span class="fc" id="L114">    }</span>
+
+    /**
+     * Some tests to verify that Java does what I think it does!
+     */
+    public void testJava() {
+<span class="fc" id="L120">        assertTrue(Double.isNaN(Math.min(1.0, Double.NaN)));</span>
+<span class="fc" id="L121">        assertTrue(Double.isNaN(Math.max(1.0, Double.NaN)));</span>
+<span class="fc" id="L122">    }</span>
+
+    /**
+     * Some tests for the calculatePieDatasetTotal() method.
+     */
+    public void testCalculatePieDatasetTotal() {
+<span class="fc" id="L128">        DefaultPieDataset d = new DefaultPieDataset();</span>
+<span class="fc" id="L129">        assertEquals(0.0, DatasetUtilities.calculatePieDatasetTotal(d),</span>
+                EPSILON);
+<span class="fc" id="L131">        d.setValue(&quot;A&quot;, 1.0);</span>
+<span class="fc" id="L132">        assertEquals(1.0, DatasetUtilities.calculatePieDatasetTotal(d),</span>
+                EPSILON);
+<span class="fc" id="L134">        d.setValue(&quot;B&quot;, 3.0);</span>
+<span class="fc" id="L135">        assertEquals(4.0, DatasetUtilities.calculatePieDatasetTotal(d),</span>
+                EPSILON);
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Some tests for the findDomainBounds() method.
+     */
+    public void testFindDomainBounds() {
+<span class="fc" id="L143">        XYDataset dataset = createXYDataset1();</span>
+<span class="fc" id="L144">        Range r = DatasetUtilities.findDomainBounds(dataset);</span>
+<span class="fc" id="L145">        assertEquals(1.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L146">        assertEquals(3.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L147">    }</span>
+
+    /**
+     * This test checks that the standard method has 'includeInterval'
+     * defaulting to true.
+     */
+    public void testFindDomainBounds2() {
+<span class="fc" id="L154">        DefaultIntervalXYDataset dataset = new DefaultIntervalXYDataset();</span>
+<span class="fc" id="L155">        double[] x1 = new double[] {1.0, 2.0, 3.0};</span>
+<span class="fc" id="L156">        double[] x1Start = new double[] {0.9, 1.9, 2.9};</span>
+<span class="fc" id="L157">        double[] x1End = new double[] {1.1, 2.1, 3.1};</span>
+<span class="fc" id="L158">        double[] y1 = new double[] {4.0, 5.0, 6.0};</span>
+<span class="fc" id="L159">        double[] y1Start = new double[] {1.09, 2.09, 3.09};</span>
+<span class="fc" id="L160">        double[] y1End = new double[] {1.11, 2.11, 3.11};</span>
+<span class="fc" id="L161">        double[][] data1 = new double[][] {x1, x1Start, x1End, y1, y1Start,</span>
+                y1End};
+<span class="fc" id="L163">        dataset.addSeries(&quot;S1&quot;, data1);</span>
+<span class="fc" id="L164">        Range r = DatasetUtilities.findDomainBounds(dataset);</span>
+<span class="fc" id="L165">        assertEquals(0.9, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L166">        assertEquals(3.1, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L167">    }</span>
+
+    /**
+     * This test checks that when the 'includeInterval' flag is false, the
+     * bounds come from the regular x-values.
+     */
+    public void testFindDomainBounds3() {
+<span class="fc" id="L174">        DefaultIntervalXYDataset dataset = new DefaultIntervalXYDataset();</span>
+<span class="fc" id="L175">        double[] x1 = new double[] {1.0, 2.0, 3.0};</span>
+<span class="fc" id="L176">        double[] x1Start = new double[] {0.9, 1.9, 2.9};</span>
+<span class="fc" id="L177">        double[] x1End = new double[] {1.1, 2.1, 3.1};</span>
+<span class="fc" id="L178">        double[] y1 = new double[] {4.0, 5.0, 6.0};</span>
+<span class="fc" id="L179">        double[] y1Start = new double[] {1.09, 2.09, 3.09};</span>
+<span class="fc" id="L180">        double[] y1End = new double[] {1.11, 2.11, 3.11};</span>
+<span class="fc" id="L181">        double[][] data1 = new double[][] {x1, x1Start, x1End, y1, y1Start,</span>
+                y1End};
+<span class="fc" id="L183">        dataset.addSeries(&quot;S1&quot;, data1);</span>
+<span class="fc" id="L184">        Range r = DatasetUtilities.findDomainBounds(dataset, false);</span>
+<span class="fc" id="L185">        assertEquals(1.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L186">        assertEquals(3.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L187">    }</span>
+
+    /**
+     * This test checks that NaN values are ignored.
+     */
+    public void testFindDomainBounds_NaN() {
+<span class="fc" id="L193">        DefaultIntervalXYDataset dataset = new DefaultIntervalXYDataset();</span>
+<span class="fc" id="L194">        double[] x1 = new double[] {1.0, 2.0, Double.NaN};</span>
+<span class="fc" id="L195">        double[] x1Start = new double[] {0.9, 1.9, Double.NaN};</span>
+<span class="fc" id="L196">        double[] x1End = new double[] {1.1, 2.1, Double.NaN};</span>
+<span class="fc" id="L197">        double[] y1 = new double[] {4.0, 5.0, 6.0};</span>
+<span class="fc" id="L198">        double[] y1Start = new double[] {1.09, 2.09, 3.09};</span>
+<span class="fc" id="L199">        double[] y1End = new double[] {1.11, 2.11, 3.11};</span>
+<span class="fc" id="L200">        double[][] data1 = new double[][] {x1, x1Start, x1End, y1, y1Start,</span>
+                y1End};
+<span class="fc" id="L202">        dataset.addSeries(&quot;S1&quot;, data1);</span>
+<span class="fc" id="L203">        Range r = DatasetUtilities.findDomainBounds(dataset);</span>
+<span class="fc" id="L204">        assertEquals(0.9, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L205">        assertEquals(2.1, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L207">        r = DatasetUtilities.findDomainBounds(dataset, false);</span>
+<span class="fc" id="L208">        assertEquals(1.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L209">        assertEquals(2.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L210">    }</span>
+
+    /**
+     * Some tests for the iterateDomainBounds() method.
+     */
+    public void testIterateDomainBounds() {
+<span class="fc" id="L216">        XYDataset dataset = createXYDataset1();</span>
+<span class="fc" id="L217">        Range r = DatasetUtilities.iterateDomainBounds(dataset);</span>
+<span class="fc" id="L218">        assertEquals(1.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L219">        assertEquals(3.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L220">    }</span>
+
+    /**
+     * Check that NaN values in the dataset are ignored.
+     */
+    public void testIterateDomainBounds_NaN() {
+<span class="fc" id="L226">        DefaultXYDataset dataset = new DefaultXYDataset();</span>
+<span class="fc" id="L227">        double[] x = new double[] {1.0, 2.0, Double.NaN, 3.0};</span>
+<span class="fc" id="L228">        double[] y = new double[] {9.0, 8.0, 7.0, 6.0};</span>
+<span class="fc" id="L229">        dataset.addSeries(&quot;S1&quot;, new double[][] {x, y});</span>
+<span class="fc" id="L230">        Range r = DatasetUtilities.iterateDomainBounds(dataset);</span>
+<span class="fc" id="L231">        assertEquals(1.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L232">        assertEquals(3.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L233">    }</span>
+
+    /**
+     * Check that NaN values in the IntervalXYDataset are ignored.
+     */
+    public void testIterateDomainBounds_NaN2() {
+<span class="fc" id="L239">        DefaultIntervalXYDataset dataset = new DefaultIntervalXYDataset();</span>
+<span class="fc" id="L240">        double[] x1 = new double[] {Double.NaN, 2.0, 3.0};</span>
+<span class="fc" id="L241">        double[] x1Start = new double[] {0.9, Double.NaN, 2.9};</span>
+<span class="fc" id="L242">        double[] x1End = new double[] {1.1, Double.NaN, 3.1};</span>
+<span class="fc" id="L243">        double[] y1 = new double[] {4.0, 5.0, 6.0};</span>
+<span class="fc" id="L244">        double[] y1Start = new double[] {1.09, 2.09, 3.09};</span>
+<span class="fc" id="L245">        double[] y1End = new double[] {1.11, 2.11, 3.11};</span>
+<span class="fc" id="L246">        double[][] data1 = new double[][] {x1, x1Start, x1End, y1, y1Start,</span>
+                y1End};
+<span class="fc" id="L248">        dataset.addSeries(&quot;S1&quot;, data1);</span>
+<span class="fc" id="L249">        Range r = DatasetUtilities.iterateDomainBounds(dataset, false);</span>
+<span class="fc" id="L250">        assertEquals(2.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L251">        assertEquals(3.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L252">        r = DatasetUtilities.iterateDomainBounds(dataset, true);</span>
+<span class="fc" id="L253">        assertEquals(0.9, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L254">        assertEquals(3.1, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L255">    }</span>
+
+    /**
+     * Some tests for the findRangeBounds() for a CategoryDataset method.
+     */
+    public void testFindRangeBounds_CategoryDataset() {
+<span class="fc" id="L261">        CategoryDataset dataset = createCategoryDataset1();</span>
+<span class="fc" id="L262">        Range r = DatasetUtilities.findRangeBounds(dataset);</span>
+<span class="fc" id="L263">        assertEquals(1.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L264">        assertEquals(6.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L265">    }</span>
+
+    /**
+     * Some tests for the findRangeBounds() method on an XYDataset.
+     */
+    public void testFindRangeBounds() {
+<span class="fc" id="L271">        XYDataset dataset = createXYDataset1();</span>
+<span class="fc" id="L272">        Range r = DatasetUtilities.findRangeBounds(dataset);</span>
+<span class="fc" id="L273">        assertEquals(100.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L274">        assertEquals(105.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L275">    }</span>
+
+    /**
+     * A test for the findRangeBounds(XYDataset) method using
+     * an IntervalXYDataset.
+     */
+    public void testFindRangeBounds2() {
+<span class="fc" id="L282">        YIntervalSeriesCollection dataset = new YIntervalSeriesCollection();</span>
+<span class="fc" id="L283">        Range r = DatasetUtilities.findRangeBounds(dataset);</span>
+<span class="fc" id="L284">        assertNull(r);</span>
+<span class="fc" id="L285">        YIntervalSeries s1 = new YIntervalSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L286">        dataset.addSeries(s1);</span>
+<span class="fc" id="L287">        r = DatasetUtilities.findRangeBounds(dataset);</span>
+<span class="fc" id="L288">        assertNull(r);</span>
+
+        // try a single item
+<span class="fc" id="L291">        s1.add(1.0, 2.0, 1.5, 2.5);</span>
+<span class="fc" id="L292">        r = DatasetUtilities.findRangeBounds(dataset);</span>
+<span class="fc" id="L293">        assertEquals(1.5, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L294">        assertEquals(2.5, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L296">        r = DatasetUtilities.findRangeBounds(dataset, false);</span>
+<span class="fc" id="L297">        assertEquals(2.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L298">        assertEquals(2.0, r.getUpperBound(), EPSILON);</span>
+
+        // another item
+<span class="fc" id="L301">        s1.add(2.0, 2.0, 1.4, 2.1);</span>
+<span class="fc" id="L302">        r = DatasetUtilities.findRangeBounds(dataset);</span>
+<span class="fc" id="L303">        assertEquals(1.4, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L304">        assertEquals(2.5, r.getUpperBound(), EPSILON);</span>
+
+        // another empty series
+<span class="fc" id="L307">        YIntervalSeries s2 = new YIntervalSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L308">        dataset.addSeries(s2);</span>
+<span class="fc" id="L309">        r = DatasetUtilities.findRangeBounds(dataset);</span>
+<span class="fc" id="L310">        assertEquals(1.4, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L311">        assertEquals(2.5, r.getUpperBound(), EPSILON);</span>
+
+        // an item in series 2
+<span class="fc" id="L314">        s2.add(1.0, 2.0, 1.9, 2.6);</span>
+<span class="fc" id="L315">        r = DatasetUtilities.findRangeBounds(dataset);</span>
+<span class="fc" id="L316">        assertEquals(1.4, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L317">        assertEquals(2.6, r.getUpperBound(), EPSILON);</span>
+
+        // what if we don't want the interval?
+<span class="fc" id="L320">        r = DatasetUtilities.findRangeBounds(dataset, false);</span>
+<span class="fc" id="L321">        assertEquals(2.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L322">        assertEquals(2.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L323">    }</span>
+
+    /**
+     * Some tests for the iterateRangeBounds() method.
+     */
+    public void testIterateRangeBounds_CategoryDataset() {
+<span class="fc" id="L329">        CategoryDataset dataset = createCategoryDataset1();</span>
+<span class="fc" id="L330">        Range r = DatasetUtilities.iterateRangeBounds(dataset, false);</span>
+<span class="fc" id="L331">        assertEquals(1.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L332">        assertEquals(6.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L333">    }</span>
+
+    /**
+     * Some checks for the iterateRangeBounds() method.
+     */
+    public void testIterateRangeBounds2_CategoryDataset() {
+        // an empty dataset should return a null range
+<span class="fc" id="L340">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L341">        Range r = DatasetUtilities.iterateRangeBounds(dataset, false);</span>
+<span class="fc" id="L342">        assertNull(r);</span>
+
+        // a dataset with a single value
+<span class="fc" id="L345">        dataset.addValue(1.23, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L346">        r = DatasetUtilities.iterateRangeBounds(dataset, false);</span>
+<span class="fc" id="L347">        assertEquals(1.23, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L348">        assertEquals(1.23, r.getUpperBound(), EPSILON);</span>
+
+        // null is ignored
+<span class="fc" id="L351">        dataset.addValue(null, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L352">        r = DatasetUtilities.iterateRangeBounds(dataset, false);</span>
+<span class="fc" id="L353">        assertEquals(1.23, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L354">        assertEquals(1.23, r.getUpperBound(), EPSILON);</span>
+
+        // a Double.NaN should be ignored
+<span class="fc" id="L357">        dataset.addValue(Double.NaN, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L358">        r = DatasetUtilities.iterateRangeBounds(dataset, false);</span>
+<span class="fc" id="L359">        assertEquals(1.23, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L360">        assertEquals(1.23, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L361">    }</span>
+
+    /**
+     * Some checks for the iterateRangeBounds() method using an
+     * IntervalCategoryDataset.
+     */
+    public void testIterateRangeBounds3_CategoryDataset() {
+<span class="fc" id="L368">        Number[][] starts = new Double[2][3];</span>
+<span class="fc" id="L369">        Number[][] ends = new Double[2][3];</span>
+<span class="fc" id="L370">        starts[0][0] = new Double(1.0);</span>
+<span class="fc" id="L371">        starts[0][1] = new Double(2.0);</span>
+<span class="fc" id="L372">        starts[0][2] = new Double(3.0);</span>
+<span class="fc" id="L373">        starts[1][0] = new Double(11.0);</span>
+<span class="fc" id="L374">        starts[1][1] = new Double(12.0);</span>
+<span class="fc" id="L375">        starts[1][2] = new Double(13.0);</span>
+<span class="fc" id="L376">        ends[0][0] = new Double(4.0);</span>
+<span class="fc" id="L377">        ends[0][1] = new Double(5.0);</span>
+<span class="fc" id="L378">        ends[0][2] = new Double(6.0);</span>
+<span class="fc" id="L379">        ends[1][0] = new Double(16.0);</span>
+<span class="fc" id="L380">        ends[1][1] = new Double(15.0);</span>
+<span class="fc" id="L381">        ends[1][2] = new Double(14.0);</span>
+
+<span class="fc" id="L383">        DefaultIntervalCategoryDataset d = new DefaultIntervalCategoryDataset(</span>
+                starts, ends);
+<span class="fc" id="L385">        Range r = DatasetUtilities.iterateRangeBounds(d, false);</span>
+<span class="fc" id="L386">        assertEquals(4.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L387">        assertEquals(16.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L388">        r = DatasetUtilities.iterateRangeBounds(d, true);</span>
+<span class="fc" id="L389">        assertEquals(1.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L390">        assertEquals(16.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L391">    }</span>
+
+    /**
+     * Some tests for the iterateRangeBounds() method.
+     */
+    public void testIterateRangeBounds() {
+<span class="fc" id="L397">        XYDataset dataset = createXYDataset1();</span>
+<span class="fc" id="L398">        Range r = DatasetUtilities.iterateRangeBounds(dataset);</span>
+<span class="fc" id="L399">        assertEquals(100.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L400">        assertEquals(105.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L401">    }</span>
+
+    /**
+     * Check the range returned when a series contains a null value.
+     */
+    public void testIterateRangeBounds2() {
+<span class="fc" id="L407">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L408">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L409">        s1.add(2.0, null);</span>
+<span class="fc" id="L410">        s1.add(3.0, 3.3);</span>
+<span class="fc" id="L411">        XYSeriesCollection dataset = new XYSeriesCollection(s1);</span>
+<span class="fc" id="L412">        Range r = DatasetUtilities.iterateRangeBounds(dataset);</span>
+<span class="fc" id="L413">        assertEquals(1.1, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L414">        assertEquals(3.3, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L415">    }</span>
+
+    /**
+     * Some checks for the iterateRangeBounds() method.
+     */
+    public void testIterateRangeBounds3() {
+        // an empty dataset should return a null range
+<span class="fc" id="L422">        XYSeriesCollection dataset = new XYSeriesCollection();</span>
+<span class="fc" id="L423">        Range r = DatasetUtilities.iterateRangeBounds(dataset);</span>
+<span class="fc" id="L424">        assertNull(r);</span>
+<span class="fc" id="L425">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L426">        dataset.addSeries(s1);</span>
+<span class="fc" id="L427">        r = DatasetUtilities.iterateRangeBounds(dataset);</span>
+<span class="fc" id="L428">        assertNull(r);</span>
+
+        // a dataset with a single value
+<span class="fc" id="L431">        s1.add(1.0, 1.23);</span>
+<span class="fc" id="L432">        r = DatasetUtilities.iterateRangeBounds(dataset);</span>
+<span class="fc" id="L433">        assertEquals(1.23, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L434">        assertEquals(1.23, r.getUpperBound(), EPSILON);</span>
+
+        // null is ignored
+<span class="fc" id="L437">        s1.add(2.0, null);</span>
+<span class="fc" id="L438">        r = DatasetUtilities.iterateRangeBounds(dataset);</span>
+<span class="fc" id="L439">        assertEquals(1.23, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L440">        assertEquals(1.23, r.getUpperBound(), EPSILON);</span>
+
+        // Double.NaN DOESN'T mess things up
+<span class="fc" id="L443">        s1.add(3.0, Double.NaN);</span>
+<span class="fc" id="L444">        r = DatasetUtilities.iterateRangeBounds(dataset);</span>
+<span class="fc" id="L445">        assertEquals(1.23, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L446">        assertEquals(1.23, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L447">    }</span>
+
+    /**
+     * Some checks for the range bounds of a dataset that implements the
+     * {@link IntervalXYDataset} interface.
+     */
+    public void testIterateRangeBounds4() {
+<span class="fc" id="L454">        YIntervalSeriesCollection dataset = new YIntervalSeriesCollection();</span>
+<span class="fc" id="L455">        Range r = DatasetUtilities.iterateRangeBounds(dataset);</span>
+<span class="fc" id="L456">        assertNull(r);</span>
+<span class="fc" id="L457">        YIntervalSeries s1 = new YIntervalSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L458">        dataset.addSeries(s1);</span>
+<span class="fc" id="L459">        r = DatasetUtilities.iterateRangeBounds(dataset);</span>
+<span class="fc" id="L460">        assertNull(r);</span>
+
+        // try a single item
+<span class="fc" id="L463">        s1.add(1.0, 2.0, 1.5, 2.5);</span>
+<span class="fc" id="L464">        r = DatasetUtilities.iterateRangeBounds(dataset);</span>
+<span class="fc" id="L465">        assertEquals(1.5, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L466">        assertEquals(2.5, r.getUpperBound(), EPSILON);</span>
+
+        // another item
+<span class="fc" id="L469">        s1.add(2.0, 2.0, 1.4, 2.1);</span>
+<span class="fc" id="L470">        r = DatasetUtilities.iterateRangeBounds(dataset);</span>
+<span class="fc" id="L471">        assertEquals(1.4, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L472">        assertEquals(2.5, r.getUpperBound(), EPSILON);</span>
+
+        // another empty series
+<span class="fc" id="L475">        YIntervalSeries s2 = new YIntervalSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L476">        dataset.addSeries(s2);</span>
+<span class="fc" id="L477">        r = DatasetUtilities.iterateRangeBounds(dataset);</span>
+<span class="fc" id="L478">        assertEquals(1.4, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L479">        assertEquals(2.5, r.getUpperBound(), EPSILON);</span>
+
+        // an item in series 2
+<span class="fc" id="L482">        s2.add(1.0, 2.0, 1.9, 2.6);</span>
+<span class="fc" id="L483">        r = DatasetUtilities.iterateRangeBounds(dataset);</span>
+<span class="fc" id="L484">        assertEquals(1.4, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L485">        assertEquals(2.6, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L486">    }</span>
+
+    /**
+     * Some tests for the findMinimumDomainValue() method.
+     */
+    public void testFindMinimumDomainValue() {
+<span class="fc" id="L492">        XYDataset dataset = createXYDataset1();</span>
+<span class="fc" id="L493">        Number minimum = DatasetUtilities.findMinimumDomainValue(dataset);</span>
+<span class="fc" id="L494">        assertEquals(new Double(1.0), minimum);</span>
+<span class="fc" id="L495">    }</span>
+
+    /**
+     * Some tests for the findMaximumDomainValue() method.
+     */
+    public void testFindMaximumDomainValue() {
+<span class="fc" id="L501">        XYDataset dataset = createXYDataset1();</span>
+<span class="fc" id="L502">        Number maximum = DatasetUtilities.findMaximumDomainValue(dataset);</span>
+<span class="fc" id="L503">        assertEquals(new Double(3.0), maximum);</span>
+<span class="fc" id="L504">    }</span>
+
+    /**
+     * Some tests for the findMinimumRangeValue() method.
+     */
+    public void testFindMinimumRangeValue() {
+<span class="fc" id="L510">        CategoryDataset d1 = createCategoryDataset1();</span>
+<span class="fc" id="L511">        Number min1 = DatasetUtilities.findMinimumRangeValue(d1);</span>
+<span class="fc" id="L512">        assertEquals(new Double(1.0), min1);</span>
+
+<span class="fc" id="L514">        XYDataset d2 = createXYDataset1();</span>
+<span class="fc" id="L515">        Number min2 = DatasetUtilities.findMinimumRangeValue(d2);</span>
+<span class="fc" id="L516">        assertEquals(new Double(100.0), min2);</span>
+<span class="fc" id="L517">    }</span>
+
+    /**
+     * Some tests for the findMaximumRangeValue() method.
+     */
+    public void testFindMaximumRangeValue() {
+<span class="fc" id="L523">        CategoryDataset d1 = createCategoryDataset1();</span>
+<span class="fc" id="L524">        Number max1 = DatasetUtilities.findMaximumRangeValue(d1);</span>
+<span class="fc" id="L525">        assertEquals(new Double(6.0), max1);</span>
+
+<span class="fc" id="L527">        XYDataset dataset = createXYDataset1();</span>
+<span class="fc" id="L528">        Number maximum = DatasetUtilities.findMaximumRangeValue(dataset);</span>
+<span class="fc" id="L529">        assertEquals(new Double(105.0), maximum);</span>
+<span class="fc" id="L530">    }</span>
+
+    /**
+     * A quick test of the min and max range value methods.
+     */
+    public void testMinMaxRange() {
+<span class="fc" id="L536">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L537">        dataset.addValue(100.0, &quot;Series 1&quot;, &quot;Type 1&quot;);</span>
+<span class="fc" id="L538">        dataset.addValue(101.1, &quot;Series 1&quot;, &quot;Type 2&quot;);</span>
+<span class="fc" id="L539">        Number min = DatasetUtilities.findMinimumRangeValue(dataset);</span>
+<span class="pc bpc" id="L540" title="1 of 2 branches missed.">        assertTrue(min.doubleValue() &lt; 100.1);</span>
+<span class="fc" id="L541">        Number max = DatasetUtilities.findMaximumRangeValue(dataset);</span>
+<span class="pc bpc" id="L542" title="1 of 2 branches missed.">        assertTrue(max.doubleValue() &gt; 101.0);</span>
+<span class="fc" id="L543">    }</span>
+
+    /**
+     * A test to reproduce bug report 803660.
+     */
+    public void test803660() {
+<span class="fc" id="L549">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L550">        dataset.addValue(100.0, &quot;Series 1&quot;, &quot;Type 1&quot;);</span>
+<span class="fc" id="L551">        dataset.addValue(101.1, &quot;Series 1&quot;, &quot;Type 2&quot;);</span>
+<span class="fc" id="L552">        Number n = DatasetUtilities.findMaximumRangeValue(dataset);</span>
+<span class="pc bpc" id="L553" title="1 of 2 branches missed.">        assertTrue(n.doubleValue() &gt; 101.0);</span>
+<span class="fc" id="L554">    }</span>
+
+    /**
+     * A simple test for the cumulative range calculation.  The sequence of
+     * &quot;cumulative&quot; values are considered to be { 0.0, 10.0, 25.0, 18.0 } so
+     * the range should be 0.0 -&gt; 25.0.
+     */
+    public void testCumulativeRange1() {
+<span class="fc" id="L562">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L563">        dataset.addValue(10.0, &quot;Series 1&quot;, &quot;Start&quot;);</span>
+<span class="fc" id="L564">        dataset.addValue(15.0, &quot;Series 1&quot;, &quot;Delta 1&quot;);</span>
+<span class="fc" id="L565">        dataset.addValue(-7.0, &quot;Series 1&quot;, &quot;Delta 2&quot;);</span>
+<span class="fc" id="L566">        Range range = DatasetUtilities.findCumulativeRangeBounds(dataset);</span>
+<span class="fc" id="L567">        assertEquals(0.0, range.getLowerBound(), 0.00000001);</span>
+<span class="fc" id="L568">        assertEquals(25.0, range.getUpperBound(), 0.00000001);</span>
+<span class="fc" id="L569">    }</span>
+
+    /**
+     * A further test for the cumulative range calculation.
+     */
+    public void testCumulativeRange2() {
+<span class="fc" id="L575">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L576">        dataset.addValue(-21.4, &quot;Series 1&quot;, &quot;Start Value&quot;);</span>
+<span class="fc" id="L577">        dataset.addValue(11.57, &quot;Series 1&quot;, &quot;Delta 1&quot;);</span>
+<span class="fc" id="L578">        dataset.addValue(3.51, &quot;Series 1&quot;, &quot;Delta 2&quot;);</span>
+<span class="fc" id="L579">        dataset.addValue(-12.36, &quot;Series 1&quot;, &quot;Delta 3&quot;);</span>
+<span class="fc" id="L580">        dataset.addValue(3.39, &quot;Series 1&quot;, &quot;Delta 4&quot;);</span>
+<span class="fc" id="L581">        dataset.addValue(38.68, &quot;Series 1&quot;, &quot;Delta 5&quot;);</span>
+<span class="fc" id="L582">        dataset.addValue(-43.31, &quot;Series 1&quot;, &quot;Delta 6&quot;);</span>
+<span class="fc" id="L583">        dataset.addValue(-29.59, &quot;Series 1&quot;, &quot;Delta 7&quot;);</span>
+<span class="fc" id="L584">        dataset.addValue(35.30, &quot;Series 1&quot;, &quot;Delta 8&quot;);</span>
+<span class="fc" id="L585">        dataset.addValue(5.0, &quot;Series 1&quot;, &quot;Delta 9&quot;);</span>
+<span class="fc" id="L586">        Range range = DatasetUtilities.findCumulativeRangeBounds(dataset);</span>
+<span class="fc" id="L587">        assertEquals(-49.51, range.getLowerBound(), 0.00000001);</span>
+<span class="fc" id="L588">        assertEquals(23.39, range.getUpperBound(), 0.00000001);</span>
+<span class="fc" id="L589">    }</span>
+
+    /**
+     * A further test for the cumulative range calculation.
+     */
+    public void testCumulativeRange3() {
+<span class="fc" id="L595">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L596">        dataset.addValue(15.76, &quot;Product 1&quot;, &quot;Labour&quot;);</span>
+<span class="fc" id="L597">        dataset.addValue(8.66, &quot;Product 1&quot;, &quot;Administration&quot;);</span>
+<span class="fc" id="L598">        dataset.addValue(4.71, &quot;Product 1&quot;, &quot;Marketing&quot;);</span>
+<span class="fc" id="L599">        dataset.addValue(3.51, &quot;Product 1&quot;, &quot;Distribution&quot;);</span>
+<span class="fc" id="L600">        dataset.addValue(32.64, &quot;Product 1&quot;, &quot;Total Expense&quot;);</span>
+<span class="fc" id="L601">        Range range = DatasetUtilities.findCumulativeRangeBounds(dataset);</span>
+<span class="fc" id="L602">        assertEquals(0.0, range.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L603">        assertEquals(65.28, range.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L604">    }</span>
+
+    /**
+     * Check that the findCumulativeRangeBounds() method ignores Double.NaN
+     * values.
+     */
+    public void testCumulativeRange_NaN() {
+<span class="fc" id="L611">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L612">        dataset.addValue(10.0, &quot;Series 1&quot;, &quot;Start&quot;);</span>
+<span class="fc" id="L613">        dataset.addValue(15.0, &quot;Series 1&quot;, &quot;Delta 1&quot;);</span>
+<span class="fc" id="L614">        dataset.addValue(Double.NaN, &quot;Series 1&quot;, &quot;Delta 2&quot;);</span>
+<span class="fc" id="L615">        Range range = DatasetUtilities.findCumulativeRangeBounds(dataset);</span>
+<span class="fc" id="L616">        assertEquals(0.0, range.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L617">        assertEquals(25.0, range.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L618">    }</span>
+
+    /**
+     * Test the creation of a dataset from an array.
+     */
+    public void testCreateCategoryDataset1() {
+<span class="fc" id="L624">        String[] rowKeys = {&quot;R1&quot;, &quot;R2&quot;, &quot;R3&quot;};</span>
+<span class="fc" id="L625">        String[] columnKeys = {&quot;C1&quot;, &quot;C2&quot;};</span>
+<span class="fc" id="L626">        double[][] data = new double[3][];</span>
+<span class="fc" id="L627">        data[0] = new double[] {1.1, 1.2};</span>
+<span class="fc" id="L628">        data[1] = new double[] {2.1, 2.2};</span>
+<span class="fc" id="L629">        data[2] = new double[] {3.1, 3.2};</span>
+<span class="fc" id="L630">        CategoryDataset dataset = DatasetUtilities.createCategoryDataset(</span>
+                rowKeys, columnKeys, data);
+<span class="pc bpc" id="L632" title="1 of 2 branches missed.">        assertTrue(dataset.getRowCount() == 3);</span>
+<span class="pc bpc" id="L633" title="1 of 2 branches missed.">        assertTrue(dataset.getColumnCount() == 2);</span>
+<span class="fc" id="L634">    }</span>
+
+    /**
+     * Test the creation of a dataset from an array.  This time is should fail
+     * because the array dimensions are around the wrong way.
+     */
+    public void testCreateCategoryDataset2() {
+<span class="fc" id="L641">        boolean pass = false;</span>
+<span class="fc" id="L642">        String[] rowKeys = {&quot;R1&quot;, &quot;R2&quot;, &quot;R3&quot;};</span>
+<span class="fc" id="L643">        String[] columnKeys = {&quot;C1&quot;, &quot;C2&quot;};</span>
+<span class="fc" id="L644">        double[][] data = new double[2][];</span>
+<span class="fc" id="L645">        data[0] = new double[] {1.1, 1.2, 1.3};</span>
+<span class="fc" id="L646">        data[1] = new double[] {2.1, 2.2, 2.3};</span>
+<span class="fc" id="L647">        CategoryDataset dataset = null;</span>
+        try {
+<span class="nc" id="L649">            dataset = DatasetUtilities.createCategoryDataset(rowKeys,</span>
+                    columnKeys, data);
+        }
+<span class="fc" id="L652">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L653">            pass = true;  // got it!</span>
+<span class="nc" id="L654">        }</span>
+<span class="fc" id="L655">        assertTrue(pass);</span>
+<span class="pc bpc" id="L656" title="1 of 2 branches missed.">        assertTrue(dataset == null);</span>
+<span class="fc" id="L657">    }</span>
+
+    /**
+     * Test for a bug reported in the forum:
+     *
+     * http://www.jfree.org/phpBB2/viewtopic.php?t=7903
+     */
+    public void testMaximumStackedRangeValue() {
+<span class="fc" id="L665">        double v1 = 24.3;</span>
+<span class="fc" id="L666">        double v2 = 14.2;</span>
+<span class="fc" id="L667">        double v3 = 33.2;</span>
+<span class="fc" id="L668">        double v4 = 32.4;</span>
+<span class="fc" id="L669">        double v5 = 26.3;</span>
+<span class="fc" id="L670">        double v6 = 22.6;</span>
+<span class="fc" id="L671">        Number answer = new Double(Math.max(v1 + v2 + v3, v4 + v5 + v6));</span>
+<span class="fc" id="L672">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L673">        d.addValue(v1, &quot;Row 0&quot;, &quot;Column 0&quot;);</span>
+<span class="fc" id="L674">        d.addValue(v2, &quot;Row 1&quot;, &quot;Column 0&quot;);</span>
+<span class="fc" id="L675">        d.addValue(v3, &quot;Row 2&quot;, &quot;Column 0&quot;);</span>
+<span class="fc" id="L676">        d.addValue(v4, &quot;Row 0&quot;, &quot;Column 1&quot;);</span>
+<span class="fc" id="L677">        d.addValue(v5, &quot;Row 1&quot;, &quot;Column 1&quot;);</span>
+<span class="fc" id="L678">        d.addValue(v6, &quot;Row 2&quot;, &quot;Column 1&quot;);</span>
+<span class="fc" id="L679">        Number max = DatasetUtilities.findMaximumStackedRangeValue(d);</span>
+<span class="fc" id="L680">        assertTrue(max.equals(answer));</span>
+<span class="fc" id="L681">    }</span>
+
+    /**
+     * Some checks for the findStackedRangeBounds() method.
+     */
+    public void testFindStackedRangeBounds_CategoryDataset1() {
+<span class="fc" id="L687">        CategoryDataset d1 = createCategoryDataset1();</span>
+<span class="fc" id="L688">        Range r = DatasetUtilities.findStackedRangeBounds(d1);</span>
+<span class="fc" id="L689">        assertEquals(0.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L690">        assertEquals(15.0, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L692">        d1 = createCategoryDataset2();</span>
+<span class="fc" id="L693">        r = DatasetUtilities.findStackedRangeBounds(d1);</span>
+<span class="fc" id="L694">        assertEquals(-2.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L695">        assertEquals(2.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L696">    }</span>
+
+    /**
+     * Some checks for the findStackedRangeBounds() method.
+     */
+    public void testFindStackedRangeBounds_CategoryDataset2() {
+<span class="fc" id="L702">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L703">        Range r = DatasetUtilities.findStackedRangeBounds(dataset);</span>
+<span class="pc bpc" id="L704" title="1 of 2 branches missed.">        assertTrue(r == null);</span>
+
+<span class="fc" id="L706">        dataset.addValue(5.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L707">        r = DatasetUtilities.findStackedRangeBounds(dataset, 3.0);</span>
+<span class="fc" id="L708">        assertEquals(3.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L709">        assertEquals(8.0, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L711">        dataset.addValue(-1.0, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L712">        r = DatasetUtilities.findStackedRangeBounds(dataset, 3.0);</span>
+<span class="fc" id="L713">        assertEquals(2.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L714">        assertEquals(8.0, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L716">        dataset.addValue(null, &quot;R3&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L717">        r = DatasetUtilities.findStackedRangeBounds(dataset, 3.0);</span>
+<span class="fc" id="L718">        assertEquals(2.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L719">        assertEquals(8.0, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L721">        dataset.addValue(Double.NaN, &quot;R4&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L722">        r = DatasetUtilities.findStackedRangeBounds(dataset, 3.0);</span>
+<span class="fc" id="L723">        assertEquals(2.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L724">        assertEquals(8.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L725">    }</span>
+
+    /**
+     * Some checks for the findStackedRangeBounds(CategoryDataset,
+     * KeyToGroupMap) method.
+     */
+    public void testFindStackedRangeBounds_CategoryDataset3() {
+<span class="fc" id="L732">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L733">        KeyToGroupMap map = new KeyToGroupMap(&quot;Group A&quot;);</span>
+<span class="fc" id="L734">        Range r = DatasetUtilities.findStackedRangeBounds(dataset, map);</span>
+<span class="pc bpc" id="L735" title="1 of 2 branches missed.">        assertTrue(r == null);</span>
+
+<span class="fc" id="L737">        dataset.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L738">        dataset.addValue(2.0, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L739">        dataset.addValue(3.0, &quot;R3&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L740">        dataset.addValue(4.0, &quot;R4&quot;, &quot;C1&quot;);</span>
+
+<span class="fc" id="L742">        map.mapKeyToGroup(&quot;R1&quot;, &quot;Group A&quot;);</span>
+<span class="fc" id="L743">        map.mapKeyToGroup(&quot;R2&quot;, &quot;Group A&quot;);</span>
+<span class="fc" id="L744">        map.mapKeyToGroup(&quot;R3&quot;, &quot;Group B&quot;);</span>
+<span class="fc" id="L745">        map.mapKeyToGroup(&quot;R4&quot;, &quot;Group B&quot;);</span>
+
+<span class="fc" id="L747">        r = DatasetUtilities.findStackedRangeBounds(dataset, map);</span>
+<span class="fc" id="L748">        assertEquals(0.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L749">        assertEquals(7.0, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L751">        dataset.addValue(null, &quot;R5&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L752">        r = DatasetUtilities.findStackedRangeBounds(dataset, map);</span>
+<span class="fc" id="L753">        assertEquals(0.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L754">        assertEquals(7.0, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L756">        dataset.addValue(Double.NaN, &quot;R6&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L757">        r = DatasetUtilities.findStackedRangeBounds(dataset, map);</span>
+<span class="fc" id="L758">        assertEquals(0.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L759">        assertEquals(7.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L760">    }</span>
+
+    /**
+     * Some checks for the findStackedRangeBounds() method.
+     */
+    public void testFindStackedRangeBoundsForTableXYDataset1() {
+<span class="fc" id="L766">        TableXYDataset d2 = createTableXYDataset1();</span>
+<span class="fc" id="L767">        Range r = DatasetUtilities.findStackedRangeBounds(d2);</span>
+<span class="fc" id="L768">        assertEquals(-2.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L769">        assertEquals(2.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L770">    }</span>
+
+    /**
+     * Some checks for the findStackedRangeBounds() method.
+     */
+    public void testFindStackedRangeBoundsForTableXYDataset2() {
+<span class="fc" id="L776">        DefaultTableXYDataset d = new DefaultTableXYDataset();</span>
+<span class="fc" id="L777">        Range r = DatasetUtilities.findStackedRangeBounds(d);</span>
+<span class="fc" id="L778">        assertEquals(r, new Range(0.0, 0.0));</span>
+<span class="fc" id="L779">    }</span>
+
+    /**
+     * Tests the stacked range extent calculation.
+     */
+    public void testStackedRangeWithMap() {
+<span class="fc" id="L785">        CategoryDataset d = createCategoryDataset1();</span>
+<span class="fc" id="L786">        KeyToGroupMap map = new KeyToGroupMap(&quot;G0&quot;);</span>
+<span class="fc" id="L787">        map.mapKeyToGroup(&quot;R2&quot;, &quot;G1&quot;);</span>
+<span class="fc" id="L788">        Range r = DatasetUtilities.findStackedRangeBounds(d, map);</span>
+<span class="fc" id="L789">        assertEquals(0.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L790">        assertEquals(9.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L791">    }</span>
+
+    /**
+     * Some checks for the isEmptyOrNull(XYDataset) method.
+     */
+    public void testIsEmptyOrNullXYDataset() {
+<span class="fc" id="L797">        XYSeriesCollection dataset = null;</span>
+<span class="fc" id="L798">        assertTrue(DatasetUtilities.isEmptyOrNull(dataset));</span>
+<span class="fc" id="L799">        dataset = new XYSeriesCollection();</span>
+<span class="fc" id="L800">        assertTrue(DatasetUtilities.isEmptyOrNull(dataset));</span>
+<span class="fc" id="L801">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L802">        dataset.addSeries(s1);</span>
+<span class="fc" id="L803">        assertTrue(DatasetUtilities.isEmptyOrNull(dataset));</span>
+<span class="fc" id="L804">        s1.add(1.0, 2.0);</span>
+<span class="fc" id="L805">        assertFalse(DatasetUtilities.isEmptyOrNull(dataset));</span>
+<span class="fc" id="L806">        s1.clear();</span>
+<span class="fc" id="L807">        assertTrue(DatasetUtilities.isEmptyOrNull(dataset));</span>
+<span class="fc" id="L808">    }</span>
+
+    /**
+     * Some checks for the limitPieDataset() methods.
+     */
+    public void testLimitPieDataset() {
+
+        // check that empty dataset is handled OK
+<span class="fc" id="L816">        DefaultPieDataset d1 = new DefaultPieDataset();</span>
+<span class="fc" id="L817">        PieDataset d2 = DatasetUtilities.createConsolidatedPieDataset(d1,</span>
+                &quot;Other&quot;, 0.05);
+<span class="fc" id="L819">        assertEquals(0, d2.getItemCount());</span>
+
+        // check that minItem limit is observed
+<span class="fc" id="L822">        d1.setValue(&quot;Item 1&quot;, 1.0);</span>
+<span class="fc" id="L823">        d1.setValue(&quot;Item 2&quot;, 49.50);</span>
+<span class="fc" id="L824">        d1.setValue(&quot;Item 3&quot;, 49.50);</span>
+<span class="fc" id="L825">        d2 = DatasetUtilities.createConsolidatedPieDataset(d1, &quot;Other&quot;, 0.05);</span>
+<span class="fc" id="L826">        assertEquals(3, d2.getItemCount());</span>
+<span class="fc" id="L827">        assertEquals(&quot;Item 1&quot;, d2.getKey(0));</span>
+<span class="fc" id="L828">        assertEquals(&quot;Item 2&quot;, d2.getKey(1));</span>
+<span class="fc" id="L829">        assertEquals(&quot;Item 3&quot;, d2.getKey(2));</span>
+
+        // check that minItem limit is observed
+<span class="fc" id="L832">        d1.setValue(&quot;Item 4&quot;, 1.0);</span>
+<span class="fc" id="L833">        d2 = DatasetUtilities.createConsolidatedPieDataset(d1, &quot;Other&quot;, 0.05,</span>
+                2);
+
+        // and that simple aggregation works
+<span class="fc" id="L837">        assertEquals(3, d2.getItemCount());</span>
+<span class="fc" id="L838">        assertEquals(&quot;Item 2&quot;, d2.getKey(0));</span>
+<span class="fc" id="L839">        assertEquals(&quot;Item 3&quot;, d2.getKey(1));</span>
+<span class="fc" id="L840">        assertEquals(&quot;Other&quot;, d2.getKey(2));</span>
+<span class="fc" id="L841">        assertEquals(new Double(2.0), d2.getValue(&quot;Other&quot;));</span>
+
+<span class="fc" id="L843">    }</span>
+
+    /**
+     * Some checks for the sampleFunction2D() method.
+     */
+    public void testSampleFunction2D() {
+<span class="fc" id="L849">        Function2D f = new LineFunction2D(0, 1);</span>
+<span class="fc" id="L850">        XYDataset dataset = DatasetUtilities.sampleFunction2D(f, 0.0, 1.0, 2,</span>
+                &quot;S1&quot;);
+<span class="fc" id="L852">        assertEquals(1, dataset.getSeriesCount());</span>
+<span class="fc" id="L853">        assertEquals(&quot;S1&quot;, dataset.getSeriesKey(0));</span>
+<span class="fc" id="L854">        assertEquals(2, dataset.getItemCount(0));</span>
+<span class="fc" id="L855">        assertEquals(0.0, dataset.getXValue(0, 0), EPSILON);</span>
+<span class="fc" id="L856">        assertEquals(0.0, dataset.getYValue(0, 0), EPSILON);</span>
+<span class="fc" id="L857">        assertEquals(1.0, dataset.getXValue(0, 1), EPSILON);</span>
+<span class="fc" id="L858">        assertEquals(1.0, dataset.getYValue(0, 1), EPSILON);</span>
+<span class="fc" id="L859">    }</span>
+
+    /**
+     * A simple check for the findMinimumStackedRangeValue() method.
+     */
+    public void testFindMinimumStackedRangeValue() {
+<span class="fc" id="L865">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+
+        // an empty dataset should return a null max
+<span class="fc" id="L868">        Number min = DatasetUtilities.findMinimumStackedRangeValue(dataset);</span>
+<span class="fc" id="L869">        assertNull(min);</span>
+
+<span class="fc" id="L871">        dataset.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L872">        min = DatasetUtilities.findMinimumStackedRangeValue(dataset);</span>
+<span class="fc" id="L873">        assertEquals(0.0, min.doubleValue(), EPSILON);</span>
+
+<span class="fc" id="L875">        dataset.addValue(2.0, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L876">        min = DatasetUtilities.findMinimumStackedRangeValue(dataset);</span>
+<span class="fc" id="L877">        assertEquals(0.0, min.doubleValue(), EPSILON);</span>
+
+<span class="fc" id="L879">        dataset.addValue(-3.0, &quot;R3&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L880">        min = DatasetUtilities.findMinimumStackedRangeValue(dataset);</span>
+<span class="fc" id="L881">        assertEquals(-3.0, min.doubleValue(), EPSILON);</span>
+
+<span class="fc" id="L883">        dataset.addValue(Double.NaN, &quot;R4&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L884">        min = DatasetUtilities.findMinimumStackedRangeValue(dataset);</span>
+<span class="fc" id="L885">        assertEquals(-3.0, min.doubleValue(), EPSILON);</span>
+<span class="fc" id="L886">    }</span>
+
+    /**
+     * A simple check for the findMaximumStackedRangeValue() method.
+     */
+    public void testFindMinimumStackedRangeValue2() {
+<span class="fc" id="L892">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L893">        dataset.addValue(-1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L894">        Number min = DatasetUtilities.findMinimumStackedRangeValue(dataset);</span>
+<span class="fc" id="L895">        assertEquals(-1.0, min.doubleValue(), EPSILON);</span>
+
+<span class="fc" id="L897">        dataset.addValue(-2.0, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L898">        min = DatasetUtilities.findMinimumStackedRangeValue(dataset);</span>
+<span class="fc" id="L899">        assertEquals(-3.0, min.doubleValue(), EPSILON);</span>
+<span class="fc" id="L900">    }</span>
+
+    /**
+     * A simple check for the findMaximumStackedRangeValue() method.
+     */
+    public void testFindMaximumStackedRangeValue() {
+<span class="fc" id="L906">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+
+        // an empty dataset should return a null max
+<span class="fc" id="L909">        Number max = DatasetUtilities.findMaximumStackedRangeValue(dataset);</span>
+<span class="fc" id="L910">        assertNull(max);</span>
+
+<span class="fc" id="L912">        dataset.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L913">        max = DatasetUtilities.findMaximumStackedRangeValue(dataset);</span>
+<span class="fc" id="L914">        assertEquals(1.0, max.doubleValue(), EPSILON);</span>
+
+<span class="fc" id="L916">        dataset.addValue(2.0, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L917">        max = DatasetUtilities.findMaximumStackedRangeValue(dataset);</span>
+<span class="fc" id="L918">        assertEquals(3.0, max.doubleValue(), EPSILON);</span>
+
+<span class="fc" id="L920">        dataset.addValue(-3.0, &quot;R3&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L921">        max = DatasetUtilities.findMaximumStackedRangeValue(dataset);</span>
+<span class="fc" id="L922">        assertEquals(3.0, max.doubleValue(), EPSILON);</span>
+
+<span class="fc" id="L924">        dataset.addValue(Double.NaN, &quot;R4&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L925">        max = DatasetUtilities.findMaximumStackedRangeValue(dataset);</span>
+<span class="fc" id="L926">        assertEquals(3.0, max.doubleValue(), EPSILON);</span>
+<span class="fc" id="L927">    }</span>
+
+    /**
+     * A simple check for the findMaximumStackedRangeValue() method.
+     */
+    public void testFindMaximumStackedRangeValue2() {
+<span class="fc" id="L933">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L934">        dataset.addValue(-1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L935">        Number max = DatasetUtilities.findMaximumStackedRangeValue(dataset);</span>
+<span class="fc" id="L936">        assertEquals(0.0, max.doubleValue(), EPSILON);</span>
+
+<span class="fc" id="L938">        dataset.addValue(-2.0, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L939">        max = DatasetUtilities.findMaximumStackedRangeValue(dataset);</span>
+<span class="fc" id="L940">        assertEquals(0.0, max.doubleValue(), EPSILON);</span>
+<span class="fc" id="L941">    }</span>
+
+    /**
+     * Creates a dataset for testing.
+     *
+     * @return A dataset.
+     */
+    private CategoryDataset createCategoryDataset1() {
+<span class="fc" id="L949">        DefaultCategoryDataset result = new DefaultCategoryDataset();</span>
+<span class="fc" id="L950">        result.addValue(1.0, &quot;R0&quot;, &quot;C0&quot;);</span>
+<span class="fc" id="L951">        result.addValue(1.0, &quot;R1&quot;, &quot;C0&quot;);</span>
+<span class="fc" id="L952">        result.addValue(1.0, &quot;R2&quot;, &quot;C0&quot;);</span>
+<span class="fc" id="L953">        result.addValue(4.0, &quot;R0&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L954">        result.addValue(5.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L955">        result.addValue(6.0, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L956">        return result;</span>
+    }
+
+    /**
+     * Creates a dataset for testing.
+     *
+     * @return A dataset.
+     */
+    private CategoryDataset createCategoryDataset2() {
+<span class="fc" id="L965">        DefaultCategoryDataset result = new DefaultCategoryDataset();</span>
+<span class="fc" id="L966">        result.addValue(1.0, &quot;R0&quot;, &quot;C0&quot;);</span>
+<span class="fc" id="L967">        result.addValue(-2.0, &quot;R1&quot;, &quot;C0&quot;);</span>
+<span class="fc" id="L968">        result.addValue(2.0, &quot;R0&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L969">        result.addValue(-1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L970">        return result;</span>
+    }
+
+
+    /**
+     * Creates a dataset for testing.
+     *
+     * @return A dataset.
+     */
+    private XYDataset createXYDataset1() {
+<span class="fc" id="L980">        XYSeries series1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L981">        series1.add(1.0, 100.0);</span>
+<span class="fc" id="L982">        series1.add(2.0, 101.0);</span>
+<span class="fc" id="L983">        series1.add(3.0, 102.0);</span>
+<span class="fc" id="L984">        XYSeries series2 = new XYSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L985">        series2.add(1.0, 103.0);</span>
+<span class="fc" id="L986">        series2.add(2.0, null);</span>
+<span class="fc" id="L987">        series2.add(3.0, 105.0);</span>
+<span class="fc" id="L988">        XYSeriesCollection result = new XYSeriesCollection();</span>
+<span class="fc" id="L989">        result.addSeries(series1);</span>
+<span class="fc" id="L990">        result.addSeries(series2);</span>
+<span class="fc" id="L991">        result.setIntervalWidth(0.0);</span>
+<span class="fc" id="L992">        return result;</span>
+    }
+
+    /**
+     * Creates a sample dataset for testing purposes.
+     *
+     * @return A sample dataset.
+     */
+    private TableXYDataset createTableXYDataset1() {
+<span class="fc" id="L1001">        DefaultTableXYDataset dataset = new DefaultTableXYDataset();</span>
+
+<span class="fc" id="L1003">        XYSeries s1 = new XYSeries(&quot;Series 1&quot;, true, false);</span>
+<span class="fc" id="L1004">        s1.add(1.0, 1.0);</span>
+<span class="fc" id="L1005">        s1.add(2.0, 2.0);</span>
+<span class="fc" id="L1006">        dataset.addSeries(s1);</span>
+
+<span class="fc" id="L1008">        XYSeries s2 = new XYSeries(&quot;Series 2&quot;, true, false);</span>
+<span class="fc" id="L1009">        s2.add(1.0, -2.0);</span>
+<span class="fc" id="L1010">        s2.add(2.0, -1.0);</span>
+<span class="fc" id="L1011">        dataset.addSeries(s2);</span>
+
+<span class="fc" id="L1013">        return dataset;</span>
+    }
+
+    /**
+     * Some checks for the iteratorToFindRangeBounds(XYDataset...) method.
+     */
+    public void testIterateToFindRangeBounds1_XYDataset() {
+        // null dataset throws IllegalArgumentException
+<span class="fc" id="L1021">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L1023">            DatasetUtilities.iterateToFindRangeBounds(null, new ArrayList(),</span>
+                    new Range(0.0, 1.0), true);
+        }
+<span class="fc" id="L1026">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L1027">            pass = true;</span>
+<span class="nc" id="L1028">        }</span>
+<span class="fc" id="L1029">        assertTrue(pass);</span>
+
+        // null list throws IllegalArgumentException
+<span class="fc" id="L1032">        pass = false;</span>
+        try {
+<span class="nc" id="L1034">            DatasetUtilities.iterateToFindRangeBounds(new XYSeriesCollection(),</span>
+                    null, new Range(0.0, 1.0), true);
+        }
+<span class="fc" id="L1037">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L1038">            pass = true;</span>
+<span class="nc" id="L1039">        }</span>
+<span class="fc" id="L1040">        assertTrue(pass);</span>
+        
+        // null range throws IllegalArgumentException
+<span class="fc" id="L1043">        pass = false;</span>
+        try {
+<span class="nc" id="L1045">            DatasetUtilities.iterateToFindRangeBounds(new XYSeriesCollection(),</span>
+                    new ArrayList(), null, true);
+        }
+<span class="fc" id="L1048">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L1049">            pass = true;</span>
+<span class="nc" id="L1050">        }</span>
+<span class="fc" id="L1051">        assertTrue(pass);</span>
+<span class="fc" id="L1052">    }</span>
+
+    /**
+     * Some tests for the iterateToFindRangeBounds() method.
+     */
+    public void testIterateToFindRangeBounds2_XYDataset() {
+<span class="fc" id="L1058">        List visibleSeriesKeys = new ArrayList();</span>
+<span class="fc" id="L1059">        Range xRange = new Range(0.0, 10.0);</span>
+
+        // empty dataset returns null
+<span class="fc" id="L1062">        XYSeriesCollection dataset = new XYSeriesCollection();</span>
+<span class="fc" id="L1063">        Range r = DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, xRange, false);
+<span class="fc" id="L1065">        assertNull(r);</span>
+
+        // add an empty series
+<span class="fc" id="L1068">        XYSeries s1 = new XYSeries(&quot;A&quot;);</span>
+<span class="fc" id="L1069">        dataset.addSeries(s1);</span>
+<span class="fc" id="L1070">        visibleSeriesKeys.add(&quot;A&quot;);</span>
+<span class="fc" id="L1071">        r = DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, xRange, false);
+<span class="fc" id="L1073">        assertNull(r);</span>
+
+        // check a null value
+<span class="fc" id="L1076">        s1.add(1.0, null);</span>
+<span class="fc" id="L1077">        r = DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, xRange, false);
+<span class="fc" id="L1079">        assertNull(r);</span>
+
+        // check a NaN
+<span class="fc" id="L1082">        s1.add(2.0, Double.NaN);</span>
+<span class="fc" id="L1083">        r = DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, xRange, false);
+<span class="fc" id="L1085">        assertNull(r);</span>
+
+        // check a regular value
+<span class="fc" id="L1088">        s1.add(3.0, 5.0);</span>
+<span class="fc" id="L1089">        r = DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, xRange, false);
+<span class="fc" id="L1091">        assertEquals(new Range(5.0, 5.0), r);</span>
+
+        // check another regular value
+<span class="fc" id="L1094">        s1.add(4.0, 6.0);</span>
+<span class="fc" id="L1095">        r = DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, xRange, false);
+<span class="fc" id="L1097">        assertEquals(new Range(5.0, 6.0), r);</span>
+
+        // add a second series
+<span class="fc" id="L1100">        XYSeries s2 = new XYSeries(&quot;B&quot;);</span>
+<span class="fc" id="L1101">        dataset.addSeries(s2);</span>
+<span class="fc" id="L1102">        r = DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, xRange, false);
+<span class="fc" id="L1104">        assertEquals(new Range(5.0, 6.0), r);</span>
+<span class="fc" id="L1105">        visibleSeriesKeys.add(&quot;B&quot;);</span>
+<span class="fc" id="L1106">        r = DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, xRange, false);
+<span class="fc" id="L1108">        assertEquals(new Range(5.0, 6.0), r);</span>
+
+        // add a value to the second series
+<span class="fc" id="L1111">        s2.add(5.0, 15.0);</span>
+<span class="fc" id="L1112">        r = DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, xRange, false);
+<span class="fc" id="L1114">        assertEquals(new Range(5.0, 15.0), r);</span>
+
+        // add a value that isn't in the xRange
+<span class="fc" id="L1117">        s2.add(15.0, 150.0);</span>
+<span class="fc" id="L1118">        r = DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, xRange, false);
+<span class="fc" id="L1120">        assertEquals(new Range(5.0, 15.0), r);</span>
+
+<span class="fc" id="L1122">        r = DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, new Range(0.0, 20.0), false);
+<span class="fc" id="L1124">        assertEquals(new Range(5.0, 150.0), r);</span>
+<span class="fc" id="L1125">    }</span>
+
+    /**
+     * Some checks for the iterateToFindRangeBounds() method when applied to
+     * a BoxAndWhiskerXYDataset.
+     */
+    public void testIterateToFindRangeBounds_BoxAndWhiskerXYDataset() {
+<span class="fc" id="L1132">        DefaultBoxAndWhiskerXYDataset dataset</span>
+                = new DefaultBoxAndWhiskerXYDataset(&quot;Series 1&quot;);
+<span class="fc" id="L1134">        List visibleSeriesKeys = new ArrayList();</span>
+<span class="fc" id="L1135">        visibleSeriesKeys.add(&quot;Series 1&quot;);</span>
+<span class="fc" id="L1136">        Range xRange = new Range(Double.NEGATIVE_INFINITY,</span>
+                Double.POSITIVE_INFINITY);
+<span class="fc" id="L1138">        assertNull(DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, xRange, false));
+
+<span class="fc" id="L1141">        dataset.add(new Date(50L), new BoxAndWhiskerItem(5.0, 4.9, 2.0, 8.0,</span>
+                1.0, 9.0, 0.0, 10.0, new ArrayList()));
+<span class="fc" id="L1143">        assertEquals(new Range(5.0, 5.0),</span>
+<span class="fc" id="L1144">                DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, xRange, false));
+<span class="fc" id="L1146">        assertEquals(new Range(1.0, 9.0),</span>
+<span class="fc" id="L1147">                DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, xRange, true));
+<span class="fc" id="L1149">    }</span>
+
+    /**
+     * Some checks for the iterateToFindRangeBounds(CategoryDataset...)
+     * method.
+     */
+    public void testIterateToFindRangeBounds_StatisticalCategoryDataset() {
+<span class="fc" id="L1156">        DefaultStatisticalCategoryDataset dataset</span>
+                = new DefaultStatisticalCategoryDataset();
+<span class="fc" id="L1158">        List visibleSeriesKeys = new ArrayList();</span>
+<span class="fc" id="L1159">        assertNull(DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, false));
+<span class="fc" id="L1161">        dataset.add(1.0, 0.5, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L1162">        visibleSeriesKeys.add(&quot;R1&quot;);</span>
+<span class="fc" id="L1163">        assertEquals(new Range(1.0, 1.0),</span>
+<span class="fc" id="L1164">                DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, false));
+<span class="fc" id="L1166">        assertEquals(new Range(0.5, 1.5),</span>
+<span class="fc" id="L1167">                DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, true));
+<span class="fc" id="L1169">    }</span>
+
+    /**
+     * Some checks for the iterateToFindRangeBounds(CategoryDataset...) method
+     * with a {@link MultiValueCategoryDataset}.
+     */
+    public void testIterateToFindRangeBounds_MultiValueCategoryDataset() {
+<span class="fc" id="L1176">        DefaultMultiValueCategoryDataset dataset</span>
+                = new DefaultMultiValueCategoryDataset();
+<span class="fc" id="L1178">        List visibleSeriesKeys = new ArrayList();</span>
+<span class="fc" id="L1179">        assertNull(DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, true));
+<span class="fc" id="L1181">        List values = Arrays.asList(new Double[] {new Double(1.0)});</span>
+<span class="fc" id="L1182">        dataset.add(values, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L1183">        visibleSeriesKeys.add(&quot;R1&quot;);</span>
+<span class="fc" id="L1184">        assertEquals(new Range(1.0, 1.0),</span>
+<span class="fc" id="L1185">                DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, true));
+
+<span class="fc" id="L1188">        values = Arrays.asList(new Double[] {new Double(2.0), new Double(3.0)});</span>
+<span class="fc" id="L1189">        dataset.add(values, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L1190">        assertEquals(new Range(1.0, 3.0),</span>
+<span class="fc" id="L1191">                DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, true));
+
+<span class="fc" id="L1194">        values = Arrays.asList(new Double[] {new Double(-1.0),</span>
+                new Double(-2.0)});
+<span class="fc" id="L1196">        dataset.add(values, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L1197">        assertEquals(new Range(1.0, 3.0),</span>
+<span class="fc" id="L1198">                DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, true));
+<span class="fc" id="L1200">        visibleSeriesKeys.add(&quot;R2&quot;);</span>
+<span class="fc" id="L1201">        assertEquals(new Range(-2.0, 3.0),</span>
+<span class="fc" id="L1202">                DatasetUtilities.iterateToFindRangeBounds(dataset,</span>
+                visibleSeriesKeys, true));
+<span class="fc" id="L1204">    }</span>
+
+    /**
+     * Some checks for the iterateRangeBounds() method when passed an
+     * IntervalCategoryDataset.
+     */
+    public void testIterateRangeBounds_IntervalCategoryDataset() {
+<span class="fc" id="L1211">        TestIntervalCategoryDataset d = new TestIntervalCategoryDataset();</span>
+<span class="fc" id="L1212">        d.addItem(1.0, 2.0, 3.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L1213">        assertEquals(new Range(1.0, 3.0),</span>
+<span class="fc" id="L1214">                DatasetUtilities.iterateRangeBounds(d));</span>
+
+<span class="fc" id="L1216">        d = new TestIntervalCategoryDataset();</span>
+<span class="fc" id="L1217">        d.addItem(2.5, 2.0, 3.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L1218">        assertEquals(new Range(2.0, 3.0),</span>
+<span class="fc" id="L1219">                DatasetUtilities.iterateRangeBounds(d));</span>
+
+<span class="fc" id="L1221">        d = new TestIntervalCategoryDataset();</span>
+<span class="fc" id="L1222">        d.addItem(4.0, 2.0, 3.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L1223">        assertEquals(new Range(2.0, 4.0),</span>
+<span class="fc" id="L1224">                DatasetUtilities.iterateRangeBounds(d));</span>
+
+<span class="fc" id="L1226">        d = new TestIntervalCategoryDataset();</span>
+<span class="fc" id="L1227">        d.addItem(null, new Double(2.0), new Double(3.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L1228">        assertEquals(new Range(2.0, 3.0),</span>
+<span class="fc" id="L1229">                DatasetUtilities.iterateRangeBounds(d));</span>
+
+        // try some nulls
+<span class="fc" id="L1232">        d = new TestIntervalCategoryDataset();</span>
+<span class="fc" id="L1233">        d.addItem(null, null, null, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L1234">        assertNull(DatasetUtilities.iterateRangeBounds(d));</span>
+
+<span class="fc" id="L1236">        d = new TestIntervalCategoryDataset();</span>
+<span class="fc" id="L1237">        d.addItem(new Double(1.0), null, null, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L1238">        assertEquals(new Range(1.0, 1.0),</span>
+<span class="fc" id="L1239">                DatasetUtilities.iterateRangeBounds(d));</span>
+
+<span class="fc" id="L1241">        d = new TestIntervalCategoryDataset();</span>
+<span class="fc" id="L1242">        d.addItem(null, new Double(1.0), null, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L1243">        assertEquals(new Range(1.0, 1.0),</span>
+<span class="fc" id="L1244">                DatasetUtilities.iterateRangeBounds(d));</span>
+
+<span class="fc" id="L1246">        d = new TestIntervalCategoryDataset();</span>
+<span class="fc" id="L1247">        d.addItem(null, null, new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L1248">        assertEquals(new Range(1.0, 1.0),</span>
+<span class="fc" id="L1249">                DatasetUtilities.iterateRangeBounds(d));</span>
+<span class="fc" id="L1250">    }</span>
+
+    /**
+     * A test for bug 2849731.
+     */
+    public void testBug2849731() {
+<span class="fc" id="L1256">        TestIntervalCategoryDataset d = new TestIntervalCategoryDataset();</span>
+<span class="fc" id="L1257">        d.addItem(2.5, 2.0, 3.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L1258">        d.addItem(new Double(4.0), null, null, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L1259">        assertEquals(new Range(2.0, 4.0),</span>
+<span class="fc" id="L1260">                DatasetUtilities.iterateRangeBounds(d));</span>
+<span class="fc" id="L1261">    }</span>
+
+    /**
+     * Another test for bug 2849731.
+     */
+    public void testBug2849731_2() {
+<span class="fc" id="L1267">        XYIntervalSeriesCollection d = new XYIntervalSeriesCollection();</span>
+<span class="fc" id="L1268">        XYIntervalSeries s = new XYIntervalSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L1269">        s.add(1.0, Double.NaN, Double.NaN, Double.NaN, 1.5, Double.NaN);</span>
+<span class="fc" id="L1270">        d.addSeries(s);</span>
+<span class="fc" id="L1271">        Range r = DatasetUtilities.iterateDomainBounds(d);</span>
+<span class="fc" id="L1272">        assertEquals(1.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L1273">        assertEquals(1.0, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L1275">        s.add(1.0, 1.5, Double.NaN, Double.NaN, 1.5, Double.NaN);</span>
+<span class="fc" id="L1276">        r = DatasetUtilities.iterateDomainBounds(d);</span>
+<span class="fc" id="L1277">        assertEquals(1.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L1278">        assertEquals(1.5, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L1280">        s.add(1.0, Double.NaN, 0.5, Double.NaN, 1.5, Double.NaN);</span>
+<span class="fc" id="L1281">        r = DatasetUtilities.iterateDomainBounds(d);</span>
+<span class="fc" id="L1282">        assertEquals(0.5, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L1283">        assertEquals(1.5, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L1284">    }</span>
+    /**
+     * Yet another test for bug 2849731.
+     */
+    public void testBug2849731_3() {
+<span class="fc" id="L1289">        XYIntervalSeriesCollection d = new XYIntervalSeriesCollection();</span>
+<span class="fc" id="L1290">        XYIntervalSeries s = new XYIntervalSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L1291">        s.add(1.0, Double.NaN, Double.NaN, 1.5, Double.NaN, Double.NaN);</span>
+<span class="fc" id="L1292">        d.addSeries(s);</span>
+<span class="fc" id="L1293">        Range r = DatasetUtilities.iterateRangeBounds(d);</span>
+<span class="fc" id="L1294">        assertEquals(1.5, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L1295">        assertEquals(1.5, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L1297">        s.add(1.0, 1.5, Double.NaN, Double.NaN, Double.NaN, 2.5);</span>
+<span class="fc" id="L1298">        r = DatasetUtilities.iterateRangeBounds(d);</span>
+<span class="fc" id="L1299">        assertEquals(1.5, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L1300">        assertEquals(2.5, r.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L1302">        s.add(1.0, Double.NaN, 0.5, Double.NaN, 3.5, Double.NaN);</span>
+<span class="fc" id="L1303">        r = DatasetUtilities.iterateRangeBounds(d);</span>
+<span class="fc" id="L1304">        assertEquals(1.5, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L1305">        assertEquals(3.5, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L1306">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

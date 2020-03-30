@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LogarithmicAxisTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.axis.junit</a> &gt; <span class="el_source">LogarithmicAxisTests.java</span></div><h1>LogarithmicAxisTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------
+ * LogarithmicAxisTests.java
+ * -------------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 26-Mar-2003 : Version 1 (DG);
+ * 02-Mar-2007 : Added tests from bug report 880597 (DG);
+ *
+ */
+
+package org.jfree.chart.axis.junit;
+
+import java.awt.geom.Rectangle2D;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.axis.LogarithmicAxis;
+import org.jfree.ui.RectangleEdge;
+
+/**
+ * Tests for the {@link LogarithmicAxis} class.
+ */
+public class LogarithmicAxisTests extends TestCase {
+
+    static class MyLogarithmicAxis extends LogarithmicAxis {
+
+        /**
+         * Creates a new instance.
+         *
+         * @param label  the label.
+         */
+        public MyLogarithmicAxis(String label) {
+<span class="fc" id="L72">            super(label);</span>
+<span class="fc" id="L73">        }</span>
+
+        /* (non-Javadoc)
+         * @see org.jfree.chart.axis.LogarithmicAxis#switchedLog10(double)
+         */
+        protected double switchedLog10(double val) {
+<span class="fc" id="L79">            return super.switchedLog10(val);</span>
+        }
+
+    }
+
+    /** Tolerance for floating point comparisons */
+<span class="fc" id="L85">    public static double EPSILON = 0.000001;</span>
+
+<span class="fc" id="L87">    MyLogarithmicAxis axis = null;</span>
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L95">        return new TestSuite(LogarithmicAxisTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public LogarithmicAxisTests(String name) {
+<span class="fc" id="L104">        super(name);</span>
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * Sets up a new axis.
+     *
+     * @throws Exception
+     */
+    protected void setUp() throws Exception {
+<span class="fc" id="L113">        this.axis = new MyLogarithmicAxis(&quot;Value (log)&quot;);</span>
+<span class="fc" id="L114">        this.axis.setAllowNegativesFlag(false);</span>
+<span class="fc" id="L115">        this.axis.setLog10TickLabelsFlag(false);</span>
+<span class="fc" id="L116">        this.axis.setLowerMargin(0.0);</span>
+<span class="fc" id="L117">        this.axis.setUpperMargin(0.0);</span>
+
+<span class="fc" id="L119">        this.axis.setLowerBound(0.2);</span>
+<span class="fc" id="L120">        this.axis.setUpperBound(100.0);</span>
+<span class="fc" id="L121">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L128">        LogarithmicAxis a1 = new LogarithmicAxis(&quot;Test Axis&quot;);</span>
+<span class="fc" id="L129">        LogarithmicAxis a2 = null;</span>
+
+        try {
+<span class="fc" id="L132">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L133">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L134">            out.writeObject(a1);</span>
+<span class="fc" id="L135">            out.close();</span>
+
+<span class="fc" id="L137">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L138">                    buffer.toByteArray()));</span>
+<span class="fc" id="L139">            a2 = (LogarithmicAxis) in.readObject();</span>
+<span class="fc" id="L140">            in.close();</span>
+        }
+<span class="nc" id="L142">        catch (Exception e) {</span>
+<span class="nc" id="L143">            e.printStackTrace();</span>
+<span class="fc" id="L144">        }</span>
+<span class="fc" id="L145">        assertEquals(a1, a2);</span>
+
+<span class="fc" id="L147">    }</span>
+
+    /**
+     * Test if adjustedLog10 and adjustedPow10 are inverses of each other
+     */
+     public void testAdjustedLog10() {
+<span class="fc" id="L153">         checkLogPowRoundTrip(20);</span>
+<span class="fc" id="L154">         checkLogPowRoundTrip(10);</span>
+<span class="fc" id="L155">         checkLogPowRoundTrip(5);</span>
+<span class="fc" id="L156">         checkLogPowRoundTrip(2);</span>
+<span class="fc" id="L157">         checkLogPowRoundTrip(1);</span>
+<span class="fc" id="L158">         checkLogPowRoundTrip(0.5);</span>
+<span class="fc" id="L159">         checkLogPowRoundTrip(0.2);</span>
+<span class="fc" id="L160">         checkLogPowRoundTrip(0.0001);</span>
+<span class="fc" id="L161">     }</span>
+
+     private void checkLogPowRoundTrip(double value) {
+<span class="fc" id="L164">         assertEquals(&quot;log(pow(x)) = x&quot;, value, this.axis.adjustedLog10(</span>
+<span class="fc" id="L165">                 this.axis.adjustedPow10(value)), EPSILON);</span>
+<span class="fc" id="L166">         assertEquals(&quot;pow(log(x)) = x&quot;, value, this.axis.adjustedPow10(</span>
+<span class="fc" id="L167">                 this.axis.adjustedLog10(value)), EPSILON);</span>
+<span class="fc" id="L168">     }</span>
+
+     /**
+      * Test if switchedLog10 and switchedPow10 are inverses of each other
+      */
+      public void testSwitchedLog10() {
+<span class="fc" id="L174">          assertFalse(&quot;Axis should not allow negative values&quot;,</span>
+<span class="fc" id="L175">                  this.axis.getAllowNegativesFlag());</span>
+
+<span class="fc" id="L177">          assertEquals(Math.log(0.5) / LogarithmicAxis.LOG10_VALUE,</span>
+<span class="fc" id="L178">                  this.axis.switchedLog10(0.5), EPSILON);</span>
+
+<span class="fc" id="L180">          checkSwitchedLogPowRoundTrip(20);</span>
+<span class="fc" id="L181">          checkSwitchedLogPowRoundTrip(10);</span>
+<span class="fc" id="L182">          checkSwitchedLogPowRoundTrip(5);</span>
+<span class="fc" id="L183">          checkSwitchedLogPowRoundTrip(2);</span>
+<span class="fc" id="L184">          checkSwitchedLogPowRoundTrip(1);</span>
+<span class="fc" id="L185">          checkSwitchedLogPowRoundTrip(0.5);</span>
+<span class="fc" id="L186">          checkSwitchedLogPowRoundTrip(0.2);</span>
+<span class="fc" id="L187">          checkSwitchedLogPowRoundTrip(0.0001);</span>
+<span class="fc" id="L188">      }</span>
+
+      private void checkSwitchedLogPowRoundTrip(double value) {
+<span class="fc" id="L191">          assertEquals(&quot;log(pow(x)) = x&quot;, value, this.axis.switchedLog10(</span>
+<span class="fc" id="L192">                  this.axis.switchedPow10(value)), EPSILON);</span>
+<span class="fc" id="L193">          assertEquals(&quot;pow(log(x)) = x&quot;, value, this.axis.switchedPow10(</span>
+<span class="fc" id="L194">                  this.axis.switchedLog10(value)), EPSILON);</span>
+<span class="fc" id="L195">      }</span>
+
+      /**
+       * Test of java2DToValue method.
+       */
+      public void testJava2DToValue() {
+<span class="fc" id="L201">          Rectangle2D plotArea = new Rectangle2D.Double(22, 33, 500, 500);</span>
+<span class="fc" id="L202">          RectangleEdge edge = RectangleEdge.BOTTOM;</span>
+
+          // set axis bounds to be both greater than 1
+<span class="fc" id="L205">          this.axis.setRange(10, 20);</span>
+<span class="fc" id="L206">          checkPointsToValue(edge, plotArea);</span>
+
+          // check for bounds interval that includes 1
+<span class="fc" id="L209">          this.axis.setRange(0.5, 10);</span>
+<span class="fc" id="L210">          checkPointsToValue(edge, plotArea);</span>
+
+          // check for bounds interval that includes 1
+<span class="fc" id="L213">          this.axis.setRange(0.2, 20);</span>
+<span class="fc" id="L214">          checkPointsToValue(edge, plotArea);</span>
+
+          // check for both bounds smaller than 1
+<span class="fc" id="L217">          this.axis.setRange(0.2, 0.7);</span>
+<span class="fc" id="L218">          checkPointsToValue(edge, plotArea);</span>
+<span class="fc" id="L219">      }</span>
+
+      /**
+       * Test of valueToJava2D method.
+       */
+      public void testValueToJava2D() {
+<span class="fc" id="L225">          Rectangle2D plotArea = new Rectangle2D.Double(22, 33, 500, 500);</span>
+<span class="fc" id="L226">          RectangleEdge edge = RectangleEdge.BOTTOM;</span>
+
+          // set axis bounds to be both greater than 1
+<span class="fc" id="L229">          this.axis.setRange(10, 20);</span>
+<span class="fc" id="L230">          checkPointsToJava2D(edge, plotArea);</span>
+
+          // check for bounds interval that includes 1
+<span class="fc" id="L233">          this.axis.setRange(0.5, 10);</span>
+<span class="fc" id="L234">          checkPointsToJava2D(edge, plotArea);</span>
+
+          // check for bounds interval that includes 1
+<span class="fc" id="L237">          this.axis.setRange(0.2, 20);</span>
+<span class="fc" id="L238">          checkPointsToJava2D(edge, plotArea);</span>
+
+          // check for both bounds smaller than 1
+<span class="fc" id="L241">          this.axis.setRange(0.2, 0.7);</span>
+<span class="fc" id="L242">          checkPointsToJava2D(edge, plotArea);</span>
+<span class="fc" id="L243">      }</span>
+
+      private void checkPointsToJava2D(RectangleEdge edge,
+              Rectangle2D plotArea) {
+<span class="fc" id="L247">          assertEquals(&quot;Left most point on the axis should be beginning of &quot;</span>
+<span class="fc" id="L248">                  + &quot;range.&quot;, plotArea.getX(), this.axis.valueToJava2D(</span>
+<span class="fc" id="L249">                  this.axis.getLowerBound(), plotArea, edge), EPSILON);</span>
+<span class="fc" id="L250">          assertEquals(&quot;Right most point on the axis should be end of range.&quot;,</span>
+<span class="fc" id="L251">                  plotArea.getX() + plotArea.getWidth(),</span>
+<span class="fc" id="L252">                  this.axis.valueToJava2D(this.axis.getUpperBound(),</span>
+                  plotArea, edge), EPSILON);
+<span class="fc" id="L254">          assertEquals(&quot;Center point on the axis should geometric mean of the bounds.&quot;,</span>
+<span class="fc" id="L255">                  plotArea.getX() + (plotArea.getWidth() / 2),</span>
+<span class="fc" id="L256">                  this.axis.valueToJava2D(Math.sqrt(this.axis.getLowerBound()</span>
+<span class="fc" id="L257">                  * this.axis.getUpperBound()), plotArea, edge), EPSILON);</span>
+<span class="fc" id="L258">        }</span>
+
+    /**
+     * Check the translation java2D to value for left, right, and center point.
+     *
+     * @param edge  the edge.
+     * @param plotArea  the plot area.
+     */
+     private void checkPointsToValue(RectangleEdge edge, Rectangle2D plotArea) {
+<span class="fc" id="L267">         assertEquals(&quot;Right most point on the axis should be end of range.&quot;,</span>
+<span class="fc" id="L268">                 this.axis.getUpperBound(), this.axis.java2DToValue(</span>
+<span class="fc" id="L269">                 plotArea.getX() + plotArea.getWidth(), plotArea, edge),</span>
+                 EPSILON);
+
+<span class="fc" id="L272">         assertEquals(&quot;Left most point on the axis should be beginning of &quot;</span>
+<span class="fc" id="L273">                 + &quot;range.&quot;, this.axis.getLowerBound(),</span>
+<span class="fc" id="L274">                 this.axis.java2DToValue(plotArea.getX(), plotArea, edge),</span>
+                 EPSILON);
+
+<span class="fc" id="L277">         assertEquals(&quot;Center point on the axis should geometric mean of the &quot;</span>
+<span class="fc" id="L278">                 + &quot;bounds.&quot;, Math.sqrt(this.axis.getUpperBound()</span>
+<span class="fc" id="L279">                 * this.axis.getLowerBound()), this.axis.java2DToValue(</span>
+<span class="fc" id="L280">                 plotArea.getX() + (plotArea.getWidth() / 2), plotArea, edge),</span>
+                 EPSILON);
+<span class="fc" id="L282">    }</span>
+
+    /**
+     * Runs all tests in this class.
+     *
+     * @param args  ignored.
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L290">        junit.textui.TestRunner.run(LogarithmicAxisTests.class);</span>
+<span class="nc" id="L291">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ThermometerPlotTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot.junit</a> &gt; <span class="el_source">ThermometerPlotTests.java</span></div><h1>ThermometerPlotTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------
+ * ThermometerPlotTests.java
+ * -------------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 26-Mar-2003 : Version 1 (DG);
+ * 30-Apr-2007 : Added new serialization test (DG);
+ * 03-May-2007 : Added cloning test (DG);
+ * 08-Oct-2007 : Updated testEquals() for new fields (DG);
+ *
+ */
+
+package org.jfree.chart.plot.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.text.DecimalFormat;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.plot.ThermometerPlot;
+import org.jfree.ui.RectangleInsets;
+
+/**
+ * Tests for the {@link ThermometerPlot} class.
+ */
+public class ThermometerPlotTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L76">        return new TestSuite(ThermometerPlotTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public ThermometerPlotTests(String name) {
+<span class="fc" id="L85">        super(name);</span>
+<span class="fc" id="L86">    }</span>
+
+    /**
+     * Some checks for the equals() method.
+     */
+    public void testEquals() {
+<span class="fc" id="L92">        ThermometerPlot p1 = new ThermometerPlot();</span>
+<span class="fc" id="L93">        ThermometerPlot p2 = new ThermometerPlot();</span>
+<span class="fc" id="L94">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L95">        assertTrue(p2.equals(p1));</span>
+
+        // padding
+<span class="fc" id="L98">        p1.setPadding(new RectangleInsets(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L99">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L100">        p2.setPadding(new RectangleInsets(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L101">        assertTrue(p2.equals(p1));</span>
+
+        // thermometerStroke
+<span class="fc" id="L104">        BasicStroke s = new BasicStroke(1.23f);</span>
+<span class="fc" id="L105">        p1.setThermometerStroke(s);</span>
+<span class="fc" id="L106">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L107">        p2.setThermometerStroke(s);</span>
+<span class="fc" id="L108">        assertTrue(p2.equals(p1));</span>
+
+        // thermometerPaint
+<span class="fc" id="L111">        p1.setThermometerPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L113">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L114">        p2.setThermometerPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.red));
+<span class="fc" id="L116">        assertTrue(p2.equals(p1));</span>
+
+        // units
+<span class="fc" id="L119">        p1.setUnits(ThermometerPlot.UNITS_KELVIN);</span>
+<span class="fc" id="L120">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L121">        p2.setUnits(ThermometerPlot.UNITS_KELVIN);</span>
+<span class="fc" id="L122">        assertTrue(p2.equals(p1));</span>
+
+        // valueLocation
+<span class="fc" id="L125">        p1.setValueLocation(ThermometerPlot.LEFT);</span>
+<span class="fc" id="L126">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L127">        p2.setValueLocation(ThermometerPlot.LEFT);</span>
+<span class="fc" id="L128">        assertTrue(p2.equals(p1));</span>
+
+        // axisLocation
+<span class="fc" id="L131">        p1.setAxisLocation(ThermometerPlot.RIGHT);</span>
+<span class="fc" id="L132">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L133">        p2.setAxisLocation(ThermometerPlot.RIGHT);</span>
+<span class="fc" id="L134">        assertTrue(p2.equals(p1));</span>
+
+        // valueFont
+<span class="fc" id="L137">        p1.setValueFont(new Font(&quot;Serif&quot;, Font.PLAIN, 9));</span>
+<span class="fc" id="L138">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L139">        p2.setValueFont(new Font(&quot;Serif&quot;, Font.PLAIN, 9));</span>
+<span class="fc" id="L140">        assertTrue(p2.equals(p1));</span>
+
+        // valuePaint
+<span class="fc" id="L143">        p1.setValuePaint(new GradientPaint(4.0f, 5.0f, Color.red,</span>
+                6.0f, 7.0f, Color.white));
+<span class="fc" id="L145">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L146">        p2.setValuePaint(new GradientPaint(4.0f, 5.0f, Color.red,</span>
+                6.0f, 7.0f, Color.white));
+<span class="fc" id="L148">        assertTrue(p2.equals(p1));</span>
+
+        // valueFormat
+<span class="fc" id="L151">        p1.setValueFormat(new DecimalFormat(&quot;0.0000&quot;));</span>
+<span class="fc" id="L152">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L153">        p2.setValueFormat(new DecimalFormat(&quot;0.0000&quot;));</span>
+<span class="fc" id="L154">        assertTrue(p2.equals(p1));</span>
+
+        // mercuryPaint
+<span class="fc" id="L157">        p1.setMercuryPaint(new GradientPaint(9.0f, 8.0f, Color.red,</span>
+                7.0f, 6.0f, Color.blue));
+<span class="fc" id="L159">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L160">        p2.setMercuryPaint(new GradientPaint(9.0f, 8.0f, Color.red,</span>
+                7.0f, 6.0f, Color.blue));
+<span class="fc" id="L162">        assertTrue(p2.equals(p1));</span>
+
+        // showValueLines
+<span class="fc" id="L165">        p1.setShowValueLines(true);</span>
+<span class="fc" id="L166">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L167">        p2.setShowValueLines(true);</span>
+<span class="fc" id="L168">        assertTrue(p2.equals(p1));</span>
+
+<span class="fc" id="L170">        p1.setSubrange(1, 1.0, 2.0);</span>
+<span class="fc" id="L171">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L172">        p2.setSubrange(1, 1.0, 2.0);</span>
+<span class="fc" id="L173">        assertTrue(p2.equals(p1));</span>
+
+<span class="fc" id="L175">        p1.setSubrangePaint(1, new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L177">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L178">        p2.setSubrangePaint(1, new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L180">        assertTrue(p2.equals(p1));</span>
+
+<span class="fc" id="L182">        p1.setBulbRadius(9);</span>
+<span class="fc" id="L183">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L184">        p2.setBulbRadius(9);</span>
+<span class="fc" id="L185">        assertTrue(p2.equals(p1));</span>
+
+<span class="fc" id="L187">        p1.setColumnRadius(8);</span>
+<span class="fc" id="L188">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L189">        p2.setColumnRadius(8);</span>
+<span class="fc" id="L190">        assertTrue(p2.equals(p1));</span>
+
+<span class="fc" id="L192">        p1.setGap(7);</span>
+<span class="fc" id="L193">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L194">        p2.setGap(7);</span>
+<span class="fc" id="L195">        assertTrue(p2.equals(p1));</span>
+<span class="fc" id="L196">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L202">        ThermometerPlot p1 = new ThermometerPlot();</span>
+<span class="fc" id="L203">        ThermometerPlot p2 = null;</span>
+        try {
+<span class="fc" id="L205">            p2 = (ThermometerPlot) p1.clone();</span>
+        }
+<span class="nc" id="L207">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L208">            e.printStackTrace();</span>
+<span class="fc" id="L209">        }</span>
+<span class="pc bpc" id="L210" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L212">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L213">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L220">        ThermometerPlot p1 = new ThermometerPlot();</span>
+<span class="fc" id="L221">        ThermometerPlot p2 = null;</span>
+
+        try {
+<span class="fc" id="L224">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L225">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L226">            out.writeObject(p1);</span>
+<span class="fc" id="L227">            out.close();</span>
+
+<span class="fc" id="L229">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L230">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L231">            p2 = (ThermometerPlot) in.readObject();</span>
+<span class="fc" id="L232">            in.close();</span>
+        }
+<span class="nc" id="L234">        catch (Exception e) {</span>
+<span class="nc" id="L235">            e.printStackTrace();</span>
+<span class="fc" id="L236">        }</span>
+<span class="fc" id="L237">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L239">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization2() {
+<span class="fc" id="L245">        ThermometerPlot p1 = new ThermometerPlot();</span>
+<span class="fc" id="L246">        p1.setSubrangePaint(1, new GradientPaint(1.0f, 2.0f, Color.red, 3.0f,</span>
+                4.0f, Color.blue));
+<span class="fc" id="L248">        ThermometerPlot p2 = null;</span>
+
+        try {
+<span class="fc" id="L251">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L252">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L253">            out.writeObject(p1);</span>
+<span class="fc" id="L254">            out.close();</span>
+
+<span class="fc" id="L256">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L257">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L258">            p2 = (ThermometerPlot) in.readObject();</span>
+<span class="fc" id="L259">            in.close();</span>
+        }
+<span class="nc" id="L261">        catch (Exception e) {</span>
+<span class="nc" id="L262">            e.printStackTrace();</span>
+<span class="fc" id="L263">        }</span>
+<span class="fc" id="L264">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L265">    }</span>
+
+    /**
+     * Some checks for the setUnits() method.
+     */
+    public void testSetUnits() {
+<span class="fc" id="L271">        ThermometerPlot p1 = new ThermometerPlot();</span>
+<span class="fc" id="L272">        assertEquals(ThermometerPlot.UNITS_CELCIUS, p1.getUnits());</span>
+<span class="fc" id="L273">        p1.setUnits(&quot;FAHRENHEIT&quot;);  // this doesn't work</span>
+<span class="fc" id="L274">        assertEquals(ThermometerPlot.UNITS_CELCIUS, p1.getUnits());</span>
+<span class="fc" id="L275">        p1.setUnits(&quot;\u00B0F&quot;);     // ...but this does!</span>
+<span class="fc" id="L276">        assertEquals(ThermometerPlot.UNITS_FAHRENHEIT, p1.getUnits());</span>
+<span class="fc" id="L277">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

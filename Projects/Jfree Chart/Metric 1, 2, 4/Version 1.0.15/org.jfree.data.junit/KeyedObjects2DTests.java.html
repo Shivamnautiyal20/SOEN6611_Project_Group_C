@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KeyedObjects2DTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.junit</a> &gt; <span class="el_source">KeyedObjects2DTests.java</span></div><h1>KeyedObjects2DTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------------
+ * KeyedObjects2DTests.java
+ * ------------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 01-Mar-2004 : Version 1 (DG);
+ * 28-Sep-2007 : Added testEquals() and enhanced testClone() (DG);
+ * 03-Oct-2007 : Added new tests (DG);
+ *
+ */
+
+package org.jfree.data.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.KeyedObjects2D;
+import org.jfree.data.UnknownKeyException;
+
+/**
+ * Tests for the {@link KeyedObjects2D} class.
+ */
+public class KeyedObjects2DTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L70">        return new TestSuite(KeyedObjects2DTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public KeyedObjects2DTests(String name) {
+<span class="fc" id="L79">        super(name);</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Some checks for the equals() method.
+     */
+    public void testEquals() {
+<span class="fc" id="L86">        KeyedObjects2D k1 = new KeyedObjects2D();</span>
+<span class="fc" id="L87">        KeyedObjects2D k2 = new KeyedObjects2D();</span>
+<span class="fc" id="L88">        assertTrue(k1.equals(k2));</span>
+<span class="fc" id="L89">        assertTrue(k2.equals(k1));</span>
+
+<span class="fc" id="L91">        k1.addObject(new Integer(99), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L92">        assertFalse(k1.equals(k2));</span>
+<span class="fc" id="L93">        k2.addObject(new Integer(99), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L94">        assertTrue(k1.equals(k2));</span>
+<span class="fc" id="L95">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L101">        KeyedObjects2D o1 = new KeyedObjects2D();</span>
+<span class="fc" id="L102">        o1.setObject(new Integer(1), &quot;V1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L103">        o1.setObject(null, &quot;V2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L104">        o1.setObject(new Integer(3), &quot;V3&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L105">        KeyedObjects2D o2 = null;</span>
+        try {
+<span class="fc" id="L107">            o2 = (KeyedObjects2D) o1.clone();</span>
+        }
+<span class="nc" id="L109">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L110">            e.printStackTrace();</span>
+<span class="fc" id="L111">        }</span>
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">        assertTrue(o1 != o2);</span>
+<span class="pc bpc" id="L113" title="1 of 2 branches missed.">        assertTrue(o1.getClass() == o2.getClass());</span>
+<span class="fc" id="L114">        assertTrue(o1.equals(o2));</span>
+
+        // check independence
+<span class="fc" id="L117">        o1.addObject(&quot;XX&quot;, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L118">        assertFalse(o1.equals(o2));</span>
+<span class="fc" id="L119">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L126">        KeyedObjects2D ko2D1 = new KeyedObjects2D();</span>
+<span class="fc" id="L127">        ko2D1.addObject(new Double(234.2), &quot;Row1&quot;, &quot;Col1&quot;);</span>
+<span class="fc" id="L128">        ko2D1.addObject(null, &quot;Row1&quot;, &quot;Col2&quot;);</span>
+<span class="fc" id="L129">        ko2D1.addObject(new Double(345.9), &quot;Row2&quot;, &quot;Col1&quot;);</span>
+<span class="fc" id="L130">        ko2D1.addObject(new Double(452.7), &quot;Row2&quot;, &quot;Col2&quot;);</span>
+
+<span class="fc" id="L132">        KeyedObjects2D ko2D2 = null;</span>
+
+        try {
+<span class="fc" id="L135">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L136">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L137">            out.writeObject(ko2D1);</span>
+<span class="fc" id="L138">            out.close();</span>
+
+<span class="fc" id="L140">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L141">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L142">            ko2D2 = (KeyedObjects2D) in.readObject();</span>
+<span class="fc" id="L143">            in.close();</span>
+        }
+<span class="nc" id="L145">        catch (Exception e) {</span>
+<span class="nc" id="L146">            e.printStackTrace();</span>
+<span class="fc" id="L147">        }</span>
+<span class="fc" id="L148">        assertEquals(ko2D1, ko2D2);</span>
+
+<span class="fc" id="L150">    }</span>
+
+    /**
+     * Some checks for the getValue(int, int) method.
+     */
+    public void testGetValueByIndex() {
+<span class="fc" id="L156">        KeyedObjects2D data = new KeyedObjects2D();</span>
+<span class="fc" id="L157">        data.addObject(&quot;Obj1&quot;, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L158">        data.addObject(&quot;Obj2&quot;, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L159">        assertEquals(&quot;Obj1&quot;, data.getObject(0, 0));</span>
+<span class="fc" id="L160">        assertEquals(&quot;Obj2&quot;, data.getObject(1, 1));</span>
+<span class="fc" id="L161">        assertNull(data.getObject(0, 1));</span>
+<span class="fc" id="L162">        assertNull(data.getObject(1, 0));</span>
+
+        // check invalid indices
+<span class="fc" id="L165">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L167">            data.getObject(-1, 0);</span>
+        }
+<span class="fc" id="L169">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L170">            pass = true;</span>
+<span class="nc" id="L171">        }</span>
+<span class="fc" id="L172">        assertTrue(pass);</span>
+
+<span class="fc" id="L174">        pass = false;</span>
+        try {
+<span class="nc" id="L176">            data.getObject(0, -1);</span>
+        }
+<span class="fc" id="L178">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L179">            pass = true;</span>
+<span class="nc" id="L180">        }</span>
+<span class="fc" id="L181">        assertTrue(pass);</span>
+
+<span class="fc" id="L183">        pass = false;</span>
+        try {
+<span class="nc" id="L185">            data.getObject(2, 0);</span>
+        }
+<span class="fc" id="L187">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L188">            pass = true;</span>
+<span class="nc" id="L189">        }</span>
+<span class="fc" id="L190">        assertTrue(pass);</span>
+
+<span class="fc" id="L192">        pass = false;</span>
+        try {
+<span class="nc" id="L194">            data.getObject(0, 2);</span>
+        }
+<span class="fc" id="L196">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L197">            pass = true;</span>
+<span class="nc" id="L198">        }</span>
+<span class="fc" id="L199">        assertTrue(pass);</span>
+<span class="fc" id="L200">    }</span>
+
+    /**
+     * Some checks for the getValue(Comparable, Comparable) method.
+     */
+    public void testGetValueByKey() {
+<span class="fc" id="L206">        KeyedObjects2D data = new KeyedObjects2D();</span>
+<span class="fc" id="L207">        data.addObject(&quot;Obj1&quot;, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L208">        data.addObject(&quot;Obj2&quot;, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L209">        assertEquals(&quot;Obj1&quot;, data.getObject(&quot;R1&quot;, &quot;C1&quot;));</span>
+<span class="fc" id="L210">        assertEquals(&quot;Obj2&quot;, data.getObject(&quot;R2&quot;, &quot;C2&quot;));</span>
+<span class="fc" id="L211">        assertNull(data.getObject(&quot;R1&quot;, &quot;C2&quot;));</span>
+<span class="fc" id="L212">        assertNull(data.getObject(&quot;R2&quot;, &quot;C1&quot;));</span>
+
+        // check invalid indices
+<span class="fc" id="L215">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L217">            data.getObject(&quot;XX&quot;, &quot;C1&quot;);</span>
+        }
+<span class="fc" id="L219">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L220">            pass = true;</span>
+<span class="nc" id="L221">        }</span>
+<span class="fc" id="L222">        assertTrue(pass);</span>
+
+<span class="fc" id="L224">        pass = false;</span>
+        try {
+<span class="nc" id="L226">            data.getObject(&quot;R1&quot;, &quot;XX&quot;);</span>
+        }
+<span class="fc" id="L228">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L229">            pass = true;</span>
+<span class="nc" id="L230">        }</span>
+<span class="fc" id="L231">        assertTrue(pass);</span>
+
+<span class="fc" id="L233">        pass = false;</span>
+        try {
+<span class="nc" id="L235">            data.getObject(&quot;XX&quot;, &quot;C1&quot;);</span>
+        }
+<span class="fc" id="L237">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L238">            pass = true;</span>
+<span class="nc" id="L239">        }</span>
+<span class="fc" id="L240">        assertTrue(pass);</span>
+
+<span class="fc" id="L242">        pass = false;</span>
+        try {
+<span class="nc" id="L244">            data.getObject(&quot;R1&quot;, &quot;XX&quot;);</span>
+        }
+<span class="fc" id="L246">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L247">            pass = true;</span>
+<span class="nc" id="L248">        }</span>
+<span class="fc" id="L249">        assertTrue(pass);</span>
+<span class="fc" id="L250">    }</span>
+
+    /**
+     * Some checks for the setObject(Object, Comparable, Comparable) method.
+     */
+    public void testSetObject() {
+<span class="fc" id="L256">        KeyedObjects2D data = new KeyedObjects2D();</span>
+<span class="fc" id="L257">        data.setObject(&quot;Obj1&quot;, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L258">        data.setObject(&quot;Obj2&quot;, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L259">        assertEquals(&quot;Obj1&quot;, data.getObject(&quot;R1&quot;, &quot;C1&quot;));</span>
+<span class="fc" id="L260">        assertEquals(&quot;Obj2&quot;, data.getObject(&quot;R2&quot;, &quot;C2&quot;));</span>
+<span class="fc" id="L261">        assertNull(data.getObject(&quot;R1&quot;, &quot;C2&quot;));</span>
+<span class="fc" id="L262">        assertNull(data.getObject(&quot;R2&quot;, &quot;C1&quot;));</span>
+
+        // confirm overwriting an existing value
+<span class="fc" id="L265">        data.setObject(&quot;ABC&quot;, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L266">        assertEquals(&quot;ABC&quot;, data.getObject(&quot;R2&quot;, &quot;C2&quot;));</span>
+
+        // try null keys
+<span class="fc" id="L269">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L271">            data.setObject(&quot;X&quot;, null, &quot;C1&quot;);</span>
+        }
+<span class="fc" id="L273">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L274">            pass = true;</span>
+<span class="nc" id="L275">        }</span>
+<span class="fc" id="L276">        assertTrue(pass);</span>
+
+<span class="fc" id="L278">        pass = false;</span>
+        try {
+<span class="nc" id="L280">            data.setObject(&quot;X&quot;, &quot;R1&quot;, null);</span>
+        }
+<span class="fc" id="L282">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L283">            pass = true;</span>
+<span class="nc" id="L284">        }</span>
+<span class="fc" id="L285">        assertTrue(pass);</span>
+<span class="fc" id="L286">    }</span>
+
+    /**
+     * Some checks for the removeRow(int) method.
+     */
+    public void testRemoveRowByIndex() {
+<span class="fc" id="L292">        KeyedObjects2D data = new KeyedObjects2D();</span>
+<span class="fc" id="L293">        data.setObject(&quot;Obj1&quot;, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L294">        data.setObject(&quot;Obj2&quot;, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L295">        data.removeRow(0);</span>
+<span class="fc" id="L296">        assertEquals(1, data.getRowCount());</span>
+<span class="fc" id="L297">        assertEquals(&quot;Obj2&quot;, data.getObject(0, 1));</span>
+
+        // try negative row index
+<span class="fc" id="L300">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L302">            data.removeRow(-1);</span>
+        }
+<span class="fc" id="L304">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L305">            pass = true;</span>
+<span class="nc" id="L306">        }</span>
+<span class="fc" id="L307">        assertTrue(pass);</span>
+
+        // try row index too high
+<span class="fc" id="L310">        pass = false;</span>
+        try {
+<span class="nc" id="L312">            data.removeRow(data.getRowCount());</span>
+        }
+<span class="fc" id="L314">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L315">            pass = true;</span>
+<span class="nc" id="L316">        }</span>
+<span class="fc" id="L317">        assertTrue(pass);</span>
+<span class="fc" id="L318">    }</span>
+
+    /**
+     * Some checks for the removeColumn(int) method.
+     */
+    public void testRemoveColumnByIndex() {
+<span class="fc" id="L324">        KeyedObjects2D data = new KeyedObjects2D();</span>
+<span class="fc" id="L325">        data.setObject(&quot;Obj1&quot;, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L326">        data.setObject(&quot;Obj2&quot;, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L327">        data.removeColumn(0);</span>
+<span class="fc" id="L328">        assertEquals(1, data.getColumnCount());</span>
+<span class="fc" id="L329">        assertEquals(&quot;Obj2&quot;, data.getObject(1, 0));</span>
+
+        // try negative column index
+<span class="fc" id="L332">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L334">            data.removeColumn(-1);</span>
+        }
+<span class="fc" id="L336">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L337">            pass = true;</span>
+<span class="nc" id="L338">        }</span>
+<span class="fc" id="L339">        assertTrue(pass);</span>
+
+        // try column index too high
+<span class="fc" id="L342">        pass = false;</span>
+        try {
+<span class="nc" id="L344">            data.removeColumn(data.getColumnCount());</span>
+        }
+<span class="fc" id="L346">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L347">            pass = true;</span>
+<span class="nc" id="L348">        }</span>
+<span class="fc" id="L349">        assertTrue(pass);</span>
+<span class="fc" id="L350">    }</span>
+
+    /**
+     * Some checks for the removeRow(Comparable) method.
+     */
+    public void testRemoveRowByKey() {
+<span class="fc" id="L356">        KeyedObjects2D data = new KeyedObjects2D();</span>
+<span class="fc" id="L357">        data.setObject(&quot;Obj1&quot;, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L358">        data.setObject(&quot;Obj2&quot;, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L359">        data.removeRow(&quot;R2&quot;);</span>
+<span class="fc" id="L360">        assertEquals(1, data.getRowCount());</span>
+<span class="fc" id="L361">        assertEquals(&quot;Obj1&quot;, data.getObject(0, 0));</span>
+
+        // try unknown row key
+<span class="fc" id="L364">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L366">            data.removeRow(&quot;XXX&quot;);</span>
+        }
+<span class="fc" id="L368">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L369">            pass = true;</span>
+<span class="nc" id="L370">        }</span>
+<span class="fc" id="L371">        assertTrue(pass);</span>
+
+        // try null row key
+<span class="fc" id="L374">        pass = false;</span>
+        try {
+<span class="nc" id="L376">            data.removeRow(null);</span>
+        }
+<span class="fc" id="L378">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L379">            pass = true;</span>
+<span class="nc" id="L380">        }</span>
+<span class="fc" id="L381">        assertTrue(pass);</span>
+<span class="fc" id="L382">    }</span>
+
+    /**
+     * Some checks for the removeColumn(Comparable) method.
+     */
+    public void testRemoveColumnByKey() {
+<span class="fc" id="L388">        KeyedObjects2D data = new KeyedObjects2D();</span>
+<span class="fc" id="L389">        data.setObject(&quot;Obj1&quot;, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L390">        data.setObject(&quot;Obj2&quot;, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L391">        data.removeColumn(&quot;C2&quot;);</span>
+<span class="fc" id="L392">        assertEquals(1, data.getColumnCount());</span>
+<span class="fc" id="L393">        assertEquals(&quot;Obj1&quot;, data.getObject(0, 0));</span>
+
+        // try unknown column key
+<span class="fc" id="L396">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L398">            data.removeColumn(&quot;XXX&quot;);</span>
+        }
+<span class="fc" id="L400">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L401">            pass = true;</span>
+<span class="nc" id="L402">        }</span>
+<span class="fc" id="L403">        assertTrue(pass);</span>
+
+        // try null column key
+<span class="fc" id="L406">        pass = false;</span>
+        try {
+<span class="nc" id="L408">            data.removeColumn(null);</span>
+        }
+<span class="fc" id="L410">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L411">            pass = true;</span>
+<span class="nc" id="L412">        }</span>
+<span class="fc" id="L413">        assertTrue(pass);</span>
+<span class="fc" id="L414">    }</span>
+
+    /**
+     * A simple check for the removeValue() method.
+     */
+    public void testRemoveValue() {
+<span class="fc" id="L420">        KeyedObjects2D data = new KeyedObjects2D();</span>
+<span class="fc" id="L421">        data.setObject(&quot;Obj1&quot;, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L422">        data.setObject(&quot;Obj2&quot;, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L423">        data.removeObject(&quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L424">        assertEquals(1, data.getRowCount());</span>
+<span class="fc" id="L425">        assertEquals(1, data.getColumnCount());</span>
+<span class="fc" id="L426">        assertEquals(&quot;Obj1&quot;, data.getObject(0, 0));</span>
+<span class="fc" id="L427">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

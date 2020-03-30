@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IntervalXYDelegateTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.xy.junit</a> &gt; <span class="el_source">IntervalXYDelegateTests.java</span></div><h1>IntervalXYDelegateTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------------
+ * IntervalXYDelegateTests.java
+ * ----------------------------
+ * (C) Copyright 2005-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 21-Feb-2005 : Version 1 (DG);
+ * 06-Oct-2005 : Updated for testEquals() for method name change (DG);
+ *
+ */
+
+package org.jfree.data.xy.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.xy.IntervalXYDelegate;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
+/**
+ * Some checks for the {@link IntervalXYDelegate} class.
+ */
+public class IntervalXYDelegateTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L70">        return new TestSuite(IntervalXYDelegateTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public IntervalXYDelegateTests(String name) {
+<span class="fc" id="L79">        super(name);</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L86">       XYSeries s1 = new XYSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L87">       s1.add(1.2, 3.4);</span>
+<span class="fc" id="L88">       XYSeriesCollection c1 = new XYSeriesCollection();</span>
+<span class="fc" id="L89">       c1.addSeries(s1);</span>
+<span class="fc" id="L90">       IntervalXYDelegate d1 = new IntervalXYDelegate(c1);</span>
+
+<span class="fc" id="L92">       XYSeries s2 = new XYSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L93">       XYSeriesCollection c2 = new XYSeriesCollection();</span>
+<span class="fc" id="L94">       s2.add(1.2, 3.4);</span>
+<span class="fc" id="L95">       c2.addSeries(s2);</span>
+<span class="fc" id="L96">       IntervalXYDelegate d2 = new IntervalXYDelegate(c2);</span>
+
+<span class="fc" id="L98">       assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L99">       assertTrue(d2.equals(d1));</span>
+
+<span class="fc" id="L101">       d1.setAutoWidth(false);</span>
+<span class="fc" id="L102">       assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L103">       d2.setAutoWidth(false);</span>
+<span class="fc" id="L104">       assertTrue(d1.equals(d2));</span>
+
+<span class="fc" id="L106">       d1.setIntervalPositionFactor(0.123);</span>
+<span class="fc" id="L107">       assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L108">       d2.setIntervalPositionFactor(0.123);</span>
+<span class="fc" id="L109">       assertTrue(d1.equals(d2));</span>
+
+<span class="fc" id="L111">       d1.setFixedIntervalWidth(1.23);</span>
+<span class="fc" id="L112">       assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L113">       d2.setFixedIntervalWidth(1.23);</span>
+<span class="fc" id="L114">       assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L115">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L121">        XYSeries s1 = new XYSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L122">        s1.add(1.2, 3.4);</span>
+<span class="fc" id="L123">        XYSeriesCollection c1 = new XYSeriesCollection();</span>
+<span class="fc" id="L124">        c1.addSeries(s1);</span>
+<span class="fc" id="L125">        IntervalXYDelegate d1 = new IntervalXYDelegate(c1);</span>
+
+<span class="fc" id="L127">        IntervalXYDelegate d2 = null;</span>
+        try {
+<span class="fc" id="L129">            d2 = (IntervalXYDelegate) d1.clone();</span>
+        }
+<span class="nc" id="L131">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L132">            System.err.println(&quot;Failed to clone.&quot;);</span>
+<span class="fc" id="L133">        }</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="fc" id="L136">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L143">        XYSeries s1 = new XYSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L144">        s1.add(1.2, 3.4);</span>
+<span class="fc" id="L145">        XYSeriesCollection c1 = new XYSeriesCollection();</span>
+<span class="fc" id="L146">        c1.addSeries(s1);</span>
+<span class="fc" id="L147">        IntervalXYDelegate d1 = new IntervalXYDelegate(c1);</span>
+<span class="fc" id="L148">        IntervalXYDelegate d2 = null;</span>
+        try {
+<span class="fc" id="L150">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L151">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L152">            out.writeObject(d1);</span>
+<span class="fc" id="L153">            out.close();</span>
+
+<span class="fc" id="L155">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L156">                new ByteArrayInputStream(buffer.toByteArray())</span>
+            );
+<span class="fc" id="L158">            d2 = (IntervalXYDelegate) in.readObject();</span>
+<span class="fc" id="L159">            in.close();</span>
+        }
+<span class="nc" id="L161">        catch (Exception e) {</span>
+<span class="nc" id="L162">            System.out.println(e.toString());</span>
+<span class="fc" id="L163">        }</span>
+<span class="fc" id="L164">        assertEquals(d1, d2);</span>
+
+<span class="fc" id="L166">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

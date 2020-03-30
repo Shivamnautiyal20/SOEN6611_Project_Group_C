@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XYImageAnnotation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.annotations</a> &gt; <span class="el_source">XYImageAnnotation.java</span></div><h1>XYImageAnnotation.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------
+ * XYImageAnnotation.java
+ * ----------------------
+ * (C) Copyright 2003-2013, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Mike Harris;
+ *                   Peter Kolb (patch 2809117);
+ *
+ * Changes:
+ * --------
+ * 01-Dec-2003 : Version 1 (DG);
+ * 21-Jan-2004 : Update for renamed method in ValueAxis (DG);
+ * 18-May-2004 : Fixed bug with plot orientation (DG);
+ * 29-Sep-2004 : Now extends AbstractXYAnnotation, with modified draw()
+ *               method signature and updated equals() method (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 01-Dec-2006 : Added anchor attribute (see patch 1584860 from
+ *               Mike Harris) (DG);
+ * 02-Jul-2013 : Use ParamChecks (DG);
+ *
+ */
+
+package org.jfree.chart.annotations;
+
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+import org.jfree.chart.axis.AxisLocation;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.Plot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.PlotRenderingInfo;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.util.ParamChecks;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.RectangleEdge;
+import org.jfree.util.ObjectUtilities;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * An annotation that allows an image to be placed at some location on
+ * an {@link XYPlot}.
+ *
+ * TODO:  implement serialization properly (image is not serializable).
+ */
+public class XYImageAnnotation extends AbstractXYAnnotation
+        implements Cloneable, PublicCloneable, Serializable {
+
+    /** For serialization. */
+    private static final long serialVersionUID = -4364694501921559958L;
+
+    /** The x-coordinate (in data space). */
+    private double x;
+
+    /** The y-coordinate (in data space). */
+    private double y;
+
+    /** The image. */
+    private transient Image image;
+
+    /**
+     * The image anchor point.
+     *
+     * @since 1.0.4
+     */
+    private RectangleAnchor anchor;
+
+    /**
+     * Creates a new annotation to be displayed at the specified (x, y)
+     * location.
+     *
+     * @param x  the x-coordinate (in data space).
+     * @param y  the y-coordinate (in data space).
+     * @param image  the image (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public XYImageAnnotation(double x, double y, Image image) {
+<span class="fc" id="L110">        this(x, y, image, RectangleAnchor.CENTER);</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Creates a new annotation to be displayed at the specified (x, y)
+     * location.
+     *
+     * @param x  the x-coordinate (in data space).
+     * @param y  the y-coordinate (in data space).
+     * @param image  the image (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param anchor  the image anchor (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @since 1.0.4
+     */
+    public XYImageAnnotation(double x, double y, Image image,
+            RectangleAnchor anchor) {
+<span class="fc" id="L126">        super();</span>
+<span class="fc" id="L127">        ParamChecks.nullNotPermitted(image, &quot;image&quot;);</span>
+<span class="fc" id="L128">        ParamChecks.nullNotPermitted(anchor, &quot;anchor&quot;);</span>
+<span class="fc" id="L129">        this.x = x;</span>
+<span class="fc" id="L130">        this.y = y;</span>
+<span class="fc" id="L131">        this.image = image;</span>
+<span class="fc" id="L132">        this.anchor = anchor;</span>
+<span class="fc" id="L133">    }</span>
+
+    /**
+     * Returns the x-coordinate (in data space) for the annotation.
+     *
+     * @return The x-coordinate.
+     *
+     * @since 1.0.4
+     */
+    public double getX() {
+<span class="nc" id="L143">        return this.x;</span>
+    }
+
+    /**
+     * Returns the y-coordinate (in data space) for the annotation.
+     *
+     * @return The y-coordinate.
+     *
+     * @since 1.0.4
+     */
+    public double getY() {
+<span class="nc" id="L154">        return this.y;</span>
+    }
+
+    /**
+     * Returns the image for the annotation.
+     *
+     * @return The image.
+     *
+     * @since 1.0.4
+     */
+    public Image getImage() {
+<span class="nc" id="L165">        return this.image;</span>
+    }
+
+    /**
+     * Returns the image anchor for the annotation.
+     *
+     * @return The image anchor.
+     *
+     * @since 1.0.4
+     */
+    public RectangleAnchor getImageAnchor() {
+<span class="nc" id="L176">        return this.anchor;</span>
+    }
+
+    /**
+     * Draws the annotation.  This method is called by the drawing code in the
+     * {@link XYPlot} class, you don't normally need to call this method
+     * directly.
+     *
+     * @param g2  the graphics device.
+     * @param plot  the plot.
+     * @param dataArea  the data area.
+     * @param domainAxis  the domain axis.
+     * @param rangeAxis  the range axis.
+     * @param rendererIndex  the renderer index.
+     * @param info  if supplied, this info object will be populated with
+     *              entity information.
+     */
+    public void draw(Graphics2D g2, XYPlot plot, Rectangle2D dataArea,
+                     ValueAxis domainAxis, ValueAxis rangeAxis,
+                     int rendererIndex,
+                     PlotRenderingInfo info) {
+
+<span class="nc" id="L198">        PlotOrientation orientation = plot.getOrientation();</span>
+<span class="nc" id="L199">        AxisLocation domainAxisLocation = plot.getDomainAxisLocation();</span>
+<span class="nc" id="L200">        AxisLocation rangeAxisLocation = plot.getRangeAxisLocation();</span>
+<span class="nc" id="L201">        RectangleEdge domainEdge</span>
+<span class="nc" id="L202">            = Plot.resolveDomainAxisLocation(domainAxisLocation, orientation);</span>
+<span class="nc" id="L203">        RectangleEdge rangeEdge</span>
+<span class="nc" id="L204">            = Plot.resolveRangeAxisLocation(rangeAxisLocation, orientation);</span>
+<span class="nc" id="L205">        float j2DX</span>
+<span class="nc" id="L206">            = (float) domainAxis.valueToJava2D(this.x, dataArea, domainEdge);</span>
+<span class="nc" id="L207">        float j2DY</span>
+<span class="nc" id="L208">            = (float) rangeAxis.valueToJava2D(this.y, dataArea, rangeEdge);</span>
+<span class="nc" id="L209">        float xx = 0.0f;</span>
+<span class="nc" id="L210">        float yy = 0.0f;</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">        if (orientation == PlotOrientation.HORIZONTAL) {</span>
+<span class="nc" id="L212">            xx = j2DY;</span>
+<span class="nc" id="L213">            yy = j2DX;</span>
+        }
+<span class="nc bnc" id="L215" title="All 2 branches missed.">        else if (orientation == PlotOrientation.VERTICAL) {</span>
+<span class="nc" id="L216">            xx = j2DX;</span>
+<span class="nc" id="L217">            yy = j2DY;</span>
+        }
+<span class="nc" id="L219">        int w = this.image.getWidth(null);</span>
+<span class="nc" id="L220">        int h = this.image.getHeight(null);</span>
+
+<span class="nc" id="L222">        Rectangle2D imageRect = new Rectangle2D.Double(0, 0, w, h);</span>
+<span class="nc" id="L223">        Point2D anchorPoint = RectangleAnchor.coordinates(imageRect,</span>
+                this.anchor);
+<span class="nc" id="L225">        xx = xx - (float) anchorPoint.getX();</span>
+<span class="nc" id="L226">        yy = yy - (float) anchorPoint.getY();</span>
+<span class="nc" id="L227">        g2.drawImage(this.image, (int) xx, (int) yy, null);</span>
+
+<span class="nc" id="L229">        String toolTip = getToolTipText();</span>
+<span class="nc" id="L230">        String url = getURL();</span>
+<span class="nc bnc" id="L231" title="All 4 branches missed.">        if (toolTip != null || url != null) {</span>
+<span class="nc" id="L232">            addEntity(info, new Rectangle2D.Float(xx, yy, w, h), rendererIndex,</span>
+                    toolTip, url);
+        }
+<span class="nc" id="L235">    }</span>
+
+    /**
+     * Tests this object for equality with an arbitrary object.
+     *
+     * @param obj  the object (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">        if (obj == this) {</span>
+<span class="nc" id="L246">            return true;</span>
+        }
+        // now try to reject equality...
+<span class="pc bpc" id="L249" title="1 of 2 branches missed.">        if (!super.equals(obj)) {</span>
+<span class="nc" id="L250">            return false;</span>
+        }
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">        if (!(obj instanceof XYImageAnnotation)) {</span>
+<span class="nc" id="L253">            return false;</span>
+        }
+<span class="fc" id="L255">        XYImageAnnotation that = (XYImageAnnotation) obj;</span>
+<span class="pc bpc" id="L256" title="1 of 2 branches missed.">        if (this.x != that.x) {</span>
+<span class="nc" id="L257">            return false;</span>
+        }
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">        if (this.y != that.y) {</span>
+<span class="nc" id="L260">            return false;</span>
+        }
+<span class="pc bpc" id="L262" title="1 of 2 branches missed.">        if (!ObjectUtilities.equal(this.image, that.image)) {</span>
+<span class="nc" id="L263">            return false;</span>
+        }
+<span class="fc bfc" id="L265" title="All 2 branches covered.">        if (!this.anchor.equals(that.anchor)) {</span>
+<span class="fc" id="L266">            return false;</span>
+        }
+        // seems to be the same...
+<span class="fc" id="L269">        return true;</span>
+    }
+
+    /**
+     * Returns a hash code for this object.
+     *
+     * @return A hash code.
+     */
+    public int hashCode() {
+<span class="fc" id="L278">        return this.image.hashCode();</span>
+    }
+
+    /**
+     * Returns a clone of the annotation.
+     *
+     * @return A clone.
+     *
+     * @throws CloneNotSupportedException  if the annotation can't be cloned.
+     */
+    public Object clone() throws CloneNotSupportedException {
+<span class="fc" id="L289">        return super.clone();</span>
+    }
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the output stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     */
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+<span class="nc" id="L300">        stream.defaultWriteObject();</span>
+        //SerialUtilities.writeImage(this.image, stream);
+<span class="nc" id="L302">    }</span>
+
+    /**
+     * Provides serialization support.
+     *
+     * @param stream  the input stream.
+     *
+     * @throws IOException  if there is an I/O error.
+     * @throws ClassNotFoundException  if there is a classpath problem.
+     */
+    private void readObject(ObjectInputStream stream)
+        throws IOException, ClassNotFoundException {
+<span class="nc" id="L314">        stream.defaultReadObject();</span>
+        //this.image = SerialUtilities.readImage(stream);
+<span class="nc" id="L316">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

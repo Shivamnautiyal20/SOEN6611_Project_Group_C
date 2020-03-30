@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LegendItemTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.junit</a> &gt; <span class="el_source">LegendItemTests.java</span></div><h1>LegendItemTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------
+ * LegendItemTests.java
+ * --------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 04-Jun-2004 : Version 1 (DG);
+ * 10-Dec-2005 : Addded new test to cover bug report 1374328 (DG);
+ * 13-Dec-2006 : Extended testEquals() for new fillPaintTransformer
+ *               attribute (DG);
+ * 23-Apr-2008 : Implemented Cloneable (DG);
+ * 17-Jun-2008 : Included new fields in existing tests (DG);
+ *
+ */
+
+package org.jfree.chart.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.font.TextAttribute;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.text.AttributedString;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.LegendItem;
+import org.jfree.ui.GradientPaintTransformType;
+import org.jfree.ui.StandardGradientPaintTransformer;
+
+/**
+ * Tests for the {@link LegendItem} class.
+ */
+public class LegendItemTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L82">        return new TestSuite(LegendItemTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public LegendItemTests(String name) {
+<span class="fc" id="L91">        super(name);</span>
+<span class="fc" id="L92">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L99">        LegendItem item1 = new LegendItem(&quot;Label&quot;, &quot;Description&quot;,</span>
+                &quot;ToolTip&quot;, &quot;URL&quot;, true,
+                new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0), true, Color.red,
+                true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0),
+                new BasicStroke(2.1f), Color.green);
+<span class="fc" id="L105">        LegendItem item2 = new LegendItem(&quot;Label&quot;, &quot;Description&quot;,</span>
+                &quot;ToolTip&quot;, &quot;URL&quot;, true,
+                new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0),
+                true, Color.red, true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L111">        assertTrue(item1.equals(item2));</span>
+<span class="fc" id="L112">        assertTrue(item2.equals(item1));</span>
+
+<span class="fc" id="L114">        item1 = new LegendItem(&quot;Label2&quot;, &quot;Description&quot;, &quot;ToolTip&quot;, &quot;URL&quot;,</span>
+                true, new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0), true,
+                Color.red, true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L119">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L120">        item2 = new LegendItem(&quot;Label2&quot;, &quot;Description&quot;, &quot;ToolTip&quot;, &quot;URL&quot;,</span>
+                true, new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0),
+                true, Color.red, true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L125">        assertTrue(item1.equals(item2));</span>
+
+<span class="fc" id="L127">        item1 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, true, new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0),
+                true, Color.red, true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L132">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L133">        item2 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, true, new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0),
+                true, Color.red, true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L138">        assertTrue(item1.equals(item2));</span>
+
+<span class="fc" id="L140">        item1 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0),
+                true, Color.red, true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L145">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L146">        item2 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0),
+                true, Color.red, true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L151">        assertTrue(item1.equals(item2));</span>
+
+<span class="fc" id="L153">        item1 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0),
+                true, Color.red, true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L158">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L159">        item2 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0),
+                true, Color.red, true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L164">        assertTrue(item1.equals(item2));</span>
+
+<span class="fc" id="L166">        item1 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0),
+                false, Color.red, true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L171">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L172">        item2 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0),
+                false, Color.red, true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L177">        assertTrue(item1.equals(item2));</span>
+
+<span class="fc" id="L179">        item1 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;, &quot;URL&quot;,</span>
+                false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0), false,
+                Color.black, true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L184">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L185">        item2 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;, &quot;URL&quot;,</span>
+                false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0), false,
+                Color.black, true, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L190">        assertTrue(item1.equals(item2));</span>
+
+<span class="fc" id="L192">        item1 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0),
+                false, Color.black, false, Color.blue, new BasicStroke(1.2f),
+                true, new Line2D.Double(1.0, 2.0, 3.0, 4.0),
+                new BasicStroke(2.1f), Color.green);
+<span class="fc" id="L197">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L198">        item2 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;, &quot;URL&quot;,</span>
+                false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0), false,
+                Color.black, false, Color.blue, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L203">        assertTrue(item1.equals(item2));</span>
+
+<span class="fc" id="L205">        item1 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;, &quot;URL&quot;,</span>
+                false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0), false,
+                Color.black, false, Color.yellow, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L210">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L211">        item2 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;, &quot;URL&quot;,</span>
+                false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0), false,
+                Color.black, false, Color.yellow, new BasicStroke(1.2f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L216">        assertTrue(item1.equals(item2));</span>
+
+<span class="fc" id="L218">        item1 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;, &quot;URL&quot;,</span>
+                false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0), false,
+                Color.black, false, Color.yellow, new BasicStroke(2.1f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L223">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L224">        item2 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;, &quot;URL&quot;,</span>
+                false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0), false,
+                Color.black, false, Color.yellow, new BasicStroke(2.1f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(2.1f),
+                Color.green);
+<span class="fc" id="L229">        assertTrue(item1.equals(item2));</span>
+
+<span class="fc" id="L231">        item1 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0),
+                false, Color.black, false, Color.yellow, new BasicStroke(2.1f),
+                false, new Line2D.Double(1.0, 2.0, 3.0, 4.0),
+                new BasicStroke(2.1f), Color.green);
+<span class="fc" id="L236">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L237">        item2 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0),
+                false, Color.black, false, Color.yellow, new BasicStroke(2.1f),
+                false, new Line2D.Double(1.0, 2.0, 3.0, 4.0),
+                new BasicStroke(2.1f),  Color.green);
+<span class="fc" id="L242">        assertTrue(item1.equals(item2));</span>
+
+<span class="fc" id="L244">        item1 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0),
+                false, Color.black, false, Color.yellow, new BasicStroke(2.1f),
+                false, new Line2D.Double(4.0, 3.0, 2.0, 1.0),
+                new BasicStroke(2.1f), Color.green);
+<span class="fc" id="L249">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L250">        item2 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0),
+                false, Color.black, false, Color.yellow, new BasicStroke(2.1f),
+                false, new Line2D.Double(4.0, 3.0, 2.0, 1.0),
+                new BasicStroke(2.1f), Color.green);
+<span class="fc" id="L255">        assertTrue(item1.equals(item2));</span>
+
+<span class="fc" id="L257">        item1 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0),
+                false, Color.black, false, Color.yellow, new BasicStroke(2.1f),
+                false, new Line2D.Double(4.0, 3.0, 2.0, 1.0),
+                new BasicStroke(3.3f), Color.green);
+<span class="fc" id="L262">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L263">        item2 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0),
+                false, Color.black, false, Color.yellow, new BasicStroke(2.1f),
+                false, new Line2D.Double(4.0, 3.0, 2.0, 1.0),
+                new BasicStroke(3.3f), Color.green);
+<span class="fc" id="L268">        assertTrue(item1.equals(item2));</span>
+
+<span class="fc" id="L270">        item1 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;, &quot;URL&quot;,</span>
+                false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0), false,
+                Color.black, false, Color.yellow, new BasicStroke(2.1f), false,
+            new Line2D.Double(4.0, 3.0, 2.0, 1.0), new BasicStroke(3.3f),
+            Color.white
+        );
+<span class="fc" id="L276">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L277">        item2 = new LegendItem(&quot;Label2&quot;, &quot;Description2&quot;, &quot;ToolTip&quot;,</span>
+                &quot;URL&quot;, false, new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0),
+                false, Color.black, false, Color.yellow, new BasicStroke(2.1f),
+                false, new Line2D.Double(4.0, 3.0, 2.0, 1.0),
+                new BasicStroke(3.3f),
+                Color.white);
+<span class="fc" id="L283">        assertTrue(item1.equals(item2));</span>
+
+        // fillPaintTransformer
+<span class="fc" id="L286">        item1.setFillPaintTransformer(new StandardGradientPaintTransformer(</span>
+                GradientPaintTransformType.CENTER_VERTICAL));
+<span class="fc" id="L288">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L289">        item2.setFillPaintTransformer(new StandardGradientPaintTransformer(</span>
+                GradientPaintTransformType.CENTER_VERTICAL));
+<span class="fc" id="L291">        assertTrue(item1.equals(item2));</span>
+
+        // labelFont
+<span class="fc" id="L294">        item1.setLabelFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 13));</span>
+<span class="fc" id="L295">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L296">        item2.setLabelFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 13));</span>
+<span class="fc" id="L297">        assertTrue(item1.equals(item2));</span>
+
+        // labelPaint
+<span class="fc" id="L300">        item1.setLabelPaint(Color.red);</span>
+<span class="fc" id="L301">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L302">        item2.setLabelPaint(Color.red);</span>
+<span class="fc" id="L303">        assertTrue(item1.equals(item2));</span>
+
+        // fillPaint
+<span class="fc" id="L306">        item1.setFillPaint(new GradientPaint(1.0f, 2.0f, Color.green, 3.0f,</span>
+                4.0f, Color.blue));
+<span class="fc" id="L308">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L309">        item2.setFillPaint(new GradientPaint(1.0f, 2.0f, Color.green, 3.0f,</span>
+                4.0f, Color.blue));
+<span class="fc" id="L311">        assertTrue(item1.equals(item2));</span>
+
+        // outlinePaint
+<span class="fc" id="L314">        item1.setOutlinePaint(new GradientPaint(1.1f, 2.2f, Color.green, 3.3f,</span>
+                4.4f, Color.blue));
+<span class="fc" id="L316">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L317">        item2.setOutlinePaint(new GradientPaint(1.1f, 2.2f, Color.green, 3.3f,</span>
+                4.4f, Color.blue));
+<span class="fc" id="L319">        assertTrue(item1.equals(item2));</span>
+
+        // linePaint
+<span class="fc" id="L322">        item1.setLinePaint(new GradientPaint(0.1f, 0.2f, Color.green, 0.3f,</span>
+                0.4f, Color.blue));
+<span class="fc" id="L324">        assertFalse(item1.equals(item2));</span>
+<span class="fc" id="L325">        item2.setLinePaint(new GradientPaint(0.1f, 0.2f, Color.green, 0.3f,</span>
+                0.4f, Color.blue));
+<span class="fc" id="L327">        assertTrue(item1.equals(item2));</span>
+
+<span class="fc" id="L329">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L335">        LegendItem item1 = new LegendItem(&quot;Item&quot;, &quot;Description&quot;,</span>
+                &quot;ToolTip&quot;, &quot;URL&quot;,
+                new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0), new GradientPaint(
+                        5.0f, 6.0f, Color.blue, 7.0f, 8.0f, Color.gray));
+<span class="fc" id="L339">        item1.setLabelPaint(new GradientPaint(1.0f, 2.0f, Color.red, 3.0f,</span>
+                4.0f, Color.yellow));
+<span class="fc" id="L341">        item1.setOutlinePaint(new GradientPaint(4.0f, 3.0f, Color.green, 2.0f,</span>
+                1.0f, Color.red));
+<span class="fc" id="L343">        item1.setLinePaint(new GradientPaint(1.0f, 2.0f, Color.white, 3.0f,</span>
+                4.0f, Color.red));
+<span class="fc" id="L345">        LegendItem item2 = null;</span>
+        try {
+<span class="fc" id="L347">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L348">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L349">            out.writeObject(item1);</span>
+<span class="fc" id="L350">            out.close();</span>
+
+<span class="fc" id="L352">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L353">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L354">            item2 = (LegendItem) in.readObject();</span>
+<span class="fc" id="L355">            in.close();</span>
+        }
+<span class="nc" id="L357">        catch (Exception e) {</span>
+<span class="nc" id="L358">            e.printStackTrace();</span>
+<span class="fc" id="L359">        }</span>
+<span class="fc" id="L360">        assertTrue(item1.equals(item2));</span>
+<span class="fc" id="L361">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization2() {
+<span class="fc" id="L367">        AttributedString as = new AttributedString(&quot;Test String&quot;);</span>
+<span class="fc" id="L368">        as.addAttribute(TextAttribute.FONT, new Font(&quot;Dialog&quot;, Font.PLAIN, 12));</span>
+<span class="fc" id="L369">        LegendItem item1 = new LegendItem(as, &quot;Description&quot;, &quot;ToolTip&quot;, &quot;URL&quot;,</span>
+                new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0), Color.red);
+<span class="fc" id="L371">        LegendItem item2 = null;</span>
+        try {
+<span class="fc" id="L373">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L374">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L375">            out.writeObject(item1);</span>
+<span class="fc" id="L376">            out.close();</span>
+
+<span class="fc" id="L378">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L379">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L380">            item2 = (LegendItem) in.readObject();</span>
+<span class="fc" id="L381">            in.close();</span>
+        }
+<span class="nc" id="L383">        catch (Exception e) {</span>
+<span class="nc" id="L384">            e.printStackTrace();</span>
+<span class="fc" id="L385">        }</span>
+<span class="fc" id="L386">        assertEquals(item1, item2);</span>
+<span class="fc" id="L387">    }</span>
+
+    /**
+     * Basic checks for cloning.
+     */
+    public void testCloning() {
+<span class="fc" id="L393">        LegendItem item1 = new LegendItem(&quot;Item&quot;);</span>
+<span class="fc" id="L394">        LegendItem item2 = null;</span>
+        try {
+<span class="fc" id="L396">            item2 = (LegendItem) item1.clone();</span>
+        }
+<span class="nc" id="L398">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L399">            e.printStackTrace();</span>
+<span class="fc" id="L400">        }</span>
+<span class="pc bpc" id="L401" title="1 of 2 branches missed.">        assertTrue(item1 != item2);</span>
+<span class="pc bpc" id="L402" title="1 of 2 branches missed.">        assertTrue(item1.getClass() == item2.getClass());</span>
+<span class="fc" id="L403">        assertTrue(item1.equals(item2));</span>
+
+        // the clone references the same dataset as the original
+<span class="pc bpc" id="L406" title="1 of 2 branches missed.">        assertTrue(item1.getDataset() == item2.getDataset());</span>
+<span class="fc" id="L407">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

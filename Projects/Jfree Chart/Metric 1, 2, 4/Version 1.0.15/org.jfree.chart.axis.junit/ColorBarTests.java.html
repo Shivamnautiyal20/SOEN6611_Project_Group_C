@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ColorBarTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.axis.junit</a> &gt; <span class="el_source">ColorBarTests.java</span></div><h1>ColorBarTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------
+ * ColorBarTests.java
+ * ------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 26-Mar-2003 : Version 1 (DG);
+ * 07-Jan-2005 : Added test for hashCode() method (DG);
+ *
+ */
+
+package org.jfree.chart.axis.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.axis.ColorBar;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.GreyPalette;
+
+/**
+ * Tests for the &lt;code&gt;ColorBar&lt;/code&gt; class.
+ */
+public class ColorBarTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L70">        return new TestSuite(ColorBarTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public ColorBarTests(String name) {
+<span class="fc" id="L79">        super(name);</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Check that the equals() method can distinguish all fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L86">        ColorBar c1 = new ColorBar(&quot;Test&quot;);</span>
+<span class="fc" id="L87">        ColorBar c2 = new ColorBar(&quot;Test&quot;);</span>
+<span class="fc" id="L88">        assertEquals(c1, c2);</span>
+
+<span class="fc" id="L90">        c1.setAxis(new NumberAxis(&quot;Axis 1&quot;));</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">        assertTrue(!c1.equals(c2));</span>
+<span class="fc" id="L92">        c2.setAxis(new NumberAxis(&quot;Axis 1&quot;));</span>
+<span class="fc" id="L93">        assertTrue(c1.equals(c2));</span>
+
+<span class="fc" id="L95">        c1.setColorPalette(new GreyPalette());</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">        assertTrue(!c1.equals(c2));</span>
+<span class="fc" id="L97">        c2.setColorPalette(new GreyPalette());</span>
+<span class="fc" id="L98">        assertTrue(c1.equals(c2));</span>
+<span class="fc" id="L99">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashCode() {
+<span class="fc" id="L105">        ColorBar c1 = new ColorBar(&quot;Test&quot;);</span>
+<span class="fc" id="L106">        ColorBar c2 = new ColorBar(&quot;Test&quot;);</span>
+<span class="fc" id="L107">        assertTrue(c1.equals(c2));</span>
+<span class="fc" id="L108">        int h1 = c1.hashCode();</span>
+<span class="fc" id="L109">        int h2 = c2.hashCode();</span>
+<span class="fc" id="L110">        assertEquals(h1, h2);</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L117">        ColorBar c1 = new ColorBar(&quot;Test&quot;);</span>
+<span class="fc" id="L118">        ColorBar c2 = null;</span>
+        try {
+<span class="fc" id="L120">            c2 = (ColorBar) c1.clone();</span>
+        }
+<span class="nc" id="L122">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L123">            System.err.println(&quot;Failed to clone.&quot;);</span>
+<span class="fc" id="L124">        }</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">        assertTrue(c1 != c2);</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        assertTrue(c1.getClass() == c2.getClass());</span>
+<span class="fc" id="L127">        assertTrue(c1.equals(c2));</span>
+<span class="fc" id="L128">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L135">        ColorBar a1 = new ColorBar(&quot;Test Axis&quot;);</span>
+<span class="fc" id="L136">        ColorBar a2 = null;</span>
+
+        try {
+<span class="fc" id="L139">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L140">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L141">            out.writeObject(a1);</span>
+<span class="fc" id="L142">            out.close();</span>
+
+<span class="fc" id="L144">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L145">                new ByteArrayInputStream(buffer.toByteArray())</span>
+            );
+<span class="fc" id="L147">            a2 = (ColorBar) in.readObject();</span>
+<span class="fc" id="L148">            in.close();</span>
+        }
+<span class="nc" id="L150">        catch (Exception e) {</span>
+<span class="nc" id="L151">            System.out.println(e.toString());</span>
+<span class="fc" id="L152">        }</span>
+<span class="fc" id="L153">        assertEquals(a1, a2);</span>
+
+<span class="fc" id="L155">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

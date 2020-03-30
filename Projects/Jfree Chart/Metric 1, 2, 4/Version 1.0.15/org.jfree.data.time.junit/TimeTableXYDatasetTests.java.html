@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TimeTableXYDatasetTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.time.junit</a> &gt; <span class="el_source">TimeTableXYDatasetTests.java</span></div><h1>TimeTableXYDatasetTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------------
+ * TimeTableXYDatasetTests.java
+ * ----------------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Rob Eden;
+ *
+ * Changes
+ * -------
+ * 15-Sep-2004 : Version 1 (DG);
+ * 25-Jul-2007 : Added test for clear() method, by Rob Eden (DG);
+ *
+ */
+
+package org.jfree.data.time.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.TimeZone;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.time.TimeTableXYDataset;
+import org.jfree.data.time.Year;
+
+/**
+ * A collection of test cases for the {@link TimeTableXYDataset} class.
+ */
+public class TimeTableXYDatasetTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L70">        return new TestSuite(TimeTableXYDatasetTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public TimeTableXYDatasetTests(String name) {
+<span class="fc" id="L79">        super(name);</span>
+<span class="fc" id="L80">    }</span>
+
+    private static final double DELTA = 0.0000000001;
+
+    /**
+     * Some checks for a simple dataset.
+     */
+    public void testStandard() {
+<span class="fc" id="L88">        TimeTableXYDataset d = new TimeTableXYDataset();</span>
+<span class="fc" id="L89">        d.add(new Year(1999), 1.0, &quot;Series 1&quot;);</span>
+<span class="fc" id="L90">        assertEquals(d.getItemCount(), 1);</span>
+<span class="fc" id="L91">        assertEquals(d.getSeriesCount(), 1);</span>
+<span class="fc" id="L92">        d.add(new Year(2000), 2.0, &quot;Series 2&quot;);</span>
+<span class="fc" id="L93">        assertEquals(d.getItemCount(), 2);</span>
+<span class="fc" id="L94">        assertEquals(d.getSeriesCount(), 2);</span>
+<span class="fc" id="L95">        assertEquals(d.getYValue(0, 0), 1.0, DELTA);</span>
+<span class="fc" id="L96">        assertTrue(Double.isNaN(d.getYValue(0, 1)));</span>
+<span class="fc" id="L97">        assertTrue(Double.isNaN(d.getYValue(1, 0)));</span>
+<span class="fc" id="L98">        assertEquals(d.getYValue(1, 1), 2.0, DELTA);</span>
+<span class="fc" id="L99">    }</span>
+
+    /**
+     * Some checks for the getTimePeriod() method.
+     */
+    public void testGetTimePeriod()  {
+<span class="fc" id="L105">        TimeTableXYDataset d = new TimeTableXYDataset();</span>
+<span class="fc" id="L106">        d.add(new Year(1999), 1.0, &quot;Series 1&quot;);</span>
+<span class="fc" id="L107">        d.add(new Year(1998), 2.0, &quot;Series 1&quot;);</span>
+<span class="fc" id="L108">        d.add(new Year(1996), 3.0, &quot;Series 1&quot;);</span>
+<span class="fc" id="L109">        assertEquals(d.getTimePeriod(0), new Year(1996));</span>
+<span class="fc" id="L110">        assertEquals(d.getTimePeriod(1), new Year(1998));</span>
+<span class="fc" id="L111">        assertEquals(d.getTimePeriod(2), new Year(1999));</span>
+<span class="fc" id="L112">    }</span>
+
+    /**
+     * Some checks for the equals() method.
+     */
+    public void testEquals() {
+<span class="fc" id="L118">        TimeTableXYDataset d1 = new TimeTableXYDataset();</span>
+<span class="fc" id="L119">        TimeTableXYDataset d2 = new TimeTableXYDataset();</span>
+<span class="fc" id="L120">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L121">        assertTrue(d2.equals(d1));</span>
+
+<span class="fc" id="L123">        d1.add(new Year(1999), 123.4, &quot;S1&quot;);</span>
+<span class="fc" id="L124">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L125">        d2.add(new Year(1999), 123.4, &quot;S1&quot;);</span>
+<span class="fc" id="L126">        assertTrue(d1.equals(d2));</span>
+
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">        d1.setDomainIsPointsInTime(!d1.getDomainIsPointsInTime());</span>
+<span class="fc" id="L129">        assertFalse(d1.equals(d2));</span>
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">        d2.setDomainIsPointsInTime(!d2.getDomainIsPointsInTime());</span>
+<span class="fc" id="L131">        assertTrue(d1.equals(d2));</span>
+
+<span class="fc" id="L133">        d1 = new TimeTableXYDataset(TimeZone.getTimeZone(&quot;GMT&quot;));</span>
+<span class="fc" id="L134">        d2 = new TimeTableXYDataset(TimeZone.getTimeZone(</span>
+                &quot;America/Los_Angeles&quot;));
+<span class="fc" id="L136">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Some checks for cloning.
+     */
+    public void testClone() {
+
+<span class="fc" id="L144">        TimeTableXYDataset d = new TimeTableXYDataset();</span>
+<span class="fc" id="L145">        d.add(new Year(1999), 25.0, &quot;Series&quot;);</span>
+
+<span class="fc" id="L147">        TimeTableXYDataset clone = null;</span>
+        try {
+<span class="fc" id="L149">            clone = (TimeTableXYDataset) d.clone();</span>
+        }
+<span class="nc" id="L151">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L152">            assertTrue(false);</span>
+<span class="fc" id="L153">        }</span>
+<span class="fc" id="L154">        assertTrue(clone.equals(d));</span>
+
+        // now test that the clone is independent of the original
+<span class="fc" id="L157">        clone.add(new Year(2004), 1.2, &quot;SS&quot;);</span>
+<span class="fc" id="L158">        assertFalse(clone.equals(d));</span>
+<span class="fc" id="L159">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L166">        TimeTableXYDataset d1 = new TimeTableXYDataset();</span>
+<span class="fc" id="L167">        d1.add(new Year(1999), 123.4, &quot;S1&quot;);</span>
+<span class="fc" id="L168">        TimeTableXYDataset d2 = null;</span>
+
+        try {
+<span class="fc" id="L171">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L172">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L173">            out.writeObject(d1);</span>
+<span class="fc" id="L174">            out.close();</span>
+
+<span class="fc" id="L176">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L177">                    buffer.toByteArray()));</span>
+<span class="fc" id="L178">            d2 = (TimeTableXYDataset) in.readObject();</span>
+<span class="fc" id="L179">            in.close();</span>
+        }
+<span class="nc" id="L181">        catch (Exception e) {</span>
+<span class="nc" id="L182">            e.printStackTrace();</span>
+<span class="fc" id="L183">        }</span>
+<span class="fc" id="L184">        assertTrue(d1.equals(d2));</span>
+
+<span class="fc" id="L186">    }</span>
+
+    /**
+     * Test clearing data.
+     */
+    public void testClear() {
+<span class="fc" id="L192">        TimeTableXYDataset d = new TimeTableXYDataset();</span>
+<span class="fc" id="L193">        d.add(new Year(1999), 1.0, &quot;Series 1&quot;);</span>
+<span class="fc" id="L194">        assertEquals(d.getItemCount(), 1);</span>
+<span class="fc" id="L195">        assertEquals(d.getSeriesCount(), 1);</span>
+<span class="fc" id="L196">        d.add(new Year(2000), 2.0, &quot;Series 2&quot;);</span>
+
+<span class="fc" id="L198">        d.clear();</span>
+        // Make sure there's nothing left
+<span class="fc" id="L200">        assertEquals(0, d.getItemCount());</span>
+<span class="fc" id="L201">        assertEquals(0, d.getSeriesCount());</span>
+<span class="fc" id="L202">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QuarterTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.time.junit</a> &gt; <span class="el_source">QuarterTests.java</span></div><h1>QuarterTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------
+ * QuarterTests.java
+ * -----------------
+ * (C) Copyright 2001-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 16-Nov-2001 : Version 1 (DG);
+ * 17-Oct-2002 : Fixed errors reported by Checkstyle (DG);
+ * 13-Mar-2003 : Added serialization test (DG);
+ * 11-Jan-2005 : Added check for non-clonability (DG);
+ * 05-Oct-2006 : Added some new tests (DG);
+ * 11-Jul-2007 : Fixed bad time zone assumption (DG);
+ *
+ */
+
+package org.jfree.data.time.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.time.Quarter;
+import org.jfree.data.time.TimePeriodFormatException;
+import org.jfree.data.time.Year;
+
+/**
+ * Tests for the {link Quarter} class.
+ */
+public class QuarterTests extends TestCase {
+
+    /** A quarter. */
+    private Quarter q1Y1900;
+
+    /** A quarter. */
+    private Quarter q2Y1900;
+
+    /** A quarter. */
+    private Quarter q3Y9999;
+
+    /** A quarter. */
+    private Quarter q4Y9999;
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L91">        return new TestSuite(QuarterTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public QuarterTests(String name) {
+<span class="fc" id="L100">        super(name);</span>
+<span class="fc" id="L101">    }</span>
+
+    /**
+     * Common test setup.
+     */
+    protected void setUp() {
+<span class="fc" id="L107">        this.q1Y1900 = new Quarter(1, 1900);</span>
+<span class="fc" id="L108">        this.q2Y1900 = new Quarter(2, 1900);</span>
+<span class="fc" id="L109">        this.q3Y9999 = new Quarter(3, 9999);</span>
+<span class="fc" id="L110">        this.q4Y9999 = new Quarter(4, 9999);</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Check that a Quarter instance is equal to itself.
+     *
+     * SourceForge Bug ID: 558850.
+     */
+    public void testEqualsSelf() {
+<span class="fc" id="L119">        Quarter quarter = new Quarter();</span>
+<span class="fc" id="L120">        assertTrue(quarter.equals(quarter));</span>
+<span class="fc" id="L121">    }</span>
+
+    /**
+     * Tests the equals method.
+     */
+    public void testEquals() {
+<span class="fc" id="L127">        Quarter q1 = new Quarter(2, 2002);</span>
+<span class="fc" id="L128">        Quarter q2 = new Quarter(2, 2002);</span>
+<span class="fc" id="L129">        assertTrue(q1.equals(q2));</span>
+<span class="fc" id="L130">    }</span>
+
+    /**
+     * In GMT, the end of Q1 2002 is java.util.Date(1017619199999L).  Use this
+     * to check the quarter constructor.
+     */
+    public void testDateConstructor1() {
+
+<span class="fc" id="L138">        TimeZone zone = TimeZone.getTimeZone(&quot;GMT&quot;);</span>
+<span class="fc" id="L139">        Quarter q1 = new Quarter(new Date(1017619199999L), zone);</span>
+<span class="fc" id="L140">        Quarter q2 = new Quarter(new Date(1017619200000L), zone);</span>
+
+<span class="fc" id="L142">        assertEquals(1, q1.getQuarter());</span>
+<span class="fc" id="L143">        assertEquals(1017619199999L, q1.getLastMillisecond(zone));</span>
+
+<span class="fc" id="L145">        assertEquals(2, q2.getQuarter());</span>
+<span class="fc" id="L146">        assertEquals(1017619200000L, q2.getFirstMillisecond(zone));</span>
+
+<span class="fc" id="L148">    }</span>
+
+    /**
+     * In Istanbul, the end of Q1 2002 is java.util.Date(1017608399999L).  Use
+     * this to check the quarter constructor.
+     */
+    public void testDateConstructor2() {
+
+<span class="fc" id="L156">        TimeZone zone = TimeZone.getTimeZone(&quot;Europe/Istanbul&quot;);</span>
+<span class="fc" id="L157">        Quarter q1 = new Quarter(new Date(1017608399999L), zone);</span>
+<span class="fc" id="L158">        Quarter q2 = new Quarter(new Date(1017608400000L), zone);</span>
+
+<span class="fc" id="L160">        assertEquals(1, q1.getQuarter());</span>
+<span class="fc" id="L161">        assertEquals(1017608399999L, q1.getLastMillisecond(zone));</span>
+
+<span class="fc" id="L163">        assertEquals(2, q2.getQuarter());</span>
+<span class="fc" id="L164">        assertEquals(1017608400000L, q2.getFirstMillisecond(zone));</span>
+
+<span class="fc" id="L166">    }</span>
+
+    /**
+     * Set up a quarter equal to Q1 1900.  Request the previous quarter, it
+     * should be null.
+     */
+    public void testQ1Y1900Previous() {
+<span class="fc" id="L173">        Quarter previous = (Quarter) this.q1Y1900.previous();</span>
+<span class="fc" id="L174">        assertNull(previous);</span>
+<span class="fc" id="L175">    }</span>
+
+    /**
+     * Set up a quarter equal to Q1 1900.  Request the next quarter, it should
+     * be Q2 1900.
+     */
+    public void testQ1Y1900Next() {
+<span class="fc" id="L182">        Quarter next = (Quarter) this.q1Y1900.next();</span>
+<span class="fc" id="L183">        assertEquals(this.q2Y1900, next);</span>
+<span class="fc" id="L184">    }</span>
+
+    /**
+     * Set up a quarter equal to Q4 9999.  Request the previous quarter, it
+     * should be Q3 9999.
+     */
+    public void testQ4Y9999Previous() {
+<span class="fc" id="L191">        Quarter previous = (Quarter) this.q4Y9999.previous();</span>
+<span class="fc" id="L192">        assertEquals(this.q3Y9999, previous);</span>
+<span class="fc" id="L193">    }</span>
+
+    /**
+     * Set up a quarter equal to Q4 9999.  Request the next quarter, it should
+     * be null.
+     */
+    public void testQ4Y9999Next() {
+<span class="fc" id="L200">        Quarter next = (Quarter) this.q4Y9999.next();</span>
+<span class="fc" id="L201">        assertNull(next);</span>
+<span class="fc" id="L202">    }</span>
+
+    /**
+     * Test the string parsing code...
+     */
+    public void testParseQuarter() {
+
+<span class="fc" id="L209">        Quarter quarter = null;</span>
+
+        // test 1...
+        try {
+<span class="fc" id="L213">            quarter = Quarter.parseQuarter(&quot;Q1-2000&quot;);</span>
+        }
+<span class="nc" id="L215">        catch (TimePeriodFormatException e) {</span>
+<span class="nc" id="L216">            quarter = new Quarter(1, 1900);</span>
+<span class="fc" id="L217">        }</span>
+<span class="fc" id="L218">        assertEquals(1, quarter.getQuarter());</span>
+<span class="fc" id="L219">        assertEquals(2000, quarter.getYear().getYear());</span>
+
+        // test 2...
+        try {
+<span class="fc" id="L223">            quarter = Quarter.parseQuarter(&quot;2001-Q2&quot;);</span>
+        }
+<span class="nc" id="L225">        catch (TimePeriodFormatException e) {</span>
+<span class="nc" id="L226">            quarter = new Quarter(1, 1900);</span>
+<span class="fc" id="L227">        }</span>
+<span class="fc" id="L228">        assertEquals(2, quarter.getQuarter());</span>
+<span class="fc" id="L229">        assertEquals(2001, quarter.getYear().getYear());</span>
+
+        // test 3...
+        try {
+<span class="fc" id="L233">            quarter = Quarter.parseQuarter(&quot;Q3, 2002&quot;);</span>
+        }
+<span class="nc" id="L235">        catch (TimePeriodFormatException e) {</span>
+<span class="nc" id="L236">            quarter = new Quarter(1, 1900);</span>
+<span class="fc" id="L237">        }</span>
+<span class="fc" id="L238">        assertEquals(3, quarter.getQuarter());</span>
+<span class="fc" id="L239">        assertEquals(2002, quarter.getYear().getYear());</span>
+
+<span class="fc" id="L241">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L248">        Quarter q1 = new Quarter(4, 1999);</span>
+<span class="fc" id="L249">        Quarter q2 = null;</span>
+
+        try {
+<span class="fc" id="L252">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L253">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L254">            out.writeObject(q1);</span>
+<span class="fc" id="L255">            out.close();</span>
+
+<span class="fc" id="L257">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L258">                new ByteArrayInputStream(buffer.toByteArray())</span>
+            );
+<span class="fc" id="L260">            q2 = (Quarter) in.readObject();</span>
+<span class="fc" id="L261">            in.close();</span>
+        }
+<span class="nc" id="L263">        catch (Exception e) {</span>
+<span class="nc" id="L264">            System.out.println(e.toString());</span>
+<span class="fc" id="L265">        }</span>
+<span class="fc" id="L266">        assertEquals(q1, q2);</span>
+
+<span class="fc" id="L268">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L274">        Quarter q1 = new Quarter(2, 2003);</span>
+<span class="fc" id="L275">        Quarter q2 = new Quarter(2, 2003);</span>
+<span class="fc" id="L276">        assertTrue(q1.equals(q2));</span>
+<span class="fc" id="L277">        int h1 = q1.hashCode();</span>
+<span class="fc" id="L278">        int h2 = q2.hashCode();</span>
+<span class="fc" id="L279">        assertEquals(h1, h2);</span>
+<span class="fc" id="L280">    }</span>
+
+    /**
+     * The {@link Quarter} class is immutable, so should not be
+     * {@link Cloneable}.
+     */
+    public void testNotCloneable() {
+<span class="fc" id="L287">        Quarter q = new Quarter(2, 2003);</span>
+<span class="fc" id="L288">        assertFalse(q instanceof Cloneable);</span>
+<span class="fc" id="L289">    }</span>
+
+    /**
+     * Some tests for the constructor with (int, int) arguments.  Covers bug
+     * report 1377239.
+     */
+    public void testConstructor() {
+<span class="fc" id="L296">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L298">            /*Quarter q =*/ new Quarter(0, 2005);</span>
+        }
+<span class="fc" id="L300">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L301">            pass = true;</span>
+<span class="nc" id="L302">        }</span>
+<span class="fc" id="L303">        assertTrue(pass);</span>
+
+<span class="fc" id="L305">        pass = false;</span>
+        try {
+<span class="nc" id="L307">            /*Quarter q =*/ new Quarter(5, 2005);</span>
+        }
+<span class="fc" id="L309">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L310">            pass = true;</span>
+<span class="nc" id="L311">        }</span>
+<span class="fc" id="L312">        assertTrue(pass);</span>
+<span class="fc" id="L313">    }</span>
+
+    /**
+     * Some checks for the getFirstMillisecond() method.
+     */
+    public void testGetFirstMillisecond() {
+<span class="fc" id="L319">        Locale saved = Locale.getDefault();</span>
+<span class="fc" id="L320">        Locale.setDefault(Locale.UK);</span>
+<span class="fc" id="L321">        TimeZone savedZone = TimeZone.getDefault();</span>
+<span class="fc" id="L322">        TimeZone.setDefault(TimeZone.getTimeZone(&quot;Europe/London&quot;));</span>
+<span class="fc" id="L323">        Quarter q = new Quarter(3, 1970);</span>
+<span class="fc" id="L324">        assertEquals(15634800000L, q.getFirstMillisecond());</span>
+<span class="fc" id="L325">        Locale.setDefault(saved);</span>
+<span class="fc" id="L326">        TimeZone.setDefault(savedZone);</span>
+<span class="fc" id="L327">    }</span>
+
+    /**
+     * Some checks for the getFirstMillisecond(TimeZone) method.
+     */
+    public void testGetFirstMillisecondWithTimeZone() {
+<span class="fc" id="L333">        Quarter q = new Quarter(2, 1950);</span>
+<span class="fc" id="L334">        TimeZone zone = TimeZone.getTimeZone(&quot;America/Los_Angeles&quot;);</span>
+<span class="fc" id="L335">        assertEquals(-623347200000L, q.getFirstMillisecond(zone));</span>
+
+        // try null calendar
+<span class="fc" id="L338">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L340">            q.getFirstMillisecond((TimeZone) null);</span>
+        }
+<span class="fc" id="L342">        catch (NullPointerException e) {</span>
+<span class="fc" id="L343">            pass = true;</span>
+<span class="nc" id="L344">        }</span>
+<span class="fc" id="L345">        assertTrue(pass);</span>
+<span class="fc" id="L346">    }</span>
+
+    /**
+     * Some checks for the getFirstMillisecond(TimeZone) method.
+     */
+    public void testGetFirstMillisecondWithCalendar() {
+<span class="fc" id="L352">        Quarter q = new Quarter(1, 2001);</span>
+<span class="fc" id="L353">        GregorianCalendar calendar = new GregorianCalendar(Locale.GERMANY);</span>
+<span class="fc" id="L354">        calendar.setTimeZone(TimeZone.getTimeZone(&quot;Europe/Frankfurt&quot;));</span>
+<span class="fc" id="L355">        assertEquals(978307200000L, q.getFirstMillisecond(calendar));</span>
+
+        // try null calendar
+<span class="fc" id="L358">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L360">            q.getFirstMillisecond((Calendar) null);</span>
+        }
+<span class="fc" id="L362">        catch (NullPointerException e) {</span>
+<span class="fc" id="L363">            pass = true;</span>
+<span class="nc" id="L364">        }</span>
+<span class="fc" id="L365">        assertTrue(pass);</span>
+<span class="fc" id="L366">    }</span>
+
+    /**
+     * Some checks for the getLastMillisecond() method.
+     */
+    public void testGetLastMillisecond() {
+<span class="fc" id="L372">        Locale saved = Locale.getDefault();</span>
+<span class="fc" id="L373">        Locale.setDefault(Locale.UK);</span>
+<span class="fc" id="L374">        TimeZone savedZone = TimeZone.getDefault();</span>
+<span class="fc" id="L375">        TimeZone.setDefault(TimeZone.getTimeZone(&quot;Europe/London&quot;));</span>
+<span class="fc" id="L376">        Quarter q = new Quarter(3, 1970);</span>
+<span class="fc" id="L377">        assertEquals(23583599999L, q.getLastMillisecond());</span>
+<span class="fc" id="L378">        Locale.setDefault(saved);</span>
+<span class="fc" id="L379">        TimeZone.setDefault(savedZone);</span>
+<span class="fc" id="L380">    }</span>
+
+    /**
+     * Some checks for the getLastMillisecond(TimeZone) method.
+     */
+    public void testGetLastMillisecondWithTimeZone() {
+<span class="fc" id="L386">        Quarter q = new Quarter(2, 1950);</span>
+<span class="fc" id="L387">        TimeZone zone = TimeZone.getTimeZone(&quot;America/Los_Angeles&quot;);</span>
+<span class="fc" id="L388">        assertEquals(-615488400001L, q.getLastMillisecond(zone));</span>
+
+        // try null calendar
+<span class="fc" id="L391">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L393">            q.getLastMillisecond((TimeZone) null);</span>
+        }
+<span class="fc" id="L395">        catch (NullPointerException e) {</span>
+<span class="fc" id="L396">            pass = true;</span>
+<span class="nc" id="L397">        }</span>
+<span class="fc" id="L398">        assertTrue(pass);</span>
+<span class="fc" id="L399">    }</span>
+
+    /**
+     * Some checks for the getLastMillisecond(TimeZone) method.
+     */
+    public void testGetLastMillisecondWithCalendar() {
+<span class="fc" id="L405">        Quarter q = new Quarter(3, 2001);</span>
+<span class="fc" id="L406">        GregorianCalendar calendar = new GregorianCalendar(Locale.GERMANY);</span>
+<span class="fc" id="L407">        calendar.setTimeZone(TimeZone.getTimeZone(&quot;Europe/Frankfurt&quot;));</span>
+<span class="fc" id="L408">        assertEquals(1001894399999L, q.getLastMillisecond(calendar));</span>
+
+        // try null calendar
+<span class="fc" id="L411">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L413">            q.getLastMillisecond((Calendar) null);</span>
+        }
+<span class="fc" id="L415">        catch (NullPointerException e) {</span>
+<span class="fc" id="L416">            pass = true;</span>
+<span class="nc" id="L417">        }</span>
+<span class="fc" id="L418">        assertTrue(pass);</span>
+<span class="fc" id="L419">    }</span>
+
+    /**
+     * Some checks for the getSerialIndex() method.
+     */
+    public void testGetSerialIndex() {
+<span class="fc" id="L425">        Quarter q = new Quarter(1, 2000);</span>
+<span class="fc" id="L426">        assertEquals(8001L, q.getSerialIndex());</span>
+<span class="fc" id="L427">        q = new Quarter(1, 1900);</span>
+<span class="fc" id="L428">        assertEquals(7601L, q.getSerialIndex());</span>
+<span class="fc" id="L429">    }</span>
+
+    /**
+     * Some checks for the testNext() method.
+     */
+    public void testNext() {
+<span class="fc" id="L435">        Quarter q = new Quarter(1, 2000);</span>
+<span class="fc" id="L436">        q = (Quarter) q.next();</span>
+<span class="fc" id="L437">        assertEquals(new Year(2000), q.getYear());</span>
+<span class="fc" id="L438">        assertEquals(2, q.getQuarter());</span>
+<span class="fc" id="L439">        q = new Quarter(4, 9999);</span>
+<span class="fc" id="L440">        assertNull(q.next());</span>
+<span class="fc" id="L441">    }</span>
+
+    /**
+     * Some checks for the getStart() method.
+     */
+    public void testGetStart() {
+<span class="fc" id="L447">        Locale saved = Locale.getDefault();</span>
+<span class="fc" id="L448">        Locale.setDefault(Locale.ITALY);</span>
+<span class="fc" id="L449">        Calendar cal = Calendar.getInstance(Locale.ITALY);</span>
+<span class="fc" id="L450">        cal.set(2006, Calendar.JULY, 1, 0, 0, 0);</span>
+<span class="fc" id="L451">        cal.set(Calendar.MILLISECOND, 0);</span>
+<span class="fc" id="L452">        Quarter q = new Quarter(3, 2006);</span>
+<span class="fc" id="L453">        assertEquals(cal.getTime(), q.getStart());</span>
+<span class="fc" id="L454">        Locale.setDefault(saved);</span>
+<span class="fc" id="L455">    }</span>
+
+    /**
+     * Some checks for the getEnd() method.
+     */
+    public void testGetEnd() {
+<span class="fc" id="L461">        Locale saved = Locale.getDefault();</span>
+<span class="fc" id="L462">        Locale.setDefault(Locale.ITALY);</span>
+<span class="fc" id="L463">        Calendar cal = Calendar.getInstance(Locale.ITALY);</span>
+<span class="fc" id="L464">        cal.set(2006, Calendar.MARCH, 31, 23, 59, 59);</span>
+<span class="fc" id="L465">        cal.set(Calendar.MILLISECOND, 999);</span>
+<span class="fc" id="L466">        Quarter q = new Quarter(1, 2006);</span>
+<span class="fc" id="L467">        assertEquals(cal.getTime(), q.getEnd());</span>
+<span class="fc" id="L468">        Locale.setDefault(saved);</span>
+<span class="fc" id="L469">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

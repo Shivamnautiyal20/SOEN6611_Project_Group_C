@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PaintAlpha.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.util</a> &gt; <span class="el_source">PaintAlpha.java</span></div><h1>PaintAlpha.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Java is a trademark or registered trademark of Sun Microsystems, Inc.
+ * in the United States and other countries.]
+ *
+ * ---------------
+ * PaintAlpha.java
+ * ---------------
+ * (C) Copyright 2011 by DaveLaw and Contributors.
+ *
+ * Original Author:  DaveLaw (dave ATT davelaw D0TT de);
+ * Contributor(s):   could this be you?;
+ *
+ * Changes
+ * -------
+ * 09-Mar-2011 : Written (DaveLaw)
+ * 03-Jul-2012 : JDK 1.6 References made reflective for JDK 1.3 compatibility (
+ *               DaveLaw)
+ *
+ */
+
+package org.jfree.chart.util;
+
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Paint;
+import java.awt.TexturePaint;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.IndexColorModel;
+import java.awt.image.WritableRaster;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Hashtable;
+
+/**
+ * This class contains static methods for the manipulation
+ * of objects of type &lt;code&gt;Paint&lt;/code&gt;
+ * &lt;p&gt;
+ * The intention is to honour the alpha-channel in the process.
+ * &lt;code&gt;PaintAlpha&lt;/code&gt; was originally conceived to improve the
+ * rendering of 3D Shapes with transparent colours and to allow
+ * invisible bars by making them completely transparent.
+ * &lt;p&gt;
+ * In, for example
+ * {@link org.jfree.chart.renderer.category.StackedBarRenderer3D StackedBarRenderer3D},
+ * bars are rendered with 6 faces. The front face is rendered with
+ * the &lt;code&gt;Paint&lt;/code&gt; requested. The other 5 faces are rendered
+ * darker to achieve the 3D effect.
+ * &lt;p&gt;
+ * Previously {@link Color#darker()} was used for this,
+ * which always returns an opaque colour.
+ * &lt;p&gt;
+ * Additionally there are methods to control the behaviour and
+ * in particular a {@link PaintAlpha#cloneImage(BufferedImage) cloneImage(..)}
+ * method which is needed to darken objects of type {@link TexturePaint}.
+ *
+ * @author  DaveLaw
+ */
+<span class="nc" id="L82">public class PaintAlpha {</span>
+    // TODO Revert to SVN revision 2469 in JFreeChart 1.0.16
+    //      (MultipleGradientPaint's / JDK issues)
+    // TODO THEN: change visibility of ALL darker(...) Methods EXCEPT
+    //      darker(Paint) to private!
+
+    /**
+     * Multiplier for the &lt;code&gt;darker&lt;/code&gt; Methods.&lt;br&gt;
+     * (taken from {@link java.awt.Color}.FACTOR)
+     */
+    private static final double FACTOR = 0.7;
+
+<span class="nc" id="L94">    private static boolean legacyAlpha = false;</span>
+
+    /**
+     * Per default &lt;code&gt;PaintAlpha&lt;/code&gt; will try to honour alpha-channel
+     * information.  In the past this was not the case.
+     * If you wish legacy functionality for your application you can request
+     * this here.
+     *
+     * @param legacyAlpha boolean
+     *
+     * @return the previous setting
+     */
+    public static boolean setLegacyAlpha(boolean legacyAlpha) {
+<span class="nc" id="L107">        boolean old = PaintAlpha.legacyAlpha;</span>
+<span class="nc" id="L108">        PaintAlpha.legacyAlpha = legacyAlpha;</span>
+<span class="nc" id="L109">        return old;</span>
+    }
+
+    /**
+     * Create a new (if possible, darker) &lt;code&gt;Paint&lt;/code&gt; of the same Type.
+     * If the Type is not supported, the original &lt;code&gt;Paint&lt;/code&gt; is returned.
+     * &lt;p&gt;
+     * @param paint a &lt;code&gt;Paint&lt;/code&gt; implementation
+     * (e.g. {@link Color}, {@link GradientPaint}, {@link TexturePaint},..)
+     * &lt;p&gt;
+     * @return a (usually new, see above) &lt;code&gt;Paint&lt;/code&gt;
+     */
+    public static Paint darker(Paint paint) {
+
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        if (paint instanceof Color) {</span>
+<span class="nc" id="L124">            return darker((Color) paint);</span>
+        }
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        if (legacyAlpha == true) {</span>
+            /*
+             * Legacy? Just return the original Paint.
+             * (this corresponds EXACTLY to how Paints used to be darkened)
+             */
+<span class="nc" id="L131">            return paint;</span>
+        }
+<span class="nc bnc" id="L133" title="All 2 branches missed.">        if (paint instanceof GradientPaint) {</span>
+<span class="nc" id="L134">            return darker((GradientPaint) paint);</span>
+        }
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        if (paint.getClass().getName().equals(&quot;java.awt.LinearGradientPaint&quot;)) {</span>
+            // TODO -&gt; instanceof
+<span class="nc" id="L138">            return darkerLinearGradientPaint(paint);</span>
+        }
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (paint.getClass().getName().equals(&quot;java.awt.RadialGradientPaint&quot;)) {</span>
+            // TODO -&gt; instanceof
+<span class="nc" id="L142">            return darkerRadialGradientPaint(paint);</span>
+        }
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        if (paint instanceof TexturePaint) {</span>
+<span class="nc" id="L145">            return darker((TexturePaint) paint, true);</span>
+        }
+<span class="nc" id="L147">        return paint;</span>
+    }
+
+    /**
+     * Similar to {@link Color#darker()}.
+     * &lt;p&gt;
+     * The essential difference is that this method
+     * maintains the alpha-channel unchanged&lt;br&gt;
+     *
+     * @param paint a &lt;code&gt;Color&lt;/code&gt;
+     *
+     * @return a darker version of the &lt;code&gt;Color&lt;/code&gt;
+     */
+    private static Color darker(Color paint) {
+<span class="nc" id="L161">        return new Color(</span>
+<span class="nc" id="L162">                (int)(paint.getRed  () * FACTOR),</span>
+<span class="nc" id="L163">                (int)(paint.getGreen() * FACTOR),</span>
+<span class="nc" id="L164">                (int)(paint.getBlue () * FACTOR), paint.getAlpha());</span>
+    }
+
+    /**
+     * Create a new Gradient with its colours darkened.
+     *
+     * @param paint a &lt;code&gt;GradientPaint&lt;/code&gt;
+     *
+     * @return a darker version of the &lt;code&gt;GradientPaint&lt;/code&gt;
+     */
+    private static GradientPaint darker(GradientPaint paint) {
+<span class="nc" id="L175">        return new GradientPaint(</span>
+<span class="nc" id="L176">                paint.getPoint1(), darker(paint.getColor1()),</span>
+<span class="nc" id="L177">                paint.getPoint2(), darker(paint.getColor2()),</span>
+<span class="nc" id="L178">                paint.isCyclic());</span>
+    }
+
+    /**
+     * Create a new Gradient with its colours darkened.
+     *
+     * @param paint a &lt;code&gt;LinearGradientPaint&lt;/code&gt;
+     *
+     * @return a darker version of the &lt;code&gt;LinearGradientPaint&lt;/code&gt;
+     */
+    private static final Paint darkerLinearGradientPaint(Paint paint) {
+        // TODO Rename-&gt;darker &amp; change Paint-&gt;LinearGradientPaint
+        try {
+<span class="nc" id="L191">            final Color[] paintColours = (Color[]) invokeZeroArgumentMethod(</span>
+                    paint, &quot;getColors&quot;);
+
+<span class="nc bnc" id="L194" title="All 2 branches missed.">            for (int i = 0; i &lt; paintColours.length; i++) {</span>
+<span class="nc" id="L195">                paintColours[i] = darker(paintColours[i]);</span>
+            }
+
+<span class="nc" id="L198">            final Constructor[] constructors</span>
+<span class="nc" id="L199">                    = paint.getClass().getConstructors();</span>
+
+<span class="nc bnc" id="L201" title="All 2 branches missed.">            for (int i = 0; i &lt; constructors.length; i++) {</span>
+
+<span class="nc" id="L203">                final Class[] args = constructors[i].getParameterTypes();</span>
+
+<span class="nc bnc" id="L205" title="All 2 branches missed.">                if (args.length == 7</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">                        &amp;&amp;  args[args.length-1].equals(AffineTransform.class)) {</span>
+
+<span class="nc" id="L208">                    return (Paint) constructors[i].newInstance(new Object[] {</span>
+<span class="nc" id="L209">                        (Point2D) invokeZeroArgumentMethod(paint, &quot;getStartPoint&quot;),</span>
+<span class="nc" id="L210">                        (Point2D) invokeZeroArgumentMethod(paint, &quot;getEndPoint&quot;),</span>
+<span class="nc" id="L211">                        (float[]) invokeZeroArgumentMethod(paint, &quot;getFractions&quot;),</span>
+                        paintColours,
+<span class="nc" id="L213">                        (Object) invokeZeroArgumentMethod(paint, &quot;getCycleMethod&quot;),</span>
+<span class="nc" id="L214">                        (Object) invokeZeroArgumentMethod(paint, &quot;getColorSpace&quot;),</span>
+<span class="nc" id="L215">                        (AffineTransform) invokeZeroArgumentMethod(paint,</span>
+                            &quot;getTransform&quot;) });
+                    }
+                }
+<span class="nc" id="L219">            } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L220">            } catch (SecurityException e) {</span>
+<span class="nc" id="L221">            } catch (IllegalAccessException e) {</span>
+<span class="nc" id="L222">            } catch (InvocationTargetException e) {</span>
+<span class="nc" id="L223">            } catch (NoSuchMethodException e) {</span>
+<span class="nc" id="L224">            } catch (InstantiationException e) {</span>
+<span class="nc" id="L225">        }</span>
+<span class="nc" id="L226">        throw new UnsupportedOperationException(</span>
+                &quot;Probably new Constructor signatures in newer JDK&quot;);
+    }
+
+    /**
+     * Create a new Gradient with its colours darkened.
+     *
+     * @param paint a &lt;code&gt;RadialGradientPaint&lt;/code&gt;
+     *
+     * @return a darker version of the &lt;code&gt;RadialGradientPaint&lt;/code&gt;
+     */
+    private static final Paint darkerRadialGradientPaint(Paint paint) {
+        // TODO Rename-&gt;darker &amp; change Paint-&gt;RadialGradientPaint
+        try {
+<span class="nc" id="L240">            final Color[] paintColours</span>
+<span class="nc" id="L241">                    = (Color[]) invokeZeroArgumentMethod(paint, &quot;getColors&quot;);</span>
+
+<span class="nc bnc" id="L243" title="All 2 branches missed.">            for (int i = 0; i &lt; paintColours.length; i++) {</span>
+<span class="nc" id="L244">                paintColours[i] = darker(paintColours[i]);</span>
+            }
+
+<span class="nc" id="L247">            final Constructor[] constructors</span>
+<span class="nc" id="L248">                    = paint.getClass().getConstructors();</span>
+
+<span class="nc bnc" id="L250" title="All 2 branches missed.">            for (int i = 0; i &lt; constructors.length; i++) {</span>
+
+<span class="nc" id="L252">                final Class[] args = constructors[i].getParameterTypes();</span>
+
+<span class="nc bnc" id="L254" title="All 2 branches missed.">                if (     args.length == 8</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">                &amp;&amp;  args[args.length-1].equals(AffineTransform.class)) {</span>
+
+<span class="nc" id="L257">                    return (Paint) constructors[i].newInstance(new Object[] {</span>
+<span class="nc" id="L258">                        (Point2D) invokeZeroArgumentMethod(paint, &quot;getCenterPoint&quot;),</span>
+<span class="nc" id="L259">                        (Float) invokeZeroArgumentMethod(paint, &quot;getRadius&quot;),</span>
+<span class="nc" id="L260">                        (Point2D) invokeZeroArgumentMethod(paint, &quot;getFocusPoint&quot;),</span>
+<span class="nc" id="L261">                        (float[]) invokeZeroArgumentMethod(paint, &quot;getFractions&quot;),</span>
+                        paintColours,
+<span class="nc" id="L263">                        (Object) invokeZeroArgumentMethod(paint, &quot;getCycleMethod&quot;),</span>
+<span class="nc" id="L264">                        (Object) invokeZeroArgumentMethod(paint, &quot;getColorSpace&quot;),</span>
+<span class="nc" id="L265">                        (AffineTransform) invokeZeroArgumentMethod(paint,</span>
+                            &quot;getTransform&quot;) });
+                }
+            }
+<span class="nc" id="L269">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L270">        } catch (SecurityException e) {</span>
+<span class="nc" id="L271">        } catch (IllegalAccessException e) {</span>
+<span class="nc" id="L272">        } catch (InvocationTargetException e) {</span>
+<span class="nc" id="L273">        } catch (NoSuchMethodException e) {</span>
+<span class="nc" id="L274">        } catch (InstantiationException e) {</span>
+<span class="nc" id="L275">        }</span>
+<span class="nc" id="L276">        throw new UnsupportedOperationException(</span>
+                &quot;Probably new Constructor signatures in newer JDK&quot;);
+    }
+
+    /**
+     * Convenience method to invoke the zero argument &lt;code&gt;methodName&lt;/code&gt;
+     * method of &lt;code&gt;object&lt;/code&gt; via Reflection.
+     *
+     * @param object
+     * @param methodName
+     *
+     * @return the result
+     *
+     * @throws IllegalArgumentException
+     * @throws SecurityException
+     * @throws IllegalAccessException
+     * @throws InvocationTargetException
+     * @throws NoSuchMethodException
+     */
+    private static final Object invokeZeroArgumentMethod(Object object,
+            String methodName) throws IllegalArgumentException,
+            SecurityException, IllegalAccessException,
+            InvocationTargetException, NoSuchMethodException {
+<span class="nc" id="L299">        return object.getClass().getMethod(methodName,</span>
+<span class="nc" id="L300">                new Class[] {}).invoke(object, new Object[] {});</span>
+    }
+
+    /**
+     * Create a new &lt;code&gt;TexturePaint&lt;/code&gt; with its colours darkened.
+     * &lt;p&gt;
+     * This entails cloning the underlying &lt;code&gt;BufferedImage&lt;/code&gt;,
+     * then darkening each colour-pixel individually!
+     *
+     * @param paint a &lt;code&gt;TexturePaint&lt;/code&gt;
+     *
+     * @param ignoreThisDummyArgument which is just to guarantee a unique
+     *        method signature
+     *
+     * @return a darker version of the &lt;code&gt;TexturePaint&lt;/code&gt;
+     */
+    private static TexturePaint darker(TexturePaint paint,
+            boolean ignoreThisDummyArgument) {
+        try {
+<span class="nc" id="L319">            return darker(paint);</span>
+        }
+<span class="nc" id="L321">        catch (Exception e) {</span>
+            /*
+             * Lots can go wrong while fiddling with Images, Colour Models
+             * &amp; such!  If anything at all goes awry, just return the original
+             * TexturePaint.  (TexturePaint's are immutable anyway, so no harm
+             * done)
+             */
+<span class="nc" id="L328">            return paint;</span>
+        }
+    }
+
+    /**
+     * Create a new &lt;code&gt;TexturePaint&lt;/code&gt; with its colours darkened.
+     * &lt;p&gt;
+     * This entails cloning the underlying &lt;code&gt;BufferedImage&lt;/code&gt;,
+     * then darkening each colour-pixel individually!
+     *
+     * @param paint a &lt;code&gt;TexturePaint&lt;/code&gt;
+     *
+     * @return a darker version of the &lt;code&gt;TexturePaint&lt;/code&gt;
+     */
+    private static TexturePaint darker(TexturePaint paint) {
+        /**
+         * Colour Models with pre-multiplied Alpha tested OK without any
+         * special logic
+         *
+         * BufferedImage.TYPE_INT_ARGB_PRE:    // Type 03: tested OK 2011.02.27
+         * BufferedImage.TYPE_4BYTE_ABGR_PRE:  // Type 07: tested OK 2011.02.27
+         */
+<span class="nc bnc" id="L350" title="All 2 branches missed.">        if (paint.getImage().getColorModel().isAlphaPremultiplied()) {</span>
+            /* Placeholder */
+        }
+
+<span class="nc" id="L354">        BufferedImage img = cloneImage(paint.getImage());</span>
+
+<span class="nc" id="L356">        WritableRaster ras = img.copyData(null);</span>
+
+<span class="nc" id="L358">        final int miX = ras.getMinX();</span>
+<span class="nc" id="L359">        final int miY = ras.getMinY();</span>
+<span class="nc" id="L360">        final int maY = ras.getMinY() + ras.getHeight();</span>
+
+<span class="nc" id="L362">        final int   wid = ras.getWidth();</span>
+
+<span class="nc" id="L364">        /**/  int[] pix = new int[wid * img.getSampleModel().getNumBands()];</span>
+        /* (pix-buffer is large enough for all pixels of one row) */
+
+        /**
+         * Indexed Colour Models (sort of a Palette) CANNOT be simply
+         * multiplied (the pixel-value is just an index into the Palette).
+         *
+         * Fortunately, IndexColorModel.getComponents(..) resolves the colours.
+         * The resolved colours can then be multiplied by our FACTOR.
+         * IndexColorModel.getDataElement(..) then tries to map the computed
+         * colour to the &quot;nearest&quot; in the Palette.
+         *
+         * It is quite possible that the &quot;nearest&quot; colour is the ORIGINAL
+         * colour!  In the worst case, the returned Image will be identical to
+         * the original.
+         *
+         * Applies to following Image Types:
+         *
+         * BufferedImage.TYPE_BYTE_BINARY:    // Type 12: tested OK 2011.02.27
+         * BufferedImage.TYPE_BYTE_INDEXED:   // Type 13: tested OK 2011.02.27
+         */
+<span class="nc bnc" id="L385" title="All 2 branches missed.">        if (img.getColorModel() instanceof IndexColorModel) {</span>
+
+<span class="nc" id="L387">            int[] nco = new int[4]; // RGB (+ optional Alpha which we leave</span>
+                                    // unchanged)
+
+<span class="nc bnc" id="L390" title="All 2 branches missed.">            for (int y = miY; y &lt; maY; y++)  {</span>
+
+<span class="nc" id="L392">                pix = ras.getPixels(miX, y, wid, 1, pix);</span>
+
+<span class="nc bnc" id="L394" title="All 2 branches missed.">                for (int p = 0; p &lt; pix.length; p++) {</span>
+<span class="nc" id="L395">                    nco    =  img.getColorModel().getComponents(pix[p], nco, 0);</span>
+<span class="nc" id="L396">                    nco[0] *= FACTOR; // Red</span>
+<span class="nc" id="L397">                    nco[1] *= FACTOR; // Green</span>
+<span class="nc" id="L398">                    nco[2] *= FACTOR; // Blue. Now map computed colour to</span>
+                                      // nearest in Palette...
+<span class="nc" id="L400">                    pix[p] = img.getColorModel().getDataElement(nco, 0);</span>
+                }
+<span class="nc" id="L402">                /**/ ras.setPixels(miX, y, wid, 1, pix);</span>
+            }
+<span class="nc" id="L404">            img.setData(ras);</span>
+
+<span class="nc" id="L406">            return new TexturePaint(img, paint.getAnchorRect());</span>
+        }
+
+        /**
+         * For the other 2 Colour Models, java.awt.image.ComponentColorModel and
+         * java.awt.image.DirectColorModel, the order of subpixels returned by
+         * ras.getPixels(..) was observed to correspond to the following...
+         */
+<span class="nc bnc" id="L414" title="All 2 branches missed.">        if (img.getSampleModel().getNumBands() == 4) {</span>
+            /**
+             * The following Image Types have an Alpha-channel which we will
+             * leave unchanged:
+             *
+             * BufferedImage.TYPE_INT_ARGB:   // Type 02: tested OK 2011.02.27
+             * BufferedImage.TYPE_4BYTE_ABGR: // Type 06: tested OK 2011.02.27
+             */
+<span class="nc bnc" id="L422" title="All 2 branches missed.">            for (int y = miY; y &lt; maY; y++)  {</span>
+
+<span class="nc" id="L424">                pix = ras.getPixels(miX, y, wid, 1, pix);</span>
+
+<span class="nc bnc" id="L426" title="All 2 branches missed.">                for (int p = 0; p &lt; pix.length;) {</span>
+<span class="nc" id="L427">                    pix[p] = (int)(pix[p++] * FACTOR); // Red</span>
+<span class="nc" id="L428">                    pix[p] = (int)(pix[p++] * FACTOR); // Green</span>
+<span class="nc" id="L429">                    pix[p] = (int)(pix[p++] * FACTOR); // Blue</span>
+<span class="nc" id="L430">                    /* Ignore alpha-channel -&gt; */p++;</span>
+                }
+<span class="nc" id="L432">                /**/  ras.setPixels(miX, y, wid, 1, pix);</span>
+            }
+<span class="nc" id="L434">            img.setData(ras);</span>
+<span class="nc" id="L435">            return new TexturePaint(img, paint.getAnchorRect());</span>
+        } else {
+<span class="nc bnc" id="L437" title="All 2 branches missed.">            for (int y = miY; y &lt; maY; y++)  {</span>
+
+<span class="nc" id="L439">                pix = ras.getPixels(miX, y, wid, 1, pix);</span>
+
+<span class="nc bnc" id="L441" title="All 2 branches missed.">                for (int p = 0; p &lt; pix.length; p++) {</span>
+<span class="nc" id="L442">                    pix[p] = (int)(pix[p] * FACTOR);</span>
+                }
+<span class="nc" id="L444">                /**/  ras.setPixels(miX, y, wid, 1, pix);</span>
+            }
+<span class="nc" id="L446">            img.setData(ras);</span>
+<span class="nc" id="L447">            return new TexturePaint(img, paint.getAnchorRect());</span>
+            /**
+             * Above, we multiplied every pixel by our FACTOR because the
+             * applicable Image Types consist only of colour or grey channels:
+             *
+             * BufferedImage.TYPE_INT_RGB:        // Type 01: tested OK 2011.02.27
+             * BufferedImage.TYPE_INT_BGR:        // Type 04: tested OK 2011.02.27
+             * BufferedImage.TYPE_3BYTE_BGR:      // Type 05: tested OK 2011.02.27
+             * BufferedImage.TYPE_BYTE_GRAY:      // Type 10: tested OK 2011.02.27
+             * BufferedImage.TYPE_USHORT_GRAY:    // Type 11: tested OK 2011.02.27
+             * BufferedImage.TYPE_USHORT_565_RGB: // Type 08: tested OK 2011.02.27
+             * BufferedImage.TYPE_USHORT_555_RGB: // Type 09: tested OK 2011.02.27
+             *
+             * Note: as ras.getPixels(..) returned colours in the order R, G, B, A (optional)
+             * for both TYPE_4BYTE_ABGR &amp; TYPE_3BYTE_BGR,
+             * it is assumed that TYPE_INT_BGR will behave similarly.
+             */
+        }
+    }
+
+    /**
+     * Clone a {@link BufferedImage}.
+     * &lt;p&gt;
+     * Note: when constructing the clone, the original Colour Model Object is
+     * reused.&lt;br&gt;  That keeps things simple &amp; should not be a problem, as all
+     * known Colour Models&lt;br&gt;
+     * ({@link java.awt.image.IndexColorModel     IndexColorModel},
+     *  {@link java.awt.image.DirectColorModel    DirectColorModel},
+     *  {@link java.awt.image.ComponentColorModel ComponentColorModel}) are
+     * immutable.
+     *
+     * @param image original BufferedImage to clone
+     *
+     * @return a new BufferedImage reusing the original's Colour Model &amp;
+     *         containing a clone of its pixels
+     */
+    public static BufferedImage cloneImage(BufferedImage image) {
+
+<span class="nc" id="L485">        WritableRaster rin = image.getRaster();</span>
+<span class="nc" id="L486">        WritableRaster ras = rin.createCompatibleWritableRaster();</span>
+<span class="nc" id="L487">        /**/ ras.setRect(rin); // &lt;- this is the code that actually COPIES the pixels</span>
+
+        /*
+         * Buffered Images may have properties, but NEVER disclose them!
+         * Nevertheless, just in case someone implements getPropertyNames()
+         * one day...
+         */
+<span class="nc" id="L494">        Hashtable props = null;</span>
+<span class="nc" id="L495">        String[] propNames = image.getPropertyNames();</span>
+<span class="nc bnc" id="L496" title="All 2 branches missed.">        if (propNames != null) { // ALWAYS null</span>
+<span class="nc" id="L497">            props = new Hashtable();</span>
+<span class="nc bnc" id="L498" title="All 2 branches missed.">            for (int i = 0; i &lt; propNames.length; i++) {</span>
+<span class="nc" id="L499">                props.put(propNames[i], image.getProperty(propNames[i]));</span>
+            }
+        }
+<span class="nc" id="L502">        return new BufferedImage(image.getColorModel(), ras,</span>
+<span class="nc" id="L503">                image.isAlphaPremultiplied(), props);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

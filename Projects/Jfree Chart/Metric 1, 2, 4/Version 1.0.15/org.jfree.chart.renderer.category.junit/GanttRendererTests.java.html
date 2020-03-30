@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GanttRendererTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.category.junit</a> &gt; <span class="el_source">GanttRendererTests.java</span></div><h1>GanttRendererTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------------
+ * GanttRendererTests.java
+ * -----------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 22-Oct-2003 : Version 1 (DG);
+ * 20-Mar-2007 : Extended testEquals() (DG);
+ * 23-Apr-2008 : Added testPublicCloneable() (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.category.junit;
+
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.renderer.category.GanttRenderer;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link GanttRenderer} class.
+ */
+public class GanttRendererTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L72">        return new TestSuite(GanttRendererTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public GanttRendererTests(String name) {
+<span class="fc" id="L81">        super(name);</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Check that the equals() method distinguishes all fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L88">        GanttRenderer r1 = new GanttRenderer();</span>
+<span class="fc" id="L89">        GanttRenderer r2 = new GanttRenderer();</span>
+<span class="fc" id="L90">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L92">        r1.setCompletePaint(Color.yellow);</span>
+<span class="fc" id="L93">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L94">        r2.setCompletePaint(Color.yellow);</span>
+<span class="fc" id="L95">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L97">        r1.setIncompletePaint(Color.green);</span>
+<span class="fc" id="L98">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L99">        r2.setIncompletePaint(Color.green);</span>
+<span class="fc" id="L100">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L102">        r1.setStartPercent(0.11);</span>
+<span class="fc" id="L103">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L104">        r2.setStartPercent(0.11);</span>
+<span class="fc" id="L105">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L107">        r1.setEndPercent(0.88);</span>
+<span class="fc" id="L108">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L109">        r2.setEndPercent(0.88);</span>
+<span class="fc" id="L110">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L117">        GanttRenderer r1 = new GanttRenderer();</span>
+<span class="fc" id="L118">        GanttRenderer r2 = new GanttRenderer();</span>
+<span class="fc" id="L119">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L120">        int h1 = r1.hashCode();</span>
+<span class="fc" id="L121">        int h2 = r2.hashCode();</span>
+<span class="fc" id="L122">        assertEquals(h1, h2);</span>
+<span class="fc" id="L123">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L129">        GanttRenderer r1 = new GanttRenderer();</span>
+<span class="fc" id="L130">        GanttRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L132">            r2 = (GanttRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L134">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L135">            e.printStackTrace();</span>
+<span class="fc" id="L136">        }</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L139">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * Check that this class implements PublicCloneable.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L146">        GanttRenderer r1 = new GanttRenderer();</span>
+<span class="fc" id="L147">        assertTrue(r1 instanceof PublicCloneable);</span>
+<span class="fc" id="L148">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L155">        GanttRenderer r1 = new GanttRenderer();</span>
+<span class="fc" id="L156">        r1.setCompletePaint(new GradientPaint(1.0f, 2.0f, Color.red, 3.0f,</span>
+                4.0f, Color.blue));
+<span class="fc" id="L158">        r1.setIncompletePaint(new GradientPaint(4.0f, 3.0f, Color.red, 2.0f,</span>
+                1.0f, Color.blue));
+<span class="fc" id="L160">        GanttRenderer r2 = null;</span>
+
+        try {
+<span class="fc" id="L163">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L164">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L165">            out.writeObject(r1);</span>
+<span class="fc" id="L166">            out.close();</span>
+
+<span class="fc" id="L168">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L169">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L170">            r2 = (GanttRenderer) in.readObject();</span>
+<span class="fc" id="L171">            in.close();</span>
+        }
+<span class="nc" id="L173">        catch (Exception e) {</span>
+<span class="nc" id="L174">            e.printStackTrace();</span>
+<span class="fc" id="L175">        }</span>
+<span class="fc" id="L176">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L178">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

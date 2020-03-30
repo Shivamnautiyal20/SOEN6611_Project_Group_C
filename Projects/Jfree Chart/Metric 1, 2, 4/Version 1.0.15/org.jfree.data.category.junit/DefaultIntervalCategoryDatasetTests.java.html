@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultIntervalCategoryDatasetTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.category.junit</a> &gt; <span class="el_source">DefaultIntervalCategoryDatasetTests.java</span></div><h1>DefaultIntervalCategoryDatasetTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------------------------
+ * DefaultIntervalCategoryDatasetTests.java
+ * ----------------------------------------
+ * (C) Copyright 2007-2009, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 08-Mar-2007 : Version 1 (DG);
+ * 25-Feb-2008 : Added new tests to check behaviour of an empty dataset (DG);
+ * 11-Feb-2009 : Fixed locale-sensitive failures (DG);
+ *
+ */
+
+package org.jfree.data.category.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.List;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.DataUtilities;
+import org.jfree.data.UnknownKeyException;
+import org.jfree.data.category.DefaultIntervalCategoryDataset;
+
+/**
+ * Tests for the {@link DefaultIntervalCategoryDataset} class.
+ */
+public class DefaultIntervalCategoryDatasetTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L72">        return new TestSuite(DefaultIntervalCategoryDatasetTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DefaultIntervalCategoryDatasetTests(String name) {
+<span class="fc" id="L81">        super(name);</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Some checks for the getValue() method.
+     */
+    public void testGetValue() {
+<span class="fc" id="L88">        double[] starts_S1 = new double[] {0.1, 0.2, 0.3};</span>
+<span class="fc" id="L89">        double[] starts_S2 = new double[] {0.3, 0.4, 0.5};</span>
+<span class="fc" id="L90">        double[] ends_S1 = new double[] {0.5, 0.6, 0.7};</span>
+<span class="fc" id="L91">        double[] ends_S2 = new double[] {0.7, 0.8, 0.9};</span>
+<span class="fc" id="L92">        double[][] starts = new double[][] {starts_S1, starts_S2};</span>
+<span class="fc" id="L93">        double[][] ends = new double[][] {ends_S1, ends_S2};</span>
+<span class="fc" id="L94">        DefaultIntervalCategoryDataset d = new DefaultIntervalCategoryDataset(</span>
+                new Comparable[] {&quot;Series 1&quot;, &quot;Series 2&quot;},
+                new Comparable[] {&quot;Category 1&quot;, &quot;Category 2&quot;, &quot;Category 3&quot;},
+<span class="fc" id="L97">                DataUtilities.createNumberArray2D(starts),</span>
+<span class="fc" id="L98">                DataUtilities.createNumberArray2D(ends));</span>
+
+<span class="fc" id="L100">        assertEquals(new Double(0.1), d.getStartValue(&quot;Series 1&quot;,</span>
+                &quot;Category 1&quot;));
+<span class="fc" id="L102">        assertEquals(new Double(0.2), d.getStartValue(&quot;Series 1&quot;,</span>
+                &quot;Category 2&quot;));
+<span class="fc" id="L104">        assertEquals(new Double(0.3), d.getStartValue(&quot;Series 1&quot;,</span>
+                &quot;Category 3&quot;));
+<span class="fc" id="L106">        assertEquals(new Double(0.3), d.getStartValue(&quot;Series 2&quot;,</span>
+                &quot;Category 1&quot;));
+<span class="fc" id="L108">        assertEquals(new Double(0.4), d.getStartValue(&quot;Series 2&quot;,</span>
+                &quot;Category 2&quot;));
+<span class="fc" id="L110">        assertEquals(new Double(0.5), d.getStartValue(&quot;Series 2&quot;,</span>
+                &quot;Category 3&quot;));
+
+<span class="fc" id="L113">        assertEquals(new Double(0.5), d.getEndValue(&quot;Series 1&quot;,</span>
+                &quot;Category 1&quot;));
+<span class="fc" id="L115">        assertEquals(new Double(0.6), d.getEndValue(&quot;Series 1&quot;,</span>
+                &quot;Category 2&quot;));
+<span class="fc" id="L117">        assertEquals(new Double(0.7), d.getEndValue(&quot;Series 1&quot;,</span>
+                &quot;Category 3&quot;));
+<span class="fc" id="L119">        assertEquals(new Double(0.7), d.getEndValue(&quot;Series 2&quot;,</span>
+                &quot;Category 1&quot;));
+<span class="fc" id="L121">        assertEquals(new Double(0.8), d.getEndValue(&quot;Series 2&quot;,</span>
+                &quot;Category 2&quot;));
+<span class="fc" id="L123">        assertEquals(new Double(0.9), d.getEndValue(&quot;Series 2&quot;,</span>
+                &quot;Category 3&quot;));
+
+<span class="fc" id="L126">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L128">            d.getValue(&quot;XX&quot;, &quot;Category 1&quot;);</span>
+        }
+<span class="fc" id="L130">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L131">            pass = true;</span>
+<span class="nc" id="L132">        }</span>
+<span class="fc" id="L133">        assertTrue(pass);</span>
+
+<span class="fc" id="L135">        pass = false;</span>
+        try {
+<span class="nc" id="L137">            d.getValue(&quot;Series 1&quot;, &quot;XX&quot;);</span>
+        }
+<span class="fc" id="L139">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L140">            pass = true;</span>
+<span class="nc" id="L141">        }</span>
+<span class="fc" id="L142">        assertTrue(pass);</span>
+<span class="fc" id="L143">    }</span>
+
+
+    /**
+     * Some tests for the getRowCount() method.
+     */
+    public void testGetRowAndColumnCount() {
+<span class="fc" id="L150">        double[] starts_S1 = new double[] {0.1, 0.2, 0.3};</span>
+<span class="fc" id="L151">        double[] starts_S2 = new double[] {0.3, 0.4, 0.5};</span>
+<span class="fc" id="L152">        double[] ends_S1 = new double[] {0.5, 0.6, 0.7};</span>
+<span class="fc" id="L153">        double[] ends_S2 = new double[] {0.7, 0.8, 0.9};</span>
+<span class="fc" id="L154">        double[][] starts = new double[][] {starts_S1, starts_S2};</span>
+<span class="fc" id="L155">        double[][] ends = new double[][] {ends_S1, ends_S2};</span>
+<span class="fc" id="L156">        DefaultIntervalCategoryDataset d</span>
+                = new DefaultIntervalCategoryDataset(starts, ends);
+
+<span class="fc" id="L159">        assertEquals(2, d.getRowCount());</span>
+<span class="fc" id="L160">        assertEquals(3, d.getColumnCount());</span>
+<span class="fc" id="L161">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L167">        double[] starts_S1A = new double[] {0.1, 0.2, 0.3};</span>
+<span class="fc" id="L168">        double[] starts_S2A = new double[] {0.3, 0.4, 0.5};</span>
+<span class="fc" id="L169">        double[] ends_S1A = new double[] {0.5, 0.6, 0.7};</span>
+<span class="fc" id="L170">        double[] ends_S2A = new double[] {0.7, 0.8, 0.9};</span>
+<span class="fc" id="L171">        double[][] startsA = new double[][] {starts_S1A, starts_S2A};</span>
+<span class="fc" id="L172">        double[][] endsA = new double[][] {ends_S1A, ends_S2A};</span>
+<span class="fc" id="L173">        DefaultIntervalCategoryDataset dA</span>
+                = new DefaultIntervalCategoryDataset(startsA, endsA);
+
+<span class="fc" id="L176">        double[] starts_S1B = new double[] {0.1, 0.2, 0.3};</span>
+<span class="fc" id="L177">        double[] starts_S2B = new double[] {0.3, 0.4, 0.5};</span>
+<span class="fc" id="L178">        double[] ends_S1B = new double[] {0.5, 0.6, 0.7};</span>
+<span class="fc" id="L179">        double[] ends_S2B = new double[] {0.7, 0.8, 0.9};</span>
+<span class="fc" id="L180">        double[][] startsB = new double[][] {starts_S1B, starts_S2B};</span>
+<span class="fc" id="L181">        double[][] endsB = new double[][] {ends_S1B, ends_S2B};</span>
+<span class="fc" id="L182">        DefaultIntervalCategoryDataset dB</span>
+                = new DefaultIntervalCategoryDataset(startsB, endsB);
+
+<span class="fc" id="L185">        assertTrue(dA.equals(dB));</span>
+<span class="fc" id="L186">        assertTrue(dB.equals(dA));</span>
+
+        // check that two empty datasets are equal
+<span class="fc" id="L189">        DefaultIntervalCategoryDataset empty1</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L192">        DefaultIntervalCategoryDataset empty2</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L195">        assertTrue(empty1.equals(empty2));</span>
+<span class="fc" id="L196">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L203">        double[] starts_S1 = new double[] {0.1, 0.2, 0.3};</span>
+<span class="fc" id="L204">        double[] starts_S2 = new double[] {0.3, 0.4, 0.5};</span>
+<span class="fc" id="L205">        double[] ends_S1 = new double[] {0.5, 0.6, 0.7};</span>
+<span class="fc" id="L206">        double[] ends_S2 = new double[] {0.7, 0.8, 0.9};</span>
+<span class="fc" id="L207">        double[][] starts = new double[][] {starts_S1, starts_S2};</span>
+<span class="fc" id="L208">        double[][] ends = new double[][] {ends_S1, ends_S2};</span>
+<span class="fc" id="L209">        DefaultIntervalCategoryDataset d1</span>
+                = new DefaultIntervalCategoryDataset(starts, ends);
+<span class="fc" id="L211">        DefaultIntervalCategoryDataset d2 = null;</span>
+
+        try {
+<span class="fc" id="L214">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L215">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L216">            out.writeObject(d1);</span>
+<span class="fc" id="L217">            out.close();</span>
+
+<span class="fc" id="L219">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L220">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L221">            d2 = (DefaultIntervalCategoryDataset) in.readObject();</span>
+<span class="fc" id="L222">            in.close();</span>
+        }
+<span class="nc" id="L224">        catch (Exception e) {</span>
+<span class="nc" id="L225">            e.printStackTrace();</span>
+<span class="fc" id="L226">        }</span>
+<span class="fc" id="L227">        assertEquals(d1, d2);</span>
+
+<span class="fc" id="L229">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L235">        double[] starts_S1 = new double[] {0.1, 0.2, 0.3};</span>
+<span class="fc" id="L236">        double[] starts_S2 = new double[] {0.3, 0.4, 0.5};</span>
+<span class="fc" id="L237">        double[] ends_S1 = new double[] {0.5, 0.6, 0.7};</span>
+<span class="fc" id="L238">        double[] ends_S2 = new double[] {0.7, 0.8, 0.9};</span>
+<span class="fc" id="L239">        double[][] starts = new double[][] {starts_S1, starts_S2};</span>
+<span class="fc" id="L240">        double[][] ends = new double[][] {ends_S1, ends_S2};</span>
+<span class="fc" id="L241">        DefaultIntervalCategoryDataset d1 = new DefaultIntervalCategoryDataset(</span>
+                new Comparable[] {&quot;Series 1&quot;, &quot;Series 2&quot;},
+                new Comparable[] {&quot;Category 1&quot;, &quot;Category 2&quot;, &quot;Category 3&quot;},
+<span class="fc" id="L244">                DataUtilities.createNumberArray2D(starts),</span>
+<span class="fc" id="L245">                DataUtilities.createNumberArray2D(ends));</span>
+<span class="fc" id="L246">        DefaultIntervalCategoryDataset d2 = null;</span>
+        try {
+<span class="fc" id="L248">            d2 = (DefaultIntervalCategoryDataset) d1.clone();</span>
+        }
+<span class="nc" id="L250">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L251">            e.printStackTrace();</span>
+<span class="fc" id="L252">        }</span>
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="fc" id="L255">        assertTrue(d1.equals(d2));</span>
+
+        // check that the clone doesn't share the same underlying arrays.
+<span class="fc" id="L258">        d1.setStartValue(0, &quot;Category 1&quot;, new Double(0.99));</span>
+<span class="fc" id="L259">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L260">        d2.setStartValue(0, &quot;Category 1&quot;, new Double(0.99));</span>
+<span class="fc" id="L261">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L262">    }</span>
+
+    /**
+     * A check to ensure that an empty dataset can be cloned.
+     */
+    public void testCloning2() {
+<span class="fc" id="L268">        DefaultIntervalCategoryDataset d1</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                    new double[0][0]);
+<span class="fc" id="L271">        DefaultIntervalCategoryDataset d2 = null;</span>
+        try {
+<span class="fc" id="L273">            d2 = (DefaultIntervalCategoryDataset) d1.clone();</span>
+        }
+<span class="nc" id="L275">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L276">            e.printStackTrace();</span>
+<span class="fc" id="L277">        }</span>
+<span class="pc bpc" id="L278" title="1 of 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="pc bpc" id="L279" title="1 of 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="fc" id="L280">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L281">    }</span>
+
+    /**
+     * Some basic checks for the setStartValue() method.
+     */
+    public void testSetStartValue() {
+<span class="fc" id="L287">        double[] starts_S1 = new double[] {0.1, 0.2, 0.3};</span>
+<span class="fc" id="L288">        double[] starts_S2 = new double[] {0.3, 0.4, 0.5};</span>
+<span class="fc" id="L289">        double[] ends_S1 = new double[] {0.5, 0.6, 0.7};</span>
+<span class="fc" id="L290">        double[] ends_S2 = new double[] {0.7, 0.8, 0.9};</span>
+<span class="fc" id="L291">        double[][] starts = new double[][] {starts_S1, starts_S2};</span>
+<span class="fc" id="L292">        double[][] ends = new double[][] {ends_S1, ends_S2};</span>
+<span class="fc" id="L293">        DefaultIntervalCategoryDataset d1 = new DefaultIntervalCategoryDataset(</span>
+                new Comparable[] {&quot;Series 1&quot;, &quot;Series 2&quot;},
+                new Comparable[] {&quot;Category 1&quot;, &quot;Category 2&quot;, &quot;Category 3&quot;},
+<span class="fc" id="L296">                DataUtilities.createNumberArray2D(starts),</span>
+<span class="fc" id="L297">                DataUtilities.createNumberArray2D(ends));</span>
+<span class="fc" id="L298">        d1.setStartValue(0, &quot;Category 2&quot;, new Double(99.9));</span>
+<span class="fc" id="L299">        assertEquals(new Double(99.9), d1.getStartValue(&quot;Series 1&quot;,</span>
+                &quot;Category 2&quot;));
+
+<span class="fc" id="L302">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L304">            d1.setStartValue(-1, &quot;Category 2&quot;, new Double(99.9));</span>
+        }
+<span class="fc" id="L306">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L307">            pass = true;</span>
+<span class="nc" id="L308">        }</span>
+<span class="fc" id="L309">        assertTrue(pass);</span>
+
+<span class="fc" id="L311">        pass = false;</span>
+        try {
+<span class="nc" id="L313">            d1.setStartValue(2, &quot;Category 2&quot;, new Double(99.9));</span>
+        }
+<span class="fc" id="L315">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L316">            pass = true;</span>
+<span class="nc" id="L317">        }</span>
+<span class="fc" id="L318">        assertTrue(pass);</span>
+<span class="fc" id="L319">    }</span>
+
+    /**
+     * Some basic checks for the setEndValue() method.
+     */
+    public void testSetEndValue() {
+<span class="fc" id="L325">        double[] starts_S1 = new double[] {0.1, 0.2, 0.3};</span>
+<span class="fc" id="L326">        double[] starts_S2 = new double[] {0.3, 0.4, 0.5};</span>
+<span class="fc" id="L327">        double[] ends_S1 = new double[] {0.5, 0.6, 0.7};</span>
+<span class="fc" id="L328">        double[] ends_S2 = new double[] {0.7, 0.8, 0.9};</span>
+<span class="fc" id="L329">        double[][] starts = new double[][] {starts_S1, starts_S2};</span>
+<span class="fc" id="L330">        double[][] ends = new double[][] {ends_S1, ends_S2};</span>
+<span class="fc" id="L331">        DefaultIntervalCategoryDataset d1 = new DefaultIntervalCategoryDataset(</span>
+                new Comparable[] {&quot;Series 1&quot;, &quot;Series 2&quot;},
+                new Comparable[] {&quot;Category 1&quot;, &quot;Category 2&quot;, &quot;Category 3&quot;},
+<span class="fc" id="L334">                DataUtilities.createNumberArray2D(starts),</span>
+<span class="fc" id="L335">                DataUtilities.createNumberArray2D(ends));</span>
+<span class="fc" id="L336">        d1.setEndValue(0, &quot;Category 2&quot;, new Double(99.9));</span>
+<span class="fc" id="L337">        assertEquals(new Double(99.9), d1.getEndValue(&quot;Series 1&quot;,</span>
+                &quot;Category 2&quot;));
+
+<span class="fc" id="L340">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L342">            d1.setEndValue(-1, &quot;Category 2&quot;, new Double(99.9));</span>
+        }
+<span class="fc" id="L344">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L345">            pass = true;</span>
+<span class="nc" id="L346">        }</span>
+<span class="fc" id="L347">        assertTrue(pass);</span>
+
+<span class="fc" id="L349">        pass = false;</span>
+        try {
+<span class="nc" id="L351">            d1.setEndValue(2, &quot;Category 2&quot;, new Double(99.9));</span>
+        }
+<span class="fc" id="L353">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L354">            pass = true;</span>
+<span class="nc" id="L355">        }</span>
+<span class="fc" id="L356">        assertTrue(pass);</span>
+<span class="fc" id="L357">    }</span>
+
+    /**
+     * Some checks for the getSeriesCount() method.
+     */
+    public void testGetSeriesCount() {
+        // check an empty dataset
+<span class="fc" id="L364">        DefaultIntervalCategoryDataset empty</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L367">        assertEquals(0, empty.getSeriesCount());</span>
+<span class="fc" id="L368">    }</span>
+
+    /**
+     * Some checks for the getCategoryCount() method.
+     */
+    public void testGetCategoryCount() {
+        // check an empty dataset
+<span class="fc" id="L375">        DefaultIntervalCategoryDataset empty</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L378">        assertEquals(0, empty.getCategoryCount());</span>
+<span class="fc" id="L379">    }</span>
+
+    /**
+     * Some checks for the getSeriesIndex() method.
+     */
+    public void testGetSeriesIndex() {
+        // check an empty dataset
+<span class="fc" id="L386">        DefaultIntervalCategoryDataset empty</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L389">        assertEquals(-1, empty.getSeriesIndex(&quot;ABC&quot;));</span>
+<span class="fc" id="L390">    }</span>
+
+    /**
+     * Some checks for the getRowIndex() method.
+     */
+    public void testGetRowIndex() {
+        // check an empty dataset
+<span class="fc" id="L397">        DefaultIntervalCategoryDataset empty</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L400">        assertEquals(-1, empty.getRowIndex(&quot;ABC&quot;));</span>
+<span class="fc" id="L401">    }</span>
+
+    /**
+     * Some checks for the setSeriesKeys() method.
+     */
+    public void testSetSeriesKeys() {
+        // check an empty dataset
+<span class="fc" id="L408">        DefaultIntervalCategoryDataset empty</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L411">        boolean pass = true;</span>
+        try {
+<span class="fc" id="L413">            empty.setSeriesKeys(new String[0]);</span>
+        }
+<span class="nc" id="L415">        catch (RuntimeException e) {</span>
+<span class="nc" id="L416">            pass = false;</span>
+<span class="fc" id="L417">        }</span>
+<span class="fc" id="L418">        assertTrue(pass);</span>
+<span class="fc" id="L419">    }</span>
+
+    /**
+     * Some checks for the getCategoryIndex() method.
+     */
+    public void testGetCategoryIndex() {
+        // check an empty dataset
+<span class="fc" id="L426">        DefaultIntervalCategoryDataset empty</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L429">        assertEquals(-1, empty.getCategoryIndex(&quot;ABC&quot;));</span>
+<span class="fc" id="L430">    }</span>
+
+    /**
+     * Some checks for the getColumnIndex() method.
+     */
+    public void testGetColumnIndex() {
+        // check an empty dataset
+<span class="fc" id="L437">        DefaultIntervalCategoryDataset empty</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L440">        assertEquals(-1, empty.getColumnIndex(&quot;ABC&quot;));</span>
+<span class="fc" id="L441">    }</span>
+
+    /**
+     * Some checks for the setCategoryKeys() method.
+     */
+    public void testSetCategoryKeys() {
+        // check an empty dataset
+<span class="fc" id="L448">        DefaultIntervalCategoryDataset empty</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L451">        boolean pass = true;</span>
+        try {
+<span class="fc" id="L453">            empty.setCategoryKeys(new String[0]);</span>
+        }
+<span class="nc" id="L455">        catch (RuntimeException e) {</span>
+<span class="nc" id="L456">            pass = false;</span>
+<span class="fc" id="L457">        }</span>
+<span class="fc" id="L458">        assertTrue(pass);</span>
+<span class="fc" id="L459">    }</span>
+
+    /**
+     * Some checks for the getColumnKeys() method.
+     */
+    public void testGetColumnKeys() {
+        // check an empty dataset
+<span class="fc" id="L466">        DefaultIntervalCategoryDataset empty</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L469">        List keys = empty.getColumnKeys();</span>
+<span class="fc" id="L470">        assertEquals(0, keys.size());</span>
+<span class="fc" id="L471">    }</span>
+
+    /**
+     * Some checks for the getRowKeys() method.
+     */
+    public void testGetRowKeys() {
+        // check an empty dataset
+<span class="fc" id="L478">        DefaultIntervalCategoryDataset empty</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L481">        List keys = empty.getRowKeys();</span>
+<span class="fc" id="L482">        assertEquals(0, keys.size());</span>
+<span class="fc" id="L483">    }</span>
+
+    /**
+     * Some checks for the getColumnCount() method.
+     */
+    public void testGetColumnCount() {
+        // check an empty dataset
+<span class="fc" id="L490">        DefaultIntervalCategoryDataset empty</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L493">        assertEquals(0, empty.getColumnCount());</span>
+<span class="fc" id="L494">    }</span>
+
+    /**
+     * Some checks for the getRowCount() method.
+     */
+    public void testGetRowCount() {
+        // check an empty dataset
+<span class="fc" id="L501">        DefaultIntervalCategoryDataset empty</span>
+                = new DefaultIntervalCategoryDataset(new double[0][0],
+                        new double[0][0]);
+<span class="fc" id="L504">        assertEquals(0, empty.getColumnCount());</span>
+<span class="fc" id="L505">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

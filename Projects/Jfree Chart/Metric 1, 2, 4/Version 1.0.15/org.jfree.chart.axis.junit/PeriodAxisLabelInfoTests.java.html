@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PeriodAxisLabelInfoTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.axis.junit</a> &gt; <span class="el_source">PeriodAxisLabelInfoTests.java</span></div><h1>PeriodAxisLabelInfoTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------------------
+ * PeriodAxisLabelInfoTests.java
+ * -----------------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 10-Jun-2003 : Version 1 (DG);
+ * 07-Jan-2005 : Added test for hashCode() (DG);
+ *
+ */
+
+package org.jfree.chart.axis.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Paint;
+import java.awt.Stroke;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.axis.PeriodAxisLabelInfo;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.Month;
+import org.jfree.data.time.Year;
+import org.jfree.ui.RectangleInsets;
+
+/**
+ * Tests for the {@link PeriodAxisLabelInfo} class.
+ */
+public class PeriodAxisLabelInfoTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L82">        return new TestSuite(PeriodAxisLabelInfoTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public PeriodAxisLabelInfoTests(String name) {
+<span class="fc" id="L91">        super(name);</span>
+<span class="fc" id="L92">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L98">        PeriodAxisLabelInfo info1 = new PeriodAxisLabelInfo(Day.class,</span>
+                new SimpleDateFormat(&quot;d&quot;));
+<span class="fc" id="L100">        PeriodAxisLabelInfo info2 = new PeriodAxisLabelInfo(Day.class,</span>
+                new SimpleDateFormat(&quot;d&quot;));
+<span class="fc" id="L102">        assertTrue(info1.equals(info2));</span>
+<span class="fc" id="L103">        assertTrue(info2.equals(info1));</span>
+
+<span class="fc" id="L105">        Class c1 = Day.class;</span>
+<span class="fc" id="L106">        Class c2 = Month.class;</span>
+<span class="fc" id="L107">        DateFormat df1 = new SimpleDateFormat(&quot;d&quot;);</span>
+<span class="fc" id="L108">        DateFormat df2 = new SimpleDateFormat(&quot;MMM&quot;);</span>
+<span class="fc" id="L109">        RectangleInsets sp1 = new RectangleInsets(1, 1, 1, 1);</span>
+<span class="fc" id="L110">        RectangleInsets sp2 = new RectangleInsets(2, 2, 2, 2);</span>
+<span class="fc" id="L111">        Font lf1 = new Font(&quot;SansSerif&quot;, Font.PLAIN, 10);</span>
+<span class="fc" id="L112">        Font lf2 = new Font(&quot;SansSerif&quot;, Font.BOLD, 9);</span>
+<span class="fc" id="L113">        Paint lp1 = Color.black;</span>
+<span class="fc" id="L114">        Paint lp2 = Color.blue;</span>
+<span class="fc" id="L115">        boolean b1 = true;</span>
+<span class="fc" id="L116">        boolean b2 = false;</span>
+<span class="fc" id="L117">        Stroke s1 = new BasicStroke(0.5f);</span>
+<span class="fc" id="L118">        Stroke s2 = new BasicStroke(0.25f);</span>
+<span class="fc" id="L119">        Paint dp1 = Color.red;</span>
+<span class="fc" id="L120">        Paint dp2 = Color.green;</span>
+
+<span class="fc" id="L122">        info1 = new PeriodAxisLabelInfo(c2, df1, sp1, lf1, lp1, b1, s1, dp1);</span>
+<span class="fc" id="L123">        info2 = new PeriodAxisLabelInfo(c1, df1, sp1, lf1, lp1, b1, s1, dp1);</span>
+<span class="fc" id="L124">        assertFalse(info1.equals(info2));</span>
+<span class="fc" id="L125">        info2 = new PeriodAxisLabelInfo(c2, df1, sp1, lf1, lp1, b1, s1, dp1);</span>
+<span class="fc" id="L126">        assertTrue(info1.equals(info2));</span>
+
+<span class="fc" id="L128">        info1 = new PeriodAxisLabelInfo(c2, df2, sp1, lf1, lp1, b1, s1, dp1);</span>
+<span class="fc" id="L129">        assertFalse(info1.equals(info2));</span>
+<span class="fc" id="L130">        info2 = new PeriodAxisLabelInfo(c2, df2, sp1, lf1, lp1, b1, s1, dp1);</span>
+<span class="fc" id="L131">        assertTrue(info1.equals(info2));</span>
+
+<span class="fc" id="L133">        info1 = new PeriodAxisLabelInfo(c2, df2, sp2, lf1, lp1, b1, s1, dp1);</span>
+<span class="fc" id="L134">        assertFalse(info1.equals(info2));</span>
+<span class="fc" id="L135">        info2 = new PeriodAxisLabelInfo(c2, df2, sp2, lf1, lp1, b1, s1, dp1);</span>
+<span class="fc" id="L136">        assertTrue(info1.equals(info2));</span>
+
+<span class="fc" id="L138">        info1 = new PeriodAxisLabelInfo(c2, df2, sp2, lf2, lp1, b1, s1, dp1);</span>
+<span class="fc" id="L139">        assertFalse(info1.equals(info2));</span>
+<span class="fc" id="L140">        info2 = new PeriodAxisLabelInfo(c2, df2, sp2, lf2, lp1, b1, s1, dp1);</span>
+<span class="fc" id="L141">        assertTrue(info1.equals(info2));</span>
+
+<span class="fc" id="L143">        info1 = new PeriodAxisLabelInfo(c2, df2, sp2, lf2, lp2, b1, s1, dp1);</span>
+<span class="fc" id="L144">        assertFalse(info1.equals(info2));</span>
+<span class="fc" id="L145">        info2 = new PeriodAxisLabelInfo(c2, df2, sp2, lf2, lp2, b1, s1, dp1);</span>
+<span class="fc" id="L146">        assertTrue(info1.equals(info2));</span>
+
+<span class="fc" id="L148">        info1 = new PeriodAxisLabelInfo(c2, df2, sp2, lf2, lp2, b2, s1, dp1);</span>
+<span class="fc" id="L149">        assertFalse(info1.equals(info2));</span>
+<span class="fc" id="L150">        info2 = new PeriodAxisLabelInfo(c2, df2, sp2, lf2, lp2, b2, s1, dp1);</span>
+<span class="fc" id="L151">        assertTrue(info1.equals(info2));</span>
+
+<span class="fc" id="L153">        info1 = new PeriodAxisLabelInfo(c2, df2, sp2, lf2, lp2, b2, s2, dp1);</span>
+<span class="fc" id="L154">        assertFalse(info1.equals(info2));</span>
+<span class="fc" id="L155">        info2 = new PeriodAxisLabelInfo(c2, df2, sp2, lf2, lp2, b2, s2, dp1);</span>
+<span class="fc" id="L156">        assertTrue(info1.equals(info2));</span>
+
+<span class="fc" id="L158">        info1 = new PeriodAxisLabelInfo(c2, df2, sp2, lf2, lp2, b2, s2, dp2);</span>
+<span class="fc" id="L159">        assertFalse(info1.equals(info2));</span>
+<span class="fc" id="L160">        info2 = new PeriodAxisLabelInfo(c2, df2, sp2, lf2, lp2, b2, s2, dp2);</span>
+<span class="fc" id="L161">        assertTrue(info1.equals(info2));</span>
+
+<span class="fc" id="L163">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashCode() {
+<span class="fc" id="L169">        PeriodAxisLabelInfo info1 = new PeriodAxisLabelInfo(Day.class,</span>
+                new SimpleDateFormat(&quot;d&quot;));
+<span class="fc" id="L171">        PeriodAxisLabelInfo info2 = new PeriodAxisLabelInfo(Day.class,</span>
+                new SimpleDateFormat(&quot;d&quot;));
+<span class="fc" id="L173">        assertTrue(info1.equals(info2));</span>
+<span class="fc" id="L174">        int h1 = info1.hashCode();</span>
+<span class="fc" id="L175">        int h2 = info2.hashCode();</span>
+<span class="fc" id="L176">        assertEquals(h1, h2);</span>
+<span class="fc" id="L177">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L183">        PeriodAxisLabelInfo info1 = new PeriodAxisLabelInfo(Day.class,</span>
+                new SimpleDateFormat(&quot;d&quot;));
+<span class="fc" id="L185">        PeriodAxisLabelInfo info2 = null;</span>
+        try {
+<span class="fc" id="L187">            info2 = (PeriodAxisLabelInfo) info1.clone();</span>
+        }
+<span class="nc" id="L189">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L190">            fail(e.getMessage());</span>
+<span class="fc" id="L191">        }</span>
+<span class="pc bpc" id="L192" title="1 of 2 branches missed.">        assertTrue(info1 != info2);</span>
+<span class="pc bpc" id="L193" title="1 of 2 branches missed.">        assertTrue(info1.getClass() == info2.getClass());</span>
+<span class="fc" id="L194">        assertTrue(info1.equals(info2));</span>
+<span class="fc" id="L195">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L201">        PeriodAxisLabelInfo info1 = new PeriodAxisLabelInfo(Day.class,</span>
+                new SimpleDateFormat(&quot;d&quot;));
+<span class="fc" id="L203">        PeriodAxisLabelInfo info2 = null;</span>
+        try {
+<span class="fc" id="L205">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L206">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L207">            out.writeObject(info1);</span>
+<span class="fc" id="L208">            out.close();</span>
+
+<span class="fc" id="L210">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L211">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L212">            info2 = (PeriodAxisLabelInfo) in.readObject();</span>
+<span class="fc" id="L213">            in.close();</span>
+        }
+<span class="nc" id="L215">        catch (Exception e) {</span>
+<span class="nc" id="L216">            fail(e.getMessage());</span>
+<span class="fc" id="L217">        }</span>
+<span class="fc" id="L218">        boolean b = info1.equals(info2);</span>
+<span class="fc" id="L219">        assertTrue(b);</span>
+<span class="fc" id="L220">    }</span>
+
+    /**
+     * A test for the createInstance() method.
+     */
+    public void testCreateInstance() {
+<span class="fc" id="L226">        TimeZone zone = TimeZone.getTimeZone(&quot;GMT&quot;);</span>
+<span class="fc" id="L227">        PeriodAxisLabelInfo info = new PeriodAxisLabelInfo(Day.class,</span>
+                new SimpleDateFormat(&quot;d&quot;));
+<span class="fc" id="L229">        Day d = (Day) info.createInstance(new Date(0L), zone, Locale.UK);</span>
+<span class="fc" id="L230">        assertEquals(new Day(1, 1, 1970), d);</span>
+
+<span class="fc" id="L232">        info = new PeriodAxisLabelInfo(Year.class, new SimpleDateFormat(&quot;YYYY&quot;));</span>
+<span class="fc" id="L233">        Year y = (Year) info.createInstance(new Date(0L), zone, Locale.UK);</span>
+<span class="fc" id="L234">        assertEquals(new Year(1970), y);</span>
+<span class="fc" id="L235">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

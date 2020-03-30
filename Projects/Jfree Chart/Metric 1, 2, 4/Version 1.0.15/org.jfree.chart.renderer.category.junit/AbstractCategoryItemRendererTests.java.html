@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractCategoryItemRendererTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.category.junit</a> &gt; <span class="el_source">AbstractCategoryItemRendererTests.java</span></div><h1>AbstractCategoryItemRendererTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------------------------
+ * AbstractCategoryItemRendererTests.java
+ * --------------------------------------
+ * (C) Copyright 2004-2010, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 12-Feb-2004 : Version 1 (DG);
+ * 24-Nov-2006 : New cloning tests (DG);
+ * 07-Dec-2006 : Added testEquals() method (DG);
+ * 25-Nov-2008 : Added testFindRangeBounds() (DG);
+ * 09-Feb-2010 : Added test2947660() (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.category.junit;
+
+import java.text.NumberFormat;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.LegendItemCollection;
+import org.jfree.chart.labels.IntervalCategoryItemLabelGenerator;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.labels.StandardCategorySeriesLabelGenerator;
+import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.renderer.category.AbstractCategoryItemRenderer;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.chart.urls.StandardCategoryURLGenerator;
+import org.jfree.data.Range;
+import org.jfree.data.category.DefaultCategoryDataset;
+
+/**
+ * Tests for the {@link AbstractCategoryItemRenderer} class.
+ */
+<span class="fc" id="L69">public class AbstractCategoryItemRendererTests extends TestCase {</span>
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L77">        return new TestSuite(AbstractCategoryItemRendererTests.class);</span>
+    }
+
+    /**
+     * Checks that all fields are distinguished.
+     */
+    public void testEquals() {
+<span class="fc" id="L84">        BarRenderer r1 = new BarRenderer();</span>
+<span class="fc" id="L85">        BarRenderer r2 = new BarRenderer();</span>
+<span class="fc" id="L86">        assertEquals(r1, r2);</span>
+
+        // the plot field is NOT tested
+
+        // toolTipGenerator
+<span class="fc" id="L91">        r1.setToolTipGenerator(new StandardCategoryToolTipGenerator());</span>
+<span class="fc" id="L92">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L93">        r2.setToolTipGenerator(new StandardCategoryToolTipGenerator());</span>
+<span class="fc" id="L94">        assertTrue(r1.equals(r2));</span>
+
+        // toolTipGeneratorList
+<span class="fc" id="L97">        r1.setSeriesToolTipGenerator(1, new StandardCategoryToolTipGenerator());</span>
+<span class="fc" id="L98">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L99">        r2.setSeriesToolTipGenerator(1, new StandardCategoryToolTipGenerator());</span>
+<span class="fc" id="L100">        assertTrue(r1.equals(r2));</span>
+
+        // baseToolTipGenerator
+<span class="fc" id="L103">        r1.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator(&quot;{2}&quot;,</span>
+<span class="fc" id="L104">                NumberFormat.getInstance()));</span>
+<span class="fc" id="L105">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L106">        r2.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator(&quot;{2}&quot;,</span>
+<span class="fc" id="L107">                NumberFormat.getInstance()));</span>
+<span class="fc" id="L108">        assertTrue(r1.equals(r2));</span>
+
+        // itemLabelGenerator
+<span class="fc" id="L111">        r1.setItemLabelGenerator(new StandardCategoryItemLabelGenerator());</span>
+<span class="fc" id="L112">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L113">        r2.setItemLabelGenerator(new StandardCategoryItemLabelGenerator());</span>
+<span class="fc" id="L114">        assertTrue(r1.equals(r2));</span>
+
+        // itemLabelGeneratorList
+<span class="fc" id="L117">        r1.setSeriesItemLabelGenerator(1,</span>
+                new StandardCategoryItemLabelGenerator());
+<span class="fc" id="L119">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L120">        r2.setSeriesItemLabelGenerator(1,</span>
+                new StandardCategoryItemLabelGenerator());
+<span class="fc" id="L122">        assertTrue(r1.equals(r2));</span>
+
+        // baseItemLabelGenerator
+<span class="fc" id="L125">        r1.setBaseItemLabelGenerator(new StandardCategoryItemLabelGenerator(</span>
+<span class="fc" id="L126">                &quot;{2}&quot;, NumberFormat.getInstance()));</span>
+<span class="fc" id="L127">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L128">        r2.setBaseItemLabelGenerator(new StandardCategoryItemLabelGenerator(</span>
+<span class="fc" id="L129">                &quot;{2}&quot;, NumberFormat.getInstance()));</span>
+<span class="fc" id="L130">        assertTrue(r1.equals(r2));</span>
+
+        // urlGenerator
+<span class="fc" id="L133">        r1.setItemURLGenerator(new StandardCategoryURLGenerator());</span>
+<span class="fc" id="L134">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L135">        r2.setItemURLGenerator(new StandardCategoryURLGenerator());</span>
+<span class="fc" id="L136">        assertTrue(r1.equals(r2));</span>
+
+        // urlGeneratorList
+<span class="fc" id="L139">        r1.setSeriesItemURLGenerator(1, new StandardCategoryURLGenerator());</span>
+<span class="fc" id="L140">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L141">        r2.setSeriesItemURLGenerator(1, new StandardCategoryURLGenerator());</span>
+<span class="fc" id="L142">        assertTrue(r1.equals(r2));</span>
+
+        // baseItemURLGenerator
+<span class="fc" id="L145">        r1.setBaseItemURLGenerator(new StandardCategoryURLGenerator(</span>
+                &quot;abc.html&quot;));
+<span class="fc" id="L147">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L148">        r2.setBaseItemURLGenerator(new StandardCategoryURLGenerator(</span>
+                &quot;abc.html&quot;));
+<span class="fc" id="L150">        assertTrue(r1.equals(r2));</span>
+
+        // legendItemLabelGenerator
+<span class="fc" id="L153">        r1.setLegendItemLabelGenerator(new StandardCategorySeriesLabelGenerator(</span>
+                &quot;XYZ&quot;));
+<span class="fc" id="L155">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L156">        r2.setLegendItemLabelGenerator(new StandardCategorySeriesLabelGenerator(</span>
+                &quot;XYZ&quot;));
+<span class="fc" id="L158">        assertTrue(r1.equals(r2));</span>
+
+        // legendItemToolTipGenerator
+<span class="fc" id="L161">        r1.setLegendItemToolTipGenerator(</span>
+                new StandardCategorySeriesLabelGenerator(&quot;ToolTip&quot;));
+<span class="fc" id="L163">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L164">        r2.setLegendItemToolTipGenerator(</span>
+                new StandardCategorySeriesLabelGenerator(&quot;ToolTip&quot;));
+<span class="fc" id="L166">        assertTrue(r1.equals(r2));</span>
+
+        // legendItemURLGenerator
+<span class="fc" id="L169">        r1.setLegendItemURLGenerator(</span>
+                new StandardCategorySeriesLabelGenerator(&quot;URL&quot;));
+<span class="fc" id="L171">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L172">        r2.setLegendItemURLGenerator(</span>
+                new StandardCategorySeriesLabelGenerator(&quot;URL&quot;));
+<span class="fc" id="L174">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L175">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning1() {
+<span class="fc" id="L181">        AbstractCategoryItemRenderer r1 = new BarRenderer();</span>
+<span class="fc" id="L182">        r1.setItemLabelGenerator(new StandardCategoryItemLabelGenerator());</span>
+<span class="fc" id="L183">        AbstractCategoryItemRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L185">            r2 = (BarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L187">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L188">            e.printStackTrace();</span>
+<span class="fc" id="L189">        }</span>
+<span class="pc bpc" id="L190" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L192">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L194">        r1 = new BarRenderer();</span>
+<span class="fc" id="L195">        r1.setSeriesItemLabelGenerator(0,</span>
+                new StandardCategoryItemLabelGenerator());
+<span class="fc" id="L197">        r2 = null;</span>
+        try {
+<span class="fc" id="L199">            r2 = (BarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L201">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L202">            e.printStackTrace();</span>
+<span class="fc" id="L203">        }</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L206">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L208">        r1 = new BarRenderer();</span>
+<span class="fc" id="L209">        r1.setBaseItemLabelGenerator(new StandardCategoryItemLabelGenerator());</span>
+<span class="fc" id="L210">        r2 = null;</span>
+        try {
+<span class="fc" id="L212">            r2 = (BarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L214">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L215">            e.printStackTrace();</span>
+<span class="fc" id="L216">        }</span>
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L219">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L220">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning2() {
+<span class="fc" id="L226">        BarRenderer r1 = new BarRenderer();</span>
+<span class="fc" id="L227">        r1.setItemLabelGenerator(new IntervalCategoryItemLabelGenerator());</span>
+<span class="fc" id="L228">        BarRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L230">            r2 = (BarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L232">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L233">            e.printStackTrace();</span>
+<span class="fc" id="L234">        }</span>
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L237">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L239">        r1 = new BarRenderer();</span>
+<span class="fc" id="L240">        r1.setSeriesItemLabelGenerator(0,</span>
+                new IntervalCategoryItemLabelGenerator());
+<span class="fc" id="L242">        r2 = null;</span>
+        try {
+<span class="fc" id="L244">            r2 = (BarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L246">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L247">            e.printStackTrace();</span>
+<span class="fc" id="L248">        }</span>
+<span class="pc bpc" id="L249" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L250" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L251">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L253">        r1 = new BarRenderer();</span>
+<span class="fc" id="L254">        r1.setBaseItemLabelGenerator(new IntervalCategoryItemLabelGenerator());</span>
+<span class="fc" id="L255">        r2 = null;</span>
+        try {
+<span class="fc" id="L257">            r2 = (BarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L259">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L260">            e.printStackTrace();</span>
+<span class="fc" id="L261">        }</span>
+<span class="pc bpc" id="L262" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L263" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L264">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L265">    }</span>
+
+    /**
+     * Check that the legendItemLabelGenerator is cloned.
+     */
+    public void testCloning_LegendItemLabelGenerator() {
+<span class="fc" id="L271">        StandardCategorySeriesLabelGenerator generator</span>
+                = new StandardCategorySeriesLabelGenerator(&quot;Series {0}&quot;);
+<span class="fc" id="L273">        BarRenderer r1 = new BarRenderer();</span>
+<span class="fc" id="L274">        r1.setLegendItemLabelGenerator(generator);</span>
+<span class="fc" id="L275">        BarRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L277">            r2 = (BarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L279">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L280">            e.printStackTrace();</span>
+<span class="fc" id="L281">        }</span>
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L283" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L284">        assertTrue(r1.equals(r2));</span>
+
+        // check that the generator has been cloned
+<span class="fc" id="L287">        assertTrue(r1.getLegendItemLabelGenerator()</span>
+<span class="pc bpc" id="L288" title="1 of 2 branches missed.">                != r2.getLegendItemLabelGenerator());</span>
+<span class="fc" id="L289">    }</span>
+
+    /**
+     * Check that the legendItemToolTipGenerator is cloned.
+     */
+    public void testCloning_LegendItemToolTipGenerator() {
+<span class="fc" id="L295">        StandardCategorySeriesLabelGenerator generator</span>
+                = new StandardCategorySeriesLabelGenerator(&quot;Series {0}&quot;);
+<span class="fc" id="L297">        BarRenderer r1 = new BarRenderer();</span>
+<span class="fc" id="L298">        r1.setLegendItemToolTipGenerator(generator);</span>
+<span class="fc" id="L299">        BarRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L301">            r2 = (BarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L303">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L304">            e.printStackTrace();</span>
+<span class="fc" id="L305">        }</span>
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L307" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L308">        assertTrue(r1.equals(r2));</span>
+
+        // check that the generator has been cloned
+<span class="fc" id="L311">        assertTrue(r1.getLegendItemToolTipGenerator()</span>
+<span class="pc bpc" id="L312" title="1 of 2 branches missed.">                != r2.getLegendItemToolTipGenerator());</span>
+<span class="fc" id="L313">    }</span>
+
+    /**
+     * Check that the legendItemURLGenerator is cloned.
+     */
+    public void testCloning_LegendItemURLGenerator() {
+<span class="fc" id="L319">        StandardCategorySeriesLabelGenerator generator</span>
+                = new StandardCategorySeriesLabelGenerator(&quot;Series {0}&quot;);
+<span class="fc" id="L321">        BarRenderer r1 = new BarRenderer();</span>
+<span class="fc" id="L322">        r1.setLegendItemURLGenerator(generator);</span>
+<span class="fc" id="L323">        BarRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L325">            r2 = (BarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L327">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L328">            e.printStackTrace();</span>
+<span class="fc" id="L329">        }</span>
+<span class="pc bpc" id="L330" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L331" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L332">        assertTrue(r1.equals(r2));</span>
+
+        // check that the generator has been cloned
+<span class="fc" id="L335">        assertTrue(r1.getLegendItemURLGenerator()</span>
+<span class="pc bpc" id="L336" title="1 of 2 branches missed.">                != r2.getLegendItemURLGenerator());</span>
+<span class="fc" id="L337">    }</span>
+
+    /**
+     * Some checks for the findRangeBounds() method.
+     */
+    public void testFindRangeBounds() {
+<span class="fc" id="L343">        AbstractCategoryItemRenderer r = new LineAndShapeRenderer();</span>
+<span class="fc" id="L344">        assertNull(r.findRangeBounds(null));</span>
+
+        // an empty dataset should return a null range
+<span class="fc" id="L347">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L348">        assertNull(r.findRangeBounds(dataset));</span>
+
+<span class="fc" id="L350">        dataset.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L351">        assertEquals(new Range(1.0, 1.0), r.findRangeBounds(dataset));</span>
+
+<span class="fc" id="L353">        dataset.addValue(-2.0, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L354">        assertEquals(new Range(-2.0, 1.0), r.findRangeBounds(dataset));</span>
+
+<span class="fc" id="L356">        dataset.addValue(null, &quot;R1&quot;, &quot;C3&quot;);</span>
+<span class="fc" id="L357">        assertEquals(new Range(-2.0, 1.0), r.findRangeBounds(dataset));</span>
+<span class="fc" id="L358">    }</span>
+
+    /**
+     * A test that reproduces the problem reported in bug 2947660.
+     */
+    public void test2947660() {
+<span class="fc" id="L364">        AbstractCategoryItemRenderer r = new LineAndShapeRenderer();</span>
+<span class="fc" id="L365">        assertNotNull(r.getLegendItems());</span>
+<span class="fc" id="L366">        assertEquals(0, r.getLegendItems().getItemCount());</span>
+
+<span class="fc" id="L368">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L369">        CategoryPlot plot = new CategoryPlot();</span>
+<span class="fc" id="L370">        plot.setDataset(dataset);</span>
+<span class="fc" id="L371">        plot.setRenderer(r);</span>
+<span class="fc" id="L372">        assertEquals(0, r.getLegendItems().getItemCount());</span>
+
+<span class="fc" id="L374">        dataset.addValue(1.0, &quot;S1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L375">        LegendItemCollection lic = r.getLegendItems();</span>
+<span class="fc" id="L376">        assertEquals(1, lic.getItemCount());</span>
+<span class="fc" id="L377">        assertEquals(&quot;S1&quot;, lic.get(0).getLabel());</span>
+<span class="fc" id="L378">    }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryPointerAnnotationTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.annotations.junit</a> &gt; <span class="el_source">CategoryPointerAnnotationTests.java</span></div><h1>CategoryPointerAnnotationTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------------------------
+ * CategoryPointerAnnotationTests.java
+ * -----------------------------------
+ * (C) Copyright 2006-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 02-Oct-2006 : Version 1 (DG);
+ * 23-Apr-2008 : Added testPublicCloneable() (DG);
+ *
+ */
+
+package org.jfree.chart.annotations.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Stroke;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.annotations.CategoryPointerAnnotation;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link CategoryPointerAnnotation} class.
+ */
+public class CategoryPointerAnnotationTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L72">        return new TestSuite(CategoryPointerAnnotationTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public CategoryPointerAnnotationTests(String name) {
+<span class="fc" id="L81">        super(name);</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L89">        CategoryPointerAnnotation a1 = new CategoryPointerAnnotation(&quot;Label&quot;,</span>
+                &quot;Key 1&quot;, 20.0, Math.PI);
+<span class="fc" id="L91">        CategoryPointerAnnotation a2 = new CategoryPointerAnnotation(&quot;Label&quot;,</span>
+                &quot;Key 1&quot;, 20.0, Math.PI);
+<span class="fc" id="L93">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L95">        a1 = new CategoryPointerAnnotation(&quot;Label2&quot;, &quot;Key 1&quot;, 20.0, Math.PI);</span>
+<span class="fc" id="L96">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L97">        a2 = new CategoryPointerAnnotation(&quot;Label2&quot;, &quot;Key 1&quot;, 20.0, Math.PI);</span>
+<span class="fc" id="L98">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L100">        a1.setCategory(&quot;Key 2&quot;);</span>
+<span class="fc" id="L101">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L102">        a2.setCategory(&quot;Key 2&quot;);</span>
+<span class="fc" id="L103">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L105">        a1.setValue(22.0);</span>
+<span class="fc" id="L106">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L107">        a2.setValue(22.0);</span>
+<span class="fc" id="L108">        assertTrue(a1.equals(a2));</span>
+
+        //private double angle;
+<span class="fc" id="L111">        a1.setAngle(Math.PI / 4.0);</span>
+<span class="fc" id="L112">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L113">        a2.setAngle(Math.PI / 4.0);</span>
+<span class="fc" id="L114">        assertTrue(a1.equals(a2));</span>
+
+        //private double tipRadius;
+<span class="fc" id="L117">        a1.setTipRadius(20.0);</span>
+<span class="fc" id="L118">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L119">        a2.setTipRadius(20.0);</span>
+<span class="fc" id="L120">        assertTrue(a1.equals(a2));</span>
+
+        //private double baseRadius;
+<span class="fc" id="L123">        a1.setBaseRadius(5.0);</span>
+<span class="fc" id="L124">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L125">        a2.setBaseRadius(5.0);</span>
+<span class="fc" id="L126">        assertTrue(a1.equals(a2));</span>
+
+        //private double arrowLength;
+<span class="fc" id="L129">        a1.setArrowLength(33.0);</span>
+<span class="fc" id="L130">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L131">        a2.setArrowLength(33.0);</span>
+<span class="fc" id="L132">        assertTrue(a1.equals(a2));</span>
+
+        //private double arrowWidth;
+<span class="fc" id="L135">        a1.setArrowWidth(9.0);</span>
+<span class="fc" id="L136">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L137">        a2.setArrowWidth(9.0);</span>
+<span class="fc" id="L138">        assertTrue(a1.equals(a2));</span>
+
+        //private Stroke arrowStroke;
+<span class="fc" id="L141">        Stroke stroke = new BasicStroke(1.5f);</span>
+<span class="fc" id="L142">        a1.setArrowStroke(stroke);</span>
+<span class="fc" id="L143">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L144">        a2.setArrowStroke(stroke);</span>
+<span class="fc" id="L145">        assertTrue(a1.equals(a2));</span>
+
+        //private Paint arrowPaint;
+<span class="fc" id="L148">        a1.setArrowPaint(Color.blue);</span>
+<span class="fc" id="L149">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L150">        a2.setArrowPaint(Color.blue);</span>
+<span class="fc" id="L151">        assertTrue(a1.equals(a2));</span>
+
+        //private double labelOffset;
+<span class="fc" id="L154">        a1.setLabelOffset(10.0);</span>
+<span class="fc" id="L155">        assertFalse(a1.equals(a2));</span>
+<span class="fc" id="L156">        a2.setLabelOffset(10.0);</span>
+<span class="fc" id="L157">        assertTrue(a1.equals(a2));</span>
+
+<span class="fc" id="L159">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashCode() {
+<span class="fc" id="L165">        CategoryPointerAnnotation a1 = new CategoryPointerAnnotation(&quot;Label&quot;,</span>
+                &quot;A&quot;, 20.0, Math.PI);
+<span class="fc" id="L167">        CategoryPointerAnnotation a2 = new CategoryPointerAnnotation(&quot;Label&quot;,</span>
+                &quot;A&quot;, 20.0, Math.PI);
+<span class="fc" id="L169">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L170">        int h1 = a1.hashCode();</span>
+<span class="fc" id="L171">        int h2 = a2.hashCode();</span>
+<span class="fc" id="L172">        assertEquals(h1, h2);</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L179">        CategoryPointerAnnotation a1 = new CategoryPointerAnnotation(&quot;Label&quot;,</span>
+                &quot;A&quot;, 20.0, Math.PI);
+<span class="fc" id="L181">        CategoryPointerAnnotation a2 = null;</span>
+        try {
+<span class="fc" id="L183">            a2 = (CategoryPointerAnnotation) a1.clone();</span>
+        }
+<span class="nc" id="L185">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L186">            e.printStackTrace();</span>
+<span class="fc" id="L187">        }</span>
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">        assertTrue(a1 != a2);</span>
+<span class="pc bpc" id="L189" title="1 of 2 branches missed.">        assertTrue(a1.getClass() == a2.getClass());</span>
+<span class="fc" id="L190">        assertTrue(a1.equals(a2));</span>
+<span class="fc" id="L191">    }</span>
+
+    /**
+     * Checks that this class implements PublicCloneable.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L197">        CategoryPointerAnnotation a1 = new CategoryPointerAnnotation(&quot;Label&quot;,</span>
+                &quot;A&quot;, 20.0, Math.PI);
+<span class="fc" id="L199">        assertTrue(a1 instanceof PublicCloneable);</span>
+<span class="fc" id="L200">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L207">        CategoryPointerAnnotation a1 = new CategoryPointerAnnotation(&quot;Label&quot;,</span>
+                &quot;A&quot;, 20.0, Math.PI);
+<span class="fc" id="L209">        CategoryPointerAnnotation a2 = null;</span>
+
+        try {
+<span class="fc" id="L212">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L213">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L214">            out.writeObject(a1);</span>
+<span class="fc" id="L215">            out.close();</span>
+
+<span class="fc" id="L217">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L218">                    buffer.toByteArray()));</span>
+<span class="fc" id="L219">            a2 = (CategoryPointerAnnotation) in.readObject();</span>
+<span class="fc" id="L220">            in.close();</span>
+        }
+<span class="nc" id="L222">        catch (Exception e) {</span>
+<span class="nc" id="L223">            e.printStackTrace();</span>
+<span class="fc" id="L224">        }</span>
+<span class="fc" id="L225">        assertEquals(a1, a2);</span>
+
+<span class="fc" id="L227">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

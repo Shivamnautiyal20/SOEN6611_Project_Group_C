@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryToPieDataset.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.category</a> &gt; <span class="el_source">CategoryToPieDataset.java</span></div><h1>CategoryToPieDataset.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------
+ * CategoryToPieDataset.java
+ * -------------------------
+ * (C) Copyright 2003-2013, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Christian W. Zuckschwerdt;
+ *
+ * Changes
+ * -------
+ * 23-Jan-2003 : Version 1 (DG);
+ * 30-Jul-2003 : Pass through DatasetChangeEvent (CZ);
+ * 29-Jan-2004 : Replaced 'extract' int with TableOrder (DG);
+ * 11-Jan-2005 : Removed deprecated code in preparation for the 1.0.0
+ *               release (DG);
+ * ------------- JFREECHART 1.0.0 RELEASED ------------------------------------
+ * 26-Jul-2006 : Added serialVersionUID, changed constructor to allow null
+ *               for source, and added getSource(), getExtractType() and
+ *               getExtractIndex() methods - see feature request 1477915 (DG);
+ * 03-Jul-2013 : Use ParamChecks (DG);
+ *
+ */
+
+package org.jfree.data.category;
+
+import java.util.Collections;
+import java.util.List;
+import org.jfree.chart.util.ParamChecks;
+
+import org.jfree.data.general.AbstractDataset;
+import org.jfree.data.general.DatasetChangeEvent;
+import org.jfree.data.general.DatasetChangeListener;
+import org.jfree.data.general.PieDataset;
+import org.jfree.util.TableOrder;
+
+/**
+ * A {@link PieDataset} implementation that obtains its data from one row or
+ * column of a {@link CategoryDataset}.
+ */
+public class CategoryToPieDataset extends AbstractDataset
+        implements PieDataset, DatasetChangeListener {
+
+    /** For serialization. */
+    static final long serialVersionUID = 5516396319762189617L;
+
+    /** The source. */
+    private CategoryDataset source;
+
+    /** The extract type. */
+    private TableOrder extract;
+
+    /** The row or column index. */
+    private int index;
+
+    /**
+     * An adaptor class that converts any {@link CategoryDataset} into a
+     * {@link PieDataset}, by taking the values from a single row or column.
+     * &lt;p&gt;
+     * If &lt;code&gt;source&lt;/code&gt; is &lt;code&gt;null&lt;/code&gt;, the created dataset will
+     * be empty.
+     *
+     * @param source  the source dataset (&lt;code&gt;null&lt;/code&gt; permitted).
+     * @param extract  extract data from rows or columns? (&lt;code&gt;null&lt;/code&gt;
+     *                 not permitted).
+     * @param index  the row or column index.
+     */
+    public CategoryToPieDataset(CategoryDataset source, TableOrder extract,
+<span class="fc" id="L94">            int index) {</span>
+<span class="fc" id="L95">        ParamChecks.nullNotPermitted(extract, &quot;extract&quot;);</span>
+<span class="fc" id="L96">        this.source = source;</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        if (this.source != null) {</span>
+<span class="fc" id="L98">            this.source.addChangeListener(this);</span>
+        }
+<span class="fc" id="L100">        this.extract = extract;</span>
+<span class="fc" id="L101">        this.index = index;</span>
+<span class="fc" id="L102">    }</span>
+
+    /**
+     * Returns the underlying dataset.
+     *
+     * @return The underlying dataset (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @since 1.0.2
+     */
+    public CategoryDataset getUnderlyingDataset() {
+<span class="fc" id="L112">        return this.source;</span>
+    }
+
+    /**
+     * Returns the extract type, which determines whether data is read from
+     * one row or one column of the underlying dataset.
+     *
+     * @return The extract type.
+     *
+     * @since 1.0.2
+     */
+    public TableOrder getExtractType() {
+<span class="fc" id="L124">        return this.extract;</span>
+    }
+
+    /**
+     * Returns the index of the row or column from which to extract the data.
+     *
+     * @return The extract index.
+     *
+     * @since 1.0.2
+     */
+    public int getExtractIndex() {
+<span class="fc" id="L135">        return this.index;</span>
+    }
+
+    /**
+     * Returns the number of items (values) in the collection.  If the
+     * underlying dataset is &lt;code&gt;null&lt;/code&gt;, this method returns zero.
+     *
+     * @return The item count.
+     */
+    public int getItemCount() {
+<span class="fc" id="L145">        int result = 0;</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        if (this.source != null) {</span>
+<span class="fc bfc" id="L147" title="All 2 branches covered.">            if (this.extract == TableOrder.BY_ROW) {</span>
+<span class="fc" id="L148">                result = this.source.getColumnCount();</span>
+            }
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">            else if (this.extract == TableOrder.BY_COLUMN) {</span>
+<span class="fc" id="L151">                result = this.source.getRowCount();</span>
+            }
+        }
+<span class="fc" id="L154">        return result;</span>
+    }
+
+    /**
+     * Returns a value from the dataset.
+     *
+     * @param item  the item index (zero-based).
+     *
+     * @return The value (possibly &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @throws IndexOutOfBoundsException if &lt;code&gt;item&lt;/code&gt; is not in the
+     *     range &lt;code&gt;0&lt;/code&gt; to &lt;code&gt;getItemCount() - 1&lt;/code&gt;.
+     */
+    public Number getValue(int item) {
+<span class="fc" id="L168">        Number result = null;</span>
+<span class="fc bfc" id="L169" title="All 4 branches covered.">        if (item &lt; 0 || item &gt;= getItemCount()) {</span>
+            // this will include the case where the underlying dataset is null
+<span class="fc" id="L171">            throw new IndexOutOfBoundsException(</span>
+                    &quot;The 'item' index is out of bounds.&quot;);
+        }
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">        if (this.extract == TableOrder.BY_ROW) {</span>
+<span class="nc" id="L175">            result = this.source.getValue(this.index, item);</span>
+        }
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">        else if (this.extract == TableOrder.BY_COLUMN) {</span>
+<span class="fc" id="L178">            result = this.source.getValue(item, this.index);</span>
+        }
+<span class="fc" id="L180">        return result;</span>
+    }
+
+    /**
+     * Returns the key at the specified index.
+     *
+     * @param index  the item index (in the range &lt;code&gt;0&lt;/code&gt; to
+     *     &lt;code&gt;getItemCount() - 1&lt;/code&gt;).
+     *
+     * @return The key.
+     *
+     * @throws IndexOutOfBoundsException if &lt;code&gt;index&lt;/code&gt; is not in the
+     *     specified range.
+     */
+    public Comparable getKey(int index) {
+<span class="fc" id="L195">        Comparable result = null;</span>
+<span class="fc bfc" id="L196" title="All 4 branches covered.">        if (index &lt; 0 || index &gt;= getItemCount()) {</span>
+            // this includes the case where the underlying dataset is null
+<span class="fc" id="L198">            throw new IndexOutOfBoundsException(&quot;Invalid 'index': &quot; + index);</span>
+        }
+<span class="fc bfc" id="L200" title="All 2 branches covered.">        if (this.extract == TableOrder.BY_ROW) {</span>
+<span class="fc" id="L201">            result = this.source.getColumnKey(index);</span>
+        }
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">        else if (this.extract == TableOrder.BY_COLUMN) {</span>
+<span class="fc" id="L204">            result = this.source.getRowKey(index);</span>
+        }
+<span class="fc" id="L206">        return result;</span>
+    }
+
+    /**
+     * Returns the index for a given key, or &lt;code&gt;-1&lt;/code&gt; if there is no
+     * such key.
+     *
+     * @param key  the key.
+     *
+     * @return The index for the key, or &lt;code&gt;-1&lt;/code&gt;.
+     */
+    public int getIndex(Comparable key) {
+<span class="fc" id="L218">        int result = -1;</span>
+<span class="fc bfc" id="L219" title="All 2 branches covered.">        if (this.source != null) {</span>
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">            if (this.extract == TableOrder.BY_ROW) {</span>
+<span class="fc" id="L221">                result = this.source.getColumnIndex(key);</span>
+            }
+<span class="nc bnc" id="L223" title="All 2 branches missed.">            else if (this.extract == TableOrder.BY_COLUMN) {</span>
+<span class="nc" id="L224">                result = this.source.getRowIndex(key);</span>
+            }
+        }
+<span class="fc" id="L227">        return result;</span>
+    }
+
+    /**
+     * Returns the keys for the dataset.
+     * &lt;p&gt;
+     * If the underlying dataset is &lt;code&gt;null&lt;/code&gt;, this method returns an
+     * empty list.
+     *
+     * @return The keys.
+     */
+    public List getKeys() {
+<span class="fc" id="L239">        List result = Collections.EMPTY_LIST;</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">        if (this.source != null) {</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">            if (this.extract == TableOrder.BY_ROW) {</span>
+<span class="nc" id="L242">                result = this.source.getColumnKeys();</span>
+            }
+<span class="nc bnc" id="L244" title="All 2 branches missed.">            else if (this.extract == TableOrder.BY_COLUMN) {</span>
+<span class="nc" id="L245">                result = this.source.getRowKeys();</span>
+            }
+        }
+<span class="fc" id="L248">        return result;</span>
+    }
+
+    /**
+     * Returns the value for a given key.  If the key is not recognised, the
+     * method should return &lt;code&gt;null&lt;/code&gt; (but note that &lt;code&gt;null&lt;/code&gt;
+     * can be associated with a valid key also).
+     *
+     * @param key  the key.
+     *
+     * @return The value (possibly &lt;code&gt;null&lt;/code&gt;).
+     */
+    public Number getValue(Comparable key) {
+<span class="fc" id="L261">        Number result = null;</span>
+<span class="fc" id="L262">        int keyIndex = getIndex(key);</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">        if (keyIndex != -1) {</span>
+<span class="pc bpc" id="L264" title="1 of 2 branches missed.">            if (this.extract == TableOrder.BY_ROW) {</span>
+<span class="fc" id="L265">                result = this.source.getValue(this.index, keyIndex);</span>
+            }
+<span class="nc bnc" id="L267" title="All 2 branches missed.">            else if (this.extract == TableOrder.BY_COLUMN) {</span>
+<span class="nc" id="L268">                result = this.source.getValue(keyIndex, this.index);</span>
+            }
+        }
+<span class="fc" id="L271">        return result;</span>
+    }
+
+    /**
+     * Sends a {@link DatasetChangeEvent} to all registered listeners, with
+     * this (not the underlying) dataset as the source.
+     *
+     * @param event  the event (ignored, a new event with this dataset as the
+     *     source is sent to the listeners).
+     */
+    public void datasetChanged(DatasetChangeEvent event) {
+<span class="nc" id="L282">        fireDatasetChanged();</span>
+<span class="nc" id="L283">    }</span>
+
+    /**
+     * Tests this dataset for equality with an arbitrary object, returning
+     * &lt;code&gt;true&lt;/code&gt; if &lt;code&gt;obj&lt;/code&gt; is a dataset containing the same
+     * keys and values in the same order as this dataset.
+     *
+     * @param obj  the object to test (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L295" title="1 of 2 branches missed.">        if (obj == this) {</span>
+<span class="nc" id="L296">            return true;</span>
+        }
+<span class="pc bpc" id="L298" title="1 of 2 branches missed.">        if (!(obj instanceof PieDataset)) {</span>
+<span class="nc" id="L299">            return false;</span>
+        }
+<span class="fc" id="L301">        PieDataset that = (PieDataset) obj;</span>
+<span class="fc" id="L302">        int count = getItemCount();</span>
+<span class="pc bpc" id="L303" title="1 of 2 branches missed.">        if (that.getItemCount() != count) {</span>
+<span class="nc" id="L304">            return false;</span>
+        }
+<span class="fc bfc" id="L306" title="All 2 branches covered.">        for (int i = 0; i &lt; count; i++) {</span>
+<span class="fc" id="L307">            Comparable k1 = getKey(i);</span>
+<span class="fc" id="L308">            Comparable k2 = that.getKey(i);</span>
+<span class="pc bpc" id="L309" title="1 of 2 branches missed.">            if (!k1.equals(k2)) {</span>
+<span class="nc" id="L310">                return false;</span>
+            }
+
+<span class="fc" id="L313">            Number v1 = getValue(i);</span>
+<span class="fc" id="L314">            Number v2 = that.getValue(i);</span>
+<span class="pc bpc" id="L315" title="1 of 2 branches missed.">            if (v1 == null) {</span>
+<span class="nc bnc" id="L316" title="All 2 branches missed.">                if (v2 != null) {</span>
+<span class="nc" id="L317">                    return false;</span>
+                }
+            }
+            else {
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">                if (!v1.equals(v2)) {</span>
+<span class="nc" id="L322">                    return false;</span>
+                }
+            }
+        }
+<span class="fc" id="L326">        return true;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

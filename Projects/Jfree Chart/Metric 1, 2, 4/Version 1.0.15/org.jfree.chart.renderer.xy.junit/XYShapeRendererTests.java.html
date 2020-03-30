@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XYShapeRendererTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.xy.junit</a> &gt; <span class="el_source">XYShapeRendererTests.java</span></div><h1>XYShapeRendererTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------
+ * XYShapeRendererTests.java
+ * -------------------------
+ * (C) Copyright 2010, 2011, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Martin Hoeller (patch 2952086);
+ *
+ * Changes
+ * -------
+ * 17-Sep-2008 : Version 1 (DG);
+ * 16-Feb-2010 : Added testFindZBounds() (MH);
+ * 19-Oct-2011 : Added test3026341() (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.xy.junit;
+
+import java.awt.Color;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.renderer.LookupPaintScale;
+import org.jfree.chart.renderer.xy.XYShapeRenderer;
+import org.jfree.data.Range;
+import org.jfree.data.xy.DefaultXYZDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
+/**
+ * Tests for the {@link XYShapeRenderer} class.
+ */
+public class XYShapeRendererTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L75">        return new TestSuite(XYShapeRendererTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public XYShapeRendererTests(String name) {
+<span class="fc" id="L84">        super(name);</span>
+<span class="fc" id="L85">    }</span>
+
+    /**
+     * Some checks for the equals() method.
+     */
+    public void testEquals() {
+<span class="fc" id="L91">        XYShapeRenderer r1 = new XYShapeRenderer();</span>
+<span class="fc" id="L92">        XYShapeRenderer r2 = new XYShapeRenderer();</span>
+<span class="fc" id="L93">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L94">        assertTrue(r2.equals(r1));</span>
+
+<span class="fc" id="L96">        r1.setPaintScale(new LookupPaintScale(1.0, 2.0, Color.white));</span>
+<span class="fc" id="L97">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L98">        r2.setPaintScale(new LookupPaintScale(1.0, 2.0, Color.white));</span>
+<span class="fc" id="L99">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L101">        r1.setDrawOutlines(true);</span>
+<span class="fc" id="L102">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L103">        r2.setDrawOutlines(true);</span>
+<span class="fc" id="L104">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L106">        r1.setUseOutlinePaint(false);</span>
+<span class="fc" id="L107">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L108">        r2.setUseOutlinePaint(false);</span>
+<span class="fc" id="L109">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L111">        r1.setUseFillPaint(true);</span>
+<span class="fc" id="L112">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L113">        r2.setUseFillPaint(true);</span>
+<span class="fc" id="L114">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L116">        r1.setGuideLinesVisible(true);</span>
+<span class="fc" id="L117">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L118">        r2.setGuideLinesVisible(true);</span>
+<span class="fc" id="L119">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L121">        r1.setGuideLinePaint(Color.red);</span>
+<span class="fc" id="L122">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L123">        r2.setGuideLinePaint(Color.red);</span>
+<span class="fc" id="L124">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L126">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L132">        XYShapeRenderer r1 = new XYShapeRenderer();</span>
+<span class="fc" id="L133">        XYShapeRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L135">            r2 = (XYShapeRenderer) r1.clone();</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">            assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">            assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L138">            assertTrue(r1.equals(r2));</span>
+        }
+<span class="nc" id="L140">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L141">            e.printStackTrace();</span>
+<span class="nc" id="L142">            assertTrue(false);</span>
+<span class="fc" id="L143">        }</span>
+<span class="fc" id="L144">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L150">        XYShapeRenderer r1 = new XYShapeRenderer();</span>
+<span class="fc" id="L151">        XYShapeRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L153">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L154">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L155">            out.writeObject(r1);</span>
+<span class="fc" id="L156">            out.close();</span>
+
+<span class="fc" id="L158">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L159">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L160">            r2 = (XYShapeRenderer) in.readObject();</span>
+<span class="fc" id="L161">            in.close();</span>
+        }
+<span class="nc" id="L163">        catch (Exception e) {</span>
+<span class="nc" id="L164">            e.printStackTrace();</span>
+<span class="fc" id="L165">        }</span>
+<span class="fc" id="L166">        assertEquals(r1, r2);</span>
+<span class="fc" id="L167">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * Check if finding the bounds in z-dimension of an XYZDataset works. 
+     */
+    public void testFindZBounds() {
+<span class="fc" id="L175">        XYShapeRenderer r = new XYShapeRenderer();</span>
+<span class="fc" id="L176">        assertNull(r.findZBounds(null));</span>
+
+<span class="fc" id="L178">        DefaultXYZDataset dataset = new DefaultXYZDataset();</span>
+        Range range;
+
+<span class="fc" id="L181">        double data1[][] = { {1,1,1}, {1,1,1}, {1,2,3} };</span>
+<span class="fc" id="L182">        dataset.addSeries(&quot;series1&quot;, data1);</span>
+<span class="fc" id="L183">        range = r.findZBounds(dataset);</span>
+<span class="fc" id="L184">        assertNotNull(range);</span>
+<span class="fc" id="L185">        assertEquals(1d, range.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L186">        assertEquals(3d, range.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L188">        double data2[][] = { {1,1,1}, {1,1,1}, {-1,-2,-3} };</span>
+<span class="fc" id="L189">        dataset.removeSeries(&quot;series1&quot;);</span>
+<span class="fc" id="L190">        dataset.addSeries(&quot;series2&quot;, data2);</span>
+<span class="fc" id="L191">        range = r.findZBounds(dataset);</span>
+<span class="fc" id="L192">        assertNotNull(range);</span>
+<span class="fc" id="L193">        assertEquals(-3d, range.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L194">        assertEquals(-1d, range.getUpperBound(), EPSILON);</span>
+
+<span class="fc" id="L196">        double data3[][] = { {1,1,1}, {1,1,1}, {-1.2,2.9,3.8} };</span>
+<span class="fc" id="L197">        dataset.removeSeries(&quot;series2&quot;);</span>
+<span class="fc" id="L198">        dataset.addSeries(&quot;series3&quot;, data3);</span>
+<span class="fc" id="L199">        range = r.findZBounds(dataset);</span>
+<span class="fc" id="L200">        assertNotNull(range);</span>
+<span class="fc" id="L201">        assertEquals(-1.2d, range.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L202">        assertEquals(3.8d, range.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L203">    }</span>
+
+    /**
+     * Test for bug 3026341.
+     */
+    public void test3026341() {
+<span class="fc" id="L209">        XYShapeRenderer renderer = new XYShapeRenderer();</span>
+<span class="fc" id="L210">        assertNull(renderer.findRangeBounds(null));</span>
+
+<span class="fc" id="L212">        XYSeriesCollection dataset = new XYSeriesCollection();</span>
+<span class="fc" id="L213">        XYSeries series = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L214">        series.add(1.0, null);</span>
+<span class="fc" id="L215">        dataset.addSeries(series);</span>
+<span class="fc" id="L216">        Range r = renderer.findRangeBounds(dataset);</span>
+<span class="fc" id="L217">        assertNull(r);</span>
+
+        // test findDomainBounds as well
+<span class="fc" id="L220">        r = renderer.findDomainBounds(dataset);</span>
+<span class="fc" id="L221">        assertEquals(r.getLowerBound(), 1.0, EPSILON);</span>
+<span class="fc" id="L222">        assertEquals(r.getUpperBound(), 1.0, EPSILON);</span>
+
+<span class="fc" id="L224">        dataset.removeAllSeries();</span>
+<span class="fc" id="L225">        r = renderer.findDomainBounds(dataset);</span>
+<span class="fc" id="L226">        assertNull(r);</span>
+<span class="fc" id="L227">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

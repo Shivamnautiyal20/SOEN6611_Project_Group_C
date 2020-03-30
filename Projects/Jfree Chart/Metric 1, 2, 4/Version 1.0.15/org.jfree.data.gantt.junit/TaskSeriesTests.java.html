@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TaskSeriesTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.gantt.junit</a> &gt; <span class="el_source">TaskSeriesTests.java</span></div><h1>TaskSeriesTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------
+ * TaskSeriesTests.java
+ * --------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 30-Jul-2004 : Version 1 (DG);
+ * 09-May-2008 : Added independence check in testCloning() (DG);
+ *
+ */
+
+package org.jfree.data.gantt.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.Date;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.gantt.Task;
+import org.jfree.data.gantt.TaskSeries;
+
+/**
+ * Tests for the {@link TaskSeries} class.
+ */
+public class TaskSeriesTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L70">        return new TestSuite(TaskSeriesTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public TaskSeriesTests(String name) {
+<span class="fc" id="L79">        super(name);</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L87">        TaskSeries s1 = new TaskSeries(&quot;S&quot;);</span>
+<span class="fc" id="L88">        s1.add(new Task(&quot;T1&quot;, new Date(1), new Date(2)));</span>
+<span class="fc" id="L89">        s1.add(new Task(&quot;T2&quot;, new Date(11), new Date(22)));</span>
+<span class="fc" id="L90">        TaskSeries s2 = new TaskSeries(&quot;S&quot;);</span>
+<span class="fc" id="L91">        s2.add(new Task(&quot;T1&quot;, new Date(1), new Date(2)));</span>
+<span class="fc" id="L92">        s2.add(new Task(&quot;T2&quot;, new Date(11), new Date(22)));</span>
+<span class="fc" id="L93">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L94">        assertTrue(s2.equals(s1));</span>
+
+<span class="fc" id="L96">        s1.add(new Task(&quot;T3&quot;, new Date(22), new Date(33)));</span>
+<span class="fc" id="L97">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L98">        s2.add(new Task(&quot;T3&quot;, new Date(22), new Date(33)));</span>
+<span class="fc" id="L99">        assertTrue(s1.equals(s2));</span>
+
+<span class="fc" id="L101">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L107">        TaskSeries s1 = new TaskSeries(&quot;S&quot;);</span>
+<span class="fc" id="L108">        s1.add(new Task(&quot;T1&quot;, new Date(1), new Date(2)));</span>
+<span class="fc" id="L109">        s1.add(new Task(&quot;T2&quot;, new Date(11), new Date(22)));</span>
+<span class="fc" id="L110">        TaskSeries s2 = null;</span>
+        try {
+<span class="fc" id="L112">            s2 = (TaskSeries) s1.clone();</span>
+        }
+<span class="nc" id="L114">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L115">            System.err.println(&quot;Failed to clone.&quot;);</span>
+<span class="fc" id="L116">        }</span>
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">        assertTrue(s1 != s2);</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">        assertTrue(s1.getClass() == s2.getClass());</span>
+<span class="fc" id="L119">        assertTrue(s1.equals(s2));</span>
+
+        // basic check for independence
+<span class="fc" id="L122">        s1.add(new Task(&quot;T3&quot;, new Date(22), new Date(33)));</span>
+<span class="fc" id="L123">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L124">        s2.add(new Task(&quot;T3&quot;, new Date(22), new Date(33)));</span>
+<span class="fc" id="L125">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L126">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L133">        TaskSeries s1 = new TaskSeries(&quot;S&quot;);</span>
+<span class="fc" id="L134">        s1.add(new Task(&quot;T1&quot;, new Date(1), new Date(2)));</span>
+<span class="fc" id="L135">        s1.add(new Task(&quot;T2&quot;, new Date(11), new Date(22)));</span>
+<span class="fc" id="L136">        TaskSeries s2 = null;</span>
+
+        try {
+<span class="fc" id="L139">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L140">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L141">            out.writeObject(s1);</span>
+<span class="fc" id="L142">            out.close();</span>
+
+<span class="fc" id="L144">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L145">                new ByteArrayInputStream(buffer.toByteArray())</span>
+            );
+<span class="fc" id="L147">            s2 = (TaskSeries) in.readObject();</span>
+<span class="fc" id="L148">            in.close();</span>
+        }
+<span class="nc" id="L150">        catch (Exception e) {</span>
+<span class="nc" id="L151">            System.out.println(e.toString());</span>
+<span class="fc" id="L152">        }</span>
+<span class="fc" id="L153">        assertEquals(s1, s2);</span>
+
+<span class="fc" id="L155">    }</span>
+
+    /**
+     * Some checks for the getTask() method.
+     */
+    public void testGetTask() {
+<span class="fc" id="L161">        TaskSeries s1 = new TaskSeries(&quot;S&quot;);</span>
+<span class="fc" id="L162">        s1.add(new Task(&quot;T1&quot;, new Date(1), new Date(2)));</span>
+<span class="fc" id="L163">        s1.add(new Task(&quot;T2&quot;, new Date(11), new Date(22)));</span>
+<span class="fc" id="L164">        Task t1 = s1.get(&quot;T1&quot;);</span>
+<span class="fc" id="L165">        assertTrue(t1.equals(new Task(&quot;T1&quot;, new Date(1), new Date(2))));</span>
+<span class="fc" id="L166">        Task t2 = s1.get(&quot;T2&quot;);</span>
+<span class="fc" id="L167">        assertTrue(t2.equals(new Task(&quot;T2&quot;, new Date(11), new Date(22))));</span>
+<span class="fc" id="L168">        Task t3 = s1.get(&quot;T3&quot;);</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">        assertTrue(t3 == null);</span>
+<span class="fc" id="L170">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

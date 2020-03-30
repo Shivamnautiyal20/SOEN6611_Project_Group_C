@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultPolarPlotEditor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.editor</a> &gt; <span class="el_source">DefaultPolarPlotEditor.java</span></div><h1>DefaultPolarPlotEditor.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------
+ * DefaultPolarPlotEditor.java
+ * ----------------------
+ * (C) Copyright 2005-2011, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  Martin Hoeller;
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 03-Nov-2011 : Version 1 (MH);
+ *
+ */
+
+
+package org.jfree.chart.editor;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.plot.Plot;
+import org.jfree.chart.plot.PolarPlot;
+import org.jfree.layout.LCBLayout;
+
+/**
+ * A panel for editing the properties of a {@link PolarPlot}.
+ */
+public class DefaultPolarPlotEditor extends DefaultPlotEditor
+    implements FocusListener {
+
+    /** A text field to enter a manual TickUnit. */
+    private JTextField manualTickUnit;
+
+    /** A text field to enter the angleOffset. */
+    private JTextField angleOffset;
+
+    /** The size for the manual TickUnit. */
+    private double manualTickUnitValue;
+
+    /** The value for the plot's angle offset. */
+    private double angleOffsetValue;
+
+    
+    /**
+     * Standard constructor - constructs a panel for editing the properties of
+     * the specified plot.
+     *
+     * @param plot  the plot, which should be changed.
+     */
+    public DefaultPolarPlotEditor(PolarPlot plot) {
+<span class="nc" id="L85">        super(plot);</span>
+<span class="nc" id="L86">        this.angleOffsetValue = plot.getAngleOffset();</span>
+<span class="nc" id="L87">        this.angleOffset.setText(Double.toString(this.angleOffsetValue));</span>
+<span class="nc" id="L88">        this.manualTickUnitValue = plot.getAngleTickUnit().getSize();</span>
+<span class="nc" id="L89">        this.manualTickUnit.setText(Double.toString(this.manualTickUnitValue));</span>
+<span class="nc" id="L90">    }</span>
+
+    /**
+     * Creates a tabbed pane for editing the plot attributes.
+     * 
+     * @param plot  the plot.
+     * 
+     * @return A tabbed pane. 
+     */
+    protected JTabbedPane createPlotTabs(Plot plot) {
+<span class="nc" id="L100">        JTabbedPane tabs = super.createPlotTabs(plot);</span>
+        // TODO find a better localization key
+<span class="nc" id="L102">        tabs.insertTab(localizationResources.getString(&quot;General1&quot;), null, createPlotPanel(), null, 0);</span>
+<span class="nc" id="L103">        tabs.setSelectedIndex(0);</span>
+<span class="nc" id="L104">        return tabs;</span>
+    }
+
+    private JPanel createPlotPanel() {
+<span class="nc" id="L108">        JPanel plotPanel = new JPanel(new LCBLayout(3));</span>
+<span class="nc" id="L109">        plotPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));</span>
+
+<span class="nc" id="L111">        plotPanel.add(new JLabel(localizationResources.getString(</span>
+                &quot;AngleOffset&quot;)));
+<span class="nc" id="L113">        this.angleOffset = new JTextField(Double.toString(</span>
+                this.angleOffsetValue));
+<span class="nc" id="L115">        this.angleOffset.setActionCommand(&quot;AngleOffsetValue&quot;);</span>
+<span class="nc" id="L116">        this.angleOffset.addActionListener(this);</span>
+<span class="nc" id="L117">        this.angleOffset.addFocusListener(this);</span>
+<span class="nc" id="L118">        plotPanel.add(this.angleOffset);</span>
+<span class="nc" id="L119">        plotPanel.add(new JPanel());</span>
+
+<span class="nc" id="L121">        plotPanel.add(new JLabel(localizationResources.getString(</span>
+                &quot;Manual_TickUnit_value&quot;)));
+<span class="nc" id="L123">        this.manualTickUnit = new JTextField(Double.toString(</span>
+                this.manualTickUnitValue));
+<span class="nc" id="L125">        this.manualTickUnit.setActionCommand(&quot;TickUnitValue&quot;);</span>
+<span class="nc" id="L126">        this.manualTickUnit.addActionListener(this);</span>
+<span class="nc" id="L127">        this.manualTickUnit.addFocusListener(this);</span>
+<span class="nc" id="L128">        plotPanel.add(this.manualTickUnit);</span>
+<span class="nc" id="L129">        plotPanel.add(new JPanel());</span>
+
+<span class="nc" id="L131">        return plotPanel;</span>
+    }
+
+    /**
+     * Does nothing.
+     *
+     * @param event  the event.
+     */
+    public void focusGained(FocusEvent event) {
+        // don't need to do anything
+<span class="nc" id="L141">    }</span>
+
+    /**
+     *  Revalidates minimum/maximum range.
+     *
+     *  @param event  the event.
+     */
+    public void focusLost(FocusEvent event) {
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        if (event.getSource() == this.angleOffset) {</span>
+<span class="nc" id="L150">            validateAngleOffset();</span>
+        }
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        else if (event.getSource() == this.manualTickUnit) {</span>
+<span class="nc" id="L153">            validateTickUnit();</span>
+        }
+<span class="nc" id="L155">    }</span>
+
+    /**
+     * Handles actions from within the property panel.
+     * @param event an event.
+     */
+    public void actionPerformed(ActionEvent event) {
+<span class="nc" id="L162">        String command = event.getActionCommand();</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (command.equals(&quot;AngleOffsetValue&quot;)) {</span>
+<span class="nc" id="L164">            validateAngleOffset();</span>
+        }
+<span class="nc bnc" id="L166" title="All 2 branches missed.">        else if (command.equals(&quot;TickUnitValue&quot;)) {</span>
+<span class="nc" id="L167">            validateTickUnit();</span>
+        }
+<span class="nc" id="L169">    }</span>
+
+    /**
+     * Validates the angle offset entered by the user.
+     */
+    public void validateAngleOffset() {
+        double newOffset;
+        try {
+<span class="nc" id="L177">            newOffset = Double.parseDouble(this.angleOffset.getText());</span>
+        }
+<span class="nc" id="L179">        catch (NumberFormatException e) {</span>
+<span class="nc" id="L180">            newOffset = this.angleOffsetValue;</span>
+<span class="nc" id="L181">        }</span>
+<span class="nc" id="L182">        this.angleOffsetValue = newOffset;</span>
+<span class="nc" id="L183">        this.angleOffset.setText(Double.toString(this.angleOffsetValue));</span>
+<span class="nc" id="L184">    }</span>
+
+    /**
+     * Validates the tick unit entered by the user.
+     */
+    public void validateTickUnit() {
+        double newTickUnit;
+        try {
+<span class="nc" id="L192">            newTickUnit = Double.parseDouble(this.manualTickUnit.getText());</span>
+        }
+<span class="nc" id="L194">        catch (NumberFormatException e) {</span>
+<span class="nc" id="L195">            newTickUnit = this.manualTickUnitValue;</span>
+<span class="nc" id="L196">        }</span>
+
+<span class="nc bnc" id="L198" title="All 4 branches missed.">        if (newTickUnit &gt; 0.0 &amp;&amp; newTickUnit &lt; 360.0) {</span>
+<span class="nc" id="L199">            this.manualTickUnitValue = newTickUnit;</span>
+        }
+<span class="nc" id="L201">        this.manualTickUnit.setText(Double.toString(this.manualTickUnitValue));</span>
+<span class="nc" id="L202">    }</span>
+
+    public void updatePlotProperties(Plot plot) {
+<span class="nc" id="L205">        super.updatePlotProperties(plot);</span>
+<span class="nc" id="L206">        PolarPlot pp = (PolarPlot) plot;</span>
+<span class="nc" id="L207">        pp.setAngleTickUnit(new NumberTickUnit(this.manualTickUnitValue));</span>
+<span class="nc" id="L208">        pp.setAngleOffset(this.angleOffsetValue);</span>
+<span class="nc" id="L209">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

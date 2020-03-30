@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StrokeMapTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.junit</a> &gt; <span class="el_source">StrokeMapTests.java</span></div><h1>StrokeMapTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------
+ * StrokeMapTests.java
+ * -------------------
+ * (C) Copyright 2006-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes:
+ * --------
+ * 27-Sep-2006 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.junit;
+
+import java.awt.BasicStroke;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.StrokeMap;
+
+/**
+ * Some tests for the {@link StrokeMap} class.
+ */
+public class StrokeMapTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L68">        return new TestSuite(StrokeMapTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public StrokeMapTests(String name) {
+<span class="fc" id="L77">        super(name);</span>
+<span class="fc" id="L78">    }</span>
+
+    /**
+     * Some checks for the getStroke() method.
+     */
+    public void testGetStroke() {
+<span class="fc" id="L84">        StrokeMap m1 = new StrokeMap();</span>
+<span class="fc" id="L85">        assertEquals(null, m1.getStroke(&quot;A&quot;));</span>
+<span class="fc" id="L86">        m1.put(&quot;A&quot;, new BasicStroke(1.1f));</span>
+<span class="fc" id="L87">        assertEquals(new BasicStroke(1.1f), m1.getStroke(&quot;A&quot;));</span>
+<span class="fc" id="L88">        m1.put(&quot;A&quot;, null);</span>
+<span class="fc" id="L89">        assertEquals(null, m1.getStroke(&quot;A&quot;));</span>
+
+        // a null key should throw an IllegalArgumentException
+<span class="fc" id="L92">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L94">            m1.getStroke(null);</span>
+        }
+<span class="fc" id="L96">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L97">            pass = true;</span>
+<span class="nc" id="L98">        }</span>
+<span class="fc" id="L99">        assertTrue(pass);</span>
+<span class="fc" id="L100">    }</span>
+
+    /**
+     * Some checks for the put() method.
+     */
+    public void testPut() {
+<span class="fc" id="L106">        StrokeMap m1 = new StrokeMap();</span>
+<span class="fc" id="L107">        m1.put(&quot;A&quot;, new BasicStroke(1.1f));</span>
+<span class="fc" id="L108">        assertEquals(new BasicStroke(1.1f), m1.getStroke(&quot;A&quot;));</span>
+
+        // a null key should throw an IllegalArgumentException
+<span class="fc" id="L111">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L113">            m1.put(null, new BasicStroke(1.1f));</span>
+        }
+<span class="fc" id="L115">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L116">            pass = true;</span>
+<span class="nc" id="L117">        }</span>
+<span class="fc" id="L118">        assertTrue(pass);</span>
+<span class="fc" id="L119">    }</span>
+
+    /**
+     * Some checks for the equals() method.
+     */
+    public void testEquals() {
+<span class="fc" id="L125">        StrokeMap m1 = new StrokeMap();</span>
+<span class="fc" id="L126">        StrokeMap m2 = new StrokeMap();</span>
+<span class="fc" id="L127">        assertTrue(m1.equals(m1));</span>
+<span class="fc" id="L128">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L129">        assertFalse(m1.equals(null));</span>
+<span class="fc" id="L130">        assertFalse(m1.equals(&quot;ABC&quot;));</span>
+
+<span class="fc" id="L132">        m1.put(&quot;K1&quot;, new BasicStroke(1.1f));</span>
+<span class="fc" id="L133">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L134">        m2.put(&quot;K1&quot;, new BasicStroke(1.1f));</span>
+<span class="fc" id="L135">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L137">        m1.put(&quot;K2&quot;, new BasicStroke(2.2f));</span>
+<span class="fc" id="L138">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L139">        m2.put(&quot;K2&quot;, new BasicStroke(2.2f));</span>
+<span class="fc" id="L140">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L142">        m1.put(&quot;K2&quot;, null);</span>
+<span class="fc" id="L143">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L144">        m2.put(&quot;K2&quot;, null);</span>
+<span class="fc" id="L145">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L146">    }</span>
+
+    /**
+     * Some checks for cloning.
+     */
+    public void testCloning() {
+<span class="fc" id="L152">        StrokeMap m1 = new StrokeMap();</span>
+<span class="fc" id="L153">        StrokeMap m2 = null;</span>
+        try {
+<span class="fc" id="L155">            m2 = (StrokeMap) m1.clone();</span>
+        }
+<span class="nc" id="L157">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L158">            e.printStackTrace();</span>
+<span class="fc" id="L159">        }</span>
+<span class="fc" id="L160">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L162">        m1.put(&quot;K1&quot;, new BasicStroke(1.1f));</span>
+<span class="fc" id="L163">        m1.put(&quot;K2&quot;, new BasicStroke(2.2f));</span>
+        try {
+<span class="fc" id="L165">            m2 = (StrokeMap) m1.clone();</span>
+        }
+<span class="nc" id="L167">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L168">            e.printStackTrace();</span>
+<span class="fc" id="L169">        }</span>
+<span class="fc" id="L170">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L171">    }</span>
+
+    /**
+     * A check for serialization.
+     */
+    public void testSerialization1() {
+<span class="fc" id="L177">        StrokeMap m1 = new StrokeMap();</span>
+<span class="fc" id="L178">        StrokeMap m2 = null;</span>
+        try {
+<span class="fc" id="L180">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L181">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L182">            out.writeObject(m1);</span>
+<span class="fc" id="L183">            out.close();</span>
+
+<span class="fc" id="L185">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L186">                    buffer.toByteArray()));</span>
+<span class="fc" id="L187">            m2 = (StrokeMap) in.readObject();</span>
+<span class="fc" id="L188">            in.close();</span>
+        }
+<span class="nc" id="L190">        catch (Exception e) {</span>
+<span class="nc" id="L191">            e.printStackTrace();</span>
+<span class="fc" id="L192">        }</span>
+<span class="fc" id="L193">        assertEquals(m1, m2);</span>
+<span class="fc" id="L194">    }</span>
+
+    /**
+     * A check for serialization.
+     */
+    public void testSerialization2() {
+<span class="fc" id="L200">        StrokeMap m1 = new StrokeMap();</span>
+<span class="fc" id="L201">        m1.put(&quot;K1&quot;, new BasicStroke(1.1f));</span>
+<span class="fc" id="L202">        m1.put(&quot;K2&quot;, new BasicStroke(2.2f));</span>
+<span class="fc" id="L203">        StrokeMap m2 = null;</span>
+        try {
+<span class="fc" id="L205">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L206">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L207">            out.writeObject(m1);</span>
+<span class="fc" id="L208">            out.close();</span>
+
+<span class="fc" id="L210">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L211">                    buffer.toByteArray()));</span>
+<span class="fc" id="L212">            m2 = (StrokeMap) in.readObject();</span>
+<span class="fc" id="L213">            in.close();</span>
+        }
+<span class="nc" id="L215">        catch (Exception e) {</span>
+<span class="nc" id="L216">            e.printStackTrace();</span>
+<span class="fc" id="L217">        }</span>
+<span class="fc" id="L218">        assertEquals(m1, m2);</span>
+<span class="fc" id="L219">    }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

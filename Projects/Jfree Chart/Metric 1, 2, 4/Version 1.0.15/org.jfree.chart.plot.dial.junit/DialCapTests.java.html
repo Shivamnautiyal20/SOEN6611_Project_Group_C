@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DialCapTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot.dial.junit</a> &gt; <span class="el_source">DialCapTests.java</span></div><h1>DialCapTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------
+ * DialCapTests.java
+ * -----------------
+ * (C) Copyright 2006-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 03-Nov-2006 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.chart.plot.dial.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.plot.dial.DialCap;
+
+/**
+ * Tests for the {@link DialCap} class.
+ */
+public class DialCapTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L70">        return new TestSuite(DialCapTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DialCapTests(String name) {
+<span class="fc" id="L79">        super(name);</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L86">        DialCap c1 = new DialCap();</span>
+<span class="fc" id="L87">        DialCap c2 = new DialCap();</span>
+<span class="fc" id="L88">        assertTrue(c1.equals(c2));</span>
+
+        // radius
+<span class="fc" id="L91">        c1.setRadius(0.5);</span>
+<span class="fc" id="L92">        assertFalse(c1.equals(c2));</span>
+<span class="fc" id="L93">        c2.setRadius(0.5);</span>
+<span class="fc" id="L94">        assertTrue(c1.equals(c2));</span>
+
+        // fill paint
+<span class="fc" id="L97">        c1.setFillPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.green));
+<span class="fc" id="L99">        assertFalse(c1.equals(c2));</span>
+<span class="fc" id="L100">        c2.setFillPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.green));
+
+        // outline paint
+<span class="fc" id="L104">        c1.setOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.gray));
+<span class="fc" id="L106">        assertFalse(c1.equals(c2));</span>
+<span class="fc" id="L107">        c2.setOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.gray));
+
+<span class="fc" id="L110">        assertTrue(c1.equals(c2));</span>
+
+        // outline stroke
+<span class="fc" id="L113">        c1.setOutlineStroke(new BasicStroke(1.1f));</span>
+<span class="fc" id="L114">        assertFalse(c1.equals(c2));</span>
+<span class="fc" id="L115">        c2.setOutlineStroke(new BasicStroke(1.1f));</span>
+<span class="fc" id="L116">        assertTrue(c1.equals(c2));</span>
+
+        // check an inherited attribute
+<span class="fc" id="L119">        c1.setVisible(false);</span>
+<span class="fc" id="L120">        assertFalse(c1.equals(c2));</span>
+<span class="fc" id="L121">        c2.setVisible(false);</span>
+<span class="fc" id="L122">        assertTrue(c1.equals(c2));</span>
+<span class="fc" id="L123">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashCode() {
+<span class="fc" id="L129">        DialCap c1 = new DialCap();</span>
+<span class="fc" id="L130">        DialCap c2 = new DialCap();</span>
+<span class="fc" id="L131">        assertTrue(c1.equals(c2));</span>
+<span class="fc" id="L132">        int h1 = c1.hashCode();</span>
+<span class="fc" id="L133">        int h2 = c2.hashCode();</span>
+<span class="fc" id="L134">        assertEquals(h1, h2);</span>
+<span class="fc" id="L135">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+        // test a default instance
+<span class="fc" id="L142">        DialCap c1 = new DialCap();</span>
+<span class="fc" id="L143">        DialCap c2 = null;</span>
+        try {
+<span class="fc" id="L145">            c2 = (DialCap) c1.clone();</span>
+        }
+<span class="nc" id="L147">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L148">            e.printStackTrace();</span>
+<span class="fc" id="L149">        }</span>
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">        assertTrue(c1 != c2);</span>
+<span class="pc bpc" id="L151" title="1 of 2 branches missed.">        assertTrue(c1.getClass() == c2.getClass());</span>
+<span class="fc" id="L152">        assertTrue(c1.equals(c2));</span>
+
+        // test a customised instance
+<span class="fc" id="L155">        c1 = new DialCap();</span>
+<span class="fc" id="L156">        c1.setFillPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.green));
+<span class="fc" id="L158">        c1.setOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.gray));
+<span class="fc" id="L160">        c1.setOutlineStroke(new BasicStroke(2.0f));</span>
+<span class="fc" id="L161">        c2 = null;</span>
+        try {
+<span class="fc" id="L163">            c2 = (DialCap) c1.clone();</span>
+        }
+<span class="nc" id="L165">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L166">            e.printStackTrace();</span>
+<span class="fc" id="L167">        }</span>
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">        assertTrue(c1 != c2);</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">        assertTrue(c1.getClass() == c2.getClass());</span>
+<span class="fc" id="L170">        assertTrue(c1.equals(c2));</span>
+
+        // check that the listener lists are independent
+<span class="fc" id="L173">        MyDialLayerChangeListener l1 = new MyDialLayerChangeListener();</span>
+<span class="fc" id="L174">        c1.addChangeListener(l1);</span>
+<span class="fc" id="L175">        assertTrue(c1.hasListener(l1));</span>
+<span class="fc" id="L176">        assertFalse(c2.hasListener(l1));</span>
+<span class="fc" id="L177">    }</span>
+
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+        // test a default instance
+<span class="fc" id="L185">        DialCap c1 = new DialCap();</span>
+<span class="fc" id="L186">        DialCap c2 = null;</span>
+
+        try {
+<span class="fc" id="L189">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L190">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L191">            out.writeObject(c1);</span>
+<span class="fc" id="L192">            out.close();</span>
+
+<span class="fc" id="L194">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L195">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L196">            c2 = (DialCap) in.readObject();</span>
+<span class="fc" id="L197">            in.close();</span>
+        }
+<span class="nc" id="L199">        catch (Exception e) {</span>
+<span class="nc" id="L200">            e.printStackTrace();</span>
+<span class="fc" id="L201">        }</span>
+<span class="fc" id="L202">        assertEquals(c1, c2);</span>
+
+        // test a custom instance
+<span class="fc" id="L205">        c1 = new DialCap();</span>
+<span class="fc" id="L206">        c1.setFillPaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.green));
+<span class="fc" id="L208">        c1.setOutlinePaint(new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.gray));
+<span class="fc" id="L210">        c1.setOutlineStroke(new BasicStroke(2.0f));</span>
+<span class="fc" id="L211">        c2 = null;</span>
+
+        try {
+<span class="fc" id="L214">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L215">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L216">            out.writeObject(c1);</span>
+<span class="fc" id="L217">            out.close();</span>
+
+<span class="fc" id="L219">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L220">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L221">            c2 = (DialCap) in.readObject();</span>
+<span class="fc" id="L222">            in.close();</span>
+        }
+<span class="nc" id="L224">        catch (Exception e) {</span>
+<span class="nc" id="L225">            e.printStackTrace();</span>
+<span class="fc" id="L226">        }</span>
+<span class="fc" id="L227">        assertEquals(c1, c2);</span>
+<span class="fc" id="L228">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

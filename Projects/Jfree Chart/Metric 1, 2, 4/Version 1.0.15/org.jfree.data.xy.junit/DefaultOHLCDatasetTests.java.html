@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultOHLCDatasetTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.xy.junit</a> &gt; <span class="el_source">DefaultOHLCDatasetTests.java</span></div><h1>DefaultOHLCDatasetTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------------
+ * DefaultOHLCDatasetTests.java
+ * ----------------------------
+ * (C) Copyright 2005-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 29-Apr-2005 : Version 1 (DG);
+ * 28-Nov-2006 : Extended equals() test (DG);
+ * 22-Apr-2008 : Added testPublicCloneable (DG);
+ *
+ */
+
+package org.jfree.data.xy.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.Date;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.Range;
+import org.jfree.data.general.DatasetUtilities;
+import org.jfree.data.xy.DefaultOHLCDataset;
+import org.jfree.data.xy.OHLCDataItem;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link DefaultOHLCDataset} class.
+ */
+public class DefaultOHLCDatasetTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L74">        return new TestSuite(DefaultOHLCDatasetTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DefaultOHLCDatasetTests(String name) {
+<span class="fc" id="L83">        super(name);</span>
+<span class="fc" id="L84">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * A small test for the data range calculated on this dataset.
+     */
+    public void testDataRange() {
+<span class="fc" id="L92">        OHLCDataItem[] data = new OHLCDataItem[3];</span>
+<span class="fc" id="L93">        data[0] = new OHLCDataItem(new Date(11L), 2.0, 4.0, 1.0, 3.0, 100.0);</span>
+<span class="fc" id="L94">        data[1] = new OHLCDataItem(new Date(22L), 4.0, 9.0, 2.0, 5.0, 120.0);</span>
+<span class="fc" id="L95">        data[2] = new OHLCDataItem(new Date(33L), 3.0, 7.0, 3.0, 6.0, 140.0);</span>
+<span class="fc" id="L96">        DefaultOHLCDataset d = new DefaultOHLCDataset(&quot;S1&quot;, data);</span>
+<span class="fc" id="L97">        Range r = DatasetUtilities.findRangeBounds(d, true);</span>
+<span class="fc" id="L98">        assertEquals(1.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L99">        assertEquals(9.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L100">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L106">        DefaultOHLCDataset d1 = new DefaultOHLCDataset(&quot;Series 1&quot;,</span>
+                new OHLCDataItem[0]);
+<span class="fc" id="L108">        DefaultOHLCDataset d2 = new DefaultOHLCDataset(&quot;Series 1&quot;,</span>
+                new OHLCDataItem[0]);
+<span class="fc" id="L110">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L111">        assertTrue(d2.equals(d1));</span>
+
+<span class="fc" id="L113">        d1 = new DefaultOHLCDataset(&quot;Series 2&quot;, new OHLCDataItem[0]);</span>
+<span class="fc" id="L114">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L115">        d2 = new DefaultOHLCDataset(&quot;Series 2&quot;, new OHLCDataItem[0]);</span>
+<span class="fc" id="L116">        assertTrue(d1.equals(d2));</span>
+
+<span class="fc" id="L118">        d1 = new DefaultOHLCDataset(&quot;Series 2&quot;, new OHLCDataItem[] {</span>
+                new OHLCDataItem(new Date(123L), 1.2, 3.4, 5.6, 7.8, 99.9)});
+<span class="fc" id="L120">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L121">        d2 = new DefaultOHLCDataset(&quot;Series 2&quot;, new OHLCDataItem[] {</span>
+                new OHLCDataItem(new Date(123L), 1.2, 3.4, 5.6, 7.8, 99.9)});
+<span class="fc" id="L123">        assertTrue(d1.equals(d2));</span>
+
+<span class="fc" id="L125">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L131">        DefaultOHLCDataset d1 = new DefaultOHLCDataset(&quot;Series 1&quot;,</span>
+                new OHLCDataItem[0]);
+<span class="fc" id="L133">        DefaultOHLCDataset d2 = null;</span>
+        try {
+<span class="fc" id="L135">            d2 = (DefaultOHLCDataset) d1.clone();</span>
+        }
+<span class="nc" id="L137">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L138">            e.printStackTrace();</span>
+<span class="fc" id="L139">        }</span>
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="fc" id="L142">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L143">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning2() {
+<span class="fc" id="L149">        OHLCDataItem item1 = new OHLCDataItem(new Date(1L), 1.0, 2.0, 3.0, 4.0,</span>
+                5.0);
+<span class="fc" id="L151">        OHLCDataItem item2 = new OHLCDataItem(new Date(2L), 6.0, 7.0, 8.0, 9.0,</span>
+                10.0);
+        // create an array of items in reverse order
+<span class="fc" id="L154">        OHLCDataItem[] items = new OHLCDataItem[] {item2, item1};</span>
+<span class="fc" id="L155">        DefaultOHLCDataset d1 = new DefaultOHLCDataset(&quot;Series 1&quot;, items);</span>
+<span class="fc" id="L156">        DefaultOHLCDataset d2 = null;</span>
+        try {
+<span class="fc" id="L158">            d2 = (DefaultOHLCDataset) d1.clone();</span>
+        }
+<span class="nc" id="L160">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L161">            e.printStackTrace();</span>
+<span class="fc" id="L162">        }</span>
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="fc" id="L165">        assertTrue(d1.equals(d2));</span>
+
+<span class="fc" id="L167">        d1.sortDataByDate();</span>
+<span class="fc" id="L168">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L169">    }</span>
+
+    /**
+     * Verify that this class implements {@link PublicCloneable}.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L175">        DefaultOHLCDataset d1 = new DefaultOHLCDataset(&quot;Series 1&quot;,</span>
+                new OHLCDataItem[0]);
+<span class="fc" id="L177">        assertTrue(d1 instanceof PublicCloneable);</span>
+<span class="fc" id="L178">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L184">        DefaultOHLCDataset d1 = new DefaultOHLCDataset(&quot;Series 1&quot;,</span>
+                new OHLCDataItem[0]);
+<span class="fc" id="L186">        DefaultOHLCDataset d2 = null;</span>
+
+        try {
+<span class="fc" id="L189">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L190">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L191">            out.writeObject(d1);</span>
+<span class="fc" id="L192">            out.close();</span>
+
+<span class="fc" id="L194">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L195">                new ByteArrayInputStream(buffer.toByteArray())</span>
+            );
+<span class="fc" id="L197">            d2 = (DefaultOHLCDataset) in.readObject();</span>
+<span class="fc" id="L198">            in.close();</span>
+        }
+<span class="nc" id="L200">        catch (Exception e) {</span>
+<span class="nc" id="L201">            System.out.println(e.toString());</span>
+<span class="fc" id="L202">        }</span>
+<span class="fc" id="L203">        assertEquals(d1, d2);</span>
+<span class="fc" id="L204">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

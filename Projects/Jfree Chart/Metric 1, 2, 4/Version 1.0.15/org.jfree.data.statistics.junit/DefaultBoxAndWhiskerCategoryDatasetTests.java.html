@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultBoxAndWhiskerCategoryDatasetTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.statistics.junit</a> &gt; <span class="el_source">DefaultBoxAndWhiskerCategoryDatasetTests.java</span></div><h1>DefaultBoxAndWhiskerCategoryDatasetTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------------------------------
+ * DefaultBoxAndWhiskerCategoryDatasetTests.java
+ * ---------------------------------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 01-Mar-2004 : Version 1 (DG);
+ * 17-Apr-2007 : Added a test for bug 1701822 (DG);
+ * 28-Sep-2007 : Enhanced testClone() (DG);
+ * 02-Oct-2007 : Added new tests (DG);
+ * 03-Oct-2007 : Added getTestRangeBounds() and testRemove() (DG);
+ *
+ */
+
+package org.jfree.data.statistics.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.Range;
+import org.jfree.data.UnknownKeyException;
+import org.jfree.data.statistics.BoxAndWhiskerItem;
+import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
+
+/**
+ * Tests for the {@link DefaultBoxAndWhiskerCategoryDataset} class.
+ */
+public class DefaultBoxAndWhiskerCategoryDatasetTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L75">        return new TestSuite(DefaultBoxAndWhiskerCategoryDatasetTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DefaultBoxAndWhiskerCategoryDatasetTests(String name) {
+<span class="fc" id="L84">        super(name);</span>
+<span class="fc" id="L85">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L91">        DefaultBoxAndWhiskerCategoryDataset d1</span>
+                = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L93">        d1.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                new Double(3.0), new Double(4.0), new Double(5.0),
+                new Double(6.0), new Double(7.0), new Double(8.0),
+                new ArrayList()), &quot;ROW1&quot;, &quot;COLUMN1&quot;);
+<span class="fc" id="L97">        DefaultBoxAndWhiskerCategoryDataset d2</span>
+                = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L99">        d2.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                new Double(3.0), new Double(4.0), new Double(5.0),
+                new Double(6.0), new Double(7.0), new Double(8.0),
+                new ArrayList()), &quot;ROW1&quot;, &quot;COLUMN1&quot;);
+<span class="fc" id="L103">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L104">        assertTrue(d2.equals(d1));</span>
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L112">        DefaultBoxAndWhiskerCategoryDataset d1</span>
+                = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L114">        d1.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                new Double(3.0), new Double(4.0), new Double(5.0),
+                new Double(6.0), new Double(7.0), new Double(8.0),
+                new ArrayList()), &quot;ROW1&quot;, &quot;COLUMN1&quot;);
+<span class="fc" id="L118">        DefaultBoxAndWhiskerCategoryDataset d2 = null;</span>
+
+        try {
+<span class="fc" id="L121">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L122">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L123">            out.writeObject(d1);</span>
+<span class="fc" id="L124">            out.close();</span>
+
+<span class="fc" id="L126">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L127">                    buffer.toByteArray()));</span>
+<span class="fc" id="L128">            d2 = (DefaultBoxAndWhiskerCategoryDataset) in.readObject();</span>
+<span class="fc" id="L129">            in.close();</span>
+        }
+<span class="nc" id="L131">        catch (Exception e) {</span>
+<span class="nc" id="L132">            e.printStackTrace();</span>
+<span class="fc" id="L133">        }</span>
+<span class="fc" id="L134">        assertEquals(d1, d2);</span>
+
+<span class="fc" id="L136">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L142">        DefaultBoxAndWhiskerCategoryDataset d1</span>
+                = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L144">        d1.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                new Double(3.0), new Double(4.0), new Double(5.0),
+                new Double(6.0), new Double(7.0), new Double(8.0),
+                new ArrayList()), &quot;ROW1&quot;, &quot;COLUMN1&quot;);
+<span class="fc" id="L148">        DefaultBoxAndWhiskerCategoryDataset d2 = null;</span>
+        try {
+<span class="fc" id="L150">            d2 = (DefaultBoxAndWhiskerCategoryDataset) d1.clone();</span>
+        }
+<span class="nc" id="L152">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L153">            e.printStackTrace();</span>
+<span class="fc" id="L154">        }</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="fc" id="L157">        assertTrue(d1.equals(d2));</span>
+
+        // test independence
+<span class="fc" id="L160">        d1.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                new Double(3.0), new Double(4.0), new Double(5.0),
+                new Double(6.0), new Double(7.0), new Double(8.0),
+                new ArrayList()), &quot;ROW2&quot;, &quot;COLUMN1&quot;);
+<span class="fc" id="L164">        assertFalse(d1.equals(d2));</span>
+<span class="fc" id="L165">    }</span>
+
+    /**
+     * A simple test for bug report 1701822.
+     */
+    public void test1701822() {
+<span class="fc" id="L171">        DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                = new DefaultBoxAndWhiskerCategoryDataset();
+        try {
+<span class="fc" id="L174">            dataset.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                    new Double(3.0), new Double(4.0), new Double(5.0),
+                    new Double(6.0), null, new Double(8.0),
+                    new ArrayList()), &quot;ROW1&quot;, &quot;COLUMN1&quot;);
+<span class="fc" id="L178">            dataset.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                    new Double(3.0), new Double(4.0), new Double(5.0),
+                    new Double(6.0), new Double(7.0), null,
+                    new ArrayList()), &quot;ROW1&quot;, &quot;COLUMN2&quot;);
+        }
+<span class="nc" id="L183">        catch (NullPointerException e) {</span>
+<span class="nc" id="L184">            assertTrue(false);</span>
+<span class="fc" id="L185">        }</span>
+
+<span class="fc" id="L187">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * Some checks for the add() method.
+     */
+    public void testAdd() {
+<span class="fc" id="L195">        DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L197">        BoxAndWhiskerItem item1 = new BoxAndWhiskerItem(1.0, 2.0, 3.0, 4.0,</span>
+                5.0, 6.0, 7.0, 8.0, new ArrayList());
+<span class="fc" id="L199">        dataset.add(item1, &quot;R1&quot;, &quot;C1&quot;);</span>
+
+<span class="fc" id="L201">        assertEquals(2.0, dataset.getValue(&quot;R1&quot;, &quot;C1&quot;).doubleValue(), EPSILON);</span>
+<span class="fc" id="L202">        assertEquals(1.0, dataset.getMeanValue(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L204">        assertEquals(2.0, dataset.getMedianValue(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L206">        assertEquals(3.0, dataset.getQ1Value(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L208">        assertEquals(4.0, dataset.getQ3Value(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L210">        assertEquals(5.0, dataset.getMinRegularValue(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L212">        assertEquals(6.0, dataset.getMaxRegularValue(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L214">        assertEquals(7.0, dataset.getMinOutlier(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L216">        assertEquals(8.0, dataset.getMaxOutlier(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L218">        assertEquals(new Range(7.0, 8.0), dataset.getRangeBounds(false));</span>
+<span class="fc" id="L219">    }</span>
+
+    /**
+     * Some checks for the add() method.
+     */
+    public void testAddUpdatesCachedRange() {
+<span class="fc" id="L225">        DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L227">        BoxAndWhiskerItem item1 = new BoxAndWhiskerItem(1.0, 2.0, 3.0, 4.0,</span>
+                5.0, 6.0, 7.0, 8.0, new ArrayList());
+<span class="fc" id="L229">        dataset.add(item1, &quot;R1&quot;, &quot;C1&quot;);</span>
+
+        // now overwrite this item with another
+<span class="fc" id="L232">        BoxAndWhiskerItem item2 = new BoxAndWhiskerItem(1.5, 2.5, 3.5, 4.5,</span>
+                5.5, 6.5, 7.5, 8.5, new ArrayList());
+<span class="fc" id="L234">        dataset.add(item2, &quot;R1&quot;, &quot;C1&quot;);</span>
+
+<span class="fc" id="L236">        assertEquals(2.5, dataset.getValue(&quot;R1&quot;, &quot;C1&quot;).doubleValue(), EPSILON);</span>
+<span class="fc" id="L237">        assertEquals(1.5, dataset.getMeanValue(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L239">        assertEquals(2.5, dataset.getMedianValue(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L241">        assertEquals(3.5, dataset.getQ1Value(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L243">        assertEquals(4.5, dataset.getQ3Value(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L245">        assertEquals(5.5, dataset.getMinRegularValue(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L247">        assertEquals(6.5, dataset.getMaxRegularValue(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L249">        assertEquals(7.5, dataset.getMinOutlier(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L251">        assertEquals(8.5, dataset.getMaxOutlier(&quot;R1&quot;, &quot;C1&quot;).doubleValue(),</span>
+                EPSILON);
+<span class="fc" id="L253">        assertEquals(new Range(7.5, 8.5), dataset.getRangeBounds(false));</span>
+<span class="fc" id="L254">    }</span>
+
+    /**
+     * Some basic checks for the constructor.
+     */
+    public void testConstructor() {
+<span class="fc" id="L260">        DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L262">        assertEquals(0, dataset.getColumnCount());</span>
+<span class="fc" id="L263">        assertEquals(0, dataset.getRowCount());</span>
+<span class="fc" id="L264">        assertTrue(Double.isNaN(dataset.getRangeLowerBound(false)));</span>
+<span class="fc" id="L265">        assertTrue(Double.isNaN(dataset.getRangeUpperBound(false)));</span>
+<span class="fc" id="L266">    }</span>
+
+    /**
+     * Some checks for the getRangeBounds() method.
+     */
+    public void testGetRangeBounds() {
+<span class="fc" id="L272">        DefaultBoxAndWhiskerCategoryDataset d1</span>
+                = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L274">        d1.add(new BoxAndWhiskerItem(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,</span>
+                new ArrayList()), &quot;R1&quot;, &quot;C1&quot;);
+<span class="fc" id="L276">        assertEquals(new Range(7.0, 8.0), d1.getRangeBounds(false));</span>
+<span class="fc" id="L277">        assertEquals(new Range(7.0, 8.0), d1.getRangeBounds(true));</span>
+
+<span class="fc" id="L279">        d1.add(new BoxAndWhiskerItem(1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5,</span>
+                new ArrayList()), &quot;R1&quot;, &quot;C1&quot;);
+<span class="fc" id="L281">        assertEquals(new Range(7.5, 8.5), d1.getRangeBounds(false));</span>
+<span class="fc" id="L282">        assertEquals(new Range(7.5, 8.5), d1.getRangeBounds(true));</span>
+
+<span class="fc" id="L284">        d1.add(new BoxAndWhiskerItem(2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5,</span>
+                new ArrayList()), &quot;R2&quot;, &quot;C1&quot;);
+<span class="fc" id="L286">        assertEquals(new Range(7.5, 9.5), d1.getRangeBounds(false));</span>
+<span class="fc" id="L287">        assertEquals(new Range(7.5, 9.5), d1.getRangeBounds(true));</span>
+
+        // this replaces the entry with the current minimum value, but the new
+        // minimum value is now in a different item
+<span class="fc" id="L291">        d1.add(new BoxAndWhiskerItem(1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 8.6, 9.6,</span>
+                new ArrayList()), &quot;R1&quot;, &quot;C1&quot;);
+<span class="fc" id="L293">        assertEquals(new Range(8.5, 9.6), d1.getRangeBounds(false));</span>
+<span class="fc" id="L294">        assertEquals(new Range(8.5, 9.6), d1.getRangeBounds(true));</span>
+<span class="fc" id="L295">    }</span>
+
+    /**
+     * Some checks for the remove method.
+     */
+    public void testRemove() {
+<span class="fc" id="L301">        DefaultBoxAndWhiskerCategoryDataset data</span>
+                = new DefaultBoxAndWhiskerCategoryDataset();
+
+<span class="fc" id="L304">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L306">            data.remove(&quot;R1&quot;, &quot;R2&quot;);</span>
+        }
+<span class="fc" id="L308">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L309">            pass = true;</span>
+<span class="nc" id="L310">        }</span>
+<span class="fc" id="L311">        assertTrue(pass);</span>
+<span class="fc" id="L312">        data.add(new BoxAndWhiskerItem(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,</span>
+                new ArrayList()), &quot;R1&quot;, &quot;C1&quot;);
+<span class="fc" id="L314">        assertEquals(new Range(7.0, 8.0), data.getRangeBounds(false));</span>
+<span class="fc" id="L315">        assertEquals(new Range(7.0, 8.0), data.getRangeBounds(true));</span>
+
+<span class="fc" id="L317">        data.add(new BoxAndWhiskerItem(2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5,</span>
+                new ArrayList()), &quot;R2&quot;, &quot;C1&quot;);
+<span class="fc" id="L319">        assertEquals(new Range(7.0, 9.5), data.getRangeBounds(false));</span>
+<span class="fc" id="L320">        assertEquals(new Range(7.0, 9.5), data.getRangeBounds(true));</span>
+
+<span class="fc" id="L322">        data.remove(&quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L323">        assertEquals(new Range(8.5, 9.5), data.getRangeBounds(false));</span>
+<span class="fc" id="L324">        assertEquals(new Range(8.5, 9.5), data.getRangeBounds(true));</span>
+<span class="fc" id="L325">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

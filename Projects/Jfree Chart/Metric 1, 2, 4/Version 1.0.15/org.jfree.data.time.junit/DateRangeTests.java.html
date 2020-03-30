@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DateRangeTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.time.junit</a> &gt; <span class="el_source">DateRangeTests.java</span></div><h1>DateRangeTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------
+ * DateRangeTests.java
+ * -------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 23-Mar-2004 : Version 1 (DG);
+ * 11-Jan-2005 : Added test to ensure Cloneable is not implemented (DG);
+ *
+ */
+
+package org.jfree.data.time.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.Date;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.time.DateRange;
+
+/**
+ * Some tests for the {@link DateRange} class.
+ */
+public class DateRangeTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L69">        return new TestSuite(DateRangeTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DateRangeTests(String name) {
+<span class="fc" id="L78">        super(name);</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L85">        DateRange r1 = new DateRange(new Date(1000L), new Date(2000L));</span>
+<span class="fc" id="L86">        DateRange r2 = new DateRange(new Date(1000L), new Date(2000L));</span>
+<span class="fc" id="L87">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L88">        assertTrue(r2.equals(r1));</span>
+
+<span class="fc" id="L90">        r1 = new DateRange(new Date(1111L), new Date(2000L));</span>
+<span class="fc" id="L91">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L92">        r2 = new DateRange(new Date(1111L), new Date(2000L));</span>
+<span class="fc" id="L93">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L95">        r1 = new DateRange(new Date(1111L), new Date(2222L));</span>
+<span class="fc" id="L96">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L97">        r2 = new DateRange(new Date(1111L), new Date(2222L));</span>
+<span class="fc" id="L98">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L99">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L105">        DateRange r1 = new DateRange(new Date(1000L), new Date(2000L));</span>
+<span class="fc" id="L106">        DateRange r2 = null;</span>
+
+        try {
+<span class="fc" id="L109">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L110">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L111">            out.writeObject(r1);</span>
+<span class="fc" id="L112">            out.close();</span>
+
+<span class="fc" id="L114">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L115">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L116">            r2 = (DateRange) in.readObject();</span>
+<span class="fc" id="L117">            in.close();</span>
+        }
+<span class="nc" id="L119">        catch (Exception e) {</span>
+<span class="nc" id="L120">            e.printStackTrace();</span>
+<span class="fc" id="L121">        }</span>
+<span class="fc" id="L122">        assertEquals(r1, r2);</span>
+<span class="fc" id="L123">    }</span>
+
+    /**
+     * The {@link DateRange} class is immutable, so it doesn't need to
+     * be cloneable.
+     */
+    public void testClone() {
+<span class="fc" id="L130">        DateRange r1 = new DateRange(new Date(1000L), new Date(2000L));</span>
+<span class="fc" id="L131">        assertFalse(r1 instanceof Cloneable);</span>
+<span class="fc" id="L132">    }</span>
+
+    /**
+     * Confirm that a DateRange is immutable.
+     */
+    public void testImmutable() {
+<span class="fc" id="L138">        Date d1 = new Date(10L);</span>
+<span class="fc" id="L139">        Date d2 = new Date(20L);</span>
+<span class="fc" id="L140">        DateRange r = new DateRange(d1, d2);</span>
+<span class="fc" id="L141">        d1.setTime(11L);</span>
+<span class="fc" id="L142">        assertEquals(new Date(10L), r.getLowerDate());</span>
+<span class="fc" id="L143">        r.getUpperDate().setTime(22L);</span>
+<span class="fc" id="L144">        assertEquals(new Date(20L), r.getUpperDate());</span>
+<span class="fc" id="L145">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

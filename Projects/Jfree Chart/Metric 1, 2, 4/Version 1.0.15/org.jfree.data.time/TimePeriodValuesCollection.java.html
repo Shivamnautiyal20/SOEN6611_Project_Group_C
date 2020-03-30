@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TimePeriodValuesCollection.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.time</a> &gt; <span class="el_source">TimePeriodValuesCollection.java</span></div><h1>TimePeriodValuesCollection.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------------
+ * TimePeriodValuesCollection.java
+ * -------------------------------
+ * (C) Copyright 2003-2013, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 22-Apr-2003 : Version 1 (DG);
+ * 05-May-2004 : Now extends AbstractIntervalXYDataset (DG);
+ * 15-Jul-2004 : Switched getX() with getXValue() and getY() with
+ *               getYValue() (DG);
+ * 06-Oct-2004 : Updated for changes in DomainInfo interface (DG);
+ * 11-Jan-2005 : Removed deprecated code in preparation for 1.0.0 release (DG);
+ * ------------- JFREECHART 1.0.x ---------------------------------------------
+ * 03-Oct-2006 : Deprecated get/setDomainIsPointsInTime() (DG);
+ * 11-Jun-2007 : Fixed bug in getDomainBounds() method, and changed default
+ *               value for domainIsPointsInTime to false (DG);
+ * 03-Jul-2013 : Use ParamChecks (DG);
+ *
+ */
+
+package org.jfree.data.time;
+
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.List;
+import org.jfree.chart.util.ParamChecks;
+
+import org.jfree.data.DomainInfo;
+import org.jfree.data.Range;
+import org.jfree.data.xy.AbstractIntervalXYDataset;
+import org.jfree.data.xy.IntervalXYDataset;
+import org.jfree.util.ObjectUtilities;
+
+/**
+ * A collection of {@link TimePeriodValues} objects.
+ * &lt;P&gt;
+ * This class implements the {@link org.jfree.data.xy.XYDataset} interface, as
+ * well as the extended {@link IntervalXYDataset} interface.  This makes it a
+ * convenient dataset for use with the {@link org.jfree.chart.plot.XYPlot}
+ * class.
+ */
+public class TimePeriodValuesCollection extends AbstractIntervalXYDataset
+        implements IntervalXYDataset, DomainInfo, Serializable {
+
+    /** For serialization. */
+    private static final long serialVersionUID = -3077934065236454199L;
+
+    /** Storage for the time series. */
+    private List data;
+
+    /**
+     * The position within a time period to return as the x-value (START,
+     * MIDDLE or END).
+     */
+    private TimePeriodAnchor xPosition;
+
+    /**
+     * A flag that indicates that the domain is 'points in time'.  If this
+     * flag is true, only the x-value is used to determine the range of values
+     * in the domain, the start and end x-values are ignored.
+     */
+    private boolean domainIsPointsInTime;
+
+    /**
+     * Constructs an empty dataset.
+     */
+    public TimePeriodValuesCollection() {
+<span class="fc" id="L98">        this((TimePeriodValues) null);</span>
+<span class="fc" id="L99">    }</span>
+
+    /**
+     * Constructs a dataset containing a single series.  Additional series can
+     * be added.
+     *
+     * @param series  the series (&lt;code&gt;null&lt;/code&gt; ignored).
+     */
+<span class="fc" id="L107">    public TimePeriodValuesCollection(TimePeriodValues series) {</span>
+<span class="fc" id="L108">        this.data = new java.util.ArrayList();</span>
+<span class="fc" id="L109">        this.xPosition = TimePeriodAnchor.MIDDLE;</span>
+<span class="fc" id="L110">        this.domainIsPointsInTime = false;</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">        if (series != null) {</span>
+<span class="nc" id="L112">            this.data.add(series);</span>
+<span class="nc" id="L113">            series.addChangeListener(this);</span>
+        }
+<span class="fc" id="L115">    }</span>
+
+    /**
+     * Returns the position of the X value within each time period.
+     *
+     * @return The position (never &lt;code&gt;null&lt;/code&gt;).
+     *
+     * @see #setXPosition(TimePeriodAnchor)
+     */
+    public TimePeriodAnchor getXPosition() {
+<span class="nc" id="L125">        return this.xPosition;</span>
+    }
+
+    /**
+     * Sets the position of the x axis within each time period.
+     *
+     * @param position  the position (&lt;code&gt;null&lt;/code&gt; not permitted).
+     *
+     * @see #getXPosition()
+     */
+    public void setXPosition(TimePeriodAnchor position) {
+<span class="fc" id="L136">        ParamChecks.nullNotPermitted(position, &quot;position&quot;);</span>
+<span class="fc" id="L137">        this.xPosition = position;</span>
+<span class="fc" id="L138">    }</span>
+
+    /**
+     * Returns the number of series in the collection.
+     *
+     * @return The series count.
+     */
+    public int getSeriesCount() {
+<span class="fc" id="L146">        return this.data.size();</span>
+    }
+
+    /**
+     * Returns a series.
+     *
+     * @param series  the index of the series (zero-based).
+     *
+     * @return The series.
+     */
+    public TimePeriodValues getSeries(int series) {
+<span class="fc bfc" id="L157" title="All 4 branches covered.">        if ((series &lt; 0) || (series &gt;= getSeriesCount())) {</span>
+<span class="fc" id="L158">            throw new IllegalArgumentException(&quot;Index 'series' out of range.&quot;);</span>
+        }
+<span class="fc" id="L160">        return (TimePeriodValues) this.data.get(series);</span>
+    }
+
+    /**
+     * Returns the key for a series.
+     *
+     * @param series  the index of the series (zero-based).
+     *
+     * @return The key for a series.
+     */
+    public Comparable getSeriesKey(int series) {
+        // defer argument checking
+<span class="nc" id="L172">        return getSeries(series).getKey();</span>
+    }
+
+    /**
+     * Adds a series to the collection.  A
+     * {@link org.jfree.data.general.DatasetChangeEvent} is sent to all
+     * registered listeners.
+     *
+     * @param series  the time series.
+     */
+    public void addSeries(TimePeriodValues series) {
+<span class="fc" id="L183">        ParamChecks.nullNotPermitted(series, &quot;series&quot;);</span>
+<span class="fc" id="L184">        this.data.add(series);</span>
+<span class="fc" id="L185">        series.addChangeListener(this);</span>
+<span class="fc" id="L186">        fireDatasetChanged();</span>
+<span class="fc" id="L187">    }</span>
+
+    /**
+     * Removes the specified series from the collection.
+     *
+     * @param series  the series to remove (&lt;code&gt;null&lt;/code&gt; not permitted).
+     */
+    public void removeSeries(TimePeriodValues series) {
+<span class="fc" id="L195">        ParamChecks.nullNotPermitted(series, &quot;series&quot;);</span>
+<span class="fc" id="L196">        this.data.remove(series);</span>
+<span class="fc" id="L197">        series.removeChangeListener(this);</span>
+<span class="fc" id="L198">        fireDatasetChanged();</span>
+
+<span class="fc" id="L200">    }</span>
+
+    /**
+     * Removes a series from the collection.
+     *
+     * @param index  the series index (zero-based).
+     */
+    public void removeSeries(int index) {
+<span class="nc" id="L208">        TimePeriodValues series = getSeries(index);</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">        if (series != null) {</span>
+<span class="nc" id="L210">            removeSeries(series);</span>
+        }
+<span class="nc" id="L212">    }</span>
+
+    /**
+     * Returns the number of items in the specified series.
+     * &lt;P&gt;
+     * This method is provided for convenience.
+     *
+     * @param series  the index of the series of interest (zero-based).
+     *
+     * @return The number of items in the specified series.
+     */
+    public int getItemCount(int series) {
+<span class="nc" id="L224">        return getSeries(series).getItemCount();</span>
+    }
+
+    /**
+     * Returns the x-value for the specified series and item.
+     *
+     * @param series  the series (zero-based index).
+     * @param item  the item (zero-based index).
+     *
+     * @return The x-value for the specified series and item.
+     */
+    public Number getX(int series, int item) {
+<span class="nc" id="L236">        TimePeriodValues ts = (TimePeriodValues) this.data.get(series);</span>
+<span class="nc" id="L237">        TimePeriodValue dp = ts.getDataItem(item);</span>
+<span class="nc" id="L238">        TimePeriod period = dp.getPeriod();</span>
+<span class="nc" id="L239">        return new Long(getX(period));</span>
+    }
+
+    /**
+     * Returns the x-value for a time period.
+     *
+     * @param period  the time period.
+     *
+     * @return The x-value.
+     */
+    private long getX(TimePeriod period) {
+
+<span class="nc bnc" id="L251" title="All 2 branches missed.">        if (this.xPosition == TimePeriodAnchor.START) {</span>
+<span class="nc" id="L252">            return period.getStart().getTime();</span>
+        }
+<span class="nc bnc" id="L254" title="All 2 branches missed.">        else if (this.xPosition == TimePeriodAnchor.MIDDLE) {</span>
+<span class="nc" id="L255">            return period.getStart().getTime()</span>
+<span class="nc" id="L256">                / 2 + period.getEnd().getTime() / 2;</span>
+        }
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        else if (this.xPosition == TimePeriodAnchor.END) {</span>
+<span class="nc" id="L259">            return period.getEnd().getTime();</span>
+        }
+        else {
+<span class="nc" id="L262">            throw new IllegalStateException(&quot;TimePeriodAnchor unknown.&quot;);</span>
+        }
+
+    }
+
+    /**
+     * Returns the starting X value for the specified series and item.
+     *
+     * @param series  the series (zero-based index).
+     * @param item  the item (zero-based index).
+     *
+     * @return The starting X value for the specified series and item.
+     */
+    public Number getStartX(int series, int item) {
+<span class="nc" id="L276">        TimePeriodValues ts = (TimePeriodValues) this.data.get(series);</span>
+<span class="nc" id="L277">        TimePeriodValue dp = ts.getDataItem(item);</span>
+<span class="nc" id="L278">        return new Long(dp.getPeriod().getStart().getTime());</span>
+    }
+
+    /**
+     * Returns the ending X value for the specified series and item.
+     *
+     * @param series  the series (zero-based index).
+     * @param item  the item (zero-based index).
+     *
+     * @return The ending X value for the specified series and item.
+     */
+    public Number getEndX(int series, int item) {
+<span class="nc" id="L290">        TimePeriodValues ts = (TimePeriodValues) this.data.get(series);</span>
+<span class="nc" id="L291">        TimePeriodValue dp = ts.getDataItem(item);</span>
+<span class="nc" id="L292">        return new Long(dp.getPeriod().getEnd().getTime());</span>
+    }
+
+    /**
+     * Returns the y-value for the specified series and item.
+     *
+     * @param series  the series (zero-based index).
+     * @param item  the item (zero-based index).
+     *
+     * @return The y-value for the specified series and item.
+     */
+    public Number getY(int series, int item) {
+<span class="nc" id="L304">        TimePeriodValues ts = (TimePeriodValues) this.data.get(series);</span>
+<span class="nc" id="L305">        TimePeriodValue dp = ts.getDataItem(item);</span>
+<span class="nc" id="L306">        return dp.getValue();</span>
+    }
+
+    /**
+     * Returns the starting Y value for the specified series and item.
+     *
+     * @param series  the series (zero-based index).
+     * @param item  the item (zero-based index).
+     *
+     * @return The starting Y value for the specified series and item.
+     */
+    public Number getStartY(int series, int item) {
+<span class="nc" id="L318">        return getY(series, item);</span>
+    }
+
+    /**
+     * Returns the ending Y value for the specified series and item.
+     *
+     * @param series  the series (zero-based index).
+     * @param item  the item (zero-based index).
+     *
+     * @return The ending Y value for the specified series and item.
+     */
+    public Number getEndY(int series, int item) {
+<span class="nc" id="L330">        return getY(series, item);</span>
+    }
+
+    /**
+     * Returns the minimum x-value in the dataset.
+     *
+     * @param includeInterval  a flag that determines whether or not the
+     *                         x-interval is taken into account.
+     *
+     * @return The minimum value.
+     */
+    public double getDomainLowerBound(boolean includeInterval) {
+<span class="nc" id="L342">        double result = Double.NaN;</span>
+<span class="nc" id="L343">        Range r = getDomainBounds(includeInterval);</span>
+<span class="nc bnc" id="L344" title="All 2 branches missed.">        if (r != null) {</span>
+<span class="nc" id="L345">            result = r.getLowerBound();</span>
+        }
+<span class="nc" id="L347">        return result;</span>
+    }
+
+    /**
+     * Returns the maximum x-value in the dataset.
+     *
+     * @param includeInterval  a flag that determines whether or not the
+     *                         x-interval is taken into account.
+     *
+     * @return The maximum value.
+     */
+    public double getDomainUpperBound(boolean includeInterval) {
+<span class="nc" id="L359">        double result = Double.NaN;</span>
+<span class="nc" id="L360">        Range r = getDomainBounds(includeInterval);</span>
+<span class="nc bnc" id="L361" title="All 2 branches missed.">        if (r != null) {</span>
+<span class="nc" id="L362">            result = r.getUpperBound();</span>
+        }
+<span class="nc" id="L364">        return result;</span>
+    }
+
+    /**
+     * Returns the range of the values in this dataset's domain.
+     *
+     * @param includeInterval  a flag that determines whether or not the
+     *                         x-interval is taken into account.
+     *
+     * @return The range.
+     */
+    public Range getDomainBounds(boolean includeInterval) {
+<span class="pc bpc" id="L376" title="1 of 4 branches missed.">        boolean interval = includeInterval || this.domainIsPointsInTime;</span>
+<span class="fc" id="L377">        Range result = null;</span>
+<span class="fc" id="L378">        Range temp = null;</span>
+<span class="fc" id="L379">        Iterator iterator = this.data.iterator();</span>
+<span class="fc bfc" id="L380" title="All 2 branches covered.">        while (iterator.hasNext()) {</span>
+<span class="fc" id="L381">            TimePeriodValues series = (TimePeriodValues) iterator.next();</span>
+<span class="fc" id="L382">            int count = series.getItemCount();</span>
+<span class="pc bpc" id="L383" title="1 of 2 branches missed.">            if (count &gt; 0) {</span>
+<span class="fc" id="L384">                TimePeriod start = series.getTimePeriod(</span>
+<span class="fc" id="L385">                        series.getMinStartIndex());</span>
+<span class="fc" id="L386">                TimePeriod end = series.getTimePeriod(series.getMaxEndIndex());</span>
+<span class="fc bfc" id="L387" title="All 2 branches covered.">                if (!interval) {</span>
+<span class="pc bpc" id="L388" title="1 of 2 branches missed.">                    if (this.xPosition == TimePeriodAnchor.START) {</span>
+<span class="nc" id="L389">                        TimePeriod maxStart = series.getTimePeriod(</span>
+<span class="nc" id="L390">                                series.getMaxStartIndex());</span>
+<span class="nc" id="L391">                        temp = new Range(start.getStart().getTime(),</span>
+<span class="nc" id="L392">                                maxStart.getStart().getTime());</span>
+<span class="nc" id="L393">                    }</span>
+<span class="pc bpc" id="L394" title="1 of 2 branches missed.">                    else if (this.xPosition == TimePeriodAnchor.MIDDLE) {</span>
+<span class="fc" id="L395">                        TimePeriod minMiddle = series.getTimePeriod(</span>
+<span class="fc" id="L396">                                series.getMinMiddleIndex());</span>
+<span class="fc" id="L397">                        long s1 = minMiddle.getStart().getTime();</span>
+<span class="fc" id="L398">                        long e1 = minMiddle.getEnd().getTime();</span>
+<span class="fc" id="L399">                        TimePeriod maxMiddle = series.getTimePeriod(</span>
+<span class="fc" id="L400">                                series.getMaxMiddleIndex());</span>
+<span class="fc" id="L401">                        long s2 = maxMiddle.getStart().getTime();</span>
+<span class="fc" id="L402">                        long e2 = maxMiddle.getEnd().getTime();</span>
+<span class="fc" id="L403">                        temp = new Range(s1 + (e1 - s1) / 2,</span>
+                                s2 + (e2 - s2) / 2);
+<span class="fc" id="L405">                    }</span>
+<span class="nc bnc" id="L406" title="All 2 branches missed.">                    else if (this.xPosition == TimePeriodAnchor.END) {</span>
+<span class="nc" id="L407">                        TimePeriod minEnd = series.getTimePeriod(</span>
+<span class="nc" id="L408">                                series.getMinEndIndex());</span>
+<span class="nc" id="L409">                        temp = new Range(minEnd.getEnd().getTime(),</span>
+<span class="nc" id="L410">                                end.getEnd().getTime());</span>
+<span class="nc" id="L411">                    }</span>
+                }
+                else {
+<span class="fc" id="L414">                    temp = new Range(start.getStart().getTime(),</span>
+<span class="fc" id="L415">                            end.getEnd().getTime());</span>
+                }
+<span class="fc" id="L417">                result = Range.combine(result, temp);</span>
+            }
+<span class="fc" id="L419">        }</span>
+<span class="fc" id="L420">        return result;</span>
+    }
+
+    /**
+     * Tests this instance for equality with an arbitrary object.
+     *
+     * @param obj  the object (&lt;code&gt;null&lt;/code&gt; permitted).
+     *
+     * @return A boolean.
+     */
+    public boolean equals(Object obj) {
+<span class="fc bfc" id="L431" title="All 2 branches covered.">        if (obj == this) {</span>
+<span class="fc" id="L432">            return true;</span>
+        }
+<span class="pc bpc" id="L434" title="1 of 2 branches missed.">        if (!(obj instanceof TimePeriodValuesCollection)) {</span>
+<span class="nc" id="L435">            return false;</span>
+        }
+<span class="fc" id="L437">        TimePeriodValuesCollection that = (TimePeriodValuesCollection) obj;</span>
+<span class="fc bfc" id="L438" title="All 2 branches covered.">        if (this.domainIsPointsInTime != that.domainIsPointsInTime) {</span>
+<span class="fc" id="L439">            return false;</span>
+        }
+<span class="fc bfc" id="L441" title="All 2 branches covered.">        if (this.xPosition != that.xPosition) {</span>
+<span class="fc" id="L442">            return false;</span>
+        }
+<span class="fc bfc" id="L444" title="All 2 branches covered.">        if (!ObjectUtilities.equal(this.data, that.data)) {</span>
+<span class="fc" id="L445">            return false;</span>
+        }
+<span class="fc" id="L447">        return true;</span>
+    }
+
+    // --- DEPRECATED METHODS -------------------------------------------------
+
+    /**
+     * Returns a flag that controls whether the domain is treated as 'points
+     * in time'.  This flag is used when determining the max and min values for
+     * the domain.  If true, then only the x-values are considered for the max
+     * and min values.  If false, then the start and end x-values will also be
+     * taken into consideration
+     *
+     * @return The flag.
+     *
+     * @deprecated This flag is no longer used by JFreeChart (as of version
+     *     1.0.3).
+     */
+    public boolean getDomainIsPointsInTime() {
+<span class="fc" id="L465">        return this.domainIsPointsInTime;</span>
+    }
+
+    /**
+     * Sets a flag that controls whether the domain is treated as 'points in
+     * time', or time periods.
+     *
+     * @param flag  the new value of the flag.
+     *
+     * @deprecated This flag is no longer used by JFreeChart (as of version
+     *     1.0.3).
+     */
+    public void setDomainIsPointsInTime(boolean flag) {
+<span class="fc" id="L478">        this.domainIsPointsInTime = flag;</span>
+<span class="fc" id="L479">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

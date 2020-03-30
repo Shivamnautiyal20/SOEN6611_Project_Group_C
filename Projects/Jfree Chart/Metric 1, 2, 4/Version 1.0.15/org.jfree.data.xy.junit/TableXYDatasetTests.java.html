@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TableXYDatasetTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.xy.junit</a> &gt; <span class="el_source">TableXYDatasetTests.java</span></div><h1>TableXYDatasetTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------------
+ * TableXYDatasetTests.java
+ * ------------------------
+ * (C) Copyright 2003-2008, by Richard Atkinson and Contributors.
+ *
+ * Original Author:  Richard Atkinson;
+ * Contributor(s):   David Gilbert (for Object Refinery Limited);
+ *
+ * Changes
+ * -------
+ * 11-Aug-2003 : Version 1 (RA);
+ * 18-Aug-2003 : Added tests for event notification when removing and updating
+ *               series (RA);
+ * 22-Sep-2003 : Changed to recognise that empty values are now null rather
+ *               than zero (RA);
+ * 16-Feb-2004 : Added some additional tests (DG);
+ * 15-Jul-2004 : Switched getX() with getXValue() and getY() with
+ *               getYValue() (DG);
+ * 02-Feb-2007 : Removed author tags all over JFreeChart sources (DG);
+ * 22-Apr-2008 : Added testPublicCloneable (DG);
+ *
+ */
+
+package org.jfree.data.xy.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.xy.DefaultTableXYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for {@link DefaultTableXYDataset}.
+ */
+public class TableXYDatasetTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L78">        return new TestSuite(TableXYDatasetTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public TableXYDatasetTests(String name) {
+<span class="fc" id="L87">        super(name);</span>
+<span class="fc" id="L88">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+
+<span class="fc" id="L95">        DefaultTableXYDataset d1 = new DefaultTableXYDataset();</span>
+<span class="fc" id="L96">        DefaultTableXYDataset d2 = new DefaultTableXYDataset();</span>
+<span class="fc" id="L97">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L98">        assertTrue(d2.equals(d1));</span>
+
+<span class="fc" id="L100">        d1.addSeries(createSeries1());</span>
+<span class="fc" id="L101">        assertFalse(d1.equals(d2));</span>
+
+<span class="fc" id="L103">        d2.addSeries(createSeries1());</span>
+<span class="fc" id="L104">        assertTrue(d1.equals(d2));</span>
+
+<span class="fc" id="L106">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L112">        DefaultTableXYDataset d1 = new DefaultTableXYDataset();</span>
+<span class="fc" id="L113">        d1.addSeries(createSeries1());</span>
+<span class="fc" id="L114">        DefaultTableXYDataset d2 = null;</span>
+        try {
+<span class="fc" id="L116">            d2 = (DefaultTableXYDataset) d1.clone();</span>
+        }
+<span class="nc" id="L118">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L119">            System.err.println(&quot;Failed to clone.&quot;);</span>
+<span class="fc" id="L120">        }</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="fc" id="L123">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L124">    }</span>
+
+    /**
+     * Verify that this class implements {@link PublicCloneable}.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L130">        DefaultTableXYDataset d1 = new DefaultTableXYDataset();</span>
+<span class="fc" id="L131">        assertTrue(d1 instanceof PublicCloneable);</span>
+<span class="fc" id="L132">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L139">        DefaultTableXYDataset d1 = new DefaultTableXYDataset();</span>
+<span class="fc" id="L140">        d1.addSeries(createSeries2());</span>
+<span class="fc" id="L141">        DefaultTableXYDataset d2 = null;</span>
+
+        try {
+<span class="fc" id="L144">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L145">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L146">            out.writeObject(d1);</span>
+<span class="fc" id="L147">            out.close();</span>
+
+<span class="fc" id="L149">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L150">                new ByteArrayInputStream(buffer.toByteArray())</span>
+            );
+<span class="fc" id="L152">            d2 = (DefaultTableXYDataset) in.readObject();</span>
+<span class="fc" id="L153">            in.close();</span>
+        }
+<span class="nc" id="L155">        catch (Exception e) {</span>
+<span class="nc" id="L156">            System.out.println(e.toString());</span>
+<span class="fc" id="L157">        }</span>
+<span class="fc" id="L158">        assertEquals(d1, d2);</span>
+
+<span class="fc" id="L160">    }</span>
+
+    /**
+     * Assorted tests.
+     */
+    public void testTableXYDataset() {
+
+<span class="fc" id="L167">        XYSeries series1 = createSeries1();</span>
+<span class="fc" id="L168">        XYSeries series2 = createSeries2();</span>
+
+<span class="fc" id="L170">        DefaultTableXYDataset dataset = new DefaultTableXYDataset();</span>
+<span class="fc" id="L171">        dataset.addSeries(series1);</span>
+<span class="fc" id="L172">        dataset.addSeries(series2);</span>
+
+        //  Test that there are 6 X points and some specific values
+<span class="fc" id="L175">        assertEquals(6, dataset.getItemCount());</span>
+<span class="fc" id="L176">        assertEquals(6, dataset.getX(0, 5).intValue());</span>
+<span class="fc" id="L177">        assertEquals(null, dataset.getY(0, 5));</span>
+<span class="fc" id="L178">        assertEquals(6, dataset.getX(1, 5).intValue());</span>
+<span class="fc" id="L179">        assertEquals(2, dataset.getY(1, 5).intValue());</span>
+
+        // after adding a point to a series, check that there are now 7
+        // items in each series
+<span class="fc" id="L183">        series2.add(7, 2);</span>
+<span class="fc" id="L184">        assertEquals(7, dataset.getItemCount());</span>
+<span class="fc" id="L185">        assertEquals(null, dataset.getY(0, 6));</span>
+<span class="fc" id="L186">        assertEquals(2, dataset.getY(1, 6).intValue());</span>
+
+        //  Remove series 1
+<span class="fc" id="L189">        dataset.removeSeries(series1);</span>
+        //  Test that there are still 7 X points
+<span class="fc" id="L191">        assertEquals(7, dataset.getItemCount());</span>
+
+        //  Remove series 2 and add new series
+<span class="fc" id="L194">        dataset.removeSeries(series2);</span>
+<span class="fc" id="L195">        series1 = createSeries1();</span>
+<span class="fc" id="L196">        dataset.addSeries(series1);</span>
+
+        //  Test that there are now 4 X points
+<span class="fc" id="L199">        assertEquals(4, dataset.getItemCount());</span>
+
+<span class="fc" id="L201">    }</span>
+
+    /**
+     * A test for bug report 788597.
+     */
+    public void test788597() {
+<span class="fc" id="L207">        DefaultTableXYDataset dataset = new DefaultTableXYDataset();</span>
+<span class="fc" id="L208">        dataset.addSeries(createSeries1());</span>
+<span class="fc" id="L209">        assertEquals(4, dataset.getItemCount());</span>
+<span class="fc" id="L210">        dataset.removeAllSeries();</span>
+<span class="fc" id="L211">        assertEquals(0, dataset.getItemCount());</span>
+<span class="fc" id="L212">    }</span>
+
+    /**
+     * Test that removing all values for a given x works.
+     */
+    public void testRemoveAllValuesForX() {
+<span class="fc" id="L218">        DefaultTableXYDataset dataset = new DefaultTableXYDataset();</span>
+<span class="fc" id="L219">        dataset.addSeries(createSeries1());</span>
+<span class="fc" id="L220">        dataset.addSeries(createSeries2());</span>
+<span class="fc" id="L221">        dataset.removeAllValuesForX(new Double(2.0));</span>
+<span class="fc" id="L222">        assertEquals(5, dataset.getItemCount());</span>
+<span class="fc" id="L223">        assertEquals(new Double(1.0), dataset.getX(0, 0));</span>
+<span class="fc" id="L224">        assertEquals(new Double(3.0), dataset.getX(0, 1));</span>
+<span class="fc" id="L225">        assertEquals(new Double(4.0), dataset.getX(0, 2));</span>
+<span class="fc" id="L226">        assertEquals(new Double(5.0), dataset.getX(0, 3));</span>
+<span class="fc" id="L227">        assertEquals(new Double(6.0), dataset.getX(0, 4));</span>
+<span class="fc" id="L228">    }</span>
+
+    /**
+     * Tests to see that pruning removes unwanted x values.
+     */
+    public void testPrune() {
+<span class="fc" id="L234">        DefaultTableXYDataset dataset = new DefaultTableXYDataset();</span>
+<span class="fc" id="L235">        dataset.addSeries(createSeries1());</span>
+<span class="fc" id="L236">        dataset.addSeries(createSeries2());</span>
+<span class="fc" id="L237">        dataset.removeSeries(1);</span>
+<span class="fc" id="L238">        dataset.prune();</span>
+<span class="fc" id="L239">        assertEquals(4, dataset.getItemCount());</span>
+<span class="fc" id="L240">    }</span>
+
+    /**
+     * Tests the auto-pruning feature.
+     */
+    public void testAutoPrune() {
+
+        // WITH AUTOPRUNING
+<span class="fc" id="L248">        DefaultTableXYDataset dataset = new DefaultTableXYDataset(true);</span>
+<span class="fc" id="L249">        dataset.addSeries(createSeriesA());</span>
+<span class="fc" id="L250">        assertEquals(2, dataset.getItemCount());  // should be 2 items</span>
+<span class="fc" id="L251">        dataset.addSeries(createSeriesB());</span>
+<span class="fc" id="L252">        assertEquals(2, dataset.getItemCount());  // still 2</span>
+<span class="fc" id="L253">        dataset.removeSeries(1);</span>
+<span class="fc" id="L254">        assertEquals(1, dataset.getItemCount());  // 1 value pruned.</span>
+
+        // WITHOUT AUTOPRUNING
+<span class="fc" id="L257">        DefaultTableXYDataset dataset2 = new DefaultTableXYDataset(true);</span>
+<span class="fc" id="L258">        dataset2.addSeries(createSeriesA());</span>
+<span class="fc" id="L259">        assertEquals(2, dataset2.getItemCount());  // should be 2 items</span>
+<span class="fc" id="L260">        dataset2.addSeries(createSeriesB());</span>
+<span class="fc" id="L261">        assertEquals(2, dataset2.getItemCount());  // still 2</span>
+<span class="fc" id="L262">        dataset2.removeSeries(1);</span>
+<span class="fc" id="L263">        assertEquals(1, dataset2.getItemCount());  // still 2.</span>
+
+<span class="fc" id="L265">    }</span>
+
+    /**
+     * Creates a series for testing.
+     *
+     * @return A series.
+     */
+    private XYSeries createSeriesA() {
+<span class="fc" id="L273">        XYSeries s = new XYSeries(&quot;A&quot;, true, false);</span>
+<span class="fc" id="L274">        s.add(1.0, 1.1);</span>
+<span class="fc" id="L275">        s.add(2.0, null);</span>
+<span class="fc" id="L276">        return s;</span>
+    }
+
+    /**
+     * Creates a series for testing.
+     *
+     * @return A series.
+     */
+    private XYSeries createSeriesB() {
+<span class="fc" id="L285">        XYSeries s = new XYSeries(&quot;B&quot;, true, false);</span>
+<span class="fc" id="L286">        s.add(1.0, null);</span>
+<span class="fc" id="L287">        s.add(2.0, 2.2);</span>
+<span class="fc" id="L288">        return s;</span>
+    }
+
+    /**
+     * Creates a series for testing.
+     *
+     * @return A series.
+     */
+    private XYSeries createSeries1() {
+<span class="fc" id="L297">        XYSeries series1 = new XYSeries(&quot;Series 1&quot;, true, false);</span>
+<span class="fc" id="L298">        series1.add(1.0, 1.0);</span>
+<span class="fc" id="L299">        series1.add(2.0, 1.0);</span>
+<span class="fc" id="L300">        series1.add(4.0, 1.0);</span>
+<span class="fc" id="L301">        series1.add(5.0, 1.0);</span>
+<span class="fc" id="L302">        return series1;</span>
+    }
+
+    /**
+     * Creates a series for testing.
+     *
+     * @return A series.
+     */
+    private XYSeries createSeries2() {
+<span class="fc" id="L311">        XYSeries series2 = new XYSeries(&quot;Series 2&quot;, true, false);</span>
+<span class="fc" id="L312">        series2.add(2.0, 2.0);</span>
+<span class="fc" id="L313">        series2.add(3.0, 2.0);</span>
+<span class="fc" id="L314">        series2.add(4.0, 2.0);</span>
+<span class="fc" id="L315">        series2.add(5.0, 2.0);</span>
+<span class="fc" id="L316">        series2.add(6.0, 2.0);</span>
+<span class="fc" id="L317">        return series2;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XYSeriesCollectionTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.xy.junit</a> &gt; <span class="el_source">XYSeriesCollectionTests.java</span></div><h1>XYSeriesCollectionTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------------
+ * XYSeriesCollectionTests.java
+ * ----------------------------
+ * (C) Copyright 2003-2012, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 18-May-2003 : Version 1 (DG);
+ * 27-Nov-2006 : Updated testCloning() (DG);
+ * 08-Mar-2007 : Added testGetSeries() and testRemoveSeries() (DG);
+ * 08-May-2007 : Added testIndexOf() (DG);
+ * 03-Dec-2007 : Added testGetSeriesByKey() (DG);
+ * 22-Apr-2008 : Added testPublicCloneable (DG);
+ * 06-Mar-2009 : Added testGetDomainBounds (DG);
+ * 17-May-2010 : Added checks for duplicate series names (DG);
+ * 08-Jan-2012 : Added testBug3445507() (DG);
+ * 28-Jul-2012 : Added testSeriesRename() (DG);
+ *
+ */
+
+package org.jfree.data.xy.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.Range;
+import org.jfree.data.UnknownKeyException;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link XYSeriesCollection} class.
+ */
+public class XYSeriesCollectionTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L80">        return new TestSuite(XYSeriesCollectionTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public XYSeriesCollectionTests(String name) {
+<span class="fc" id="L89">        super(name);</span>
+<span class="fc" id="L90">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * Some checks for the constructor.
+     */
+    public void testConstructor() {
+<span class="fc" id="L98">        XYSeriesCollection xysc = new XYSeriesCollection();</span>
+<span class="fc" id="L99">        assertEquals(0, xysc.getSeriesCount());</span>
+<span class="fc" id="L100">        assertEquals(1.0, xysc.getIntervalWidth(), EPSILON);</span>
+<span class="fc" id="L101">        assertEquals(0.5, xysc.getIntervalPositionFactor(), EPSILON);</span>
+<span class="fc" id="L102">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L108">        XYSeries s1 = new XYSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L109">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L110">        XYSeriesCollection c1 = new XYSeriesCollection();</span>
+<span class="fc" id="L111">        c1.addSeries(s1);</span>
+<span class="fc" id="L112">        XYSeries s2 = new XYSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L113">        s2.add(1.0, 1.1);</span>
+<span class="fc" id="L114">        XYSeriesCollection c2 = new XYSeriesCollection();</span>
+<span class="fc" id="L115">        c2.addSeries(s2);</span>
+<span class="fc" id="L116">        assertTrue(c1.equals(c2));</span>
+<span class="fc" id="L117">        assertTrue(c2.equals(c1));</span>
+
+<span class="fc" id="L119">        c1.addSeries(new XYSeries(&quot;Empty Series&quot;));</span>
+<span class="fc" id="L120">        assertFalse(c1.equals(c2));</span>
+<span class="fc" id="L121">        c2.addSeries(new XYSeries(&quot;Empty Series&quot;));</span>
+<span class="fc" id="L122">        assertTrue(c1.equals(c2));</span>
+
+<span class="fc" id="L124">        c1.setIntervalWidth(5.0);</span>
+<span class="fc" id="L125">        assertFalse(c1.equals(c2));</span>
+<span class="fc" id="L126">        c2.setIntervalWidth(5.0);</span>
+<span class="fc" id="L127">        assertTrue(c1.equals(c2));</span>
+
+<span class="fc" id="L129">        c1.setIntervalPositionFactor(0.75);</span>
+<span class="fc" id="L130">        assertFalse(c1.equals(c2));</span>
+<span class="fc" id="L131">        c2.setIntervalPositionFactor(0.75);</span>
+<span class="fc" id="L132">        assertTrue(c1.equals(c2));</span>
+
+<span class="fc" id="L134">        c1.setAutoWidth(true);</span>
+<span class="fc" id="L135">        assertFalse(c1.equals(c2));</span>
+<span class="fc" id="L136">        c2.setAutoWidth(true);</span>
+<span class="fc" id="L137">        assertTrue(c1.equals(c2));</span>
+
+<span class="fc" id="L139">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L145">        XYSeries s1 = new XYSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L146">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L147">        XYSeriesCollection c1 = new XYSeriesCollection();</span>
+<span class="fc" id="L148">        c1.addSeries(s1);</span>
+<span class="fc" id="L149">        XYSeriesCollection c2 = null;</span>
+        try {
+<span class="fc" id="L151">            c2 = (XYSeriesCollection) c1.clone();</span>
+        }
+<span class="nc" id="L153">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L154">            e.printStackTrace();</span>
+<span class="nc" id="L155">            assertTrue(false);</span>
+<span class="nc" id="L156">            return;</span>
+<span class="fc" id="L157">        }</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">        assertTrue(c1 != c2);</span>
+<span class="pc bpc" id="L159" title="1 of 2 branches missed.">        assertTrue(c1.getClass() == c2.getClass());</span>
+<span class="fc" id="L160">        assertTrue(c1.equals(c2));</span>
+
+        // check independence
+<span class="fc" id="L163">        s1.setDescription(&quot;XYZ&quot;);</span>
+<span class="fc" id="L164">        assertFalse(c1.equals(c2));</span>
+<span class="fc" id="L165">    }</span>
+
+    /**
+     * Verify that this class implements {@link PublicCloneable}.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L171">        Object c1 = new XYSeriesCollection();</span>
+<span class="fc" id="L172">        assertTrue(c1 instanceof PublicCloneable);</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L179">        XYSeries s1 = new XYSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L180">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L181">        XYSeriesCollection c1 = new XYSeriesCollection();</span>
+<span class="fc" id="L182">        c1.addSeries(s1);</span>
+<span class="fc" id="L183">        XYSeriesCollection c2 = null;</span>
+
+        try {
+<span class="fc" id="L186">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L187">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L188">            out.writeObject(c1);</span>
+<span class="fc" id="L189">            out.close();</span>
+
+<span class="fc" id="L191">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L192">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L193">            c2 = (XYSeriesCollection) in.readObject();</span>
+<span class="fc" id="L194">            in.close();</span>
+        }
+<span class="nc" id="L196">        catch (Exception e) {</span>
+<span class="nc" id="L197">            e.printStackTrace();</span>
+<span class="fc" id="L198">        }</span>
+<span class="fc" id="L199">        assertEquals(c1, c2);</span>
+<span class="fc" id="L200">    }</span>
+
+    /**
+     * A test for bug report 1170825.
+     */
+    public void test1170825() {
+<span class="fc" id="L206">        XYSeries s1 = new XYSeries(&quot;Series1&quot;);</span>
+<span class="fc" id="L207">        XYSeriesCollection dataset = new XYSeriesCollection();</span>
+<span class="fc" id="L208">        dataset.addSeries(s1);</span>
+        try {
+<span class="nc" id="L210">            /* XYSeries s = */ dataset.getSeries(1);</span>
+        }
+<span class="fc" id="L212">        catch (IllegalArgumentException e) {</span>
+            // correct outcome
+        }
+<span class="nc" id="L215">        catch (IndexOutOfBoundsException e) {</span>
+<span class="nc" id="L216">            assertTrue(false);  // wrong outcome</span>
+<span class="pc" id="L217">        }</span>
+<span class="fc" id="L218">    }</span>
+
+    /**
+     * Some basic checks for the getSeries() method.
+     */
+    public void testGetSeries() {
+<span class="fc" id="L224">        XYSeriesCollection c = new XYSeriesCollection();</span>
+<span class="fc" id="L225">        XYSeries s1 = new XYSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L226">        c.addSeries(s1);</span>
+<span class="fc" id="L227">        assertEquals(&quot;s1&quot;, c.getSeries(0).getKey());</span>
+
+<span class="fc" id="L229">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L231">            c.getSeries(-1);</span>
+        }
+<span class="fc" id="L233">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L234">            pass = true;</span>
+<span class="nc" id="L235">        }</span>
+<span class="fc" id="L236">        assertTrue(pass);</span>
+
+<span class="fc" id="L238">        pass = false;</span>
+        try {
+<span class="nc" id="L240">            c.getSeries(1);</span>
+        }
+<span class="fc" id="L242">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L243">            pass = true;</span>
+<span class="nc" id="L244">        }</span>
+<span class="fc" id="L245">        assertTrue(pass);</span>
+<span class="fc" id="L246">    }</span>
+
+    /**
+     * Some checks for the getSeries(Comparable) method.
+     */
+    public void testGetSeriesByKey() {
+<span class="fc" id="L252">        XYSeriesCollection c = new XYSeriesCollection();</span>
+<span class="fc" id="L253">        XYSeries s1 = new XYSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L254">        c.addSeries(s1);</span>
+<span class="fc" id="L255">        assertEquals(&quot;s1&quot;, c.getSeries(&quot;s1&quot;).getKey());</span>
+
+<span class="fc" id="L257">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L259">            c.getSeries(&quot;s2&quot;);</span>
+        }
+<span class="fc" id="L261">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L262">            pass = true;</span>
+<span class="nc" id="L263">        }</span>
+<span class="fc" id="L264">        assertTrue(pass);</span>
+
+<span class="fc" id="L266">        pass = false;</span>
+        try {
+<span class="nc" id="L268">            c.getSeries(null);</span>
+        }
+<span class="fc" id="L270">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L271">            pass = true;</span>
+<span class="nc" id="L272">        }</span>
+<span class="fc" id="L273">        assertTrue(pass);</span>
+<span class="fc" id="L274">    }</span>
+    
+    /**
+     * Some basic checks for the addSeries() method.
+     */
+    public void testAddSeries() {
+<span class="fc" id="L280">        XYSeriesCollection c = new XYSeriesCollection();</span>
+<span class="fc" id="L281">        XYSeries s1 = new XYSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L282">        c.addSeries(s1);</span>
+
+        // the dataset should prevent the addition of a series with the
+        // same name as an existing series in the dataset
+<span class="fc" id="L286">        XYSeries s2 = new XYSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L287">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L289">            c.addSeries(s2);</span>
+<span class="fc" id="L290">        } catch (RuntimeException e) {</span>
+<span class="fc" id="L291">            pass = true;</span>
+<span class="nc" id="L292">        }</span>
+<span class="fc" id="L293">        assertTrue(pass);</span>
+<span class="fc" id="L294">        assertEquals(1, c.getSeriesCount());</span>
+<span class="fc" id="L295">    }</span>
+
+    /**
+     * Some basic checks for the removeSeries() method.
+     */
+    public void testRemoveSeries() {
+<span class="fc" id="L301">        XYSeriesCollection c = new XYSeriesCollection();</span>
+<span class="fc" id="L302">        XYSeries s1 = new XYSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L303">        c.addSeries(s1);</span>
+<span class="fc" id="L304">        c.removeSeries(0);</span>
+<span class="fc" id="L305">        assertEquals(0, c.getSeriesCount());</span>
+<span class="fc" id="L306">        c.addSeries(s1);</span>
+
+<span class="fc" id="L308">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L310">            c.removeSeries(-1);</span>
+        }
+<span class="fc" id="L312">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L313">            pass = true;</span>
+<span class="nc" id="L314">        }</span>
+<span class="fc" id="L315">        assertTrue(pass);</span>
+
+<span class="fc" id="L317">        pass = false;</span>
+        try {
+<span class="nc" id="L319">            c.removeSeries(1);</span>
+        }
+<span class="fc" id="L321">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L322">            pass = true;</span>
+<span class="nc" id="L323">        }</span>
+<span class="fc" id="L324">        assertTrue(pass);</span>
+<span class="fc" id="L325">    }</span>
+
+    /**
+     * Some tests for the indexOf() method.
+     */
+    public void testIndexOf() {
+<span class="fc" id="L331">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L332">        XYSeries s2 = new XYSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L333">        XYSeriesCollection dataset = new XYSeriesCollection();</span>
+<span class="fc" id="L334">        assertEquals(-1, dataset.indexOf(s1));</span>
+<span class="fc" id="L335">        assertEquals(-1, dataset.indexOf(s2));</span>
+
+<span class="fc" id="L337">        dataset.addSeries(s1);</span>
+<span class="fc" id="L338">        assertEquals(0, dataset.indexOf(s1));</span>
+<span class="fc" id="L339">        assertEquals(-1, dataset.indexOf(s2));</span>
+
+<span class="fc" id="L341">        dataset.addSeries(s2);</span>
+<span class="fc" id="L342">        assertEquals(0, dataset.indexOf(s1));</span>
+<span class="fc" id="L343">        assertEquals(1, dataset.indexOf(s2));</span>
+
+<span class="fc" id="L345">        dataset.removeSeries(s1);</span>
+<span class="fc" id="L346">        assertEquals(-1, dataset.indexOf(s1));</span>
+<span class="fc" id="L347">        assertEquals(0, dataset.indexOf(s2));</span>
+
+<span class="fc" id="L349">        XYSeries s2b = new XYSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L350">        assertEquals(0, dataset.indexOf(s2b));</span>
+<span class="fc" id="L351">    }</span>
+
+    /**
+     * Some checks for the getDomainBounds() method.
+     */
+    public void testGetDomainBounds() {
+<span class="fc" id="L357">        XYSeriesCollection dataset = new XYSeriesCollection();</span>
+<span class="fc" id="L358">        Range r = dataset.getDomainBounds(false);</span>
+<span class="fc" id="L359">        assertNull(r);</span>
+<span class="fc" id="L360">        r = dataset.getDomainBounds(true);</span>
+<span class="fc" id="L361">        assertNull(r);</span>
+
+<span class="fc" id="L363">        XYSeries series = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L364">        dataset.addSeries(series);</span>
+<span class="fc" id="L365">        r = dataset.getDomainBounds(false);</span>
+<span class="fc" id="L366">        assertNull(r);</span>
+<span class="fc" id="L367">        r = dataset.getDomainBounds(true);</span>
+<span class="fc" id="L368">        assertNull(r);</span>
+
+<span class="fc" id="L370">        series.add(1.0, 1.1);</span>
+<span class="fc" id="L371">        r = dataset.getDomainBounds(false);</span>
+<span class="fc" id="L372">        assertEquals(new Range(1.0, 1.0), r);</span>
+<span class="fc" id="L373">        r = dataset.getDomainBounds(true);</span>
+<span class="fc" id="L374">        assertEquals(new Range(0.5, 1.5), r);</span>
+
+<span class="fc" id="L376">        series.add(-1.0, -1.1);</span>
+<span class="fc" id="L377">        r = dataset.getDomainBounds(false);</span>
+<span class="fc" id="L378">        assertEquals(new Range(-1.0, 1.0), r);</span>
+<span class="fc" id="L379">        r = dataset.getDomainBounds(true);</span>
+<span class="fc" id="L380">        assertEquals(new Range(-1.5, 1.5), r);</span>
+<span class="fc" id="L381">    }</span>
+
+    /**
+     * Some checks for the getRangeBounds() method.
+     */
+    public void testGetRangeBounds() {
+<span class="fc" id="L387">        XYSeriesCollection dataset = new XYSeriesCollection();</span>
+<span class="fc" id="L388">        Range r = dataset.getRangeBounds(false);</span>
+<span class="fc" id="L389">        assertNull(r);</span>
+<span class="fc" id="L390">        r = dataset.getRangeBounds(true);</span>
+<span class="fc" id="L391">        assertNull(r);</span>
+
+<span class="fc" id="L393">        XYSeries series = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L394">        dataset.addSeries(series);</span>
+<span class="fc" id="L395">        r = dataset.getRangeBounds(false);</span>
+<span class="fc" id="L396">        assertNull(r);</span>
+<span class="fc" id="L397">        r = dataset.getRangeBounds(true);</span>
+<span class="fc" id="L398">        assertNull(r);</span>
+
+<span class="fc" id="L400">        series.add(1.0, 1.1);</span>
+<span class="fc" id="L401">        r = dataset.getRangeBounds(false);</span>
+<span class="fc" id="L402">        assertEquals(new Range(1.1, 1.1), r);</span>
+<span class="fc" id="L403">        r = dataset.getRangeBounds(true);</span>
+<span class="fc" id="L404">        assertEquals(new Range(1.1, 1.1), r);</span>
+
+<span class="fc" id="L406">        series.add(-1.0, -1.1);</span>
+<span class="fc" id="L407">        r = dataset.getRangeBounds(false);</span>
+<span class="fc" id="L408">        assertEquals(new Range(-1.1, 1.1), r);</span>
+<span class="fc" id="L409">        r = dataset.getRangeBounds(true);</span>
+<span class="fc" id="L410">        assertEquals(new Range(-1.1, 1.1), r);</span>
+<span class="fc" id="L411">    }</span>
+
+    /**
+     * A check that the dataset prevents renaming a series to the name of an 
+     * existing series in the dataset.
+     */
+    public void testRenameSeries() {
+<span class="fc" id="L418">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L419">        XYSeries s2 = new XYSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L420">        XYSeriesCollection dataset = new XYSeriesCollection();</span>
+<span class="fc" id="L421">        dataset.addSeries(s1);</span>
+<span class="fc" id="L422">        dataset.addSeries(s2);</span>
+<span class="fc" id="L423">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L425">            s2.setKey(&quot;S1&quot;);</span>
+        }
+<span class="fc" id="L427">        catch (RuntimeException e) {</span>
+<span class="fc" id="L428">           pass = true;</span>
+<span class="nc" id="L429">        }</span>
+<span class="fc" id="L430">        assertTrue(pass);</span>
+<span class="fc" id="L431">    }</span>
+
+    /**
+     * A test to cover bug 3445507.  The issue does not affect
+     * XYSeriesCollection.
+     */
+    public void testBug3445507() {
+<span class="fc" id="L438">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L439">        s1.add(1.0, null);</span>
+<span class="fc" id="L440">        s1.add(2.0, null);</span>
+
+<span class="fc" id="L442">        XYSeries s2 = new XYSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L443">        s1.add(1.0, 5.0);</span>
+<span class="fc" id="L444">        s1.add(2.0, 6.0);</span>
+
+<span class="fc" id="L446">        XYSeriesCollection dataset = new XYSeriesCollection();</span>
+<span class="fc" id="L447">        dataset.addSeries(s1);</span>
+<span class="fc" id="L448">        dataset.addSeries(s2);</span>
+
+<span class="fc" id="L450">        Range r = dataset.getRangeBounds(false);</span>
+<span class="fc" id="L451">        assertEquals(5.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L452">        assertEquals(6.0, r.getUpperBound(), EPSILON);</span>
+<span class="fc" id="L453">    }</span>
+ 
+    /**
+     * Test that a series belonging to a collection can be renamed (in fact, 
+     * because of a bug this was not possible in JFreeChart 1.0.14).
+     */
+    public void testSeriesRename() {
+        // first check that a valid renaming works
+<span class="fc" id="L461">        XYSeries series1 = new XYSeries(&quot;A&quot;);</span>
+<span class="fc" id="L462">        XYSeries series2 = new XYSeries(&quot;B&quot;);</span>
+<span class="fc" id="L463">        XYSeriesCollection collection = new XYSeriesCollection();</span>
+<span class="fc" id="L464">        collection.addSeries(series1);</span>
+<span class="fc" id="L465">        collection.addSeries(series2);</span>
+<span class="fc" id="L466">        series1.setKey(&quot;C&quot;);</span>
+<span class="fc" id="L467">        assertEquals(&quot;C&quot;, collection.getSeries(0).getKey());</span>
+        
+        // next, check that setting a duplicate key fails
+        try {
+<span class="nc" id="L471">            series2.setKey(&quot;C&quot;);</span>
+        }
+<span class="fc" id="L473">        catch (IllegalArgumentException e) {</span>
+            // expected
+<span class="nc" id="L475">        }</span>
+<span class="fc" id="L476">        assertEquals(&quot;B&quot;, series2.getKey());  // the series name should not </span>
+        // change because &quot;C&quot; is already the key for the other series in the
+        // collection
+<span class="fc" id="L479">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

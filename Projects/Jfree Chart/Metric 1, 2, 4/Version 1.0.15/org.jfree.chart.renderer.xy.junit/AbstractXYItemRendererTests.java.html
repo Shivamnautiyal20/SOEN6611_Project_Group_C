@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractXYItemRendererTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.xy.junit</a> &gt; <span class="el_source">AbstractXYItemRendererTests.java</span></div><h1>AbstractXYItemRendererTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------------------
+ * AbstractXYItemRendererTests.java
+ * --------------------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 06-Oct-2004 : Version 1 (DG);
+ * 24-Nov-2006 : Added cloning tests (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.xy.junit;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.labels.StandardXYSeriesLabelGenerator;
+import org.jfree.chart.renderer.xy.AbstractXYItemRenderer;
+import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
+import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.data.Range;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
+/**
+ * Tests for the {@link AbstractXYItemRenderer} class.
+ */
+public class AbstractXYItemRendererTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L68">        return new TestSuite(AbstractXYItemRendererTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public AbstractXYItemRendererTests(String name) {
+<span class="fc" id="L77">        super(name);</span>
+<span class="fc" id="L78">    }</span>
+
+    /**
+     * Creates a test dataset.
+     *
+     * @return A test dataset.
+     */
+    private XYDataset createDataset1() {
+<span class="fc" id="L86">        XYSeries series = new XYSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L87">        series.add(1.0, 1.0);</span>
+<span class="fc" id="L88">        series.add(2.0, 2.0);</span>
+<span class="fc" id="L89">        series.add(3.0, 3.0);</span>
+<span class="fc" id="L90">        XYSeriesCollection dataset = new XYSeriesCollection();</span>
+<span class="fc" id="L91">        dataset.addSeries(series);</span>
+<span class="fc" id="L92">        return dataset;</span>
+    }
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * Some checks for the findDomainBounds() method.
+     */
+    public void testFindDomainBounds() {
+<span class="fc" id="L101">        AbstractXYItemRenderer renderer = new StandardXYItemRenderer();</span>
+
+        // check the bounds of a simple dataset
+<span class="fc" id="L104">        XYDataset dataset = createDataset1();</span>
+<span class="fc" id="L105">        Range r = renderer.findDomainBounds(dataset);</span>
+<span class="fc" id="L106">        assertEquals(1.0, r.getLowerBound(), EPSILON);</span>
+<span class="fc" id="L107">        assertEquals(3.0, r.getUpperBound(), EPSILON);</span>
+
+        // check that a null dataset returns null bounds
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">        assertTrue(renderer.findDomainBounds(null) == null);</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Some checks for the findRangeBounds() method.
+     */
+    public void testFindRangeBounds() {
+<span class="fc" id="L117">        AbstractXYItemRenderer renderer = new StandardXYItemRenderer();</span>
+        // check that a null dataset returns null bounds
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">        assertTrue(renderer.findRangeBounds(null) == null);</span>
+<span class="fc" id="L120">    }</span>
+
+    /**
+     * Check that the legendItemLabelGenerator is cloned.
+     */
+    public void testCloning_LegendItemLabelGenerator() {
+<span class="fc" id="L126">        StandardXYSeriesLabelGenerator generator</span>
+                = new StandardXYSeriesLabelGenerator(&quot;Series {0}&quot;);
+<span class="fc" id="L128">        XYBarRenderer r1 = new XYBarRenderer();</span>
+<span class="fc" id="L129">        r1.setLegendItemLabelGenerator(generator);</span>
+<span class="fc" id="L130">        XYBarRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L132">            r2 = (XYBarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L134">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L135">            e.printStackTrace();</span>
+<span class="fc" id="L136">        }</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L139">        assertTrue(r1.equals(r2));</span>
+
+        // check that the generator has been cloned
+<span class="fc" id="L142">        assertTrue(r1.getLegendItemLabelGenerator()</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">                != r2.getLegendItemLabelGenerator());</span>
+<span class="fc" id="L144">    }</span>
+
+    /**
+     * Check that the legendItemToolTipGenerator is cloned.
+     */
+    public void testCloning_LegendItemToolTipGenerator() {
+<span class="fc" id="L150">        StandardXYSeriesLabelGenerator generator</span>
+                = new StandardXYSeriesLabelGenerator(&quot;Series {0}&quot;);
+<span class="fc" id="L152">        XYBarRenderer r1 = new XYBarRenderer();</span>
+<span class="fc" id="L153">        r1.setLegendItemToolTipGenerator(generator);</span>
+<span class="fc" id="L154">        XYBarRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L156">            r2 = (XYBarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L158">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L159">            e.printStackTrace();</span>
+<span class="fc" id="L160">        }</span>
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L163">        assertTrue(r1.equals(r2));</span>
+
+        // check that the generator has been cloned
+<span class="fc" id="L166">        assertTrue(r1.getLegendItemToolTipGenerator()</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">                != r2.getLegendItemToolTipGenerator());</span>
+<span class="fc" id="L168">    }</span>
+
+    /**
+     * Check that the legendItemURLGenerator is cloned.
+     */
+    public void testCloning_LegendItemURLGenerator() {
+<span class="fc" id="L174">        StandardXYSeriesLabelGenerator generator</span>
+                = new StandardXYSeriesLabelGenerator(&quot;Series {0}&quot;);
+<span class="fc" id="L176">        XYBarRenderer r1 = new XYBarRenderer();</span>
+<span class="fc" id="L177">        r1.setLegendItemURLGenerator(generator);</span>
+<span class="fc" id="L178">        XYBarRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L180">            r2 = (XYBarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L182">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L183">            e.printStackTrace();</span>
+<span class="fc" id="L184">        }</span>
+<span class="pc bpc" id="L185" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L186" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L187">        assertTrue(r1.equals(r2));</span>
+
+        // check that the generator has been cloned
+<span class="fc" id="L190">        assertTrue(r1.getLegendItemURLGenerator()</span>
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">                != r2.getLegendItemURLGenerator());</span>
+<span class="fc" id="L192">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

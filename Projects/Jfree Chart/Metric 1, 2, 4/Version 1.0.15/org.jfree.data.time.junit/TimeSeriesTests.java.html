@@ -1,0 +1,1138 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TimeSeriesTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.time.junit</a> &gt; <span class="el_source">TimeSeriesTests.java</span></div><h1>TimeSeriesTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------
+ * TimeSeriesTests.java
+ * --------------------
+ * (C) Copyright 2001-2009, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 16-Nov-2001 : Version 1 (DG);
+ * 17-Oct-2002 : Fixed errors reported by Checkstyle (DG);
+ * 13-Mar-2003 : Added serialization test (DG);
+ * 15-Oct-2003 : Added test for setMaximumItemCount method (DG);
+ * 23-Aug-2004 : Added test that highlights a bug where the addOrUpdate()
+ *               method can lead to more than maximumItemCount items in the
+ *               dataset (DG);
+ * 24-May-2006 : Added new tests (DG);
+ * 31-Oct-2007 : New hashCode() test (DG);
+ * 21-Nov-2007 : Added testBug1832432() and testClone2() (DG);
+ * 10-Jan-2008 : Added testBug1864222() (DG);
+ * 13-Jan-2009 : Added testEquals3() and testRemoveAgedItems3() (DG);
+ * 26-May-2009 : Added various tests for min/maxY values (DG);
+ * 09-Jun-2009 : Added testAdd_TimeSeriesDataItem (DG);
+ * 31-Aug-2009 : Added new test for createCopy() method (DG);
+ * 03-Dec-2011 : Added testBug3446965() (DG);
+ * 
+ */
+
+package org.jfree.data.time.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.general.SeriesChangeEvent;
+import org.jfree.data.general.SeriesChangeListener;
+import org.jfree.data.general.SeriesException;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.FixedMillisecond;
+import org.jfree.data.time.Month;
+import org.jfree.data.time.RegularTimePeriod;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesDataItem;
+import org.jfree.data.time.Year;
+import org.jfree.date.MonthConstants;
+
+/**
+ * A collection of test cases for the {@link TimeSeries} class.
+ */
+public class TimeSeriesTests extends TestCase implements SeriesChangeListener {
+
+    /** A time series. */
+    private TimeSeries seriesA;
+
+    /** A time series. */
+    private TimeSeries seriesB;
+
+    /** A time series. */
+    private TimeSeries seriesC;
+
+    /** A flag that indicates whether or not a change event was fired. */
+<span class="fc" id="L96">    private boolean gotSeriesChangeEvent = false;</span>
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L104">        return new TestSuite(TimeSeriesTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public TimeSeriesTests(String name) {
+<span class="fc" id="L113">        super(name);</span>
+<span class="fc" id="L114">    }</span>
+
+    /**
+     * Common test setup.
+     */
+    protected void setUp() {
+
+<span class="fc" id="L121">        this.seriesA = new TimeSeries(&quot;Series A&quot;, Year.class);</span>
+        try {
+<span class="fc" id="L123">            this.seriesA.add(new Year(2000), new Integer(102000));</span>
+<span class="fc" id="L124">            this.seriesA.add(new Year(2001), new Integer(102001));</span>
+<span class="fc" id="L125">            this.seriesA.add(new Year(2002), new Integer(102002));</span>
+<span class="fc" id="L126">            this.seriesA.add(new Year(2003), new Integer(102003));</span>
+<span class="fc" id="L127">            this.seriesA.add(new Year(2004), new Integer(102004));</span>
+<span class="fc" id="L128">            this.seriesA.add(new Year(2005), new Integer(102005));</span>
+        }
+<span class="nc" id="L130">        catch (SeriesException e) {</span>
+<span class="nc" id="L131">            System.err.println(&quot;Problem creating series.&quot;);</span>
+<span class="fc" id="L132">        }</span>
+
+<span class="fc" id="L134">        this.seriesB = new TimeSeries(&quot;Series B&quot;, Year.class);</span>
+        try {
+<span class="fc" id="L136">            this.seriesB.add(new Year(2006), new Integer(202006));</span>
+<span class="fc" id="L137">            this.seriesB.add(new Year(2007), new Integer(202007));</span>
+<span class="fc" id="L138">            this.seriesB.add(new Year(2008), new Integer(202008));</span>
+        }
+<span class="nc" id="L140">        catch (SeriesException e) {</span>
+<span class="nc" id="L141">            System.err.println(&quot;Problem creating series.&quot;);</span>
+<span class="fc" id="L142">        }</span>
+
+<span class="fc" id="L144">        this.seriesC = new TimeSeries(&quot;Series C&quot;, Year.class);</span>
+        try {
+<span class="fc" id="L146">            this.seriesC.add(new Year(1999), new Integer(301999));</span>
+<span class="fc" id="L147">            this.seriesC.add(new Year(2000), new Integer(302000));</span>
+<span class="fc" id="L148">            this.seriesC.add(new Year(2002), new Integer(302002));</span>
+        }
+<span class="nc" id="L150">        catch (SeriesException e) {</span>
+<span class="nc" id="L151">            System.err.println(&quot;Problem creating series.&quot;);</span>
+<span class="fc" id="L152">        }</span>
+
+<span class="fc" id="L154">    }</span>
+
+    /**
+     * Sets the flag to indicate that a {@link SeriesChangeEvent} has been
+     * received.
+     *
+     * @param event  the event.
+     */
+    public void seriesChanged(SeriesChangeEvent event) {
+<span class="fc" id="L163">        this.gotSeriesChangeEvent = true;</span>
+<span class="fc" id="L164">    }</span>
+
+    /**
+     * Check that cloning works.
+     */
+    public void testClone() {
+
+<span class="fc" id="L171">        TimeSeries series = new TimeSeries(&quot;Test Series&quot;);</span>
+
+<span class="fc" id="L173">        RegularTimePeriod jan1st2002 = new Day(1, MonthConstants.JANUARY, 2002);</span>
+        try {
+<span class="fc" id="L175">            series.add(jan1st2002, new Integer(42));</span>
+        }
+<span class="nc" id="L177">        catch (SeriesException e) {</span>
+<span class="nc" id="L178">            System.err.println(&quot;Problem adding to series.&quot;);</span>
+<span class="fc" id="L179">        }</span>
+
+<span class="fc" id="L181">        TimeSeries clone = null;</span>
+        try {
+<span class="fc" id="L183">            clone = (TimeSeries) series.clone();</span>
+<span class="fc" id="L184">            clone.setKey(&quot;Clone Series&quot;);</span>
+            try {
+<span class="fc" id="L186">                clone.update(jan1st2002, new Integer(10));</span>
+            }
+<span class="nc" id="L188">            catch (SeriesException e) {</span>
+<span class="nc" id="L189">                e.printStackTrace();</span>
+<span class="fc" id="L190">            }</span>
+        }
+<span class="nc" id="L192">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L193">            assertTrue(false);</span>
+<span class="fc" id="L194">        }</span>
+
+<span class="fc" id="L196">        int seriesValue = series.getValue(jan1st2002).intValue();</span>
+<span class="fc" id="L197">        int cloneValue = Integer.MAX_VALUE;</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">        if (clone != null) {</span>
+<span class="fc" id="L199">            cloneValue = clone.getValue(jan1st2002).intValue();</span>
+        }
+
+<span class="fc" id="L202">        assertEquals(42, seriesValue);</span>
+<span class="fc" id="L203">        assertEquals(10, cloneValue);</span>
+<span class="fc" id="L204">        assertEquals(&quot;Test Series&quot;, series.getKey());</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">        if (clone != null) {</span>
+<span class="fc" id="L206">            assertEquals(&quot;Clone Series&quot;, clone.getKey());</span>
+        }
+        else {
+<span class="nc" id="L209">            assertTrue(false);</span>
+        }
+
+<span class="fc" id="L212">    }</span>
+
+    /**
+     * Another test of the clone() method.
+     */
+    public void testClone2() {
+<span class="fc" id="L218">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;, Year.class);</span>
+<span class="fc" id="L219">        s1.add(new Year(2007), 100.0);</span>
+<span class="fc" id="L220">        s1.add(new Year(2008), null);</span>
+<span class="fc" id="L221">        s1.add(new Year(2009), 200.0);</span>
+<span class="fc" id="L222">        TimeSeries s2 = null;</span>
+        try {
+<span class="fc" id="L224">            s2 = (TimeSeries) s1.clone();</span>
+        }
+<span class="nc" id="L226">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L227">            e.printStackTrace();</span>
+<span class="fc" id="L228">        }</span>
+<span class="fc" id="L229">        assertTrue(s1.equals(s2));</span>
+
+        // check independence
+<span class="fc" id="L232">        s2.addOrUpdate(new Year(2009), 300.0);</span>
+<span class="fc" id="L233">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L234">        s1.addOrUpdate(new Year(2009), 300.0);</span>
+<span class="fc" id="L235">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L236">    }</span>
+
+    /**
+     * Add a value to series A for 1999.  It should be added at index 0.
+     */
+    public void testAddValue() {
+
+        try {
+<span class="fc" id="L244">            this.seriesA.add(new Year(1999), new Integer(1));</span>
+        }
+<span class="nc" id="L246">        catch (SeriesException e) {</span>
+<span class="nc" id="L247">            System.err.println(&quot;Problem adding to series.&quot;);</span>
+<span class="fc" id="L248">        }</span>
+
+<span class="fc" id="L250">        int value = this.seriesA.getValue(0).intValue();</span>
+<span class="fc" id="L251">        assertEquals(1, value);</span>
+
+<span class="fc" id="L253">    }</span>
+
+    /**
+     * Tests the retrieval of values.
+     */
+    public void testGetValue() {
+
+<span class="fc" id="L260">        Number value1 = this.seriesA.getValue(new Year(1999));</span>
+<span class="fc" id="L261">        assertNull(value1);</span>
+<span class="fc" id="L262">        int value2 = this.seriesA.getValue(new Year(2000)).intValue();</span>
+<span class="fc" id="L263">        assertEquals(102000, value2);</span>
+
+<span class="fc" id="L265">    }</span>
+
+    /**
+     * Tests the deletion of values.
+     */
+    public void testDelete() {
+<span class="fc" id="L271">        this.seriesA.delete(0, 0);</span>
+<span class="fc" id="L272">        assertEquals(5, this.seriesA.getItemCount());</span>
+<span class="fc" id="L273">        Number value = this.seriesA.getValue(new Year(2000));</span>
+<span class="fc" id="L274">        assertNull(value);</span>
+<span class="fc" id="L275">    }</span>
+
+    /**
+     * Basic tests for the delete() method.
+     */
+    public void testDelete2() {
+<span class="fc" id="L281">        TimeSeries s1 = new TimeSeries(&quot;Series&quot;, Year.class);</span>
+<span class="fc" id="L282">        s1.add(new Year(2000), 13.75);</span>
+<span class="fc" id="L283">        s1.add(new Year(2001), 11.90);</span>
+<span class="fc" id="L284">        s1.add(new Year(2002), null);</span>
+<span class="fc" id="L285">        s1.addChangeListener(this);</span>
+<span class="fc" id="L286">        this.gotSeriesChangeEvent = false;</span>
+<span class="fc" id="L287">        s1.delete(new Year(2001));</span>
+<span class="fc" id="L288">        assertTrue(this.gotSeriesChangeEvent);</span>
+<span class="fc" id="L289">        assertEquals(2, s1.getItemCount());</span>
+<span class="fc" id="L290">        assertEquals(null, s1.getValue(new Year(2001)));</span>
+
+        // try deleting a time period that doesn't exist...
+<span class="fc" id="L293">        this.gotSeriesChangeEvent = false;</span>
+<span class="fc" id="L294">        s1.delete(new Year(2006));</span>
+<span class="fc" id="L295">        assertFalse(this.gotSeriesChangeEvent);</span>
+
+        // try deleting null
+        try {
+<span class="nc" id="L299">            s1.delete(null);</span>
+<span class="nc" id="L300">            fail(&quot;Expected IllegalArgumentException.&quot;);</span>
+        }
+<span class="fc" id="L302">        catch (IllegalArgumentException e) {</span>
+            // expected
+<span class="nc" id="L304">        }</span>
+<span class="fc" id="L305">    }</span>
+
+    /**
+     * Some checks for the delete(int, int) method.
+     */
+    public void testDelete3() {
+<span class="fc" id="L311">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L312">        s1.add(new Year(2011), 1.1);</span>
+<span class="fc" id="L313">        s1.add(new Year(2012), 2.2);</span>
+<span class="fc" id="L314">        s1.add(new Year(2013), 3.3);</span>
+<span class="fc" id="L315">        s1.add(new Year(2014), 4.4);</span>
+<span class="fc" id="L316">        s1.add(new Year(2015), 5.5);</span>
+<span class="fc" id="L317">        s1.add(new Year(2016), 6.6);</span>
+<span class="fc" id="L318">        s1.delete(2, 5);</span>
+<span class="fc" id="L319">        assertEquals(2, s1.getItemCount());</span>
+<span class="fc" id="L320">        assertEquals(new Year(2011), s1.getTimePeriod(0));</span>
+<span class="fc" id="L321">        assertEquals(new Year(2012), s1.getTimePeriod(1));</span>
+<span class="fc" id="L322">        assertEquals(1.1, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L323">        assertEquals(2.2, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L324">    }</span>
+
+    /**
+     * Check that the item bounds are determined correctly when there is a
+     * maximum item count and a new value is added.
+     */
+    public void testDelete_RegularTimePeriod() {
+<span class="fc" id="L331">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L332">        s1.add(new Year(2010), 1.1);</span>
+<span class="fc" id="L333">        s1.add(new Year(2011), 2.2);</span>
+<span class="fc" id="L334">        s1.add(new Year(2012), 3.3);</span>
+<span class="fc" id="L335">        s1.add(new Year(2013), 4.4);</span>
+<span class="fc" id="L336">        s1.delete(new Year(2010));</span>
+<span class="fc" id="L337">        s1.delete(new Year(2013));</span>
+<span class="fc" id="L338">        assertEquals(2.2, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L339">        assertEquals(3.3, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L340">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L346">        TimeSeries s1 = new TimeSeries(&quot;A test&quot;);</span>
+<span class="fc" id="L347">        s1.add(new Year(2000), 13.75);</span>
+<span class="fc" id="L348">        s1.add(new Year(2001), 11.90);</span>
+<span class="fc" id="L349">        s1.add(new Year(2002), null);</span>
+<span class="fc" id="L350">        s1.add(new Year(2005), 19.32);</span>
+<span class="fc" id="L351">        s1.add(new Year(2007), 16.89);</span>
+<span class="fc" id="L352">        TimeSeries s2 = null;</span>
+        try {
+<span class="fc" id="L354">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L355">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L356">            out.writeObject(s1);</span>
+<span class="fc" id="L357">            out.close();</span>
+<span class="fc" id="L358">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L359">                    buffer.toByteArray()));</span>
+<span class="fc" id="L360">            s2 = (TimeSeries) in.readObject();</span>
+<span class="fc" id="L361">            in.close();</span>
+        }
+<span class="nc" id="L363">        catch (Exception e) {</span>
+<span class="nc" id="L364">            e.printStackTrace();</span>
+<span class="fc" id="L365">        }</span>
+<span class="fc" id="L366">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L367">    }</span>
+
+    /**
+     * Tests the equals method.
+     */
+    public void testEquals() {
+<span class="fc" id="L373">        TimeSeries s1 = new TimeSeries(&quot;Time Series 1&quot;);</span>
+<span class="fc" id="L374">        TimeSeries s2 = new TimeSeries(&quot;Time Series 2&quot;);</span>
+<span class="fc" id="L375">        boolean b1 = s1.equals(s2);</span>
+<span class="fc" id="L376">        assertFalse(&quot;b1&quot;, b1);</span>
+
+<span class="fc" id="L378">        s2.setKey(&quot;Time Series 1&quot;);</span>
+<span class="fc" id="L379">        boolean b2 = s1.equals(s2);</span>
+<span class="fc" id="L380">        assertTrue(&quot;b2&quot;, b2);</span>
+
+<span class="fc" id="L382">        RegularTimePeriod p1 = new Day();</span>
+<span class="fc" id="L383">        RegularTimePeriod p2 = p1.next();</span>
+<span class="fc" id="L384">        s1.add(p1, 100.0);</span>
+<span class="fc" id="L385">        s1.add(p2, 200.0);</span>
+<span class="fc" id="L386">        boolean b3 = s1.equals(s2);</span>
+<span class="fc" id="L387">        assertFalse(&quot;b3&quot;, b3);</span>
+
+<span class="fc" id="L389">        s2.add(p1, 100.0);</span>
+<span class="fc" id="L390">        s2.add(p2, 200.0);</span>
+<span class="fc" id="L391">        boolean b4 = s1.equals(s2);</span>
+<span class="fc" id="L392">        assertTrue(&quot;b4&quot;, b4);</span>
+
+<span class="fc" id="L394">        s1.setMaximumItemCount(100);</span>
+<span class="fc" id="L395">        boolean b5 = s1.equals(s2);</span>
+<span class="fc" id="L396">        assertFalse(&quot;b5&quot;, b5);</span>
+
+<span class="fc" id="L398">        s2.setMaximumItemCount(100);</span>
+<span class="fc" id="L399">        boolean b6 = s1.equals(s2);</span>
+<span class="fc" id="L400">        assertTrue(&quot;b6&quot;, b6);</span>
+
+<span class="fc" id="L402">        s1.setMaximumItemAge(100);</span>
+<span class="fc" id="L403">        boolean b7 = s1.equals(s2);</span>
+<span class="fc" id="L404">        assertFalse(&quot;b7&quot;, b7);</span>
+
+<span class="fc" id="L406">        s2.setMaximumItemAge(100);</span>
+<span class="fc" id="L407">        boolean b8 = s1.equals(s2);</span>
+<span class="fc" id="L408">        assertTrue(&quot;b8&quot;, b8);</span>
+<span class="fc" id="L409">    }</span>
+
+    /**
+     * Tests a specific bug report where null arguments in the constructor
+     * cause the equals() method to fail.  Fixed for 0.9.21.
+     */
+    public void testEquals2() {
+<span class="fc" id="L416">        TimeSeries s1 = new TimeSeries(&quot;Series&quot;, null, null, Day.class);</span>
+<span class="fc" id="L417">        TimeSeries s2 = new TimeSeries(&quot;Series&quot;, null, null, Day.class);</span>
+<span class="fc" id="L418">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L419">    }</span>
+
+    /**
+     * Two classes with different period classes are NOT the same.
+     */
+    public void testEquals3() {
+<span class="fc" id="L425">        TimeSeries s1 = new TimeSeries(&quot;Series&quot;, Day.class);</span>
+<span class="fc" id="L426">        TimeSeries s2 = new TimeSeries(&quot;Series&quot;, Month.class);</span>
+<span class="fc" id="L427">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L428">    }</span>
+
+    /**
+     * Some tests to ensure that the createCopy(RegularTimePeriod,
+     * RegularTimePeriod) method is functioning correctly.
+     */
+    public void testCreateCopy1() {
+
+<span class="fc" id="L436">        TimeSeries series = new TimeSeries(&quot;Series&quot;, Month.class);</span>
+<span class="fc" id="L437">        series.add(new Month(MonthConstants.JANUARY, 2003), 45.0);</span>
+<span class="fc" id="L438">        series.add(new Month(MonthConstants.FEBRUARY, 2003), 55.0);</span>
+<span class="fc" id="L439">        series.add(new Month(MonthConstants.JUNE, 2003), 35.0);</span>
+<span class="fc" id="L440">        series.add(new Month(MonthConstants.NOVEMBER, 2003), 85.0);</span>
+<span class="fc" id="L441">        series.add(new Month(MonthConstants.DECEMBER, 2003), 75.0);</span>
+
+        try {
+            // copy a range before the start of the series data...
+<span class="fc" id="L445">            TimeSeries result1 = series.createCopy(</span>
+                    new Month(MonthConstants.NOVEMBER, 2002),
+                    new Month(MonthConstants.DECEMBER, 2002));
+<span class="fc" id="L448">            assertEquals(0, result1.getItemCount());</span>
+
+            // copy a range that includes only the first item in the series...
+<span class="fc" id="L451">            TimeSeries result2 = series.createCopy(</span>
+                    new Month(MonthConstants.NOVEMBER, 2002),
+                    new Month(MonthConstants.JANUARY, 2003));
+<span class="fc" id="L454">            assertEquals(1, result2.getItemCount());</span>
+
+            // copy a range that begins before and ends in the middle of the
+            // series...
+<span class="fc" id="L458">            TimeSeries result3 = series.createCopy(</span>
+                    new Month(MonthConstants.NOVEMBER, 2002),
+                    new Month(MonthConstants.APRIL, 2003));
+<span class="fc" id="L461">            assertEquals(2, result3.getItemCount());</span>
+
+<span class="fc" id="L463">            TimeSeries result4 = series.createCopy(</span>
+                    new Month(MonthConstants.NOVEMBER, 2002),
+                    new Month(MonthConstants.DECEMBER, 2003));
+<span class="fc" id="L466">            assertEquals(5, result4.getItemCount());</span>
+
+<span class="fc" id="L468">            TimeSeries result5 = series.createCopy(</span>
+                    new Month(MonthConstants.NOVEMBER, 2002),
+                    new Month(MonthConstants.MARCH, 2004));
+<span class="fc" id="L471">            assertEquals(5, result5.getItemCount());</span>
+
+<span class="fc" id="L473">            TimeSeries result6 = series.createCopy(</span>
+                    new Month(MonthConstants.JANUARY, 2003),
+                    new Month(MonthConstants.JANUARY, 2003));
+<span class="fc" id="L476">            assertEquals(1, result6.getItemCount());</span>
+
+<span class="fc" id="L478">            TimeSeries result7 = series.createCopy(</span>
+                    new Month(MonthConstants.JANUARY, 2003),
+                    new Month(MonthConstants.APRIL, 2003));
+<span class="fc" id="L481">            assertEquals(2, result7.getItemCount());</span>
+
+<span class="fc" id="L483">            TimeSeries result8 = series.createCopy(</span>
+                    new Month(MonthConstants.JANUARY, 2003),
+                    new Month(MonthConstants.DECEMBER, 2003));
+<span class="fc" id="L486">            assertEquals(5, result8.getItemCount());</span>
+
+<span class="fc" id="L488">            TimeSeries result9 = series.createCopy(</span>
+                    new Month(MonthConstants.JANUARY, 2003),
+                    new Month(MonthConstants.MARCH, 2004));
+<span class="fc" id="L491">            assertEquals(5, result9.getItemCount());</span>
+
+<span class="fc" id="L493">            TimeSeries result10 = series.createCopy(</span>
+                    new Month(MonthConstants.MAY, 2003),
+                    new Month(MonthConstants.DECEMBER, 2003));
+<span class="fc" id="L496">            assertEquals(3, result10.getItemCount());</span>
+
+<span class="fc" id="L498">            TimeSeries result11 = series.createCopy(</span>
+                    new Month(MonthConstants.MAY, 2003),
+                    new Month(MonthConstants.MARCH, 2004));
+<span class="fc" id="L501">            assertEquals(3, result11.getItemCount());</span>
+
+<span class="fc" id="L503">            TimeSeries result12 = series.createCopy(</span>
+                    new Month(MonthConstants.DECEMBER, 2003),
+                    new Month(MonthConstants.DECEMBER, 2003));
+<span class="fc" id="L506">            assertEquals(1, result12.getItemCount());</span>
+
+<span class="fc" id="L508">            TimeSeries result13 = series.createCopy(</span>
+                    new Month(MonthConstants.DECEMBER, 2003),
+                    new Month(MonthConstants.MARCH, 2004));
+<span class="fc" id="L511">            assertEquals(1, result13.getItemCount());</span>
+
+<span class="fc" id="L513">            TimeSeries result14 = series.createCopy(</span>
+                    new Month(MonthConstants.JANUARY, 2004),
+                    new Month(MonthConstants.MARCH, 2004));
+<span class="fc" id="L516">            assertEquals(0, result14.getItemCount());</span>
+        }
+<span class="nc" id="L518">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L519">            assertTrue(false);</span>
+<span class="fc" id="L520">        }</span>
+
+<span class="fc" id="L522">    }</span>
+
+    /**
+     * Some tests to ensure that the createCopy(int, int) method is
+     * functioning correctly.
+     */
+    public void testCreateCopy2() {
+
+<span class="fc" id="L530">        TimeSeries series = new TimeSeries(&quot;Series&quot;, Month.class);</span>
+<span class="fc" id="L531">        series.add(new Month(MonthConstants.JANUARY, 2003), 45.0);</span>
+<span class="fc" id="L532">        series.add(new Month(MonthConstants.FEBRUARY, 2003), 55.0);</span>
+<span class="fc" id="L533">        series.add(new Month(MonthConstants.JUNE, 2003), 35.0);</span>
+<span class="fc" id="L534">        series.add(new Month(MonthConstants.NOVEMBER, 2003), 85.0);</span>
+<span class="fc" id="L535">        series.add(new Month(MonthConstants.DECEMBER, 2003), 75.0);</span>
+
+        try {
+            // copy just the first item...
+<span class="fc" id="L539">            TimeSeries result1 = series.createCopy(0, 0);</span>
+<span class="fc" id="L540">            assertEquals(new Month(1, 2003), result1.getTimePeriod(0));</span>
+
+            // copy the first two items...
+<span class="fc" id="L543">            result1 = series.createCopy(0, 1);</span>
+<span class="fc" id="L544">            assertEquals(new Month(2, 2003), result1.getTimePeriod(1));</span>
+
+            // copy the middle three items...
+<span class="fc" id="L547">            result1 = series.createCopy(1, 3);</span>
+<span class="fc" id="L548">            assertEquals(new Month(2, 2003), result1.getTimePeriod(0));</span>
+<span class="fc" id="L549">            assertEquals(new Month(11, 2003), result1.getTimePeriod(2));</span>
+
+            // copy the last two items...
+<span class="fc" id="L552">            result1 = series.createCopy(3, 4);</span>
+<span class="fc" id="L553">            assertEquals(new Month(11, 2003), result1.getTimePeriod(0));</span>
+<span class="fc" id="L554">            assertEquals(new Month(12, 2003), result1.getTimePeriod(1));</span>
+
+            // copy the last item...
+<span class="fc" id="L557">            result1 = series.createCopy(4, 4);</span>
+<span class="fc" id="L558">            assertEquals(new Month(12, 2003), result1.getTimePeriod(0));</span>
+        }
+<span class="nc" id="L560">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L561">            assertTrue(false);</span>
+<span class="fc" id="L562">        }</span>
+
+        // check negative first argument
+<span class="fc" id="L565">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L567">            /* TimeSeries result = */ series.createCopy(-1, 1);</span>
+        }
+<span class="fc" id="L569">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L570">            pass = true;</span>
+        }
+<span class="nc" id="L572">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L573">            pass = false;</span>
+<span class="pc" id="L574">        }</span>
+<span class="fc" id="L575">        assertTrue(pass);</span>
+
+        // check second argument less than first argument
+<span class="fc" id="L578">        pass = false;</span>
+        try {
+<span class="nc" id="L580">            /* TimeSeries result = */ series.createCopy(1, 0);</span>
+        }
+<span class="fc" id="L582">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L583">            pass = true;</span>
+        }
+<span class="nc" id="L585">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L586">            pass = false;</span>
+<span class="pc" id="L587">        }</span>
+<span class="fc" id="L588">        assertTrue(pass);</span>
+
+<span class="fc" id="L590">        TimeSeries series2 = new TimeSeries(&quot;Series 2&quot;);</span>
+        try {
+<span class="fc" id="L592">            TimeSeries series3 = series2.createCopy(99, 999);</span>
+<span class="fc" id="L593">            assertEquals(0, series3.getItemCount());</span>
+        }
+<span class="nc" id="L595">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L596">            assertTrue(false);</span>
+<span class="fc" id="L597">        }</span>
+<span class="fc" id="L598">    }</span>
+
+    /**
+     * Checks that the min and max y values are updated correctly when copying
+     * a subset.
+     *
+     * @throws java.lang.CloneNotSupportedException
+     */
+    public void testCreateCopy3() throws CloneNotSupportedException {
+<span class="fc" id="L607">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L608">        s1.add(new Year(2009), 100.0);</span>
+<span class="fc" id="L609">        s1.add(new Year(2010), 101.0);</span>
+<span class="fc" id="L610">        s1.add(new Year(2011), 102.0);</span>
+<span class="fc" id="L611">        assertEquals(100.0, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L612">        assertEquals(102.0, s1.getMaxY(), EPSILON);</span>
+        
+<span class="fc" id="L614">        TimeSeries s2 = s1.createCopy(0, 1);</span>
+<span class="fc" id="L615">        assertEquals(100.0, s2.getMinY(), EPSILON);</span>
+<span class="fc" id="L616">        assertEquals(101.0, s2.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L618">        TimeSeries s3 = s1.createCopy(1, 2);</span>
+<span class="fc" id="L619">        assertEquals(101.0, s3.getMinY(), EPSILON);</span>
+<span class="fc" id="L620">        assertEquals(102.0, s3.getMaxY(), EPSILON);</span>
+<span class="fc" id="L621">    }</span>
+
+    /**
+     * Test the setMaximumItemCount() method to ensure that it removes items
+     * from the series if necessary.
+     */
+    public void testSetMaximumItemCount() {
+<span class="fc" id="L628">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;, Year.class);</span>
+<span class="fc" id="L629">        s1.add(new Year(2000), 13.75);</span>
+<span class="fc" id="L630">        s1.add(new Year(2001), 11.90);</span>
+<span class="fc" id="L631">        s1.add(new Year(2002), null);</span>
+<span class="fc" id="L632">        s1.add(new Year(2005), 19.32);</span>
+<span class="fc" id="L633">        s1.add(new Year(2007), 16.89);</span>
+<span class="pc bpc" id="L634" title="1 of 2 branches missed.">        assertTrue(s1.getItemCount() == 5);</span>
+
+<span class="fc" id="L636">        s1.setMaximumItemCount(3);</span>
+<span class="pc bpc" id="L637" title="1 of 2 branches missed.">        assertTrue(s1.getItemCount() == 3);</span>
+<span class="fc" id="L638">        TimeSeriesDataItem item = s1.getDataItem(0);</span>
+<span class="fc" id="L639">        assertTrue(item.getPeriod().equals(new Year(2002)));</span>
+<span class="fc" id="L640">        assertEquals(16.89, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L641">        assertEquals(19.32, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L642">    }</span>
+
+    /**
+     * Some checks for the addOrUpdate() method.
+     */
+    public void testAddOrUpdate() {
+<span class="fc" id="L648">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;, Year.class);</span>
+<span class="fc" id="L649">        s1.setMaximumItemCount(2);</span>
+<span class="fc" id="L650">        s1.addOrUpdate(new Year(2000), 100.0);</span>
+<span class="fc" id="L651">        assertEquals(1, s1.getItemCount());</span>
+<span class="fc" id="L652">        s1.addOrUpdate(new Year(2001), 101.0);</span>
+<span class="fc" id="L653">        assertEquals(2, s1.getItemCount());</span>
+<span class="fc" id="L654">        s1.addOrUpdate(new Year(2001), 102.0);</span>
+<span class="fc" id="L655">        assertEquals(2, s1.getItemCount());</span>
+<span class="fc" id="L656">        s1.addOrUpdate(new Year(2002), 103.0);</span>
+<span class="fc" id="L657">        assertEquals(2, s1.getItemCount());</span>
+<span class="fc" id="L658">    }</span>
+
+    /**
+     * Test the add branch of the addOrUpdate() method.
+     */
+    public void testAddOrUpdate2() {
+<span class="fc" id="L664">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L665">        s1.setMaximumItemCount(2);</span>
+<span class="fc" id="L666">        s1.addOrUpdate(new Year(2010), 1.1);</span>
+<span class="fc" id="L667">        s1.addOrUpdate(new Year(2011), 2.2);</span>
+<span class="fc" id="L668">        s1.addOrUpdate(new Year(2012), 3.3);</span>
+<span class="fc" id="L669">        assertEquals(2, s1.getItemCount());</span>
+<span class="fc" id="L670">        assertEquals(2.2, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L671">        assertEquals(3.3, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L672">    }</span>
+
+    /**
+     * Test that the addOrUpdate() method won't allow multiple time period
+     * classes.
+     */
+    public void testAddOrUpdate3() {
+<span class="fc" id="L679">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L680">        s1.addOrUpdate(new Year(2010), 1.1);</span>
+<span class="fc" id="L681">        assertEquals(Year.class, s1.getTimePeriodClass());</span>
+
+<span class="fc" id="L683">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L685">            s1.addOrUpdate(new Month(1, 2009), 0.0);</span>
+        }
+<span class="fc" id="L687">        catch (SeriesException e) {</span>
+<span class="fc" id="L688">            pass = true;</span>
+<span class="nc" id="L689">        }</span>
+<span class="fc" id="L690">        assertTrue(pass);</span>
+<span class="fc" id="L691">    }</span>
+
+    /**
+     * Some more checks for the addOrUpdate() method.
+     */
+    public void testAddOrUpdate4() {
+<span class="fc" id="L697">        TimeSeries ts = new TimeSeries(&quot;S&quot;);</span>
+<span class="fc" id="L698">        TimeSeriesDataItem overwritten = ts.addOrUpdate(new Year(2009), 20.09);</span>
+<span class="fc" id="L699">        assertNull(overwritten);</span>
+<span class="fc" id="L700">        overwritten = ts.addOrUpdate(new Year(2009), 1.0);</span>
+<span class="fc" id="L701">        assertEquals(new Double(20.09), overwritten.getValue());</span>
+<span class="fc" id="L702">        assertEquals(new Double(1.0), ts.getValue(new Year(2009)));</span>
+
+        // changing the overwritten record shouldn't affect the series
+<span class="fc" id="L705">        overwritten.setValue(null);</span>
+<span class="fc" id="L706">        assertEquals(new Double(1.0), ts.getValue(new Year(2009)));</span>
+
+<span class="fc" id="L708">        TimeSeriesDataItem item = new TimeSeriesDataItem(new Year(2010), 20.10);</span>
+<span class="fc" id="L709">        overwritten = ts.addOrUpdate(item);</span>
+<span class="fc" id="L710">        assertNull(overwritten);</span>
+<span class="fc" id="L711">        assertEquals(new Double(20.10), ts.getValue(new Year(2010)));</span>
+        // changing the item that was added should not change the series
+<span class="fc" id="L713">        item.setValue(null);</span>
+<span class="fc" id="L714">        assertEquals(new Double(20.10), ts.getValue(new Year(2010)));</span>
+<span class="fc" id="L715">    }</span>
+
+    /**
+     * A test for the bug report 1075255.
+     */
+    public void testBug1075255() {
+<span class="fc" id="L721">        TimeSeries ts = new TimeSeries(&quot;dummy&quot;, FixedMillisecond.class);</span>
+<span class="fc" id="L722">        ts.add(new FixedMillisecond(0L), 0.0);</span>
+<span class="fc" id="L723">        TimeSeries ts2 = new TimeSeries(&quot;dummy2&quot;, FixedMillisecond.class);</span>
+<span class="fc" id="L724">        ts2.add(new FixedMillisecond(0L), 1.0);</span>
+        try {
+<span class="fc" id="L726">            ts.addAndOrUpdate(ts2);</span>
+        }
+<span class="nc" id="L728">        catch (Exception e) {</span>
+<span class="nc" id="L729">            e.printStackTrace();</span>
+<span class="nc" id="L730">            assertTrue(false);</span>
+<span class="fc" id="L731">        }</span>
+<span class="fc" id="L732">        assertEquals(1, ts.getItemCount());</span>
+<span class="fc" id="L733">    }</span>
+
+    /**
+     * A test for bug 1832432.
+     */
+    public void testBug1832432() {
+<span class="fc" id="L739">        TimeSeries s1 = new TimeSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L740">        TimeSeries s2 = null;</span>
+        try {
+<span class="fc" id="L742">            s2 = (TimeSeries) s1.clone();</span>
+        }
+<span class="nc" id="L744">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L745">            e.printStackTrace();</span>
+<span class="fc" id="L746">        }</span>
+<span class="pc bpc" id="L747" title="1 of 2 branches missed.">        assertTrue(s1 != s2);</span>
+<span class="pc bpc" id="L748" title="1 of 2 branches missed.">        assertTrue(s1.getClass() == s2.getClass());</span>
+<span class="fc" id="L749">        assertTrue(s1.equals(s2));</span>
+
+        // test independence
+<span class="fc" id="L752">        s1.add(new Day(1, 1, 2007), 100.0);</span>
+<span class="fc" id="L753">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L754">    }</span>
+
+    /**
+     * Some checks for the getIndex() method.
+     */
+    public void testGetIndex() {
+<span class="fc" id="L760">        TimeSeries series = new TimeSeries(&quot;Series&quot;, Month.class);</span>
+<span class="fc" id="L761">        assertEquals(-1, series.getIndex(new Month(1, 2003)));</span>
+
+<span class="fc" id="L763">        series.add(new Month(1, 2003), 45.0);</span>
+<span class="fc" id="L764">        assertEquals(0, series.getIndex(new Month(1, 2003)));</span>
+<span class="fc" id="L765">        assertEquals(-1, series.getIndex(new Month(12, 2002)));</span>
+<span class="fc" id="L766">        assertEquals(-2, series.getIndex(new Month(2, 2003)));</span>
+
+<span class="fc" id="L768">        series.add(new Month(3, 2003), 55.0);</span>
+<span class="fc" id="L769">        assertEquals(-1, series.getIndex(new Month(12, 2002)));</span>
+<span class="fc" id="L770">        assertEquals(0, series.getIndex(new Month(1, 2003)));</span>
+<span class="fc" id="L771">        assertEquals(-2, series.getIndex(new Month(2, 2003)));</span>
+<span class="fc" id="L772">        assertEquals(1, series.getIndex(new Month(3, 2003)));</span>
+<span class="fc" id="L773">        assertEquals(-3, series.getIndex(new Month(4, 2003)));</span>
+<span class="fc" id="L774">    }</span>
+
+    /**
+     * Some checks for the getDataItem(int) method.
+     */
+    public void testGetDataItem1() {
+<span class="fc" id="L780">        TimeSeries series = new TimeSeries(&quot;S&quot;, Year.class);</span>
+
+        // can't get anything yet...just an exception
+<span class="fc" id="L783">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L785">            /*TimeSeriesDataItem item =*/ series.getDataItem(0);</span>
+        }
+<span class="fc" id="L787">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L788">            pass = true;</span>
+<span class="nc" id="L789">        }</span>
+<span class="fc" id="L790">        assertTrue(pass);</span>
+
+<span class="fc" id="L792">        series.add(new Year(2006), 100.0);</span>
+<span class="fc" id="L793">        TimeSeriesDataItem item = series.getDataItem(0);</span>
+<span class="fc" id="L794">        assertEquals(new Year(2006), item.getPeriod());</span>
+<span class="fc" id="L795">        pass = false;</span>
+        try {
+<span class="nc" id="L797">            /*item = */series.getDataItem(-1);</span>
+        }
+<span class="fc" id="L799">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L800">            pass = true;</span>
+<span class="nc" id="L801">        }</span>
+<span class="fc" id="L802">        assertTrue(pass);</span>
+
+<span class="fc" id="L804">        pass = false;</span>
+        try {
+<span class="nc" id="L806">            /*item = */series.getDataItem(1);</span>
+        }
+<span class="fc" id="L808">        catch (IndexOutOfBoundsException e) {</span>
+<span class="fc" id="L809">            pass = true;</span>
+<span class="nc" id="L810">        }</span>
+<span class="fc" id="L811">        assertTrue(pass);</span>
+<span class="fc" id="L812">    }</span>
+
+    /**
+     * Some checks for the getDataItem(RegularTimePeriod) method.
+     */
+    public void testGetDataItem2() {
+<span class="fc" id="L818">        TimeSeries series = new TimeSeries(&quot;S&quot;, Year.class);</span>
+<span class="fc" id="L819">        assertNull(series.getDataItem(new Year(2006)));</span>
+
+        // try a null argument
+<span class="fc" id="L822">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L824">            /* TimeSeriesDataItem item = */ series.getDataItem(null);</span>
+        }
+<span class="fc" id="L826">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L827">            pass = true;</span>
+<span class="nc" id="L828">        }</span>
+<span class="fc" id="L829">        assertTrue(pass);</span>
+<span class="fc" id="L830">    }</span>
+
+    /**
+     * Some checks for the removeAgedItems() method.
+     */
+    public void testRemoveAgedItems() {
+<span class="fc" id="L836">        TimeSeries series = new TimeSeries(&quot;Test Series&quot;, Year.class);</span>
+<span class="fc" id="L837">        series.addChangeListener(this);</span>
+<span class="fc" id="L838">        assertEquals(Long.MAX_VALUE, series.getMaximumItemAge());</span>
+<span class="fc" id="L839">        assertEquals(Integer.MAX_VALUE, series.getMaximumItemCount());</span>
+<span class="fc" id="L840">        this.gotSeriesChangeEvent = false;</span>
+
+        // test empty series
+<span class="fc" id="L843">        series.removeAgedItems(true);</span>
+<span class="fc" id="L844">        assertEquals(0, series.getItemCount());</span>
+<span class="fc" id="L845">        assertFalse(this.gotSeriesChangeEvent);</span>
+
+        // test series with one item
+<span class="fc" id="L848">        series.add(new Year(1999), 1.0);</span>
+<span class="fc" id="L849">        series.setMaximumItemAge(0);</span>
+<span class="fc" id="L850">        this.gotSeriesChangeEvent = false;</span>
+<span class="fc" id="L851">        series.removeAgedItems(true);</span>
+<span class="fc" id="L852">        assertEquals(1, series.getItemCount());</span>
+<span class="fc" id="L853">        assertFalse(this.gotSeriesChangeEvent);</span>
+
+        // test series with two items
+<span class="fc" id="L856">        series.setMaximumItemAge(10);</span>
+<span class="fc" id="L857">        series.add(new Year(2001), 2.0);</span>
+<span class="fc" id="L858">        this.gotSeriesChangeEvent = false;</span>
+<span class="fc" id="L859">        series.setMaximumItemAge(2);</span>
+<span class="fc" id="L860">        assertEquals(2, series.getItemCount());</span>
+<span class="fc" id="L861">        assertEquals(0, series.getIndex(new Year(1999)));</span>
+<span class="fc" id="L862">        assertFalse(this.gotSeriesChangeEvent);</span>
+<span class="fc" id="L863">        series.setMaximumItemAge(1);</span>
+<span class="fc" id="L864">        assertEquals(1, series.getItemCount());</span>
+<span class="fc" id="L865">        assertEquals(0, series.getIndex(new Year(2001)));</span>
+<span class="fc" id="L866">        assertTrue(this.gotSeriesChangeEvent);</span>
+<span class="fc" id="L867">    }</span>
+
+    /**
+     * Some checks for the removeAgedItems(long, boolean) method.
+     */
+    public void testRemoveAgedItems2() {
+<span class="fc" id="L873">        long y2006 = 1157087372534L;  // milliseconds somewhere in 2006</span>
+<span class="fc" id="L874">        TimeSeries series = new TimeSeries(&quot;Test Series&quot;, Year.class);</span>
+<span class="fc" id="L875">        series.addChangeListener(this);</span>
+<span class="fc" id="L876">        assertEquals(Long.MAX_VALUE, series.getMaximumItemAge());</span>
+<span class="fc" id="L877">        assertEquals(Integer.MAX_VALUE, series.getMaximumItemCount());</span>
+<span class="fc" id="L878">        this.gotSeriesChangeEvent = false;</span>
+
+        // test empty series
+<span class="fc" id="L881">        series.removeAgedItems(y2006, true);</span>
+<span class="fc" id="L882">        assertEquals(0, series.getItemCount());</span>
+<span class="fc" id="L883">        assertFalse(this.gotSeriesChangeEvent);</span>
+
+        // test a series with 1 item
+<span class="fc" id="L886">        series.add(new Year(2004), 1.0);</span>
+<span class="fc" id="L887">        series.setMaximumItemAge(1);</span>
+<span class="fc" id="L888">        this.gotSeriesChangeEvent = false;</span>
+<span class="fc" id="L889">        series.removeAgedItems(new Year(2005).getMiddleMillisecond(), true);</span>
+<span class="fc" id="L890">        assertEquals(1, series.getItemCount());</span>
+<span class="fc" id="L891">        assertFalse(this.gotSeriesChangeEvent);</span>
+<span class="fc" id="L892">        series.removeAgedItems(y2006, true);</span>
+<span class="fc" id="L893">        assertEquals(0, series.getItemCount());</span>
+<span class="fc" id="L894">        assertTrue(this.gotSeriesChangeEvent);</span>
+
+        // test a series with two items
+<span class="fc" id="L897">        series.setMaximumItemAge(2);</span>
+<span class="fc" id="L898">        series.add(new Year(2003), 1.0);</span>
+<span class="fc" id="L899">        series.add(new Year(2005), 2.0);</span>
+<span class="fc" id="L900">        assertEquals(2, series.getItemCount());</span>
+<span class="fc" id="L901">        this.gotSeriesChangeEvent = false;</span>
+<span class="fc" id="L902">        assertEquals(2, series.getItemCount());</span>
+
+<span class="fc" id="L904">        series.removeAgedItems(new Year(2005).getMiddleMillisecond(), true);</span>
+<span class="fc" id="L905">        assertEquals(2, series.getItemCount());</span>
+<span class="fc" id="L906">        assertFalse(this.gotSeriesChangeEvent);</span>
+<span class="fc" id="L907">        series.removeAgedItems(y2006, true);</span>
+<span class="fc" id="L908">        assertEquals(1, series.getItemCount());</span>
+<span class="fc" id="L909">        assertTrue(this.gotSeriesChangeEvent);</span>
+<span class="fc" id="L910">    }</span>
+
+    /**
+     * Calling removeAgedItems() on an empty series should not throw any
+     * exception.
+     */
+    public void testRemoveAgedItems3() {
+<span class="fc" id="L917">        TimeSeries s = new TimeSeries(&quot;Test&quot;);</span>
+<span class="fc" id="L918">        boolean pass = true;</span>
+        try {
+<span class="fc" id="L920">            s.removeAgedItems(0L, true);</span>
+        }
+<span class="nc" id="L922">        catch (Exception e) {</span>
+<span class="nc" id="L923">            pass = false;</span>
+<span class="fc" id="L924">        }</span>
+<span class="fc" id="L925">        assertTrue(pass);</span>
+<span class="fc" id="L926">    }</span>
+
+    /**
+     * Check that the item bounds are determined correctly when there is a
+     * maximum item count.
+     */
+    public void testRemoveAgedItems4() {
+<span class="fc" id="L933">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L934">        s1.setMaximumItemAge(2);</span>
+<span class="fc" id="L935">        s1.add(new Year(2010), 1.1);</span>
+<span class="fc" id="L936">        s1.add(new Year(2011), 2.2);</span>
+<span class="fc" id="L937">        s1.add(new Year(2012), 3.3);</span>
+<span class="fc" id="L938">        s1.add(new Year(2013), 2.5);</span>
+<span class="fc" id="L939">        assertEquals(3, s1.getItemCount());</span>
+<span class="fc" id="L940">        assertEquals(2.2, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L941">        assertEquals(3.3, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L942">    }</span>
+
+    /**
+     * Check that the item bounds are determined correctly after a call to
+     * removeAgedItems().
+     */
+    public void testRemoveAgedItems5() {
+<span class="fc" id="L949">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L950">        s1.setMaximumItemAge(4);</span>
+<span class="fc" id="L951">        s1.add(new Year(2010), 1.1);</span>
+<span class="fc" id="L952">        s1.add(new Year(2011), 2.2);</span>
+<span class="fc" id="L953">        s1.add(new Year(2012), 3.3);</span>
+<span class="fc" id="L954">        s1.add(new Year(2013), 2.5);</span>
+<span class="fc" id="L955">        s1.removeAgedItems(new Year(2015).getMiddleMillisecond(), true);</span>
+<span class="fc" id="L956">        assertEquals(3, s1.getItemCount());</span>
+<span class="fc" id="L957">        assertEquals(2.2, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L958">        assertEquals(3.3, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L959">    }</span>
+
+    /**
+     * Some simple checks for the hashCode() method.
+     */
+    public void testHashCode() {
+<span class="fc" id="L965">        TimeSeries s1 = new TimeSeries(&quot;Test&quot;);</span>
+<span class="fc" id="L966">        TimeSeries s2 = new TimeSeries(&quot;Test&quot;);</span>
+<span class="fc" id="L967">        assertEquals(s1, s2);</span>
+<span class="fc" id="L968">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+
+<span class="fc" id="L970">        s1.add(new Day(1, 1, 2007), 500.0);</span>
+<span class="fc" id="L971">        s2.add(new Day(1, 1, 2007), 500.0);</span>
+<span class="fc" id="L972">        assertEquals(s1, s2);</span>
+<span class="fc" id="L973">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+
+<span class="fc" id="L975">        s1.add(new Day(2, 1, 2007), null);</span>
+<span class="fc" id="L976">        s2.add(new Day(2, 1, 2007), null);</span>
+<span class="fc" id="L977">        assertEquals(s1, s2);</span>
+<span class="fc" id="L978">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+
+<span class="fc" id="L980">        s1.add(new Day(5, 1, 2007), 111.0);</span>
+<span class="fc" id="L981">        s2.add(new Day(5, 1, 2007), 111.0);</span>
+<span class="fc" id="L982">        assertEquals(s1, s2);</span>
+<span class="fc" id="L983">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+
+<span class="fc" id="L985">        s1.add(new Day(9, 1, 2007), 1.0);</span>
+<span class="fc" id="L986">        s2.add(new Day(9, 1, 2007), 1.0);</span>
+<span class="fc" id="L987">        assertEquals(s1, s2);</span>
+<span class="fc" id="L988">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+<span class="fc" id="L989">    }</span>
+
+    /**
+     * Test for bug report 1864222.
+     */
+    public void testBug1864222() {
+<span class="fc" id="L995">        TimeSeries s = new TimeSeries(&quot;S&quot;);</span>
+<span class="fc" id="L996">        s.add(new Day(19, 8, 2005), 1);</span>
+<span class="fc" id="L997">        s.add(new Day(31, 1, 2006), 1);</span>
+<span class="fc" id="L998">        boolean pass = true;</span>
+        try {
+<span class="fc" id="L1000">            s.createCopy(new Day(1, 12, 2005), new Day(18, 1, 2006));</span>
+        }
+<span class="nc" id="L1002">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L1003">            pass = false;</span>
+<span class="fc" id="L1004">        }</span>
+<span class="fc" id="L1005">        assertTrue(pass);</span>
+<span class="fc" id="L1006">    }</span>
+
+    /**
+     * Test for bug report 3446965.
+     */
+    public void testBug3446965() {
+<span class="fc" id="L1012">        TimeSeries s = new TimeSeries(&quot;s&quot;);</span>
+<span class="fc" id="L1013">        s.addOrUpdate(new Year(2011), 100.0);</span>
+<span class="fc" id="L1014">        s.addOrUpdate(new Year(2012), 150.0);</span>
+<span class="fc" id="L1015">        s.addOrUpdate(new Year(2013), 200.0);</span>
+<span class="fc" id="L1016">        s.addOrUpdate(new Year(2012), 250.0);  // this line triggers the defect</span>
+<span class="fc" id="L1017">        assertEquals(100.0, s.getMinY(), EPSILON);</span>
+<span class="fc" id="L1018">        assertEquals(250.0, s.getMaxY(), EPSILON);</span>
+<span class="fc" id="L1019">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * Some checks for the getMinY() method.
+     */
+    public void testGetMinY() {
+<span class="fc" id="L1027">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L1028">        assertTrue(Double.isNaN(s1.getMinY()));</span>
+
+<span class="fc" id="L1030">        s1.add(new Year(2008), 1.1);</span>
+<span class="fc" id="L1031">        assertEquals(1.1, s1.getMinY(), EPSILON);</span>
+
+<span class="fc" id="L1033">        s1.add(new Year(2009), 2.2);</span>
+<span class="fc" id="L1034">        assertEquals(1.1, s1.getMinY(), EPSILON);</span>
+
+<span class="fc" id="L1036">        s1.add(new Year(2000), 99.9);</span>
+<span class="fc" id="L1037">        assertEquals(1.1, s1.getMinY(), EPSILON);</span>
+
+<span class="fc" id="L1039">        s1.add(new Year(2002), -1.1);</span>
+<span class="fc" id="L1040">        assertEquals(-1.1, s1.getMinY(), EPSILON);</span>
+
+<span class="fc" id="L1042">        s1.add(new Year(2003), null);</span>
+<span class="fc" id="L1043">        assertEquals(-1.1, s1.getMinY(), EPSILON);</span>
+
+<span class="fc" id="L1045">        s1.addOrUpdate(new Year(2002), null);</span>
+<span class="fc" id="L1046">        assertEquals(1.1, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L1047">   }</span>
+
+    /**
+     * Some checks for the getMaxY() method.
+     */
+    public void testGetMaxY() {
+<span class="fc" id="L1053">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L1054">        assertTrue(Double.isNaN(s1.getMaxY()));</span>
+
+<span class="fc" id="L1056">        s1.add(new Year(2008), 1.1);</span>
+<span class="fc" id="L1057">        assertEquals(1.1, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L1059">        s1.add(new Year(2009), 2.2);</span>
+<span class="fc" id="L1060">        assertEquals(2.2, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L1062">        s1.add(new Year(2000), 99.9);</span>
+<span class="fc" id="L1063">        assertEquals(99.9, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L1065">        s1.add(new Year(2002), -1.1);</span>
+<span class="fc" id="L1066">        assertEquals(99.9, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L1068">        s1.add(new Year(2003), null);</span>
+<span class="fc" id="L1069">        assertEquals(99.9, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L1071">        s1.addOrUpdate(new Year(2000), null);</span>
+<span class="fc" id="L1072">        assertEquals(2.2, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L1073">    }</span>
+
+    /**
+     * A test for the clear method.
+     */
+    public void testClear() {
+<span class="fc" id="L1079">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L1080">        s1.add(new Year(2009), 1.1);</span>
+<span class="fc" id="L1081">        s1.add(new Year(2010), 2.2);</span>
+
+<span class="fc" id="L1083">        assertEquals(2, s1.getItemCount());</span>
+
+<span class="fc" id="L1085">        s1.clear();</span>
+<span class="fc" id="L1086">        assertEquals(0, s1.getItemCount());</span>
+<span class="fc" id="L1087">        assertTrue(Double.isNaN(s1.getMinY()));</span>
+<span class="fc" id="L1088">        assertTrue(Double.isNaN(s1.getMaxY()));</span>
+<span class="fc" id="L1089">    }</span>
+
+    /**
+     * Check that the item bounds are determined correctly when there is a
+     * maximum item count and a new value is added.
+     */
+    public void testAdd() {
+<span class="fc" id="L1096">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L1097">        s1.setMaximumItemCount(2);</span>
+<span class="fc" id="L1098">        s1.add(new Year(2010), 1.1);</span>
+<span class="fc" id="L1099">        s1.add(new Year(2011), 2.2);</span>
+<span class="fc" id="L1100">        s1.add(new Year(2012), 3.3);</span>
+<span class="fc" id="L1101">        assertEquals(2, s1.getItemCount());</span>
+<span class="fc" id="L1102">        assertEquals(2.2, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L1103">        assertEquals(3.3, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L1104">    }</span>
+
+    /**
+     * Some checks for the update(RegularTimePeriod...method).
+     */
+    public void testUpdate_RegularTimePeriod() {
+<span class="fc" id="L1110">        TimeSeries s1 = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L1111">        s1.add(new Year(2010), 1.1);</span>
+<span class="fc" id="L1112">        s1.add(new Year(2011), 2.2);</span>
+<span class="fc" id="L1113">        s1.add(new Year(2012), 3.3);</span>
+<span class="fc" id="L1114">        s1.update(new Year(2012), 4.4);</span>
+<span class="fc" id="L1115">        assertEquals(4.4, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L1116">        s1.update(new Year(2010), 0.5);</span>
+<span class="fc" id="L1117">        assertEquals(0.5, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L1118">        s1.update(new Year(2012), null);</span>
+<span class="fc" id="L1119">        assertEquals(2.2, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L1120">        s1.update(new Year(2010), null);</span>
+<span class="fc" id="L1121">        assertEquals(2.2, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L1122">    }</span>
+
+    /**
+     * Create a TimeSeriesDataItem, add it to a TimeSeries.  Now, modifying
+     * the original TimeSeriesDataItem should NOT affect the TimeSeries.
+     */
+    public void testAdd_TimeSeriesDataItem() {
+<span class="fc" id="L1129">        TimeSeriesDataItem item = new TimeSeriesDataItem(new Year(2009), 1.0);</span>
+<span class="fc" id="L1130">        TimeSeries series = new TimeSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L1131">        series.add(item);</span>
+<span class="fc" id="L1132">        assertTrue(item.equals(series.getDataItem(0)));</span>
+<span class="fc" id="L1133">        item.setValue(new Double(99.9));</span>
+<span class="fc" id="L1134">        assertFalse(item.equals(series.getDataItem(0)));</span>
+<span class="fc" id="L1135">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

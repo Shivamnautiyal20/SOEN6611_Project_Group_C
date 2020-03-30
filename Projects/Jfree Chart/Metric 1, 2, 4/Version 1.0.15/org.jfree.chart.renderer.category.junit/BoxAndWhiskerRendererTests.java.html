@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BoxAndWhiskerRendererTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.category.junit</a> &gt; <span class="el_source">BoxAndWhiskerRendererTests.java</span></div><h1>BoxAndWhiskerRendererTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------------
+ * BoxAndWhiskerRendererTests.java
+ * -------------------------------
+ * (C) Copyright 2003-2009, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 22-Oct-2003 : Version 1 (DG);
+ * 23-Apr-2004 : Extended testEquals() method (DG);
+ * 12-Oct-2006 : Added new checks for bug 1572478 (DG);
+ * 11-May-2007 : Added testGetLegendItem() (DG);
+ * 17-May-2007 : Added testGetLegendItemSeriesIndex() (DG);
+ * 08-Oct-2007 : Added tests for null items in dataset (DG);
+ * 15-Jan-2008 : Updated testEquals() (DG);
+ * 23-Apr-2008 : Added testPublicCloneable() (DG);
+ * 21-Jan-2009 : Updated testEquals() for new fields (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.category.junit;
+
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.ChartRenderingInfo;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BoxAndWhiskerRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.statistics.BoxAndWhiskerItem;
+import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link BoxAndWhiskerRenderer} class.
+ */
+public class BoxAndWhiskerRendererTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L93">        return new TestSuite(BoxAndWhiskerRendererTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public BoxAndWhiskerRendererTests(String name) {
+<span class="fc" id="L102">        super(name);</span>
+<span class="fc" id="L103">    }</span>
+
+    /**
+     * Test that the equals() method distinguishes all fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L109">        BoxAndWhiskerRenderer r1 = new BoxAndWhiskerRenderer();</span>
+<span class="fc" id="L110">        BoxAndWhiskerRenderer r2 = new BoxAndWhiskerRenderer();</span>
+<span class="fc" id="L111">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L113">        r1.setArtifactPaint(new GradientPaint(1.0f, 2.0f, Color.yellow,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L115">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L116">        r2.setArtifactPaint(new GradientPaint(1.0f, 2.0f, Color.yellow,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L118">        assertEquals(r1, r2);</span>
+
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        r1.setFillBox(!r1.getFillBox());</span>
+<span class="fc" id="L121">        assertFalse(r1.equals(r2));</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">        r2.setFillBox(!r2.getFillBox());</span>
+<span class="fc" id="L123">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L125">        r1.setItemMargin(0.11);</span>
+<span class="fc" id="L126">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L127">        r2.setItemMargin(0.11);</span>
+<span class="fc" id="L128">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L130">        r1.setMaximumBarWidth(0.99);</span>
+<span class="fc" id="L131">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L132">        r2.setMaximumBarWidth(0.99);</span>
+<span class="fc" id="L133">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L135">        r1.setMeanVisible(false);</span>
+<span class="fc" id="L136">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L137">        r2.setMeanVisible(false);</span>
+<span class="fc" id="L138">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L140">        r1.setMedianVisible(false);</span>
+<span class="fc" id="L141">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L142">        r2.setMedianVisible(false);</span>
+<span class="fc" id="L143">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L144">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L150">        BoxAndWhiskerRenderer r1 = new BoxAndWhiskerRenderer();</span>
+<span class="fc" id="L151">        BoxAndWhiskerRenderer r2 = new BoxAndWhiskerRenderer();</span>
+<span class="fc" id="L152">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L153">        int h1 = r1.hashCode();</span>
+<span class="fc" id="L154">        int h2 = r2.hashCode();</span>
+<span class="fc" id="L155">        assertEquals(h1, h2);</span>
+<span class="fc" id="L156">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L162">        BoxAndWhiskerRenderer r1 = new BoxAndWhiskerRenderer();</span>
+<span class="fc" id="L163">        BoxAndWhiskerRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L165">            r2 = (BoxAndWhiskerRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L167">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L168">            e.printStackTrace();</span>
+<span class="fc" id="L169">        }</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L172">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Check that this class implements PublicCloneable.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L179">        BoxAndWhiskerRenderer r1 = new BoxAndWhiskerRenderer();</span>
+<span class="fc" id="L180">        assertTrue(r1 instanceof PublicCloneable);</span>
+<span class="fc" id="L181">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L188">        BoxAndWhiskerRenderer r1 = new BoxAndWhiskerRenderer();</span>
+<span class="fc" id="L189">        BoxAndWhiskerRenderer r2 = null;</span>
+
+        try {
+<span class="fc" id="L192">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L193">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L194">            out.writeObject(r1);</span>
+<span class="fc" id="L195">            out.close();</span>
+
+<span class="fc" id="L197">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L198">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L199">            r2 = (BoxAndWhiskerRenderer) in.readObject();</span>
+<span class="fc" id="L200">            in.close();</span>
+        }
+<span class="nc" id="L202">        catch (Exception e) {</span>
+<span class="nc" id="L203">            e.printStackTrace();</span>
+<span class="fc" id="L204">        }</span>
+<span class="fc" id="L205">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L207">    }</span>
+
+    /**
+     * Draws the chart with a &lt;code&gt;null&lt;/code&gt; info object to make sure that
+     * no exceptions are thrown (particularly by code in the renderer).
+     */
+    public void testDrawWithNullInfo() {
+<span class="fc" id="L214">        boolean success = false;</span>
+        try {
+<span class="fc" id="L216">            DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L218">            dataset.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                    new Double(0.0), new Double(4.0), new Double(0.5),
+                    new Double(4.5), new Double(-0.5), new Double(5.5),
+                    null), &quot;S1&quot;, &quot;C1&quot;);
+<span class="fc" id="L222">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new BoxAndWhiskerRenderer());
+<span class="fc" id="L225">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L226">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    null);
+<span class="fc" id="L228">            success = true;</span>
+        }
+<span class="nc" id="L230">        catch (NullPointerException e) {</span>
+<span class="nc" id="L231">            success = false;</span>
+<span class="fc" id="L232">        }</span>
+<span class="fc" id="L233">        assertTrue(success);</span>
+<span class="fc" id="L234">    }</span>
+
+    /**
+     * A check for bug 1572478 (for the vertical orientation).
+     */
+    public void testBug1572478Vertical() {
+<span class="fc" id="L240">        DefaultBoxAndWhiskerCategoryDataset dataset</span>
+<span class="fc" id="L241">                = new DefaultBoxAndWhiskerCategoryDataset() {</span>
+
+            public Number getQ1Value(int row, int column) {
+<span class="fc" id="L244">                return null;</span>
+            }
+
+            public Number getQ1Value(Comparable rowKey, Comparable columnKey) {
+<span class="nc" id="L248">                return null;</span>
+            }
+        };
+<span class="fc" id="L251">        List values = new ArrayList();</span>
+<span class="fc" id="L252">        values.add(new Double(1.0));</span>
+<span class="fc" id="L253">        values.add(new Double(10.0));</span>
+<span class="fc" id="L254">        values.add(new Double(100.0));</span>
+<span class="fc" id="L255">        dataset.add(values, &quot;row&quot;, &quot;column&quot;);</span>
+<span class="fc" id="L256">        CategoryPlot plot = new CategoryPlot(dataset, new CategoryAxis(&quot;x&quot;),</span>
+                new NumberAxis(&quot;y&quot;), new BoxAndWhiskerRenderer());
+<span class="fc" id="L258">        JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L259">        boolean success = false;</span>
+
+        try {
+<span class="fc" id="L262">            BufferedImage image = new BufferedImage(200 , 100,</span>
+                    BufferedImage.TYPE_INT_RGB);
+<span class="fc" id="L264">            Graphics2D g2 = image.createGraphics();</span>
+<span class="fc" id="L265">            chart.draw(g2, new Rectangle2D.Double(0, 0, 200, 100), null,</span>
+                    new ChartRenderingInfo());
+<span class="fc" id="L267">            g2.dispose();</span>
+<span class="fc" id="L268">            success = true;</span>
+        }
+<span class="nc" id="L270">        catch (Exception e) {</span>
+<span class="nc" id="L271">            success = false;</span>
+<span class="fc" id="L272">        }</span>
+
+<span class="fc" id="L274">        assertTrue(success);</span>
+
+<span class="fc" id="L276">    }</span>
+
+    /**
+     * A check for bug 1572478 (for the horizontal orientation).
+     */
+    public void testBug1572478Horizontal() {
+<span class="fc" id="L282">        DefaultBoxAndWhiskerCategoryDataset dataset</span>
+<span class="fc" id="L283">                = new DefaultBoxAndWhiskerCategoryDataset() {</span>
+
+            public Number getQ1Value(int row, int column) {
+<span class="fc" id="L286">                return null;</span>
+            }
+
+            public Number getQ1Value(Comparable rowKey, Comparable columnKey) {
+<span class="nc" id="L290">                return null;</span>
+            }
+        };
+<span class="fc" id="L293">        List values = new ArrayList();</span>
+<span class="fc" id="L294">        values.add(new Double(1.0));</span>
+<span class="fc" id="L295">        values.add(new Double(10.0));</span>
+<span class="fc" id="L296">        values.add(new Double(100.0));</span>
+<span class="fc" id="L297">        dataset.add(values, &quot;row&quot;, &quot;column&quot;);</span>
+<span class="fc" id="L298">        CategoryPlot plot = new CategoryPlot(dataset, new CategoryAxis(&quot;x&quot;),</span>
+                new NumberAxis(&quot;y&quot;), new BoxAndWhiskerRenderer());
+<span class="fc" id="L300">        plot.setOrientation(PlotOrientation.HORIZONTAL);</span>
+<span class="fc" id="L301">        JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L302">        boolean success = false;</span>
+
+        try {
+<span class="fc" id="L305">            BufferedImage image = new BufferedImage(200 , 100,</span>
+                    BufferedImage.TYPE_INT_RGB);
+<span class="fc" id="L307">            Graphics2D g2 = image.createGraphics();</span>
+<span class="fc" id="L308">            chart.draw(g2, new Rectangle2D.Double(0, 0, 200, 100), null,</span>
+                    new ChartRenderingInfo());
+<span class="fc" id="L310">            g2.dispose();</span>
+<span class="fc" id="L311">            success = true;</span>
+        }
+<span class="nc" id="L313">        catch (Exception e) {</span>
+<span class="nc" id="L314">            success = false;</span>
+<span class="fc" id="L315">        }</span>
+
+<span class="fc" id="L317">        assertTrue(success);</span>
+
+<span class="fc" id="L319">    }</span>
+
+    /**
+     * Some checks for the getLegendItem() method.
+     */
+    public void testGetLegendItem() {
+<span class="fc" id="L325">        DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L327">        List values = new ArrayList();</span>
+<span class="fc" id="L328">        values.add(new Double(1.10));</span>
+<span class="fc" id="L329">        values.add(new Double(1.45));</span>
+<span class="fc" id="L330">        values.add(new Double(1.33));</span>
+<span class="fc" id="L331">        values.add(new Double(1.23));</span>
+<span class="fc" id="L332">        dataset.add(values, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L333">        BoxAndWhiskerRenderer r = new BoxAndWhiskerRenderer();</span>
+<span class="fc" id="L334">        CategoryPlot plot = new CategoryPlot(dataset, new CategoryAxis(&quot;x&quot;),</span>
+                new NumberAxis(&quot;y&quot;), r);
+<span class="fc" id="L336">        /*JFreeChart chart =*/ new JFreeChart(plot);</span>
+<span class="fc" id="L337">        LegendItem li = r.getLegendItem(0, 0);</span>
+<span class="fc" id="L338">        assertNotNull(li);</span>
+<span class="fc" id="L339">        r.setSeriesVisibleInLegend(0, Boolean.FALSE);</span>
+<span class="fc" id="L340">        li = r.getLegendItem(0, 0);</span>
+<span class="fc" id="L341">        assertNull(li);</span>
+<span class="fc" id="L342">    }</span>
+
+    /**
+     * A check for the datasetIndex and seriesIndex fields in the LegendItem
+     * returned by the getLegendItem() method.
+     */
+    public void testGetLegendItemSeriesIndex() {
+<span class="fc" id="L349">        DefaultCategoryDataset dataset0 = new DefaultCategoryDataset();</span>
+<span class="fc" id="L350">        dataset0.addValue(21.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L351">        dataset0.addValue(22.0, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L352">        DefaultCategoryDataset dataset1 = new DefaultCategoryDataset();</span>
+<span class="fc" id="L353">        dataset1.addValue(23.0, &quot;R3&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L354">        dataset1.addValue(24.0, &quot;R4&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L355">        dataset1.addValue(25.0, &quot;R5&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L356">        BoxAndWhiskerRenderer r = new BoxAndWhiskerRenderer();</span>
+<span class="fc" id="L357">        CategoryPlot plot = new CategoryPlot(dataset0, new CategoryAxis(&quot;x&quot;),</span>
+                new NumberAxis(&quot;y&quot;), r);
+<span class="fc" id="L359">        plot.setDataset(1, dataset1);</span>
+<span class="fc" id="L360">        /*JFreeChart chart =*/ new JFreeChart(plot);</span>
+<span class="fc" id="L361">        LegendItem li = r.getLegendItem(1, 2);</span>
+<span class="fc" id="L362">        assertEquals(&quot;R5&quot;, li.getLabel());</span>
+<span class="fc" id="L363">        assertEquals(1, li.getDatasetIndex());</span>
+<span class="fc" id="L364">        assertEquals(2, li.getSeriesIndex());</span>
+<span class="fc" id="L365">    }</span>
+
+    /**
+     * Draws a chart where the dataset contains a null mean value.
+     */
+    public void testDrawWithNullMean() {
+<span class="fc" id="L371">        boolean success = false;</span>
+        try {
+<span class="fc" id="L373">            DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                    = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L375">            dataset.add(new BoxAndWhiskerItem(null, new Double(2.0),</span>
+                    new Double(0.0), new Double(4.0), new Double(0.5),
+                    new Double(4.5), new Double(-0.5), new Double(5.5),
+                    null), &quot;S1&quot;, &quot;C1&quot;);
+<span class="fc" id="L379">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new BoxAndWhiskerRenderer());
+<span class="fc" id="L382">            ChartRenderingInfo info = new ChartRenderingInfo();</span>
+<span class="fc" id="L383">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L384">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    info);
+<span class="fc" id="L386">            success = true;</span>
+        }
+<span class="nc" id="L388">        catch (Exception e) {</span>
+<span class="nc" id="L389">            success = false;</span>
+<span class="fc" id="L390">        }</span>
+<span class="fc" id="L391">        assertTrue(success);</span>
+<span class="fc" id="L392">    }</span>
+
+    /**
+     * Draws a chart where the dataset contains a null median value.
+     */
+    public void testDrawWithNullMedian() {
+<span class="fc" id="L398">        boolean success = false;</span>
+        try {
+<span class="fc" id="L400">            DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                    = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L402">            dataset.add(new BoxAndWhiskerItem(new Double(1.0), null,</span>
+                    new Double(0.0), new Double(4.0), new Double(0.5),
+                    new Double(4.5), new Double(-0.5), new Double(5.5),
+                    null), &quot;S1&quot;, &quot;C1&quot;);
+<span class="fc" id="L406">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new BoxAndWhiskerRenderer());
+<span class="fc" id="L409">            ChartRenderingInfo info = new ChartRenderingInfo();</span>
+<span class="fc" id="L410">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L411">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    info);
+<span class="fc" id="L413">            success = true;</span>
+        }
+<span class="nc" id="L415">        catch (Exception e) {</span>
+<span class="nc" id="L416">            success = false;</span>
+<span class="fc" id="L417">        }</span>
+<span class="fc" id="L418">        assertTrue(success);</span>
+<span class="fc" id="L419">    }</span>
+
+    /**
+     * Draws a chart where the dataset contains a null Q1 value.
+     */
+    public void testDrawWithNullQ1() {
+<span class="fc" id="L425">        boolean success = false;</span>
+        try {
+<span class="fc" id="L427">            DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                    = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L429">            dataset.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                    null, new Double(4.0), new Double(0.5),
+                    new Double(4.5), new Double(-0.5), new Double(5.5),
+                    null), &quot;S1&quot;, &quot;C1&quot;);
+<span class="fc" id="L433">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new BoxAndWhiskerRenderer());
+<span class="fc" id="L436">            ChartRenderingInfo info = new ChartRenderingInfo();</span>
+<span class="fc" id="L437">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L438">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    info);
+<span class="fc" id="L440">            success = true;</span>
+        }
+<span class="nc" id="L442">        catch (Exception e) {</span>
+<span class="nc" id="L443">            success = false;</span>
+<span class="fc" id="L444">        }</span>
+<span class="fc" id="L445">        assertTrue(success);</span>
+<span class="fc" id="L446">    }</span>
+
+    /**
+     * Draws a chart where the dataset contains a null Q3 value.
+     */
+    public void testDrawWithNullQ3() {
+<span class="fc" id="L452">        boolean success = false;</span>
+        try {
+<span class="fc" id="L454">            DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                    = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L456">            dataset.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                    new Double(3.0), null, new Double(0.5),
+                    new Double(4.5), new Double(-0.5), new Double(5.5),
+                    null), &quot;S1&quot;, &quot;C1&quot;);
+<span class="fc" id="L460">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new BoxAndWhiskerRenderer());
+<span class="fc" id="L463">            ChartRenderingInfo info = new ChartRenderingInfo();</span>
+<span class="fc" id="L464">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L465">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    info);
+<span class="fc" id="L467">            success = true;</span>
+        }
+<span class="nc" id="L469">        catch (Exception e) {</span>
+<span class="nc" id="L470">            success = false;</span>
+<span class="fc" id="L471">        }</span>
+<span class="fc" id="L472">        assertTrue(success);</span>
+<span class="fc" id="L473">    }</span>
+
+    /**
+     * Draws a chart where the dataset contains a null min regular value.
+     */
+    public void testDrawWithNullMinRegular() {
+<span class="fc" id="L479">        boolean success = false;</span>
+        try {
+<span class="fc" id="L481">            DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                    = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L483">            dataset.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                    new Double(3.0), new Double(4.0), null,
+                    new Double(4.5), new Double(-0.5), new Double(5.5),
+                    null), &quot;S1&quot;, &quot;C1&quot;);
+<span class="fc" id="L487">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new BoxAndWhiskerRenderer());
+<span class="fc" id="L490">            ChartRenderingInfo info = new ChartRenderingInfo();</span>
+<span class="fc" id="L491">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L492">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    info);
+<span class="fc" id="L494">            success = true;</span>
+        }
+<span class="nc" id="L496">        catch (Exception e) {</span>
+<span class="nc" id="L497">            success = false;</span>
+<span class="fc" id="L498">        }</span>
+<span class="fc" id="L499">        assertTrue(success);</span>
+<span class="fc" id="L500">    }</span>
+
+    /**
+     * Draws a chart where the dataset contains a null max regular value.
+     */
+    public void testDrawWithNullMaxRegular() {
+<span class="fc" id="L506">        boolean success = false;</span>
+        try {
+<span class="fc" id="L508">            DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                    = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L510">            dataset.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                    new Double(3.0), new Double(4.0), new Double(0.5),
+                    null, new Double(-0.5), new Double(5.5),
+                    null), &quot;S1&quot;, &quot;C1&quot;);
+<span class="fc" id="L514">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new BoxAndWhiskerRenderer());
+<span class="fc" id="L517">            ChartRenderingInfo info = new ChartRenderingInfo();</span>
+<span class="fc" id="L518">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L519">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    info);
+<span class="fc" id="L521">            success = true;</span>
+        }
+<span class="nc" id="L523">        catch (Exception e) {</span>
+<span class="nc" id="L524">            e.printStackTrace();</span>
+<span class="nc" id="L525">            success = false;</span>
+<span class="fc" id="L526">        }</span>
+<span class="fc" id="L527">        assertTrue(success);</span>
+<span class="fc" id="L528">    }</span>
+
+    /**
+     * Draws a chart where the dataset contains a null min outlier value.
+     */
+    public void testDrawWithNullMinOutlier() {
+<span class="fc" id="L534">        boolean success = false;</span>
+        try {
+<span class="fc" id="L536">            DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                    = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L538">            dataset.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                    new Double(3.0), new Double(4.0), new Double(0.5),
+                    new Double(4.5), null, new Double(5.5),
+                    null), &quot;S1&quot;, &quot;C1&quot;);
+<span class="fc" id="L542">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new BoxAndWhiskerRenderer());
+<span class="fc" id="L545">            ChartRenderingInfo info = new ChartRenderingInfo();</span>
+<span class="fc" id="L546">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L547">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    info);
+<span class="fc" id="L549">            success = true;</span>
+        }
+<span class="nc" id="L551">        catch (Exception e) {</span>
+<span class="nc" id="L552">            success = false;</span>
+<span class="fc" id="L553">        }</span>
+<span class="fc" id="L554">        assertTrue(success);</span>
+<span class="fc" id="L555">    }</span>
+
+    /**
+     * Draws a chart where the dataset contains a null max outlier value.
+     */
+    public void testDrawWithNullMaxOutlier() {
+<span class="fc" id="L561">        boolean success = false;</span>
+        try {
+<span class="fc" id="L563">            DefaultBoxAndWhiskerCategoryDataset dataset</span>
+                    = new DefaultBoxAndWhiskerCategoryDataset();
+<span class="fc" id="L565">            dataset.add(new BoxAndWhiskerItem(new Double(1.0), new Double(2.0),</span>
+                    new Double(3.0), new Double(4.0), new Double(0.5),
+                    new Double(4.5), new Double(-0.5), null,
+                    new java.util.ArrayList()), &quot;S1&quot;, &quot;C1&quot;);
+<span class="fc" id="L569">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new BoxAndWhiskerRenderer());
+<span class="fc" id="L572">            ChartRenderingInfo info = new ChartRenderingInfo();</span>
+<span class="fc" id="L573">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L574">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    info);
+<span class="fc" id="L576">            success = true;</span>
+        }
+<span class="nc" id="L578">        catch (Exception e) {</span>
+<span class="nc" id="L579">            success = false;</span>
+<span class="fc" id="L580">        }</span>
+<span class="fc" id="L581">        assertTrue(success);</span>
+<span class="fc" id="L582">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

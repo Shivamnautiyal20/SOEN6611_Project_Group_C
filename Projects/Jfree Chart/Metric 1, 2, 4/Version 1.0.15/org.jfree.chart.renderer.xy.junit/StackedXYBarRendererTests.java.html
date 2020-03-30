@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StackedXYBarRendererTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.xy.junit</a> &gt; <span class="el_source">StackedXYBarRendererTests.java</span></div><h1>StackedXYBarRendererTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------------------
+ * StackedXYBarRendererTests.java
+ * ------------------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 10-Sep-2004 : Version 1 (DG);
+ * 06-Jan-2005 : Added test for auto range calculation (DG);
+ * 06-Dec-2006 : Confirm serialization of GradientPaint (DG);
+ * 22-Apr-2008 : Added testPublicCloneable (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.xy.junit;
+
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.StackedXYBarRenderer;
+import org.jfree.data.Range;
+import org.jfree.data.xy.TableXYDataset;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link StackedXYBarRenderer} class.
+ */
+public class StackedXYBarRendererTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L80">        return new TestSuite(StackedXYBarRendererTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public StackedXYBarRendererTests(String name) {
+<span class="fc" id="L89">        super(name);</span>
+<span class="fc" id="L90">    }</span>
+
+    /**
+     * Test that the equals() method distinguishes all fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L96">        StackedXYBarRenderer r1 = new StackedXYBarRenderer();</span>
+<span class="fc" id="L97">        StackedXYBarRenderer r2 = new StackedXYBarRenderer();</span>
+<span class="fc" id="L98">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L99">        assertTrue(r2.equals(r1));</span>
+
+<span class="fc" id="L101">        r1.setRenderAsPercentages(true);</span>
+<span class="fc" id="L102">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L103">        r2.setRenderAsPercentages(true);</span>
+<span class="fc" id="L104">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L111">        StackedXYBarRenderer r1 = new StackedXYBarRenderer();</span>
+<span class="fc" id="L112">        StackedXYBarRenderer r2 = new StackedXYBarRenderer();</span>
+<span class="fc" id="L113">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L114">        int h1 = r1.hashCode();</span>
+<span class="fc" id="L115">        int h2 = r2.hashCode();</span>
+<span class="fc" id="L116">        assertEquals(h1, h2);</span>
+
+<span class="fc" id="L118">        r1.setRenderAsPercentages(true);</span>
+<span class="fc" id="L119">        h1 = r1.hashCode();</span>
+<span class="fc" id="L120">        h2 = r2.hashCode();</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">        assertFalse(h1 == h2);</span>
+<span class="fc" id="L122">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L128">        StackedXYBarRenderer r1 = new StackedXYBarRenderer();</span>
+<span class="fc" id="L129">        StackedXYBarRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L131">            r2 = (StackedXYBarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L133">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L134">            e.printStackTrace();</span>
+<span class="fc" id="L135">        }</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L138">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L139">    }</span>
+
+    /**
+     * Verify that this class implements {@link PublicCloneable}.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L145">        StackedXYBarRenderer r1 = new StackedXYBarRenderer();</span>
+<span class="fc" id="L146">        assertTrue(r1 instanceof PublicCloneable);</span>
+<span class="fc" id="L147">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="fc" id="L153">        StackedXYBarRenderer r1 = new StackedXYBarRenderer();</span>
+<span class="fc" id="L154">        r1.setSeriesPaint(0, new GradientPaint(1.0f, 2.0f, Color.red, 3.0f,</span>
+                4.0f, Color.yellow));
+<span class="fc" id="L156">        StackedXYBarRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L158">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L159">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L160">            out.writeObject(r1);</span>
+<span class="fc" id="L161">            out.close();</span>
+
+<span class="fc" id="L163">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L164">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L165">            r2 = (StackedXYBarRenderer) in.readObject();</span>
+<span class="fc" id="L166">            in.close();</span>
+        }
+<span class="nc" id="L168">        catch (Exception e) {</span>
+<span class="nc" id="L169">            e.printStackTrace();</span>
+<span class="fc" id="L170">        }</span>
+<span class="fc" id="L171">        assertEquals(r1, r2);</span>
+<span class="fc" id="L172">    }</span>
+
+    /**
+     * Check that the renderer is calculating the domain bounds correctly.
+     */
+    public void testFindDomainBounds() {
+        TableXYDataset dataset
+<span class="fc" id="L179">                = RendererXYPackageTests.createTestTableXYDataset();</span>
+<span class="fc" id="L180">        JFreeChart chart = ChartFactory.createStackedXYAreaChart(</span>
+                &quot;Test Chart&quot;, &quot;X&quot;, &quot;Y&quot;, dataset,
+                PlotOrientation.VERTICAL, false, false, false);
+<span class="fc" id="L183">        XYPlot plot = (XYPlot) chart.getPlot();</span>
+<span class="fc" id="L184">        plot.setRenderer(new StackedXYBarRenderer());</span>
+<span class="fc" id="L185">        NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();</span>
+<span class="fc" id="L186">        domainAxis.setAutoRangeIncludesZero(false);</span>
+<span class="fc" id="L187">        Range bounds = domainAxis.getRange();</span>
+<span class="fc" id="L188">        assertFalse(bounds.contains(0.3));</span>
+<span class="fc" id="L189">        assertTrue(bounds.contains(0.5));</span>
+<span class="fc" id="L190">        assertTrue(bounds.contains(2.5));</span>
+<span class="fc" id="L191">        assertFalse(bounds.contains(2.8));</span>
+<span class="fc" id="L192">    }</span>
+
+    /**
+     * Check that the renderer is calculating the range bounds correctly.
+     */
+    public void testFindRangeBounds() {
+        TableXYDataset dataset
+<span class="fc" id="L199">                = RendererXYPackageTests.createTestTableXYDataset();</span>
+<span class="fc" id="L200">        JFreeChart chart = ChartFactory.createStackedXYAreaChart(</span>
+                &quot;Test Chart&quot;, &quot;X&quot;, &quot;Y&quot;, dataset,
+                PlotOrientation.VERTICAL, false, false, false);
+<span class="fc" id="L203">        XYPlot plot = (XYPlot) chart.getPlot();</span>
+<span class="fc" id="L204">        plot.setRenderer(new StackedXYBarRenderer());</span>
+<span class="fc" id="L205">        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();</span>
+<span class="fc" id="L206">        Range bounds = rangeAxis.getRange();</span>
+<span class="fc" id="L207">        assertTrue(bounds.contains(6.0));</span>
+<span class="fc" id="L208">        assertTrue(bounds.contains(8.0));</span>
+<span class="fc" id="L209">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultKeyedValuesDatasetTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.general.junit</a> &gt; <span class="el_source">DefaultKeyedValuesDatasetTests.java</span></div><h1>DefaultKeyedValuesDatasetTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------------------------
+ * DefaultKeyedValuesDatasetTests.java
+ * -----------------------------------
+ * (C) Copyright 2003-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 13-Mar-2003 : Version 1 (DG);
+ *
+ */
+
+package org.jfree.data.general.junit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.data.general.DefaultKeyedValuesDataset;
+import org.jfree.data.general.KeyedValuesDataset;
+
+/**
+ * Tests for the {@link DefaultKeyedValuesDataset} class.
+ */
+public class DefaultKeyedValuesDatasetTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L68">        return new TestSuite(DefaultKeyedValuesDatasetTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public DefaultKeyedValuesDatasetTests(String name) {
+<span class="fc" id="L77">        super(name);</span>
+<span class="fc" id="L78">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L84">        DefaultKeyedValuesDataset d1 = new DefaultKeyedValuesDataset();</span>
+<span class="fc" id="L85">        d1.setValue(&quot;V1&quot;, new Integer(1));</span>
+<span class="fc" id="L86">        d1.setValue(&quot;V2&quot;, null);</span>
+<span class="fc" id="L87">        d1.setValue(&quot;V3&quot;, new Integer(3));</span>
+<span class="fc" id="L88">        DefaultKeyedValuesDataset d2 = null;</span>
+        try {
+<span class="fc" id="L90">            d2 = (DefaultKeyedValuesDataset) d1.clone();</span>
+        }
+<span class="nc" id="L92">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L93">            System.err.println(&quot;Failed to clone.&quot;);</span>
+<span class="fc" id="L94">        }</span>
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="fc" id="L97">        assertTrue(d1.equals(d2));</span>
+<span class="fc" id="L98">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L105">        DefaultKeyedValuesDataset d1 = new DefaultKeyedValuesDataset();</span>
+<span class="fc" id="L106">        d1.setValue(&quot;C1&quot;, new Double(234.2));</span>
+<span class="fc" id="L107">        d1.setValue(&quot;C2&quot;, null);</span>
+<span class="fc" id="L108">        d1.setValue(&quot;C3&quot;, new Double(345.9));</span>
+<span class="fc" id="L109">        d1.setValue(&quot;C4&quot;, new Double(452.7));</span>
+
+<span class="fc" id="L111">        KeyedValuesDataset d2 = null;</span>
+
+        try {
+<span class="fc" id="L114">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L115">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L116">            out.writeObject(d1);</span>
+<span class="fc" id="L117">            out.close();</span>
+
+<span class="fc" id="L119">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L120">                new ByteArrayInputStream(buffer.toByteArray())</span>
+            );
+<span class="fc" id="L122">            d2 = (KeyedValuesDataset) in.readObject();</span>
+<span class="fc" id="L123">            in.close();</span>
+        }
+<span class="nc" id="L125">        catch (Exception e) {</span>
+<span class="nc" id="L126">            System.out.println(e.toString());</span>
+<span class="fc" id="L127">        }</span>
+<span class="fc" id="L128">        assertEquals(d1, d2);</span>
+
+<span class="fc" id="L130">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

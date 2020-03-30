@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JFreeChartTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.junit</a> &gt; <span class="el_source">JFreeChartTests.java</span></div><h1>JFreeChartTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------
+ * JFreeChartTests.java
+ * --------------------
+ * (C) Copyright 2002-2008, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes:
+ * --------
+ * 11-Jun-2002 : Version 1 (DG);
+ * 17-Oct-2002 : Fixed errors reported by Checkstyle (DG);
+ * 23-Sep-2003 : Removed null title test, since TM has added code to ensure
+ *               null titles cannot be created (DG);
+ * 24-Nov-2005 : Removed OldLegend (DG);
+ * 16-May-2007 : Added some new tests (DG);
+ *
+ */
+
+package org.jfree.chart.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.RenderingHints;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.util.List;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.event.ChartChangeEvent;
+import org.jfree.chart.event.ChartChangeListener;
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.RingPlot;
+import org.jfree.chart.title.LegendTitle;
+import org.jfree.chart.title.TextTitle;
+import org.jfree.chart.title.Title;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.RegularTimePeriod;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.ui.Align;
+import org.jfree.ui.RectangleEdge;
+import org.jfree.ui.RectangleInsets;
+
+/**
+ * Tests for the {@link JFreeChart} class.
+ */
+public class JFreeChartTests extends TestCase implements ChartChangeListener {
+
+    /** A pie chart. */
+    private JFreeChart pieChart;
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L99">        return new TestSuite(JFreeChartTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public JFreeChartTests(String name) {
+<span class="fc" id="L108">        super(name);</span>
+<span class="fc" id="L109">    }</span>
+
+    /**
+     * Common test setup.
+     */
+    protected void setUp() {
+
+        // create a dataset...
+<span class="fc" id="L117">        DefaultPieDataset data = new DefaultPieDataset();</span>
+<span class="fc" id="L118">        data.setValue(&quot;Java&quot;, new Double(43.2));</span>
+<span class="fc" id="L119">        data.setValue(&quot;Visual Basic&quot;, new Double(0.0));</span>
+<span class="fc" id="L120">        data.setValue(&quot;C/C++&quot;, new Double(17.5));</span>
+
+        // create the chart...
+<span class="fc" id="L123">        this.pieChart = ChartFactory.createPieChart(</span>
+            &quot;Pie Chart&quot;,  // chart title
+            data,         // data
+            true,         // include legend
+            true,
+            false
+        );
+
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Check that the equals() method can distinguish all fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L137">        JFreeChart chart1 = new JFreeChart(&quot;Title&quot;,</span>
+                new Font(&quot;SansSerif&quot;, Font.PLAIN, 12), new PiePlot(), true);
+<span class="fc" id="L139">        JFreeChart chart2 = new JFreeChart(&quot;Title&quot;,</span>
+                new Font(&quot;SansSerif&quot;, Font.PLAIN, 12), new PiePlot(), true);
+<span class="fc" id="L141">        assertTrue(chart1.equals(chart2));</span>
+<span class="fc" id="L142">        assertTrue(chart2.equals(chart1));</span>
+
+        // renderingHints
+<span class="fc" id="L145">        chart1.setRenderingHints(new RenderingHints(</span>
+                RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON));
+<span class="fc" id="L148">        assertFalse(chart1.equals(chart2));</span>
+<span class="fc" id="L149">        chart2.setRenderingHints(new RenderingHints(</span>
+                RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON));
+<span class="fc" id="L152">        assertTrue(chart1.equals(chart2));</span>
+
+        // borderVisible
+<span class="fc" id="L155">        chart1.setBorderVisible(true);</span>
+<span class="fc" id="L156">        assertFalse(chart1.equals(chart2));</span>
+<span class="fc" id="L157">        chart2.setBorderVisible(true);</span>
+<span class="fc" id="L158">        assertTrue(chart1.equals(chart2));</span>
+
+        // borderStroke
+<span class="fc" id="L161">        BasicStroke s = new BasicStroke(2.0f);</span>
+<span class="fc" id="L162">        chart1.setBorderStroke(s);</span>
+<span class="fc" id="L163">        assertFalse(chart1.equals(chart2));</span>
+<span class="fc" id="L164">        chart2.setBorderStroke(s);</span>
+<span class="fc" id="L165">        assertTrue(chart1.equals(chart2));</span>
+
+        // borderPaint
+<span class="fc" id="L168">        chart1.setBorderPaint(Color.red);</span>
+<span class="fc" id="L169">        assertFalse(chart1.equals(chart2));</span>
+<span class="fc" id="L170">        chart2.setBorderPaint(Color.red);</span>
+<span class="fc" id="L171">        assertTrue(chart1.equals(chart2));</span>
+
+        // padding
+<span class="fc" id="L174">        chart1.setPadding(new RectangleInsets(1, 2, 3, 4));</span>
+<span class="fc" id="L175">        assertFalse(chart1.equals(chart2));</span>
+<span class="fc" id="L176">        chart2.setPadding(new RectangleInsets(1, 2, 3, 4));</span>
+<span class="fc" id="L177">        assertTrue(chart1.equals(chart2));</span>
+
+        // title
+<span class="fc" id="L180">        chart1.setTitle(&quot;XYZ&quot;);</span>
+<span class="fc" id="L181">        assertFalse(chart1.equals(chart2));</span>
+<span class="fc" id="L182">        chart2.setTitle(&quot;XYZ&quot;);</span>
+<span class="fc" id="L183">        assertTrue(chart1.equals(chart2));</span>
+
+        // subtitles
+<span class="fc" id="L186">        chart1.addSubtitle(new TextTitle(&quot;Subtitle&quot;));</span>
+<span class="fc" id="L187">        assertFalse(chart1.equals(chart2));</span>
+<span class="fc" id="L188">        chart2.addSubtitle(new TextTitle(&quot;Subtitle&quot;));</span>
+<span class="fc" id="L189">        assertTrue(chart1.equals(chart2));</span>
+
+        // plot
+<span class="fc" id="L192">        chart1 = new JFreeChart(&quot;Title&quot;,</span>
+                new Font(&quot;SansSerif&quot;, Font.PLAIN, 12), new RingPlot(), false);
+<span class="fc" id="L194">        chart2 = new JFreeChart(&quot;Title&quot;,</span>
+                new Font(&quot;SansSerif&quot;, Font.PLAIN, 12), new PiePlot(), false);
+<span class="fc" id="L196">        assertFalse(chart1.equals(chart2));</span>
+<span class="fc" id="L197">        chart2 = new JFreeChart(&quot;Title&quot;,</span>
+                new Font(&quot;SansSerif&quot;, Font.PLAIN, 12), new RingPlot(), false);
+<span class="fc" id="L199">        assertTrue(chart1.equals(chart2));</span>
+
+        // backgroundPaint
+<span class="fc" id="L202">        chart1.setBackgroundPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L204">        assertFalse(chart1.equals(chart2));</span>
+<span class="fc" id="L205">        chart2.setBackgroundPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L207">        assertTrue(chart1.equals(chart2));</span>
+
+        // backgroundImage
+<span class="fc" id="L210">        chart1.setBackgroundImage(JFreeChart.INFO.getLogo());</span>
+<span class="fc" id="L211">        assertFalse(chart1.equals(chart2));</span>
+<span class="fc" id="L212">        chart2.setBackgroundImage(JFreeChart.INFO.getLogo());</span>
+<span class="fc" id="L213">        assertTrue(chart1.equals(chart2));</span>
+
+        // backgroundImageAlignment
+<span class="fc" id="L216">        chart1.setBackgroundImageAlignment(Align.BOTTOM_LEFT);</span>
+<span class="fc" id="L217">        assertFalse(chart1.equals(chart2));</span>
+<span class="fc" id="L218">        chart2.setBackgroundImageAlignment(Align.BOTTOM_LEFT);</span>
+<span class="fc" id="L219">        assertTrue(chart1.equals(chart2));</span>
+
+        // backgroundImageAlpha
+<span class="fc" id="L222">        chart1.setBackgroundImageAlpha(0.1f);</span>
+<span class="fc" id="L223">        assertFalse(chart1.equals(chart2));</span>
+<span class="fc" id="L224">        chart2.setBackgroundImageAlpha(0.1f);</span>
+<span class="fc" id="L225">        assertTrue(chart1.equals(chart2));</span>
+<span class="fc" id="L226">    }</span>
+
+    /**
+     * A test to make sure that the legend is being picked up in the
+     * equals() testing.
+     */
+    public void testEquals2() {
+<span class="fc" id="L233">        JFreeChart chart1 = new JFreeChart(&quot;Title&quot;,</span>
+                new Font(&quot;SansSerif&quot;, Font.PLAIN, 12), new PiePlot(), true);
+<span class="fc" id="L235">        JFreeChart chart2 = new JFreeChart(&quot;Title&quot;,</span>
+                new Font(&quot;SansSerif&quot;, Font.PLAIN, 12), new PiePlot(), false);
+<span class="fc" id="L237">        assertFalse(chart1.equals(chart2));</span>
+<span class="fc" id="L238">        assertFalse(chart2.equals(chart1));</span>
+<span class="fc" id="L239">    }</span>
+
+    /**
+     * Checks the subtitle count - should be 1 (the legend).
+     */
+    public void testSubtitleCount() {
+<span class="fc" id="L245">        int count = this.pieChart.getSubtitleCount();</span>
+<span class="fc" id="L246">        assertEquals(1, count);</span>
+<span class="fc" id="L247">    }</span>
+
+    /**
+     * Some checks for the getSubtitle() method.
+     */
+    public void testGetSubtitle() {
+<span class="fc" id="L253">        DefaultPieDataset dataset = new DefaultPieDataset();</span>
+<span class="fc" id="L254">        JFreeChart chart = ChartFactory.createPieChart(&quot;title&quot;, dataset, true,</span>
+                false, false);
+<span class="fc" id="L256">        Title t = chart.getSubtitle(0);</span>
+<span class="fc" id="L257">        assertTrue(t instanceof LegendTitle);</span>
+
+<span class="fc" id="L259">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L261">            t = chart.getSubtitle(-1);</span>
+        }
+<span class="fc" id="L263">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L264">            pass = true;</span>
+<span class="nc" id="L265">        }</span>
+<span class="fc" id="L266">        assertTrue(pass);</span>
+
+<span class="fc" id="L268">        pass = false;</span>
+        try {
+<span class="nc" id="L270">            t = chart.getSubtitle(1);</span>
+        }
+<span class="fc" id="L272">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L273">            pass = true;</span>
+<span class="nc" id="L274">        }</span>
+<span class="fc" id="L275">        assertTrue(pass);</span>
+
+<span class="fc" id="L277">        pass = false;</span>
+        try {
+<span class="nc" id="L279">            t = chart.getSubtitle(2);</span>
+        }
+<span class="fc" id="L281">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L282">            pass = true;</span>
+<span class="nc" id="L283">        }</span>
+<span class="fc" id="L284">        assertTrue(pass);</span>
+<span class="fc" id="L285">    }</span>
+
+    /**
+     * Serialize a pie chart, restore it, and check for equality.
+     */
+    public void testSerialization1() {
+
+<span class="fc" id="L292">        DefaultPieDataset data = new DefaultPieDataset();</span>
+<span class="fc" id="L293">        data.setValue(&quot;Type 1&quot;, 54.5);</span>
+<span class="fc" id="L294">        data.setValue(&quot;Type 2&quot;, 23.9);</span>
+<span class="fc" id="L295">        data.setValue(&quot;Type 3&quot;, 45.8);</span>
+
+<span class="fc" id="L297">        JFreeChart c1 = ChartFactory.createPieChart(&quot;Test&quot;, data, true, true,</span>
+                true);
+<span class="fc" id="L299">        JFreeChart c2 = null;</span>
+
+        try {
+<span class="fc" id="L302">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L303">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L304">            out.writeObject(c1);</span>
+<span class="fc" id="L305">            out.close();</span>
+
+<span class="fc" id="L307">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L308">                    buffer.toByteArray()));</span>
+<span class="fc" id="L309">            c2 = (JFreeChart) in.readObject();</span>
+<span class="fc" id="L310">            in.close();</span>
+        }
+<span class="nc" id="L312">        catch (Exception e) {</span>
+<span class="nc" id="L313">            e.printStackTrace();</span>
+<span class="fc" id="L314">        }</span>
+<span class="fc" id="L315">        assertEquals(c1, c2);</span>
+<span class="fc" id="L316">        LegendTitle lt2 = c2.getLegend();</span>
+<span class="pc bpc" id="L317" title="1 of 2 branches missed.">        assertTrue(lt2.getSources()[0] == c2.getPlot());</span>
+<span class="fc" id="L318">    }</span>
+
+    /**
+     * Serialize a 3D pie chart, restore it, and check for equality.
+     */
+    public void testSerialization2() {
+
+<span class="fc" id="L325">        DefaultPieDataset data = new DefaultPieDataset();</span>
+<span class="fc" id="L326">        data.setValue(&quot;Type 1&quot;, 54.5);</span>
+<span class="fc" id="L327">        data.setValue(&quot;Type 2&quot;, 23.9);</span>
+<span class="fc" id="L328">        data.setValue(&quot;Type 3&quot;, 45.8);</span>
+
+<span class="fc" id="L330">        JFreeChart c1 = ChartFactory.createPieChart3D(&quot;Test&quot;, data, true, true,</span>
+                true);
+<span class="fc" id="L332">        JFreeChart c2 = null;</span>
+
+        try {
+<span class="fc" id="L335">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L336">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L337">            out.writeObject(c1);</span>
+<span class="fc" id="L338">            out.close();</span>
+
+<span class="fc" id="L340">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L341">                    buffer.toByteArray()));</span>
+<span class="fc" id="L342">            c2 = (JFreeChart) in.readObject();</span>
+<span class="fc" id="L343">            in.close();</span>
+        }
+<span class="nc" id="L345">        catch (Exception e) {</span>
+<span class="nc" id="L346">            e.printStackTrace();</span>
+<span class="fc" id="L347">        }</span>
+<span class="fc" id="L348">        assertEquals(c1, c2);</span>
+
+<span class="fc" id="L350">    }</span>
+
+    /**
+     * Serialize a bar chart, restore it, and check for equality.
+     */
+    public void testSerialization3() {
+
+        // row keys...
+<span class="fc" id="L358">        String series1 = &quot;First&quot;;</span>
+<span class="fc" id="L359">        String series2 = &quot;Second&quot;;</span>
+<span class="fc" id="L360">        String series3 = &quot;Third&quot;;</span>
+
+        // column keys...
+<span class="fc" id="L363">        String category1 = &quot;Category 1&quot;;</span>
+<span class="fc" id="L364">        String category2 = &quot;Category 2&quot;;</span>
+<span class="fc" id="L365">        String category3 = &quot;Category 3&quot;;</span>
+<span class="fc" id="L366">        String category4 = &quot;Category 4&quot;;</span>
+<span class="fc" id="L367">        String category5 = &quot;Category 5&quot;;</span>
+<span class="fc" id="L368">        String category6 = &quot;Category 6&quot;;</span>
+<span class="fc" id="L369">        String category7 = &quot;Category 7&quot;;</span>
+<span class="fc" id="L370">        String category8 = &quot;Category 8&quot;;</span>
+
+        // create the dataset...
+<span class="fc" id="L373">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+
+<span class="fc" id="L375">        dataset.addValue(1.0, series1, category1);</span>
+<span class="fc" id="L376">        dataset.addValue(4.0, series1, category2);</span>
+<span class="fc" id="L377">        dataset.addValue(3.0, series1, category3);</span>
+<span class="fc" id="L378">        dataset.addValue(5.0, series1, category4);</span>
+<span class="fc" id="L379">        dataset.addValue(5.0, series1, category5);</span>
+<span class="fc" id="L380">        dataset.addValue(7.0, series1, category6);</span>
+<span class="fc" id="L381">        dataset.addValue(7.0, series1, category7);</span>
+<span class="fc" id="L382">        dataset.addValue(8.0, series1, category8);</span>
+
+<span class="fc" id="L384">        dataset.addValue(5.0, series2, category1);</span>
+<span class="fc" id="L385">        dataset.addValue(7.0, series2, category2);</span>
+<span class="fc" id="L386">        dataset.addValue(6.0, series2, category3);</span>
+<span class="fc" id="L387">        dataset.addValue(8.0, series2, category4);</span>
+<span class="fc" id="L388">        dataset.addValue(4.0, series2, category5);</span>
+<span class="fc" id="L389">        dataset.addValue(4.0, series2, category6);</span>
+<span class="fc" id="L390">        dataset.addValue(2.0, series2, category7);</span>
+<span class="fc" id="L391">        dataset.addValue(1.0, series2, category8);</span>
+
+<span class="fc" id="L393">        dataset.addValue(4.0, series3, category1);</span>
+<span class="fc" id="L394">        dataset.addValue(3.0, series3, category2);</span>
+<span class="fc" id="L395">        dataset.addValue(2.0, series3, category3);</span>
+<span class="fc" id="L396">        dataset.addValue(3.0, series3, category4);</span>
+<span class="fc" id="L397">        dataset.addValue(6.0, series3, category5);</span>
+<span class="fc" id="L398">        dataset.addValue(3.0, series3, category6);</span>
+<span class="fc" id="L399">        dataset.addValue(4.0, series3, category7);</span>
+<span class="fc" id="L400">        dataset.addValue(3.0, series3, category8);</span>
+
+        // create the chart...
+<span class="fc" id="L403">        JFreeChart c1 = ChartFactory.createBarChart(</span>
+            &quot;Vertical Bar Chart&quot;,      // chart title
+            &quot;Category&quot;,                // domain axis label
+            &quot;Value&quot;,                   // range axis label
+            dataset,                   // data
+            PlotOrientation.VERTICAL,  // orientation
+            true,                      // include legend
+            true,
+            false
+        );
+
+<span class="fc" id="L414">        JFreeChart c2 = null;</span>
+
+        try {
+<span class="fc" id="L417">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L418">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L419">            out.writeObject(c1);</span>
+<span class="fc" id="L420">            out.close();</span>
+
+<span class="fc" id="L422">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L423">                    buffer.toByteArray()));</span>
+<span class="fc" id="L424">            c2 = (JFreeChart) in.readObject();</span>
+<span class="fc" id="L425">            in.close();</span>
+        }
+<span class="nc" id="L427">        catch (Exception e) {</span>
+<span class="nc" id="L428">            e.printStackTrace();</span>
+<span class="fc" id="L429">        }</span>
+<span class="fc" id="L430">        assertEquals(c1, c2);</span>
+
+<span class="fc" id="L432">    }</span>
+
+    /**
+     * Serialize a time seroes chart, restore it, and check for equality.
+     */
+    public void testSerialization4() {
+
+<span class="fc" id="L439">        RegularTimePeriod t = new Day();</span>
+<span class="fc" id="L440">        TimeSeries series = new TimeSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L441">        series.add(t, 36.4);</span>
+<span class="fc" id="L442">        t = t.next();</span>
+<span class="fc" id="L443">        series.add(t, 63.5);</span>
+<span class="fc" id="L444">        TimeSeriesCollection dataset = new TimeSeriesCollection();</span>
+<span class="fc" id="L445">        dataset.addSeries(series);</span>
+
+<span class="fc" id="L447">        JFreeChart c1 = ChartFactory.createTimeSeriesChart(&quot;Test&quot;, &quot;Date&quot;,</span>
+                &quot;Value&quot;, dataset, true, true, true);
+<span class="fc" id="L449">        JFreeChart c2 = null;</span>
+
+        try {
+<span class="fc" id="L452">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L453">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L454">            out.writeObject(c1);</span>
+<span class="fc" id="L455">            out.close();</span>
+
+<span class="fc" id="L457">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L458">                    buffer.toByteArray()));</span>
+<span class="fc" id="L459">            c2 = (JFreeChart) in.readObject();</span>
+<span class="fc" id="L460">            in.close();</span>
+        }
+<span class="nc" id="L462">        catch (Exception e) {</span>
+<span class="nc" id="L463">            e.printStackTrace();</span>
+<span class="fc" id="L464">        }</span>
+<span class="fc" id="L465">        assertEquals(c1, c2);</span>
+
+<span class="fc" id="L467">    }</span>
+
+    /**
+     * Some checks for the addSubtitle() methods.
+     */
+    public void testAddSubtitle() {
+<span class="fc" id="L473">        DefaultPieDataset dataset = new DefaultPieDataset();</span>
+<span class="fc" id="L474">        JFreeChart chart = ChartFactory.createPieChart(&quot;title&quot;, dataset, true,</span>
+                false, false);
+
+<span class="fc" id="L477">        TextTitle t0 = new TextTitle(&quot;T0&quot;);</span>
+<span class="fc" id="L478">        chart.addSubtitle(0, t0);</span>
+<span class="fc" id="L479">        assertEquals(t0, chart.getSubtitle(0));</span>
+
+<span class="fc" id="L481">        TextTitle t1 = new TextTitle(&quot;T1&quot;);</span>
+<span class="fc" id="L482">        chart.addSubtitle(t1);</span>
+<span class="fc" id="L483">        assertEquals(t1, chart.getSubtitle(2));  // subtitle 1 is the legend</span>
+
+<span class="fc" id="L485">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L487">            chart.addSubtitle(null);</span>
+        }
+<span class="fc" id="L489">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L490">            pass = true;</span>
+<span class="nc" id="L491">        }</span>
+<span class="fc" id="L492">        assertTrue(pass);</span>
+
+<span class="fc" id="L494">        pass = false;</span>
+        try {
+<span class="nc" id="L496">            chart.addSubtitle(-1, t0);</span>
+        }
+<span class="fc" id="L498">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L499">            pass = true;</span>
+<span class="nc" id="L500">        }</span>
+<span class="fc" id="L501">        assertTrue(pass);</span>
+
+<span class="fc" id="L503">        pass = false;</span>
+        try {
+<span class="nc" id="L505">            chart.addSubtitle(4, t0);</span>
+        }
+<span class="fc" id="L507">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L508">            pass = true;</span>
+<span class="nc" id="L509">        }</span>
+<span class="fc" id="L510">        assertTrue(pass);</span>
+<span class="fc" id="L511">    }</span>
+
+    /**
+     * Some checks for the getSubtitles() method.
+     */
+    public void testGetSubtitles() {
+<span class="fc" id="L517">        DefaultPieDataset dataset = new DefaultPieDataset();</span>
+<span class="fc" id="L518">        JFreeChart chart = ChartFactory.createPieChart(&quot;title&quot;, dataset, true,</span>
+                false, false);
+<span class="fc" id="L520">        List subtitles = chart.getSubtitles();</span>
+
+<span class="fc" id="L522">        assertEquals(1, chart.getSubtitleCount());</span>
+
+        // adding something to the returned list should NOT change the chart
+<span class="fc" id="L525">        subtitles.add(new TextTitle(&quot;T&quot;));</span>
+<span class="fc" id="L526">        assertEquals(1, chart.getSubtitleCount());</span>
+<span class="fc" id="L527">    }</span>
+
+    /**
+     * Some checks for the default legend firing change events.
+     */
+    public void testLegendEvents() {
+<span class="fc" id="L533">        DefaultPieDataset dataset = new DefaultPieDataset();</span>
+<span class="fc" id="L534">        JFreeChart chart = ChartFactory.createPieChart(&quot;title&quot;, dataset, true,</span>
+                false, false);
+<span class="fc" id="L536">        chart.addChangeListener(this);</span>
+<span class="fc" id="L537">        this.lastChartChangeEvent = null;</span>
+<span class="fc" id="L538">        LegendTitle legend = chart.getLegend();</span>
+<span class="fc" id="L539">        legend.setPosition(RectangleEdge.TOP);</span>
+<span class="fc" id="L540">        assertNotNull(this.lastChartChangeEvent);</span>
+<span class="fc" id="L541">    }</span>
+
+    /**
+     * Some checks for title changes and event notification.
+     */
+    public void testTitleChangeEvent() {
+<span class="fc" id="L547">        DefaultPieDataset dataset = new DefaultPieDataset();</span>
+<span class="fc" id="L548">        JFreeChart chart = ChartFactory.createPieChart(&quot;title&quot;, dataset, true,</span>
+                false, false);
+<span class="fc" id="L550">        chart.addChangeListener(this);</span>
+<span class="fc" id="L551">        this.lastChartChangeEvent = null;</span>
+<span class="fc" id="L552">        TextTitle t = chart.getTitle();</span>
+<span class="fc" id="L553">        t.setFont(new Font(&quot;Dialog&quot;, Font.BOLD, 9));</span>
+<span class="fc" id="L554">        assertNotNull(this.lastChartChangeEvent);</span>
+<span class="fc" id="L555">        this.lastChartChangeEvent = null;</span>
+
+        // now create a new title and replace the existing title, several
+        // things should happen:
+        // (1) Adding the new title should trigger an immediate
+        //     ChartChangeEvent;
+        // (2) Modifying the new title should trigger a ChartChangeEvent;
+        // (3) Modifying the old title should NOT trigger a ChartChangeEvent
+<span class="fc" id="L563">        TextTitle t2 = new TextTitle(&quot;T2&quot;);</span>
+<span class="fc" id="L564">        chart.setTitle(t2);</span>
+<span class="fc" id="L565">        assertNotNull(this.lastChartChangeEvent);</span>
+<span class="fc" id="L566">        this.lastChartChangeEvent = null;</span>
+
+<span class="fc" id="L568">        t2.setFont(new Font(&quot;Dialog&quot;, Font.BOLD, 9));</span>
+<span class="fc" id="L569">        assertNotNull(this.lastChartChangeEvent);</span>
+<span class="fc" id="L570">        this.lastChartChangeEvent = null;</span>
+
+<span class="fc" id="L572">        t.setFont(new Font(&quot;Dialog&quot;, Font.BOLD, 9));</span>
+<span class="fc" id="L573">        assertNull(this.lastChartChangeEvent);</span>
+<span class="fc" id="L574">        this.lastChartChangeEvent = null;</span>
+<span class="fc" id="L575">    }</span>
+
+    /** The last ChartChangeEvent received. */
+    private ChartChangeEvent lastChartChangeEvent;
+
+    /**
+     * Records the last chart change event.
+     *
+     * @param event  the event.
+     */
+    public void chartChanged(ChartChangeEvent event) {
+<span class="fc" id="L586">        this.lastChartChangeEvent = event;</span>
+<span class="fc" id="L587">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

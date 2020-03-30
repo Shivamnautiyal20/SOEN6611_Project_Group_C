@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StandardDialScaleTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot.dial.junit</a> &gt; <span class="el_source">StandardDialScaleTests.java</span></div><h1>StandardDialScaleTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------
+ * SimpleDialScaleTests.java
+ * -------------------------
+ * (C) Copyright 2006-2012, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 03-Nov-2006 : Version 1 (DG);
+ * 24-Oct-2007 : Updated for API changes (DG);
+ * 08-Jan-2012 : Added tests for valueToAngle() and angleToValue();
+ *
+ */
+
+package org.jfree.chart.plot.dial.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.plot.dial.StandardDialScale;
+
+/**
+ * Tests for the {@link StandardDialScale} class.
+ */
+public class StandardDialScaleTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L73">        return new TestSuite(StandardDialScaleTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public StandardDialScaleTests(String name) {
+<span class="fc" id="L82">        super(name);</span>
+<span class="fc" id="L83">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L89">        StandardDialScale s1 = new StandardDialScale();</span>
+<span class="fc" id="L90">        StandardDialScale s2 = new StandardDialScale();</span>
+<span class="fc" id="L91">        assertTrue(s1.equals(s2));</span>
+
+        // lowerBound
+<span class="fc" id="L94">        s1 = new StandardDialScale(10.0, 100.0, 0.0, 270.0, 10.0, 4);</span>
+<span class="fc" id="L95">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L96">        s2 = new StandardDialScale(10.0, 100.0, 0.0, 270.0, 10.0, 4);</span>
+<span class="fc" id="L97">        assertTrue(s1.equals(s2));</span>
+
+        // upperBound
+<span class="fc" id="L100">        s1 = new StandardDialScale(10.0, 200.0, 0.0, 270.0, 10.0, 4);</span>
+<span class="fc" id="L101">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L102">        s2 = new StandardDialScale(10.0, 200.0, 0.0, 270.0, 10.0, 4);</span>
+<span class="fc" id="L103">        assertTrue(s1.equals(s2));</span>
+
+        // startAngle
+<span class="fc" id="L106">        s1 = new StandardDialScale(10.0, 200.0, 20.0, 270.0, 10.0, 4);</span>
+<span class="fc" id="L107">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L108">        s2 = new StandardDialScale(10.0, 200.0, 20.0, 270.0, 10.0, 4);</span>
+<span class="fc" id="L109">        assertTrue(s1.equals(s2));</span>
+
+        // extent
+<span class="fc" id="L112">        s1 = new StandardDialScale(10.0, 200.0, 20.0, 99.0, 10.0, 4);</span>
+<span class="fc" id="L113">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L114">        s2 = new StandardDialScale(10.0, 200.0, 20.0, 99.0, 10.0, 4);</span>
+<span class="fc" id="L115">        assertTrue(s1.equals(s2));</span>
+
+        // tickRadius
+<span class="fc" id="L118">        s1.setTickRadius(0.99);</span>
+<span class="fc" id="L119">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L120">        s2.setTickRadius(0.99);</span>
+<span class="fc" id="L121">        assertTrue(s1.equals(s2));</span>
+
+        // majorTickIncrement
+<span class="fc" id="L124">        s1.setMajorTickIncrement(11.1);</span>
+<span class="fc" id="L125">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L126">        s2.setMajorTickIncrement(11.1);</span>
+<span class="fc" id="L127">        assertTrue(s1.equals(s2));</span>
+
+        // majorTickLength
+<span class="fc" id="L130">        s1.setMajorTickLength(0.09);</span>
+<span class="fc" id="L131">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L132">        s2.setMajorTickLength(0.09);</span>
+<span class="fc" id="L133">        assertTrue(s1.equals(s2));</span>
+
+        // majorTickPaint
+<span class="fc" id="L136">        s1.setMajorTickPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L138">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L139">        s2.setMajorTickPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L141">        assertTrue(s1.equals(s2));</span>
+
+        // majorTickStroke
+<span class="fc" id="L144">        s1.setMajorTickStroke(new BasicStroke(1.1f));</span>
+<span class="fc" id="L145">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L146">        s2.setMajorTickStroke(new BasicStroke(1.1f));</span>
+<span class="fc" id="L147">        assertTrue(s1.equals(s2));</span>
+
+        // minorTickCount
+<span class="fc" id="L150">        s1.setMinorTickCount(7);</span>
+<span class="fc" id="L151">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L152">        s2.setMinorTickCount(7);</span>
+<span class="fc" id="L153">        assertTrue(s1.equals(s2));</span>
+
+        // minorTickLength
+<span class="fc" id="L156">        s1.setMinorTickLength(0.09);</span>
+<span class="fc" id="L157">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L158">        s2.setMinorTickLength(0.09);</span>
+<span class="fc" id="L159">        assertTrue(s1.equals(s2));</span>
+
+        // tickLabelOffset
+<span class="fc" id="L162">        s1.setTickLabelOffset(0.11);</span>
+<span class="fc" id="L163">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L164">        s2.setTickLabelOffset(0.11);</span>
+<span class="fc" id="L165">        assertTrue(s1.equals(s2));</span>
+
+        // tickLabelFont
+<span class="fc" id="L168">        s1.setTickLabelFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 15));</span>
+<span class="fc" id="L169">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L170">        s2.setTickLabelFont(new Font(&quot;Dialog&quot;, Font.PLAIN, 15));</span>
+<span class="fc" id="L171">        assertTrue(s1.equals(s2));</span>
+
+        // tickLabelPaint
+<span class="fc" id="L174">        s1.setTickLabelPaint(new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.green));
+<span class="fc" id="L176">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L177">        s2.setTickLabelPaint(new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.green));
+<span class="fc" id="L179">        assertTrue(s1.equals(s2));</span>
+
+<span class="fc" id="L181">        s1.setTickLabelsVisible(false);</span>
+<span class="fc" id="L182">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L183">        s2.setTickLabelsVisible(false);</span>
+<span class="fc" id="L184">        assertTrue(s1.equals(s2));</span>
+
+        // check an inherited attribute
+<span class="fc" id="L187">        s1.setVisible(false);</span>
+<span class="fc" id="L188">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L189">        s2.setVisible(false);</span>
+<span class="fc" id="L190">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L191">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashCode() {
+<span class="fc" id="L197">        StandardDialScale s1 = new StandardDialScale();</span>
+<span class="fc" id="L198">        StandardDialScale s2 = new StandardDialScale();</span>
+<span class="fc" id="L199">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L200">        int h1 = s1.hashCode();</span>
+<span class="fc" id="L201">        int h2 = s2.hashCode();</span>
+<span class="fc" id="L202">        assertEquals(h1, h2);</span>
+<span class="fc" id="L203">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+        // try a default instance
+<span class="fc" id="L210">        StandardDialScale s1 = new StandardDialScale();</span>
+<span class="fc" id="L211">        StandardDialScale s2 = null;</span>
+        try {
+<span class="fc" id="L213">            s2 = (StandardDialScale) s1.clone();</span>
+        }
+<span class="nc" id="L215">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L216">            e.printStackTrace();</span>
+<span class="fc" id="L217">        }</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">        assertTrue(s1 != s2);</span>
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">        assertTrue(s1.getClass() == s2.getClass());</span>
+<span class="fc" id="L220">        assertTrue(s1.equals(s2));</span>
+
+        // try a customised instance
+<span class="fc" id="L223">        s1 = new StandardDialScale();</span>
+<span class="fc" id="L224">        s1.setExtent(123.4);</span>
+<span class="fc" id="L225">        s1.setMajorTickPaint(new GradientPaint(1.0f, 2.0f, Color.red, 3.0f,</span>
+                4.0f, Color.white));
+<span class="fc" id="L227">        s1.setMajorTickStroke(new BasicStroke(2.0f));</span>
+<span class="fc" id="L228">        s2 = null;</span>
+        try {
+<span class="fc" id="L230">            s2 = (StandardDialScale) s1.clone();</span>
+        }
+<span class="nc" id="L232">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L233">            e.printStackTrace();</span>
+<span class="fc" id="L234">        }</span>
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">        assertTrue(s1 != s2);</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">        assertTrue(s1.getClass() == s2.getClass());</span>
+<span class="fc" id="L237">        assertTrue(s1.equals(s2));</span>
+
+        // check that the listener lists are independent
+<span class="fc" id="L240">        MyDialLayerChangeListener l1 = new MyDialLayerChangeListener();</span>
+<span class="fc" id="L241">        s1.addChangeListener(l1);</span>
+<span class="fc" id="L242">        assertTrue(s1.hasListener(l1));</span>
+<span class="fc" id="L243">        assertFalse(s2.hasListener(l1));</span>
+<span class="fc" id="L244">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+        // try a default instance
+<span class="fc" id="L251">        StandardDialScale s1 = new StandardDialScale();</span>
+<span class="fc" id="L252">        StandardDialScale s2 = null;</span>
+
+        try {
+<span class="fc" id="L255">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L256">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L257">            out.writeObject(s1);</span>
+<span class="fc" id="L258">            out.close();</span>
+
+<span class="fc" id="L260">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L261">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L262">            s2 = (StandardDialScale) in.readObject();</span>
+<span class="fc" id="L263">            in.close();</span>
+        }
+<span class="nc" id="L265">        catch (Exception e) {</span>
+<span class="nc" id="L266">            e.printStackTrace();</span>
+<span class="fc" id="L267">        }</span>
+<span class="fc" id="L268">        assertEquals(s1, s2);</span>
+
+        // try a customised instance
+<span class="fc" id="L271">        s1 = new StandardDialScale();</span>
+<span class="fc" id="L272">        s1.setExtent(123.4);</span>
+<span class="fc" id="L273">        s1.setMajorTickPaint(new GradientPaint(1.0f, 2.0f, Color.red, 3.0f,</span>
+                4.0f, Color.white));
+<span class="fc" id="L275">        s1.setMajorTickStroke(new BasicStroke(2.0f));</span>
+<span class="fc" id="L276">        s2 = null;</span>
+
+        try {
+<span class="fc" id="L279">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L280">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L281">            out.writeObject(s1);</span>
+<span class="fc" id="L282">            out.close();</span>
+
+<span class="fc" id="L284">            ObjectInput in = new ObjectInputStream(</span>
+<span class="fc" id="L285">                    new ByteArrayInputStream(buffer.toByteArray()));</span>
+<span class="fc" id="L286">            s2 = (StandardDialScale) in.readObject();</span>
+<span class="fc" id="L287">            in.close();</span>
+        }
+<span class="nc" id="L289">        catch (Exception e) {</span>
+<span class="nc" id="L290">            e.printStackTrace();</span>
+<span class="fc" id="L291">        }</span>
+<span class="fc" id="L292">        assertEquals(s1, s2);</span>
+<span class="fc" id="L293">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * Some checks for the valueToAngle() method.
+     */
+    public void testValueToAngle() {
+<span class="fc" id="L301">        StandardDialScale s = new StandardDialScale();</span>
+<span class="fc" id="L302">        assertEquals(175.0, s.valueToAngle(0.0), EPSILON);</span>
+<span class="fc" id="L303">        assertEquals(90.0, s.valueToAngle(50.0), EPSILON);</span>
+<span class="fc" id="L304">        assertEquals(5.0, s.valueToAngle(100.0), EPSILON);</span>
+<span class="fc" id="L305">        assertEquals(192.0, s.valueToAngle(-10.0), EPSILON);</span>
+<span class="fc" id="L306">        assertEquals(-12.0, s.valueToAngle(110.0), EPSILON);</span>
+
+<span class="fc" id="L308">        s = new StandardDialScale(0, 20, 180, -180.0, 10, 3);</span>
+<span class="fc" id="L309">        assertEquals(180.0, s.valueToAngle(0.0), EPSILON);</span>
+<span class="fc" id="L310">        assertEquals(90.0, s.valueToAngle(10.0), EPSILON);</span>
+<span class="fc" id="L311">        assertEquals(0.0, s.valueToAngle(20.0), EPSILON);</span>
+<span class="fc" id="L312">    }</span>
+
+    /**
+     * Some checks for the angleToValue() method.
+     */
+    public void testAngleToValue() {
+<span class="fc" id="L318">        StandardDialScale s = new StandardDialScale();</span>
+<span class="fc" id="L319">        assertEquals(0.0, s.angleToValue(175.0), EPSILON);</span>
+<span class="fc" id="L320">        assertEquals(50.0, s.angleToValue(90.0), EPSILON);</span>
+<span class="fc" id="L321">        assertEquals(100.0, s.angleToValue(5.0), EPSILON);</span>
+<span class="fc" id="L322">        assertEquals(-10.0, s.angleToValue(192.0), EPSILON);</span>
+<span class="fc" id="L323">        assertEquals(110.0, s.angleToValue(-12.0), EPSILON);</span>
+
+<span class="fc" id="L325">        s = new StandardDialScale(0, 20, 180, -180.0, 10, 3);</span>
+<span class="fc" id="L326">        assertEquals(0.0, s.angleToValue(180.0), EPSILON);</span>
+<span class="fc" id="L327">        assertEquals(10.0, s.angleToValue(90.0), EPSILON);</span>
+<span class="fc" id="L328">        assertEquals(20.0, s.angleToValue(0.0), EPSILON);</span>
+<span class="fc" id="L329">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

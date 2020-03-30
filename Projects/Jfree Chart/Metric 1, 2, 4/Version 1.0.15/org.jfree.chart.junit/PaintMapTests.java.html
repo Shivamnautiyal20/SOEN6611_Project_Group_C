@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PaintMapTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.junit</a> &gt; <span class="el_source">PaintMapTests.java</span></div><h1>PaintMapTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ------------------
+ * PaintMapTests.java
+ * ------------------
+ * (C) Copyright 2006, 2007, by Object Refinery Limited.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes:
+ * --------
+ * 27-Sep-2006 : Version 1 (DG);
+ * 17-Jan-2007 : Added testKeysOfDifferentClasses() (DG);
+ *
+ */
+
+package org.jfree.chart.junit;
+
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.PaintMap;
+
+/**
+ * Some tests for the {@link PaintMap} class.
+ */
+public class PaintMapTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L70">        return new TestSuite(PaintMapTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public PaintMapTests(String name) {
+<span class="fc" id="L79">        super(name);</span>
+<span class="fc" id="L80">    }</span>
+
+    /**
+     * Some checks for the getPaint() method.
+     */
+    public void testGetPaint() {
+<span class="fc" id="L86">        PaintMap m1 = new PaintMap();</span>
+<span class="fc" id="L87">        assertEquals(null, m1.getPaint(&quot;A&quot;));</span>
+<span class="fc" id="L88">        m1.put(&quot;A&quot;, Color.red);</span>
+<span class="fc" id="L89">        assertEquals(Color.red, m1.getPaint(&quot;A&quot;));</span>
+<span class="fc" id="L90">        m1.put(&quot;A&quot;, null);</span>
+<span class="fc" id="L91">        assertEquals(null, m1.getPaint(&quot;A&quot;));</span>
+
+        // a null key should throw an IllegalArgumentException
+<span class="fc" id="L94">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L96">            m1.getPaint(null);</span>
+        }
+<span class="fc" id="L98">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L99">            pass = true;</span>
+<span class="nc" id="L100">        }</span>
+<span class="fc" id="L101">        assertTrue(pass);</span>
+<span class="fc" id="L102">    }</span>
+
+    /**
+     * Some checks for the put() method.
+     */
+    public void testPut() {
+<span class="fc" id="L108">        PaintMap m1 = new PaintMap();</span>
+<span class="fc" id="L109">        m1.put(&quot;A&quot;, Color.red);</span>
+<span class="fc" id="L110">        assertEquals(Color.red, m1.getPaint(&quot;A&quot;));</span>
+
+        // a null key should throw an IllegalArgumentException
+<span class="fc" id="L113">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L115">            m1.put(null, Color.blue);</span>
+        }
+<span class="fc" id="L117">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L118">            pass = true;</span>
+<span class="nc" id="L119">        }</span>
+<span class="fc" id="L120">        assertTrue(pass);</span>
+<span class="fc" id="L121">    }</span>
+
+    /**
+     * Some checks for the equals() method.
+     */
+    public void testEquals() {
+<span class="fc" id="L127">        PaintMap m1 = new PaintMap();</span>
+<span class="fc" id="L128">        PaintMap m2 = new PaintMap();</span>
+<span class="fc" id="L129">        assertTrue(m1.equals(m1));</span>
+<span class="fc" id="L130">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L131">        assertFalse(m1.equals(null));</span>
+<span class="fc" id="L132">        assertFalse(m1.equals(&quot;ABC&quot;));</span>
+
+<span class="fc" id="L134">        m1.put(&quot;K1&quot;, Color.red);</span>
+<span class="fc" id="L135">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L136">        m2.put(&quot;K1&quot;, Color.red);</span>
+<span class="fc" id="L137">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L139">        m1.put(&quot;K2&quot;, new GradientPaint(1.0f, 2.0f, Color.green, 3.0f, 4.0f,</span>
+                Color.yellow));
+<span class="fc" id="L141">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L142">        m2.put(&quot;K2&quot;, new GradientPaint(1.0f, 2.0f, Color.green, 3.0f, 4.0f,</span>
+                Color.yellow));
+<span class="fc" id="L144">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L146">        m1.put(&quot;K2&quot;, null);</span>
+<span class="fc" id="L147">        assertFalse(m1.equals(m2));</span>
+<span class="fc" id="L148">        m2.put(&quot;K2&quot;, null);</span>
+<span class="fc" id="L149">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L150">    }</span>
+
+    /**
+     * Some checks for cloning.
+     */
+    public void testCloning() {
+<span class="fc" id="L156">        PaintMap m1 = new PaintMap();</span>
+<span class="fc" id="L157">        PaintMap m2 = null;</span>
+        try {
+<span class="fc" id="L159">            m2 = (PaintMap) m1.clone();</span>
+        }
+<span class="nc" id="L161">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L162">            e.printStackTrace();</span>
+<span class="fc" id="L163">        }</span>
+<span class="fc" id="L164">        assertTrue(m1.equals(m2));</span>
+
+<span class="fc" id="L166">        m1.put(&quot;K1&quot;, Color.red);</span>
+<span class="fc" id="L167">        m1.put(&quot;K2&quot;, new GradientPaint(1.0f, 2.0f, Color.green, 3.0f, 4.0f,</span>
+                Color.yellow));
+        try {
+<span class="fc" id="L170">            m2 = (PaintMap) m1.clone();</span>
+        }
+<span class="nc" id="L172">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L173">            e.printStackTrace();</span>
+<span class="fc" id="L174">        }</span>
+<span class="fc" id="L175">        assertTrue(m1.equals(m2));</span>
+<span class="fc" id="L176">    }</span>
+
+    /**
+     * A check for serialization.
+     */
+    public void testSerialization1() {
+<span class="fc" id="L182">        PaintMap m1 = new PaintMap();</span>
+<span class="fc" id="L183">        PaintMap m2 = null;</span>
+        try {
+<span class="fc" id="L185">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L186">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L187">            out.writeObject(m1);</span>
+<span class="fc" id="L188">            out.close();</span>
+
+<span class="fc" id="L190">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L191">                    buffer.toByteArray()));</span>
+<span class="fc" id="L192">            m2 = (PaintMap) in.readObject();</span>
+<span class="fc" id="L193">            in.close();</span>
+        }
+<span class="nc" id="L195">        catch (Exception e) {</span>
+<span class="nc" id="L196">            e.printStackTrace();</span>
+<span class="fc" id="L197">        }</span>
+<span class="fc" id="L198">        assertEquals(m1, m2);</span>
+<span class="fc" id="L199">    }</span>
+
+    /**
+     * A check for serialization.
+     */
+    public void testSerialization2() {
+<span class="fc" id="L205">        PaintMap m1 = new PaintMap();</span>
+<span class="fc" id="L206">        m1.put(&quot;K1&quot;, Color.red);</span>
+<span class="fc" id="L207">        m1.put(&quot;K2&quot;, new GradientPaint(1.0f, 2.0f, Color.green, 3.0f, 4.0f,</span>
+                Color.yellow));
+<span class="fc" id="L209">        PaintMap m2 = null;</span>
+        try {
+<span class="fc" id="L211">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L212">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L213">            out.writeObject(m1);</span>
+<span class="fc" id="L214">            out.close();</span>
+
+<span class="fc" id="L216">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L217">                    buffer.toByteArray()));</span>
+<span class="fc" id="L218">            m2 = (PaintMap) in.readObject();</span>
+<span class="fc" id="L219">            in.close();</span>
+        }
+<span class="nc" id="L221">        catch (Exception e) {</span>
+<span class="nc" id="L222">            e.printStackTrace();</span>
+<span class="fc" id="L223">        }</span>
+<span class="fc" id="L224">        assertEquals(m1, m2);</span>
+<span class="fc" id="L225">    }</span>
+
+    /**
+     * This test covers a bug reported in the forum:
+     *
+     * http://www.jfree.org/phpBB2/viewtopic.php?t=19980
+     */
+    public void testKeysOfDifferentClasses() {
+<span class="fc" id="L233">        PaintMap m = new PaintMap();</span>
+<span class="fc" id="L234">        m.put(&quot;ABC&quot;, Color.red);</span>
+<span class="fc" id="L235">        m.put(new Integer(99), Color.blue);</span>
+<span class="fc" id="L236">        assertEquals(Color.blue, m.getPaint(new Integer(99)));</span>
+<span class="fc" id="L237">    }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

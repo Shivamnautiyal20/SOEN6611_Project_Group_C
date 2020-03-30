@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StatisticalBarRendererTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$Jacoco.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.category.junit</a> &gt; <span class="el_source">StatisticalBarRendererTests.java</span></div><h1>StatisticalBarRendererTests.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------------------
+ * StatisticalBarRendererTests.java
+ * --------------------------------
+ * (C) Copyright 2003-2009, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 25-Mar-2003 : Version 1 (DG);
+ * 28-Aug-2007 : Added tests for bug 1779941 (DG);
+ * 14-Nov-2007 : Updated testEquals() (DG);
+ * 23-Apr-2008 : Added testPublicCloneable() (DG);
+ * 16-May-2009 : Added testFindRangeBounds (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.category.junit;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.StatisticalBarRenderer;
+import org.jfree.data.Range;
+import org.jfree.data.statistics.DefaultStatisticalCategoryDataset;
+import org.jfree.util.PublicCloneable;
+
+/**
+ * Tests for the {@link StatisticalBarRenderer} class.
+ */
+public class StatisticalBarRendererTests extends TestCase {
+
+    /**
+     * Returns the tests as a test suite.
+     *
+     * @return The test suite.
+     */
+    public static Test suite() {
+<span class="fc" id="L81">        return new TestSuite(StatisticalBarRendererTests.class);</span>
+    }
+
+    /**
+     * Constructs a new set of tests.
+     *
+     * @param name  the name of the tests.
+     */
+    public StatisticalBarRendererTests(String name) {
+<span class="fc" id="L90">        super(name);</span>
+<span class="fc" id="L91">    }</span>
+
+    /**
+     * Check that the equals() method distinguishes all fields.
+     */
+    public void testEquals() {
+<span class="fc" id="L97">        StatisticalBarRenderer r1 = new StatisticalBarRenderer();</span>
+<span class="fc" id="L98">        StatisticalBarRenderer r2 = new StatisticalBarRenderer();</span>
+<span class="fc" id="L99">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L101">        r1.setErrorIndicatorPaint(Color.red);</span>
+<span class="fc" id="L102">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L103">        r2.setErrorIndicatorPaint(Color.red);</span>
+<span class="fc" id="L104">        assertTrue(r2.equals(r1));</span>
+
+<span class="fc" id="L106">        r1.setErrorIndicatorStroke(new BasicStroke(1.5f));</span>
+<span class="fc" id="L107">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L108">        r2.setErrorIndicatorStroke(new BasicStroke(1.5f));</span>
+<span class="fc" id="L109">        assertTrue(r2.equals(r1));</span>
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashcode() {
+<span class="fc" id="L116">        StatisticalBarRenderer r1 = new StatisticalBarRenderer();</span>
+<span class="fc" id="L117">        StatisticalBarRenderer r2 = new StatisticalBarRenderer();</span>
+<span class="fc" id="L118">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L119">        int h1 = r1.hashCode();</span>
+<span class="fc" id="L120">        int h2 = r2.hashCode();</span>
+<span class="fc" id="L121">        assertEquals(h1, h2);</span>
+<span class="fc" id="L122">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="fc" id="L128">        StatisticalBarRenderer r1 = new StatisticalBarRenderer();</span>
+<span class="fc" id="L129">        StatisticalBarRenderer r2 = null;</span>
+        try {
+<span class="fc" id="L131">            r2 = (StatisticalBarRenderer) r1.clone();</span>
+        }
+<span class="nc" id="L133">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L134">            e.printStackTrace();</span>
+<span class="fc" id="L135">        }</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L138">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L139">    }</span>
+
+    /**
+     * Check that this class implements PublicCloneable.
+     */
+    public void testPublicCloneable() {
+<span class="fc" id="L145">        StatisticalBarRenderer r1 = new StatisticalBarRenderer();</span>
+<span class="fc" id="L146">        assertTrue(r1 instanceof PublicCloneable);</span>
+<span class="fc" id="L147">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+
+<span class="fc" id="L154">        StatisticalBarRenderer r1 = new StatisticalBarRenderer();</span>
+<span class="fc" id="L155">        StatisticalBarRenderer r2 = null;</span>
+
+        try {
+<span class="fc" id="L158">            ByteArrayOutputStream buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L159">            ObjectOutput out = new ObjectOutputStream(buffer);</span>
+<span class="fc" id="L160">            out.writeObject(r1);</span>
+<span class="fc" id="L161">            out.close();</span>
+
+<span class="fc" id="L163">            ObjectInput in = new ObjectInputStream(new ByteArrayInputStream(</span>
+<span class="fc" id="L164">                    buffer.toByteArray()));</span>
+<span class="fc" id="L165">            r2 = (StatisticalBarRenderer) in.readObject();</span>
+<span class="fc" id="L166">            in.close();</span>
+        }
+<span class="nc" id="L168">        catch (Exception e) {</span>
+<span class="nc" id="L169">            e.printStackTrace();</span>
+<span class="fc" id="L170">        }</span>
+<span class="fc" id="L171">        assertEquals(r1, r2);</span>
+
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Draws the chart with a &lt;code&gt;null&lt;/code&gt; info object to make sure that
+     * no exceptions are thrown (particularly by code in the renderer).
+     */
+    public void testDrawWithNullInfo() {
+<span class="fc" id="L180">        boolean success = false;</span>
+        try {
+<span class="fc" id="L182">            DefaultStatisticalCategoryDataset dataset</span>
+                    = new DefaultStatisticalCategoryDataset();
+<span class="fc" id="L184">            dataset.add(1.0, 2.0, &quot;S1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L185">            dataset.add(3.0, 4.0, &quot;S1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L186">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new StatisticalBarRenderer());
+<span class="fc" id="L189">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L190">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    null);
+<span class="fc" id="L192">            success = true;</span>
+        }
+<span class="nc" id="L194">        catch (NullPointerException e) {</span>
+<span class="nc" id="L195">            e.printStackTrace();</span>
+<span class="nc" id="L196">            success = false;</span>
+<span class="fc" id="L197">        }</span>
+<span class="fc" id="L198">        assertTrue(success);</span>
+<span class="fc" id="L199">    }</span>
+
+    /**
+     * Draws the chart with a &lt;code&gt;null&lt;/code&gt; mean value to make sure that
+     * no exceptions are thrown (particularly by code in the renderer).  See
+     * bug report 1779941.
+     */
+    public void testDrawWithNullMeanVertical() {
+<span class="fc" id="L207">        boolean success = false;</span>
+        try {
+<span class="fc" id="L209">            DefaultStatisticalCategoryDataset dataset</span>
+                    = new DefaultStatisticalCategoryDataset();
+<span class="fc" id="L211">            dataset.add(1.0, 2.0, &quot;S1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L212">            dataset.add(null, new Double(4.0), &quot;S1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L213">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new StatisticalBarRenderer());
+<span class="fc" id="L216">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L217">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    null);
+<span class="fc" id="L219">            success = true;</span>
+        }
+<span class="nc" id="L221">        catch (NullPointerException e) {</span>
+<span class="nc" id="L222">            e.printStackTrace();</span>
+<span class="nc" id="L223">            success = false;</span>
+<span class="fc" id="L224">        }</span>
+<span class="fc" id="L225">        assertTrue(success);</span>
+<span class="fc" id="L226">    }</span>
+
+    /**
+     * Draws the chart with a &lt;code&gt;null&lt;/code&gt; mean value to make sure that
+     * no exceptions are thrown (particularly by code in the renderer).  See
+     * bug report 1779941.
+     */
+    public void testDrawWithNullMeanHorizontal() {
+<span class="fc" id="L234">        boolean success = false;</span>
+        try {
+<span class="fc" id="L236">            DefaultStatisticalCategoryDataset dataset</span>
+                    = new DefaultStatisticalCategoryDataset();
+<span class="fc" id="L238">            dataset.add(1.0, 2.0, &quot;S1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L239">            dataset.add(null, new Double(4.0), &quot;S1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L240">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new StatisticalBarRenderer());
+<span class="fc" id="L243">            plot.setOrientation(PlotOrientation.HORIZONTAL);</span>
+<span class="fc" id="L244">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L245">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    null);
+<span class="fc" id="L247">            success = true;</span>
+        }
+<span class="nc" id="L249">        catch (NullPointerException e) {</span>
+<span class="nc" id="L250">            e.printStackTrace();</span>
+<span class="nc" id="L251">            success = false;</span>
+<span class="fc" id="L252">        }</span>
+<span class="fc" id="L253">        assertTrue(success);</span>
+<span class="fc" id="L254">    }</span>
+
+    /**
+     * Draws the chart with a &lt;code&gt;null&lt;/code&gt; standard deviation to make sure
+     * that no exceptions are thrown (particularly by code in the renderer).
+     * See bug report 1779941.
+     */
+    public void testDrawWithNullDeviationVertical() {
+<span class="fc" id="L262">        boolean success = false;</span>
+        try {
+<span class="fc" id="L264">            DefaultStatisticalCategoryDataset dataset</span>
+                    = new DefaultStatisticalCategoryDataset();
+<span class="fc" id="L266">            dataset.add(1.0, 2.0, &quot;S1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L267">            dataset.add(new Double(4.0), null, &quot;S1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L268">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new StatisticalBarRenderer());
+<span class="fc" id="L271">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L272">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    null);
+<span class="fc" id="L274">            success = true;</span>
+        }
+<span class="nc" id="L276">        catch (NullPointerException e) {</span>
+<span class="nc" id="L277">            e.printStackTrace();</span>
+<span class="nc" id="L278">            success = false;</span>
+<span class="fc" id="L279">        }</span>
+<span class="fc" id="L280">        assertTrue(success);</span>
+<span class="fc" id="L281">    }</span>
+
+    /**
+     * Draws the chart with a &lt;code&gt;null&lt;/code&gt; standard deviation to make sure
+     * that no exceptions are thrown (particularly by code in the renderer).
+     * See bug report 1779941.
+     */
+    public void testDrawWithNullDeviationHorizontal() {
+<span class="fc" id="L289">        boolean success = false;</span>
+        try {
+<span class="fc" id="L291">            DefaultStatisticalCategoryDataset dataset</span>
+                    = new DefaultStatisticalCategoryDataset();
+<span class="fc" id="L293">            dataset.add(1.0, 2.0, &quot;S1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L294">            dataset.add(new Double(4.0), null, &quot;S1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L295">            CategoryPlot plot = new CategoryPlot(dataset,</span>
+                    new CategoryAxis(&quot;Category&quot;), new NumberAxis(&quot;Value&quot;),
+                    new StatisticalBarRenderer());
+<span class="fc" id="L298">            plot.setOrientation(PlotOrientation.HORIZONTAL);</span>
+<span class="fc" id="L299">            JFreeChart chart = new JFreeChart(plot);</span>
+<span class="fc" id="L300">            /* BufferedImage image = */ chart.createBufferedImage(300, 200,</span>
+                    null);
+<span class="fc" id="L302">            success = true;</span>
+        }
+<span class="nc" id="L304">        catch (NullPointerException e) {</span>
+<span class="nc" id="L305">            e.printStackTrace();</span>
+<span class="nc" id="L306">            success = false;</span>
+<span class="fc" id="L307">        }</span>
+<span class="fc" id="L308">        assertTrue(success);</span>
+<span class="fc" id="L309">    }</span>
+
+    /**
+     * Some checks for the findRangeBounds() method.
+     */
+    public void testFindRangeBounds() {
+<span class="fc" id="L315">        StatisticalBarRenderer r = new StatisticalBarRenderer();</span>
+<span class="fc" id="L316">        assertNull(r.findRangeBounds(null));</span>
+
+        // an empty dataset should return a null range
+<span class="fc" id="L319">        DefaultStatisticalCategoryDataset dataset</span>
+                = new DefaultStatisticalCategoryDataset();
+<span class="fc" id="L321">        assertNull(r.findRangeBounds(dataset));</span>
+
+<span class="fc" id="L323">        dataset.add(1.0, 0.5, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L324">        assertEquals(new Range(0.0, 1.5), r.findRangeBounds(dataset));</span>
+
+<span class="fc" id="L326">        r.setIncludeBaseInRange(false);</span>
+<span class="fc" id="L327">        assertEquals(new Range(0.5, 1.5), r.findRangeBounds(dataset));</span>
+<span class="fc" id="L328">        r.setIncludeBaseInRange(true);</span>
+
+<span class="fc" id="L330">        dataset.add(-2.0, 0.2, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="fc" id="L331">        assertEquals(new Range(-2.2, 1.5), r.findRangeBounds(dataset));</span>
+
+<span class="fc" id="L333">        dataset.add(null, null, &quot;R1&quot;, &quot;C3&quot;);</span>
+<span class="fc" id="L334">        assertEquals(new Range(-2.2, 1.5), r.findRangeBounds(dataset));</span>
+
+<span class="fc" id="L336">        dataset.add(5.0, 1.0, &quot;R2&quot;, &quot;C3&quot;);</span>
+<span class="fc" id="L337">        assertEquals(new Range(-2.2, 6.0), r.findRangeBounds(dataset));</span>
+
+        // check that the series visible flag is observed
+<span class="fc" id="L340">        r.setSeriesVisible(1, Boolean.FALSE);</span>
+<span class="fc" id="L341">        assertEquals(new Range(-2.2, 1.5), r.findRangeBounds(dataset));</span>
+<span class="fc" id="L342">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
