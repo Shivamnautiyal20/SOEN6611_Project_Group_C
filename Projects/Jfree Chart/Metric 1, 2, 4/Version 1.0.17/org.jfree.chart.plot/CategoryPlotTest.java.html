@@ -1,0 +1,993 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryPlotTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.plot</a> &gt; <span class="el_source">CategoryPlotTest.java</span></div><h1>CategoryPlotTest.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------
+ * CategoryPlotTest.java
+ * ---------------------
+ * (C) Copyright 2003-2013, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 26-Mar-2003 : Version 1 (DG);
+ * 15-Sep-2003 : Added a unit test to reproduce a bug in serialization (now
+ *               fixed) (DG);
+ * 05-Feb-2007 : Added testAddDomainMarker() and testAddRangeMarker() (DG);
+ * 07-Feb-2007 : Added test1654215() (DG);
+ * 07-Apr-2008 : Added testRemoveDomainMarker() and
+ *               testRemoveRangeMarker() (DG);
+ * 23-Apr-2008 : Extended testEquals() and testCloning(), and added
+ *               testCloning2() and testCloning3() (DG);
+ * 26-Jun-2008 : Updated testEquals() (DG);
+ * 21-Jan-2009 : Updated testEquals() for new fields (DG);
+ * 10-Jul-2009 : Updated testEquals() for new field (DG);
+ *
+ */
+
+package org.jfree.chart.plot;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
+import java.awt.Stroke;
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.List;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.LegendItemCollection;
+import org.jfree.chart.TestUtilities;
+import org.jfree.chart.annotations.CategoryLineAnnotation;
+import org.jfree.chart.annotations.CategoryTextAnnotation;
+import org.jfree.chart.axis.AxisLocation;
+import org.jfree.chart.axis.AxisSpace;
+import org.jfree.chart.axis.CategoryAnchor;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.event.MarkerChangeListener;
+import org.jfree.chart.renderer.category.AreaRenderer;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.CategoryItemRenderer;
+import org.jfree.chart.renderer.category.DefaultCategoryItemRenderer;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.chart.util.DefaultShadowGenerator;
+import org.jfree.data.Range;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.ui.Layer;
+import org.jfree.ui.RectangleInsets;
+import org.jfree.util.SortOrder;
+import org.junit.Test;
+
+/**
+ * Tests for the {@link CategoryPlot} class.
+ */
+<span class="fc" id="L100">public class CategoryPlotTest {</span>
+
+    /**
+     * Some checks for the constructor.
+     */
+    @Test
+    public void testConstructor() {
+<span class="fc" id="L107">        CategoryPlot plot = new CategoryPlot();</span>
+<span class="fc" id="L108">        assertEquals(RectangleInsets.ZERO_INSETS, plot.getAxisOffset());</span>
+<span class="fc" id="L109">    }</span>
+
+    /**
+     * A test for a bug reported in the forum.
+     */
+    @Test
+    public void testAxisRange() {
+<span class="fc" id="L116">        DefaultCategoryDataset datasetA = new DefaultCategoryDataset();</span>
+<span class="fc" id="L117">        DefaultCategoryDataset datasetB = new DefaultCategoryDataset();</span>
+<span class="fc" id="L118">        datasetB.addValue(50.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L119">        datasetB.addValue(80.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L120">        CategoryPlot plot = new CategoryPlot(datasetA, new CategoryAxis(null),</span>
+                new NumberAxis(null), new LineAndShapeRenderer());
+<span class="fc" id="L122">        plot.setDataset(1, datasetB);</span>
+<span class="fc" id="L123">        plot.setRenderer(1, new LineAndShapeRenderer());</span>
+<span class="fc" id="L124">        Range r = plot.getRangeAxis().getRange();</span>
+<span class="fc" id="L125">        assertEquals(84.0, r.getUpperBound(), 0.00001);</span>
+<span class="fc" id="L126">    }</span>
+
+    /**
+     * Test that the equals() method differentiates all the required fields.
+     */
+    @Test
+    public void testEquals() {
+
+<span class="fc" id="L134">        CategoryPlot plot1 = new CategoryPlot();</span>
+<span class="fc" id="L135">        CategoryPlot plot2 = new CategoryPlot();</span>
+<span class="fc" id="L136">        assertTrue(plot1.equals(plot2));</span>
+<span class="fc" id="L137">        assertTrue(plot2.equals(plot1));</span>
+
+        // orientation...
+<span class="fc" id="L140">        plot1.setOrientation(PlotOrientation.HORIZONTAL);</span>
+<span class="fc" id="L141">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L142">        plot2.setOrientation(PlotOrientation.HORIZONTAL);</span>
+<span class="fc" id="L143">        assertTrue(plot1.equals(plot2));</span>
+
+        // axisOffset...
+<span class="fc" id="L146">        plot1.setAxisOffset(new RectangleInsets(0.05, 0.05, 0.05, 0.05));</span>
+<span class="fc" id="L147">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L148">        plot2.setAxisOffset(new RectangleInsets(0.05, 0.05, 0.05, 0.05));</span>
+<span class="fc" id="L149">        assertTrue(plot1.equals(plot2));</span>
+
+        // domainAxis - no longer a separate field but test anyway...
+<span class="fc" id="L152">        plot1.setDomainAxis(new CategoryAxis(&quot;Category Axis&quot;));</span>
+<span class="fc" id="L153">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L154">        plot2.setDomainAxis(new CategoryAxis(&quot;Category Axis&quot;));</span>
+<span class="fc" id="L155">        assertTrue(plot1.equals(plot2));</span>
+
+        // domainAxes...
+<span class="fc" id="L158">        plot1.setDomainAxis(11, new CategoryAxis(&quot;Secondary Axis&quot;));</span>
+<span class="fc" id="L159">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L160">        plot2.setDomainAxis(11, new CategoryAxis(&quot;Secondary Axis&quot;));</span>
+<span class="fc" id="L161">        assertTrue(plot1.equals(plot2));</span>
+
+        // domainAxisLocation - no longer a separate field but test anyway...
+<span class="fc" id="L164">        plot1.setDomainAxisLocation(AxisLocation.TOP_OR_RIGHT);</span>
+<span class="fc" id="L165">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L166">        plot2.setDomainAxisLocation(AxisLocation.TOP_OR_RIGHT);</span>
+<span class="fc" id="L167">        assertTrue(plot1.equals(plot2));</span>
+
+        // domainAxisLocations...
+<span class="fc" id="L170">        plot1.setDomainAxisLocation(11, AxisLocation.TOP_OR_RIGHT);</span>
+<span class="fc" id="L171">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L172">        plot2.setDomainAxisLocation(11, AxisLocation.TOP_OR_RIGHT);</span>
+<span class="fc" id="L173">        assertTrue(plot1.equals(plot2));</span>
+
+        // draw shared domain axis...
+<span class="pc bpc" id="L176" title="1 of 2 branches missed.">        plot1.setDrawSharedDomainAxis(!plot1.getDrawSharedDomainAxis());</span>
+<span class="fc" id="L177">        assertFalse(plot1.equals(plot2));</span>
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">        plot2.setDrawSharedDomainAxis(!plot2.getDrawSharedDomainAxis());</span>
+<span class="fc" id="L179">        assertTrue(plot1.equals(plot2));</span>
+
+        // rangeAxis - no longer a separate field but test anyway...
+<span class="fc" id="L182">        plot1.setRangeAxis(new NumberAxis(&quot;Range Axis&quot;));</span>
+<span class="fc" id="L183">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L184">        plot2.setRangeAxis(new NumberAxis(&quot;Range Axis&quot;));</span>
+<span class="fc" id="L185">        assertTrue(plot1.equals(plot2));</span>
+
+        // rangeAxes...
+<span class="fc" id="L188">        plot1.setRangeAxis(11, new NumberAxis(&quot;Secondary Range Axis&quot;));</span>
+<span class="fc" id="L189">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L190">        plot2.setRangeAxis(11, new NumberAxis(&quot;Secondary Range Axis&quot;));</span>
+<span class="fc" id="L191">        assertTrue(plot1.equals(plot2));</span>
+
+        // rangeAxisLocation - no longer a separate field but test anyway...
+<span class="fc" id="L194">        plot1.setRangeAxisLocation(AxisLocation.TOP_OR_RIGHT);</span>
+<span class="fc" id="L195">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L196">        plot2.setRangeAxisLocation(AxisLocation.TOP_OR_RIGHT);</span>
+<span class="fc" id="L197">        assertTrue(plot1.equals(plot2));</span>
+
+        // rangeAxisLocations...
+<span class="fc" id="L200">        plot1.setRangeAxisLocation(11, AxisLocation.TOP_OR_RIGHT);</span>
+<span class="fc" id="L201">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L202">        plot2.setRangeAxisLocation(11, AxisLocation.TOP_OR_RIGHT);</span>
+<span class="fc" id="L203">        assertTrue(plot1.equals(plot2));</span>
+
+        // datasetToDomainAxisMap...
+<span class="fc" id="L206">        plot1.mapDatasetToDomainAxis(11, 11);</span>
+<span class="fc" id="L207">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L208">        plot2.mapDatasetToDomainAxis(11, 11);</span>
+<span class="fc" id="L209">        assertTrue(plot1.equals(plot2));</span>
+
+        // datasetToRangeAxisMap...
+<span class="fc" id="L212">        plot1.mapDatasetToRangeAxis(11, 11);</span>
+<span class="fc" id="L213">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L214">        plot2.mapDatasetToRangeAxis(11, 11);</span>
+<span class="fc" id="L215">        assertTrue(plot1.equals(plot2));</span>
+
+        // renderer - no longer a separate field but test anyway...
+<span class="fc" id="L218">        plot1.setRenderer(new AreaRenderer());</span>
+<span class="fc" id="L219">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L220">        plot2.setRenderer(new AreaRenderer());</span>
+<span class="fc" id="L221">        assertTrue(plot1.equals(plot2));</span>
+
+        // renderers...
+<span class="fc" id="L224">        plot1.setRenderer(11, new AreaRenderer());</span>
+<span class="fc" id="L225">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L226">        plot2.setRenderer(11, new AreaRenderer());</span>
+<span class="fc" id="L227">        assertTrue(plot1.equals(plot2));</span>
+
+        // rendering order...
+<span class="fc" id="L230">        plot1.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);</span>
+<span class="fc" id="L231">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L232">        plot2.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);</span>
+<span class="fc" id="L233">        assertTrue(plot1.equals(plot2));</span>
+
+        // columnRenderingOrder...
+<span class="fc" id="L236">        plot1.setColumnRenderingOrder(SortOrder.DESCENDING);</span>
+<span class="fc" id="L237">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L238">        plot2.setColumnRenderingOrder(SortOrder.DESCENDING);</span>
+<span class="fc" id="L239">        assertTrue(plot1.equals(plot2));</span>
+
+        // rowRenderingOrder...
+<span class="fc" id="L242">        plot1.setRowRenderingOrder(SortOrder.DESCENDING);</span>
+<span class="fc" id="L243">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L244">        plot2.setRowRenderingOrder(SortOrder.DESCENDING);</span>
+<span class="fc" id="L245">        assertTrue(plot1.equals(plot2));</span>
+
+        // domainGridlinesVisible
+<span class="fc" id="L248">        plot1.setDomainGridlinesVisible(true);</span>
+<span class="fc" id="L249">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L250">        plot2.setDomainGridlinesVisible(true);</span>
+<span class="fc" id="L251">        assertTrue(plot1.equals(plot2));</span>
+
+        // domainGridlinePosition
+<span class="fc" id="L254">        plot1.setDomainGridlinePosition(CategoryAnchor.END);</span>
+<span class="fc" id="L255">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L256">        plot2.setDomainGridlinePosition(CategoryAnchor.END);</span>
+<span class="fc" id="L257">        assertTrue(plot1.equals(plot2));</span>
+
+        // domainGridlineStroke
+<span class="fc" id="L260">        Stroke stroke = new BasicStroke(2.0f);</span>
+<span class="fc" id="L261">        plot1.setDomainGridlineStroke(stroke);</span>
+<span class="fc" id="L262">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L263">        plot2.setDomainGridlineStroke(stroke);</span>
+<span class="fc" id="L264">        assertTrue(plot1.equals(plot2));</span>
+
+        // domainGridlinePaint
+<span class="fc" id="L267">        plot1.setDomainGridlinePaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L269">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L270">        plot2.setDomainGridlinePaint(new GradientPaint(1.0f, 2.0f, Color.blue,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L272">        assertTrue(plot1.equals(plot2));</span>
+
+        // rangeGridlinesVisible
+<span class="fc" id="L275">        plot1.setRangeGridlinesVisible(false);</span>
+<span class="fc" id="L276">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L277">        plot2.setRangeGridlinesVisible(false);</span>
+<span class="fc" id="L278">        assertTrue(plot1.equals(plot2));</span>
+
+        // rangeGridlineStroke
+<span class="fc" id="L281">        plot1.setRangeGridlineStroke(stroke);</span>
+<span class="fc" id="L282">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L283">        plot2.setRangeGridlineStroke(stroke);</span>
+<span class="fc" id="L284">        assertTrue(plot1.equals(plot2));</span>
+
+        // rangeGridlinePaint
+<span class="fc" id="L287">        plot1.setRangeGridlinePaint(new GradientPaint(1.0f, 2.0f, Color.green,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L289">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L290">        plot2.setRangeGridlinePaint(new GradientPaint(1.0f, 2.0f, Color.green,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L292">        assertTrue(plot1.equals(plot2));</span>
+
+        // anchorValue
+<span class="fc" id="L295">        plot1.setAnchorValue(100.0);</span>
+<span class="fc" id="L296">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L297">        plot2.setAnchorValue(100.0);</span>
+<span class="fc" id="L298">        assertTrue(plot1.equals(plot2));</span>
+
+        // rangeCrosshairVisible
+<span class="fc" id="L301">        plot1.setRangeCrosshairVisible(true);</span>
+<span class="fc" id="L302">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L303">        plot2.setRangeCrosshairVisible(true);</span>
+<span class="fc" id="L304">        assertTrue(plot1.equals(plot2));</span>
+
+        // rangeCrosshairValue
+<span class="fc" id="L307">        plot1.setRangeCrosshairValue(100.0);</span>
+<span class="fc" id="L308">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L309">        plot2.setRangeCrosshairValue(100.0);</span>
+<span class="fc" id="L310">        assertTrue(plot1.equals(plot2));</span>
+
+        // rangeCrosshairStroke
+<span class="fc" id="L313">        plot1.setRangeCrosshairStroke(stroke);</span>
+<span class="fc" id="L314">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L315">        plot2.setRangeCrosshairStroke(stroke);</span>
+<span class="fc" id="L316">        assertTrue(plot1.equals(plot2));</span>
+
+        // rangeCrosshairPaint
+<span class="fc" id="L319">        plot1.setRangeCrosshairPaint(new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L321">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L322">        plot2.setRangeCrosshairPaint(new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L324">        assertTrue(plot1.equals(plot2));</span>
+
+        // rangeCrosshairLockedOnData
+<span class="fc" id="L327">        plot1.setRangeCrosshairLockedOnData(false);</span>
+<span class="fc" id="L328">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L329">        plot2.setRangeCrosshairLockedOnData(false);</span>
+<span class="fc" id="L330">        assertTrue(plot1.equals(plot2));</span>
+
+        // foreground domain markers
+<span class="fc" id="L333">        plot1.addDomainMarker(new CategoryMarker(&quot;C1&quot;), Layer.FOREGROUND);</span>
+<span class="fc" id="L334">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L335">        plot2.addDomainMarker(new CategoryMarker(&quot;C1&quot;), Layer.FOREGROUND);</span>
+<span class="fc" id="L336">        assertTrue(plot1.equals(plot2));</span>
+
+        // background domain markers
+<span class="fc" id="L339">        plot1.addDomainMarker(new CategoryMarker(&quot;C2&quot;), Layer.BACKGROUND);</span>
+<span class="fc" id="L340">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L341">        plot2.addDomainMarker(new CategoryMarker(&quot;C2&quot;), Layer.BACKGROUND);</span>
+<span class="fc" id="L342">        assertTrue(plot1.equals(plot2));</span>
+
+        // range markers - no longer separate fields but test anyway...
+<span class="fc" id="L345">        plot1.addRangeMarker(new ValueMarker(4.0), Layer.FOREGROUND);</span>
+<span class="fc" id="L346">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L347">        plot2.addRangeMarker(new ValueMarker(4.0), Layer.FOREGROUND);</span>
+<span class="fc" id="L348">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L350">        plot1.addRangeMarker(new ValueMarker(5.0), Layer.BACKGROUND);</span>
+<span class="fc" id="L351">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L352">        plot2.addRangeMarker(new ValueMarker(5.0), Layer.BACKGROUND);</span>
+<span class="fc" id="L353">        assertTrue(plot1.equals(plot2));</span>
+
+        // foreground range markers...
+<span class="fc" id="L356">        plot1.addRangeMarker(1, new ValueMarker(4.0), Layer.FOREGROUND);</span>
+<span class="fc" id="L357">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L358">        plot2.addRangeMarker(1, new ValueMarker(4.0), Layer.FOREGROUND);</span>
+<span class="fc" id="L359">        assertTrue(plot1.equals(plot2));</span>
+
+        // background range markers...
+<span class="fc" id="L362">        plot1.addRangeMarker(1, new ValueMarker(5.0), Layer.BACKGROUND);</span>
+<span class="fc" id="L363">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L364">        plot2.addRangeMarker(1, new ValueMarker(5.0), Layer.BACKGROUND);</span>
+<span class="fc" id="L365">        assertTrue(plot1.equals(plot2));</span>
+
+        // annotations
+<span class="fc" id="L368">        plot1.addAnnotation(new CategoryTextAnnotation(&quot;Text&quot;, &quot;Category&quot;,</span>
+                43.0));
+<span class="fc" id="L370">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L371">        plot2.addAnnotation(new CategoryTextAnnotation(&quot;Text&quot;, &quot;Category&quot;,</span>
+                43.0));
+<span class="fc" id="L373">        assertTrue(plot1.equals(plot2));</span>
+
+        // weight
+<span class="fc" id="L376">        plot1.setWeight(3);</span>
+<span class="fc" id="L377">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L378">        plot2.setWeight(3);</span>
+<span class="fc" id="L379">        assertTrue(plot1.equals(plot2));</span>
+
+        // fixed domain axis space...
+<span class="fc" id="L382">        plot1.setFixedDomainAxisSpace(new AxisSpace());</span>
+<span class="fc" id="L383">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L384">        plot2.setFixedDomainAxisSpace(new AxisSpace());</span>
+<span class="fc" id="L385">        assertTrue(plot1.equals(plot2));</span>
+
+        // fixed range axis space...
+<span class="fc" id="L388">        plot1.setFixedRangeAxisSpace(new AxisSpace());</span>
+<span class="fc" id="L389">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L390">        plot2.setFixedRangeAxisSpace(new AxisSpace());</span>
+<span class="fc" id="L391">        assertTrue(plot1.equals(plot2));</span>
+
+        // fixed legend items
+<span class="fc" id="L394">        plot1.setFixedLegendItems(new LegendItemCollection());</span>
+<span class="fc" id="L395">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L396">        plot2.setFixedLegendItems(new LegendItemCollection());</span>
+<span class="fc" id="L397">        assertTrue(plot1.equals(plot2));</span>
+
+        // crosshairDatasetIndex
+<span class="fc" id="L400">        plot1.setCrosshairDatasetIndex(99);</span>
+<span class="fc" id="L401">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L402">        plot2.setCrosshairDatasetIndex(99);</span>
+<span class="fc" id="L403">        assertTrue(plot1.equals(plot2));</span>
+
+        // domainCrosshairColumnKey
+<span class="fc" id="L406">        plot1.setDomainCrosshairColumnKey(&quot;A&quot;);</span>
+<span class="fc" id="L407">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L408">        plot2.setDomainCrosshairColumnKey(&quot;A&quot;);</span>
+<span class="fc" id="L409">        assertTrue(plot1.equals(plot2));</span>
+
+        // domainCrosshairRowKey
+<span class="fc" id="L412">        plot1.setDomainCrosshairRowKey(&quot;B&quot;);</span>
+<span class="fc" id="L413">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L414">        plot2.setDomainCrosshairRowKey(&quot;B&quot;);</span>
+<span class="fc" id="L415">        assertTrue(plot1.equals(plot2));</span>
+
+        // domainCrosshairVisible
+<span class="fc" id="L418">        plot1.setDomainCrosshairVisible(true);</span>
+<span class="fc" id="L419">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L420">        plot2.setDomainCrosshairVisible(true);</span>
+<span class="fc" id="L421">        assertTrue(plot1.equals(plot2));</span>
+
+        // domainCrosshairPaint
+<span class="fc" id="L424">        plot1.setDomainCrosshairPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L426">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L427">        plot2.setDomainCrosshairPaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L429">        assertTrue(plot1.equals(plot2));</span>
+
+        // domainCrosshairStroke
+<span class="fc" id="L432">        plot1.setDomainCrosshairStroke(new BasicStroke(1.23f));</span>
+<span class="fc" id="L433">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L434">        plot2.setDomainCrosshairStroke(new BasicStroke(1.23f));</span>
+<span class="fc" id="L435">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L437">        plot1.setRangeMinorGridlinesVisible(true);</span>
+<span class="fc" id="L438">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L439">        plot2.setRangeMinorGridlinesVisible(true);</span>
+<span class="fc" id="L440">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L442">        plot1.setRangeMinorGridlinePaint(new GradientPaint(1.0f, 2.0f,</span>
+                Color.red, 3.0f, 4.0f, Color.blue));
+<span class="fc" id="L444">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L445">        plot2.setRangeMinorGridlinePaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L447">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L449">        plot1.setRangeMinorGridlineStroke(new BasicStroke(1.23f));</span>
+<span class="fc" id="L450">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L451">        plot2.setRangeMinorGridlineStroke(new BasicStroke(1.23f));</span>
+<span class="fc" id="L452">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="pc bpc" id="L454" title="1 of 2 branches missed.">        plot1.setRangeZeroBaselineVisible(!plot1.isRangeZeroBaselineVisible());</span>
+<span class="fc" id="L455">        assertFalse(plot1.equals(plot2));</span>
+<span class="pc bpc" id="L456" title="1 of 2 branches missed.">        plot2.setRangeZeroBaselineVisible(!plot2.isRangeZeroBaselineVisible());</span>
+<span class="fc" id="L457">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L459">        plot1.setRangeZeroBaselinePaint(new GradientPaint(1.0f, 2.0f,</span>
+                Color.red, 3.0f, 4.0f, Color.blue));
+<span class="fc" id="L461">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L462">        plot2.setRangeZeroBaselinePaint(new GradientPaint(1.0f, 2.0f, Color.red,</span>
+                3.0f, 4.0f, Color.blue));
+<span class="fc" id="L464">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L466">        plot1.setRangeZeroBaselineStroke(new BasicStroke(1.23f));</span>
+<span class="fc" id="L467">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L468">        plot2.setRangeZeroBaselineStroke(new BasicStroke(1.23f));</span>
+<span class="fc" id="L469">        assertTrue(plot1.equals(plot2));</span>
+
+        // shadowGenerator
+<span class="fc" id="L472">        plot1.setShadowGenerator(new DefaultShadowGenerator(5, Color.gray,</span>
+                0.6f, 4, -Math.PI / 4));
+<span class="fc" id="L474">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L475">        plot2.setShadowGenerator(new DefaultShadowGenerator(5, Color.gray,</span>
+                0.6f, 4, -Math.PI / 4));
+<span class="fc" id="L477">        assertTrue(plot1.equals(plot2));</span>
+
+<span class="fc" id="L479">        plot1.setShadowGenerator(null);</span>
+<span class="fc" id="L480">        assertFalse(plot1.equals(plot2));</span>
+<span class="fc" id="L481">        plot2.setShadowGenerator(null);</span>
+<span class="fc" id="L482">        assertTrue(plot1.equals(plot2));</span>
+<span class="fc" id="L483">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    @Test
+    public void testCloning() {
+<span class="fc" id="L490">        CategoryPlot p1 = new CategoryPlot();</span>
+<span class="fc" id="L491">        p1.setRangeCrosshairPaint(new GradientPaint(1.0f, 2.0f, Color.white,</span>
+                3.0f, 4.0f, Color.yellow));
+<span class="fc" id="L493">        p1.setRangeMinorGridlinePaint(new GradientPaint(2.0f, 3.0f, Color.white,</span>
+                4.0f, 5.0f, Color.red));
+<span class="fc" id="L495">        p1.setRangeZeroBaselinePaint(new GradientPaint(3.0f, 4.0f, Color.red,</span>
+                5.0f, 6.0f, Color.white));
+<span class="fc" id="L497">        CategoryPlot p2 = null;</span>
+        try {
+<span class="fc" id="L499">            p2 = (CategoryPlot) p1.clone();</span>
+        }
+<span class="nc" id="L501">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L502">            fail(&quot;Cloning failed.&quot;);</span>
+<span class="nc" id="L503">            return;</span>
+<span class="fc" id="L504">        }</span>
+<span class="pc bpc" id="L505" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L506" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L507">        assertTrue(p1.equals(p2));</span>
+
+        // check independence
+<span class="fc" id="L510">        p1.addAnnotation(new CategoryLineAnnotation(&quot;C1&quot;, 1.0, &quot;C2&quot;, 2.0,</span>
+                Color.red, new BasicStroke(1.0f)));
+<span class="fc" id="L512">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L513">        p2.addAnnotation(new CategoryLineAnnotation(&quot;C1&quot;, 1.0, &quot;C2&quot;, 2.0,</span>
+                Color.red, new BasicStroke(1.0f)));
+<span class="fc" id="L515">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L517">        p1.addDomainMarker(new CategoryMarker(&quot;C1&quot;), Layer.FOREGROUND);</span>
+<span class="fc" id="L518">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L519">        p2.addDomainMarker(new CategoryMarker(&quot;C1&quot;), Layer.FOREGROUND);</span>
+<span class="fc" id="L520">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L522">        p1.addDomainMarker(new CategoryMarker(&quot;C2&quot;), Layer.BACKGROUND);</span>
+<span class="fc" id="L523">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L524">        p2.addDomainMarker(new CategoryMarker(&quot;C2&quot;), Layer.BACKGROUND);</span>
+<span class="fc" id="L525">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L527">        p1.addRangeMarker(new ValueMarker(1.0), Layer.FOREGROUND);</span>
+<span class="fc" id="L528">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L529">        p2.addRangeMarker(new ValueMarker(1.0), Layer.FOREGROUND);</span>
+<span class="fc" id="L530">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L532">        p1.addRangeMarker(new ValueMarker(2.0), Layer.BACKGROUND);</span>
+<span class="fc" id="L533">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L534">        p2.addRangeMarker(new ValueMarker(2.0), Layer.BACKGROUND);</span>
+<span class="fc" id="L535">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L536">    }</span>
+
+    /**
+     * Some more cloning checks.
+     */
+    @Test
+    public void testCloning2() {
+<span class="fc" id="L543">        AxisSpace da1 = new AxisSpace();</span>
+<span class="fc" id="L544">        AxisSpace ra1 = new AxisSpace();</span>
+<span class="fc" id="L545">        CategoryPlot p1 = new CategoryPlot();</span>
+<span class="fc" id="L546">        p1.setFixedDomainAxisSpace(da1);</span>
+<span class="fc" id="L547">        p1.setFixedRangeAxisSpace(ra1);</span>
+<span class="fc" id="L548">        CategoryPlot p2 = null;</span>
+        try {
+<span class="fc" id="L550">            p2 = (CategoryPlot) p1.clone();</span>
+        }
+<span class="nc" id="L552">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L553">            fail(&quot;Cloning failed.&quot;);</span>
+<span class="nc" id="L554">            return;</span>
+<span class="fc" id="L555">        }</span>
+<span class="pc bpc" id="L556" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L557" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L558">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L560">        da1.setBottom(99.0);</span>
+<span class="fc" id="L561">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L562">        p2.getFixedDomainAxisSpace().setBottom(99.0);</span>
+<span class="fc" id="L563">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L565">        ra1.setBottom(11.0);</span>
+<span class="fc" id="L566">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L567">        p2.getFixedRangeAxisSpace().setBottom(11.0);</span>
+<span class="fc" id="L568">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L569">    }</span>
+
+    /**
+     * Some more cloning checks.
+     */
+    @Test
+    public void testCloning3() {
+<span class="fc" id="L576">        LegendItemCollection c1 = new LegendItemCollection();</span>
+<span class="fc" id="L577">        CategoryPlot p1 = new CategoryPlot();</span>
+<span class="fc" id="L578">        p1.setFixedLegendItems(c1);</span>
+<span class="fc" id="L579">        CategoryPlot p2 = null;</span>
+        try {
+<span class="fc" id="L581">            p2 = (CategoryPlot) p1.clone();</span>
+        }
+<span class="nc" id="L583">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L584">            fail(&quot;Cloning failed.&quot;);</span>
+<span class="nc" id="L585">            return;</span>
+<span class="fc" id="L586">        }</span>
+<span class="pc bpc" id="L587" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L588" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L589">        assertTrue(p1.equals(p2));</span>
+
+<span class="fc" id="L591">        c1.add(new LegendItem(&quot;X&quot;, &quot;XX&quot;, &quot;tt&quot;, &quot;url&quot;, true,</span>
+                new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0), true, Color.red,
+                true, Color.yellow, new BasicStroke(1.0f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(1.0f),
+                Color.green));
+<span class="fc" id="L596">        assertFalse(p1.equals(p2));</span>
+<span class="fc" id="L597">        p2.getFixedLegendItems().add(new LegendItem(&quot;X&quot;, &quot;XX&quot;, &quot;tt&quot;, &quot;url&quot;,</span>
+                true, new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0), true,
+                Color.red, true, Color.yellow, new BasicStroke(1.0f), true,
+                new Line2D.Double(1.0, 2.0, 3.0, 4.0), new BasicStroke(1.0f),
+                Color.green));
+<span class="fc" id="L602">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L603">    }</span>
+
+    /**
+     * Renderers that belong to the plot are being cloned but they are
+     * retaining a reference to the original plot.
+     */
+    @Test
+    public void testBug2817504() {
+<span class="fc" id="L611">        CategoryPlot p1 = new CategoryPlot();</span>
+<span class="fc" id="L612">        LineAndShapeRenderer r1 = new LineAndShapeRenderer();</span>
+<span class="fc" id="L613">        p1.setRenderer(r1);</span>
+<span class="fc" id="L614">        CategoryPlot p2 = null;</span>
+        try {
+<span class="fc" id="L616">            p2 = (CategoryPlot) p1.clone();</span>
+        }
+<span class="nc" id="L618">        catch (CloneNotSupportedException e) {</span>
+<span class="nc" id="L619">            fail(&quot;Cloning failed.&quot;);</span>
+<span class="nc" id="L620">            return;</span>
+<span class="fc" id="L621">        }</span>
+<span class="pc bpc" id="L622" title="1 of 2 branches missed.">        assertTrue(p1 != p2);</span>
+<span class="pc bpc" id="L623" title="1 of 2 branches missed.">        assertTrue(p1.getClass() == p2.getClass());</span>
+<span class="fc" id="L624">        assertTrue(p1.equals(p2));</span>
+
+        // check for independence
+<span class="fc" id="L627">        LineAndShapeRenderer r2 = (LineAndShapeRenderer) p2.getRenderer();</span>
+<span class="pc bpc" id="L628" title="1 of 2 branches missed.">        assertTrue(r2.getPlot() == p2);</span>
+<span class="fc" id="L629">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    @Test
+    public void testSerialization() {
+<span class="fc" id="L636">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L637">        CategoryAxis domainAxis = new CategoryAxis(&quot;Domain&quot;);</span>
+<span class="fc" id="L638">        NumberAxis rangeAxis = new NumberAxis(&quot;Range&quot;);</span>
+<span class="fc" id="L639">        BarRenderer renderer = new BarRenderer();</span>
+<span class="fc" id="L640">        CategoryPlot p1 = new CategoryPlot(dataset, domainAxis, rangeAxis,</span>
+                renderer);
+<span class="fc" id="L642">        p1.setOrientation(PlotOrientation.HORIZONTAL);</span>
+<span class="fc" id="L643">        CategoryPlot p2 = (CategoryPlot) TestUtilities.serialised(p1);</span>
+<span class="fc" id="L644">        assertTrue(p1.equals(p2));</span>
+<span class="fc" id="L645">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    @Test
+    public void testSerialization2() {
+<span class="fc" id="L652">        DefaultCategoryDataset data = new DefaultCategoryDataset();</span>
+<span class="fc" id="L653">        CategoryAxis domainAxis = new CategoryAxis(&quot;Domain&quot;);</span>
+<span class="fc" id="L654">        NumberAxis rangeAxis = new NumberAxis(&quot;Range&quot;);</span>
+<span class="fc" id="L655">        BarRenderer renderer = new BarRenderer();</span>
+<span class="fc" id="L656">        CategoryPlot p1 = new CategoryPlot(data, domainAxis, rangeAxis,</span>
+                renderer);
+<span class="fc" id="L658">        p1.setOrientation(PlotOrientation.VERTICAL);</span>
+<span class="fc" id="L659">        CategoryPlot p2 = (CategoryPlot) TestUtilities.serialised(p1);</span>
+<span class="fc" id="L660">        assertEquals(p1, p2);</span>
+<span class="fc" id="L661">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    @Test
+    public void testSerialization3() {
+<span class="fc" id="L668">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L669">        JFreeChart chart = ChartFactory.createBarChart(</span>
+                &quot;Test Chart&quot;, &quot;Category Axis&quot;, &quot;Value Axis&quot;, dataset,
+                PlotOrientation.VERTICAL, true, true, false);
+<span class="fc" id="L672">        JFreeChart chart2 = (JFreeChart) TestUtilities.serialised(chart);</span>
+
+        // now check that the chart is usable...
+        try {
+<span class="fc" id="L676">            chart2.createBufferedImage(300, 200);</span>
+        }
+<span class="nc" id="L678">        catch (Exception e) {</span>
+<span class="nc" id="L679">            fail(&quot;No exception should be thrown.&quot;);</span>
+<span class="fc" id="L680">        }</span>
+<span class="fc" id="L681">    }</span>
+
+    /**
+     * This test ensures that a plot with markers is serialized correctly.
+     */
+    @Test
+    public void testSerialization4() {
+<span class="fc" id="L688">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L689">        JFreeChart chart = ChartFactory.createBarChart(</span>
+                &quot;Test Chart&quot;, &quot;Category Axis&quot;, &quot;Value Axis&quot;,
+                dataset, PlotOrientation.VERTICAL, true, true, false);
+<span class="fc" id="L692">        CategoryPlot plot = (CategoryPlot) chart.getPlot();</span>
+<span class="fc" id="L693">        plot.addRangeMarker(new ValueMarker(1.1), Layer.FOREGROUND);</span>
+<span class="fc" id="L694">        plot.addRangeMarker(new IntervalMarker(2.2, 3.3), Layer.BACKGROUND);</span>
+<span class="fc" id="L695">        JFreeChart chart2 = (JFreeChart) TestUtilities.serialised(chart);</span>
+<span class="fc" id="L696">        assertEquals(chart, chart2);</span>
+
+        // now check that the chart is usable...
+        try {
+<span class="fc" id="L700">            chart2.createBufferedImage(300, 200);</span>
+        }
+<span class="nc" id="L702">        catch (Exception e) {</span>
+<span class="nc" id="L703">            fail(&quot;No exception should be thrown.&quot;);</span>
+<span class="fc" id="L704">        }</span>
+<span class="fc" id="L705">    }</span>
+
+    /**
+     * Tests a bug where the plot is no longer registered as a listener
+     * with the dataset(s) and axes after deserialization.  See patch 1209475
+     * at SourceForge.
+     */
+    @Test
+    public void testSerialization5() {
+<span class="fc" id="L714">        DefaultCategoryDataset dataset1 = new DefaultCategoryDataset();</span>
+<span class="fc" id="L715">        CategoryAxis domainAxis1 = new CategoryAxis(&quot;Domain 1&quot;);</span>
+<span class="fc" id="L716">        NumberAxis rangeAxis1 = new NumberAxis(&quot;Range 1&quot;);</span>
+<span class="fc" id="L717">        BarRenderer renderer1 = new BarRenderer();</span>
+<span class="fc" id="L718">        CategoryPlot p1 = new CategoryPlot(dataset1, domainAxis1, rangeAxis1,</span>
+                renderer1);
+<span class="fc" id="L720">        CategoryAxis domainAxis2 = new CategoryAxis(&quot;Domain 2&quot;);</span>
+<span class="fc" id="L721">        NumberAxis rangeAxis2 = new NumberAxis(&quot;Range 2&quot;);</span>
+<span class="fc" id="L722">        BarRenderer renderer2 = new BarRenderer();</span>
+<span class="fc" id="L723">        DefaultCategoryDataset dataset2 = new DefaultCategoryDataset();</span>
+<span class="fc" id="L724">        p1.setDataset(1, dataset2);</span>
+<span class="fc" id="L725">        p1.setDomainAxis(1, domainAxis2);</span>
+<span class="fc" id="L726">        p1.setRangeAxis(1, rangeAxis2);</span>
+<span class="fc" id="L727">        p1.setRenderer(1, renderer2);</span>
+<span class="fc" id="L728">        CategoryPlot p2 = (CategoryPlot) TestUtilities.serialised(p1);</span>
+<span class="fc" id="L729">        assertEquals(p1, p2);</span>
+
+        // now check that all datasets, renderers and axes are being listened
+        // too...
+<span class="fc" id="L733">        CategoryAxis domainAxisA = p2.getDomainAxis(0);</span>
+<span class="fc" id="L734">        NumberAxis rangeAxisA = (NumberAxis) p2.getRangeAxis(0);</span>
+<span class="fc" id="L735">        DefaultCategoryDataset datasetA</span>
+<span class="fc" id="L736">                = (DefaultCategoryDataset) p2.getDataset(0);</span>
+<span class="fc" id="L737">        BarRenderer rendererA = (BarRenderer) p2.getRenderer(0);</span>
+<span class="fc" id="L738">        CategoryAxis domainAxisB = p2.getDomainAxis(1);</span>
+<span class="fc" id="L739">        NumberAxis rangeAxisB = (NumberAxis) p2.getRangeAxis(1);</span>
+<span class="fc" id="L740">        DefaultCategoryDataset datasetB</span>
+<span class="fc" id="L741">                = (DefaultCategoryDataset) p2.getDataset(1);</span>
+<span class="fc" id="L742">        BarRenderer rendererB  = (BarRenderer) p2.getRenderer(1);</span>
+<span class="fc" id="L743">        assertTrue(datasetA.hasListener(p2));</span>
+<span class="fc" id="L744">        assertTrue(domainAxisA.hasListener(p2));</span>
+<span class="fc" id="L745">        assertTrue(rangeAxisA.hasListener(p2));</span>
+<span class="fc" id="L746">        assertTrue(rendererA.hasListener(p2));</span>
+<span class="fc" id="L747">        assertTrue(datasetB.hasListener(p2));</span>
+<span class="fc" id="L748">        assertTrue(domainAxisB.hasListener(p2));</span>
+<span class="fc" id="L749">        assertTrue(rangeAxisB.hasListener(p2));</span>
+<span class="fc" id="L750">        assertTrue(rendererB.hasListener(p2));</span>
+<span class="fc" id="L751">    }</span>
+
+    /**
+     * A test for a bug where setting the renderer doesn't register the plot
+     * as a RendererChangeListener.
+     */
+    @Test
+    public void testSetRenderer() {
+<span class="fc" id="L759">        CategoryPlot plot = new CategoryPlot();</span>
+<span class="fc" id="L760">        CategoryItemRenderer renderer = new LineAndShapeRenderer();</span>
+<span class="fc" id="L761">        plot.setRenderer(renderer);</span>
+        // now make a change to the renderer and see if it triggers a plot
+        // change event...
+<span class="fc" id="L764">        MyPlotChangeListener listener = new MyPlotChangeListener();</span>
+<span class="fc" id="L765">        plot.addChangeListener(listener);</span>
+<span class="fc" id="L766">        renderer.setSeriesPaint(0, Color.black);</span>
+<span class="pc bpc" id="L767" title="1 of 2 branches missed.">        assertTrue(listener.getEvent() != null);</span>
+<span class="fc" id="L768">    }</span>
+
+    /**
+     * A test for bug report 1169972.
+     */
+    @Test
+    public void test1169972() {
+<span class="fc" id="L775">        CategoryPlot plot = new CategoryPlot(null, null, null, null);</span>
+<span class="fc" id="L776">        plot.setDomainAxis(new CategoryAxis(&quot;C&quot;));</span>
+<span class="fc" id="L777">        plot.setRangeAxis(new NumberAxis(&quot;Y&quot;));</span>
+<span class="fc" id="L778">        plot.setRenderer(new BarRenderer());</span>
+<span class="fc" id="L779">        plot.setDataset(new DefaultCategoryDataset());</span>
+<span class="fc" id="L780">        assertTrue(true); // we didn't get an exception so all is good</span>
+<span class="fc" id="L781">    }</span>
+
+    /**
+     * Some tests for the addDomainMarker() method(s).
+     */
+    @Test
+    public void testAddDomainMarker() {
+<span class="fc" id="L788">        CategoryPlot plot = new CategoryPlot();</span>
+<span class="fc" id="L789">        CategoryMarker m = new CategoryMarker(&quot;C1&quot;);</span>
+<span class="fc" id="L790">        plot.addDomainMarker(m);</span>
+<span class="fc" id="L791">        List listeners = Arrays.asList(m.getListeners(</span>
+                MarkerChangeListener.class));
+<span class="fc" id="L793">        assertTrue(listeners.contains(plot));</span>
+<span class="fc" id="L794">        plot.clearDomainMarkers();</span>
+<span class="fc" id="L795">        listeners = Arrays.asList(m.getListeners(MarkerChangeListener.class));</span>
+<span class="fc" id="L796">        assertFalse(listeners.contains(plot));</span>
+<span class="fc" id="L797">    }</span>
+
+    /**
+     * Some tests for the addRangeMarker() method(s).
+     */
+    @Test
+    public void testAddRangeMarker() {
+<span class="fc" id="L804">        CategoryPlot plot = new CategoryPlot();</span>
+<span class="fc" id="L805">        Marker m = new ValueMarker(1.0);</span>
+<span class="fc" id="L806">        plot.addRangeMarker(m);</span>
+<span class="fc" id="L807">        List listeners = Arrays.asList(m.getListeners(</span>
+                MarkerChangeListener.class));
+<span class="fc" id="L809">        assertTrue(listeners.contains(plot));</span>
+<span class="fc" id="L810">        plot.clearRangeMarkers();</span>
+<span class="fc" id="L811">        listeners = Arrays.asList(m.getListeners(MarkerChangeListener.class));</span>
+<span class="fc" id="L812">        assertFalse(listeners.contains(plot));</span>
+<span class="fc" id="L813">    }</span>
+
+    /**
+     * A test for bug 1654215 (where a renderer is added to the plot without
+     * a corresponding dataset and it throws an exception at drawing time).
+     */
+    @Test
+    public void test1654215() {
+<span class="fc" id="L821">        DefaultCategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L822">        JFreeChart chart = ChartFactory.createLineChart(&quot;Title&quot;, &quot;X&quot;, &quot;Y&quot;,</span>
+                dataset, PlotOrientation.VERTICAL, true, false, false);
+<span class="fc" id="L824">        CategoryPlot plot = (CategoryPlot) chart.getPlot();</span>
+<span class="fc" id="L825">        plot.setRenderer(1, new LineAndShapeRenderer());</span>
+        try {
+<span class="fc" id="L827">            BufferedImage image = new BufferedImage(200 , 100,</span>
+                    BufferedImage.TYPE_INT_RGB);
+<span class="fc" id="L829">            Graphics2D g2 = image.createGraphics();</span>
+<span class="fc" id="L830">            chart.draw(g2, new Rectangle2D.Double(0, 0, 200, 100), null, null);</span>
+<span class="fc" id="L831">            g2.dispose();</span>
+        }
+<span class="nc" id="L833">        catch (Exception e) {</span>
+<span class="nc" id="L834">            fail(&quot;No exception should be thrown.&quot;);</span>
+<span class="fc" id="L835">        }</span>
+<span class="fc" id="L836">    }</span>
+
+    /**
+     * Some checks for the getDomainAxisIndex() method.
+     */
+    @Test
+    public void testGetDomainAxisIndex() {
+<span class="fc" id="L843">        CategoryAxis domainAxis1 = new CategoryAxis(&quot;X1&quot;);</span>
+<span class="fc" id="L844">        CategoryAxis domainAxis2 = new CategoryAxis(&quot;X2&quot;);</span>
+<span class="fc" id="L845">        NumberAxis rangeAxis1 = new NumberAxis(&quot;Y1&quot;);</span>
+<span class="fc" id="L846">        CategoryPlot plot = new CategoryPlot(null, domainAxis1, rangeAxis1,</span>
+                null);
+<span class="fc" id="L848">        assertEquals(0, plot.getDomainAxisIndex(domainAxis1));</span>
+<span class="fc" id="L849">        assertEquals(-1, plot.getDomainAxisIndex(domainAxis2));</span>
+<span class="fc" id="L850">        plot.setDomainAxis(1, domainAxis2);</span>
+<span class="fc" id="L851">        assertEquals(1, plot.getDomainAxisIndex(domainAxis2));</span>
+<span class="fc" id="L852">        assertEquals(-1, plot.getDomainAxisIndex(new CategoryAxis(&quot;X2&quot;)));</span>
+<span class="fc" id="L853">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L855">            plot.getDomainAxisIndex(null);</span>
+        }
+<span class="fc" id="L857">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L858">            pass = true;</span>
+<span class="nc" id="L859">        }</span>
+<span class="fc" id="L860">        assertTrue(pass);</span>
+<span class="fc" id="L861">    }</span>
+
+    /**
+     * Some checks for the getRangeAxisIndex() method.
+     */
+    @Test
+    public void testGetRangeAxisIndex() {
+<span class="fc" id="L868">        CategoryAxis domainAxis1 = new CategoryAxis(&quot;X1&quot;);</span>
+<span class="fc" id="L869">        NumberAxis rangeAxis1 = new NumberAxis(&quot;Y1&quot;);</span>
+<span class="fc" id="L870">        NumberAxis rangeAxis2 = new NumberAxis(&quot;Y2&quot;);</span>
+<span class="fc" id="L871">        CategoryPlot plot = new CategoryPlot(null, domainAxis1, rangeAxis1,</span>
+                null);
+<span class="fc" id="L873">        assertEquals(0, plot.getRangeAxisIndex(rangeAxis1));</span>
+<span class="fc" id="L874">        assertEquals(-1, plot.getRangeAxisIndex(rangeAxis2));</span>
+<span class="fc" id="L875">        plot.setRangeAxis(1, rangeAxis2);</span>
+<span class="fc" id="L876">        assertEquals(1, plot.getRangeAxisIndex(rangeAxis2));</span>
+<span class="fc" id="L877">        assertEquals(-1, plot.getRangeAxisIndex(new NumberAxis(&quot;Y2&quot;)));</span>
+<span class="fc" id="L878">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L880">            plot.getRangeAxisIndex(null);</span>
+        }
+<span class="fc" id="L882">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L883">            pass = true;</span>
+<span class="nc" id="L884">        }</span>
+<span class="fc" id="L885">        assertTrue(pass);</span>
+<span class="fc" id="L886">    }</span>
+
+    /**
+     * Check that removing a marker that isn't assigned to the plot returns
+     * false.
+     */
+    @Test
+    public void testRemoveDomainMarker() {
+<span class="fc" id="L894">        CategoryPlot plot = new CategoryPlot();</span>
+<span class="fc" id="L895">        assertFalse(plot.removeDomainMarker(new CategoryMarker(&quot;Category 1&quot;)));</span>
+<span class="fc" id="L896">    }</span>
+
+    /**
+     * Check that removing a marker that isn't assigned to the plot returns
+     * false.
+     */
+    @Test
+    public void testRemoveRangeMarker() {
+<span class="fc" id="L904">        CategoryPlot plot = new CategoryPlot();</span>
+<span class="fc" id="L905">        assertFalse(plot.removeRangeMarker(new ValueMarker(0.5)));</span>
+<span class="fc" id="L906">    }</span>
+
+    /**
+     * Some tests for the getDomainAxisForDataset() method.
+     */
+    @Test
+    public void testGetDomainAxisForDataset() {
+<span class="fc" id="L913">        CategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L914">        CategoryAxis xAxis = new CategoryAxis(&quot;X&quot;);</span>
+<span class="fc" id="L915">        NumberAxis yAxis = new NumberAxis(&quot;Y&quot;);</span>
+<span class="fc" id="L916">        CategoryItemRenderer renderer = new BarRenderer();</span>
+<span class="fc" id="L917">        CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);</span>
+<span class="fc" id="L918">        assertEquals(xAxis, plot.getDomainAxisForDataset(0));</span>
+
+        // should get IllegalArgumentException for negative index
+<span class="fc" id="L921">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L923">            plot.getDomainAxisForDataset(-1);</span>
+        }
+<span class="fc" id="L925">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L926">            pass = true;</span>
+<span class="nc" id="L927">        }</span>
+<span class="fc" id="L928">        assertTrue(pass);</span>
+
+        // if multiple axes are mapped, the first in the list should be
+        // returned...
+<span class="fc" id="L932">        CategoryAxis xAxis2 = new CategoryAxis(&quot;X2&quot;);</span>
+<span class="fc" id="L933">        plot.setDomainAxis(1, xAxis2);</span>
+<span class="fc" id="L934">        assertEquals(xAxis, plot.getDomainAxisForDataset(0));</span>
+
+<span class="fc" id="L936">        plot.mapDatasetToDomainAxis(0, 1);</span>
+<span class="fc" id="L937">        assertEquals(xAxis2, plot.getDomainAxisForDataset(0));</span>
+
+<span class="fc" id="L939">        List axisIndices = Arrays.asList(new Integer[] {new Integer(0),</span>
+                new Integer(1)});
+<span class="fc" id="L941">        plot.mapDatasetToDomainAxes(0, axisIndices);</span>
+<span class="fc" id="L942">        assertEquals(xAxis, plot.getDomainAxisForDataset(0));</span>
+
+<span class="fc" id="L944">        axisIndices = Arrays.asList(new Integer[] {new Integer(1),</span>
+                new Integer(2)});
+<span class="fc" id="L946">        plot.mapDatasetToDomainAxes(0, axisIndices);</span>
+<span class="fc" id="L947">        assertEquals(xAxis2, plot.getDomainAxisForDataset(0));</span>
+<span class="fc" id="L948">    }</span>
+
+    /**
+     * Some tests for the getRangeAxisForDataset() method.
+     */
+    @Test
+    public void testGetRangeAxisForDataset() {
+<span class="fc" id="L955">        CategoryDataset dataset = new DefaultCategoryDataset();</span>
+<span class="fc" id="L956">        CategoryAxis xAxis = new CategoryAxis(&quot;X&quot;);</span>
+<span class="fc" id="L957">        NumberAxis yAxis = new NumberAxis(&quot;Y&quot;);</span>
+<span class="fc" id="L958">        CategoryItemRenderer renderer = new DefaultCategoryItemRenderer();</span>
+<span class="fc" id="L959">        CategoryPlot plot = new CategoryPlot(dataset, xAxis, yAxis, renderer);</span>
+<span class="fc" id="L960">        assertEquals(yAxis, plot.getRangeAxisForDataset(0));</span>
+
+        // should get IllegalArgumentException for negative index
+<span class="fc" id="L963">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L965">            plot.getRangeAxisForDataset(-1);</span>
+        }
+<span class="fc" id="L967">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L968">            pass = true;</span>
+<span class="nc" id="L969">        }</span>
+<span class="fc" id="L970">        assertTrue(pass);</span>
+
+        // if multiple axes are mapped, the first in the list should be
+        // returned...
+<span class="fc" id="L974">        NumberAxis yAxis2 = new NumberAxis(&quot;Y2&quot;);</span>
+<span class="fc" id="L975">        plot.setRangeAxis(1, yAxis2);</span>
+<span class="fc" id="L976">        assertEquals(yAxis, plot.getRangeAxisForDataset(0));</span>
+
+<span class="fc" id="L978">        plot.mapDatasetToRangeAxis(0, 1);</span>
+<span class="fc" id="L979">        assertEquals(yAxis2, plot.getRangeAxisForDataset(0));</span>
+
+<span class="fc" id="L981">        List axisIndices = Arrays.asList(new Integer[] {new Integer(0),</span>
+                new Integer(1)});
+<span class="fc" id="L983">        plot.mapDatasetToRangeAxes(0, axisIndices);</span>
+<span class="fc" id="L984">        assertEquals(yAxis, plot.getRangeAxisForDataset(0));</span>
+
+<span class="fc" id="L986">        axisIndices = Arrays.asList(new Integer[] {new Integer(1),</span>
+                new Integer(2)});
+<span class="fc" id="L988">        plot.mapDatasetToRangeAxes(0, axisIndices);</span>
+<span class="fc" id="L989">        assertEquals(yAxis2, plot.getRangeAxisForDataset(0));</span>
+<span class="fc" id="L990">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

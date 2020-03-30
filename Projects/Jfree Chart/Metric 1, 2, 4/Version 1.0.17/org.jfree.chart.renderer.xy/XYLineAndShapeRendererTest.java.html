@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XYLineAndShapeRendererTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.renderer.xy</a> &gt; <span class="el_source">XYLineAndShapeRendererTest.java</span></div><h1>XYLineAndShapeRendererTest.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------------
+ * XYLineAndShapeRendererTest.java
+ * -------------------------------
+ * (C) Copyright 2004-2013, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 27-Jan-2004 : Version 1 (DG);
+ * 07-Jan-2005 : Added check for findRangeBounds() method (DG);
+ * 21-Feb-2007 : Check independence in testCloning() (DG);
+ * 17-May-2007 : Added testGetLegendItemSeriesIndex() (DG);
+ * 22-Apr-2008 : Added testPublicCloneable() (DG);
+ *
+ */
+
+package org.jfree.chart.renderer.xy;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+
+import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.TestUtilities;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.urls.TimeSeriesURLGenerator;
+import org.jfree.data.Range;
+import org.jfree.data.xy.TableXYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.util.PublicCloneable;
+import org.junit.Test;
+
+/**
+ * Tests for the {@link XYLineAndShapeRenderer} class.
+ */
+<span class="fc" id="L72">public class XYLineAndShapeRendererTest {</span>
+
+    /**
+     * Test that the equals() method distinguishes all fields.
+     */
+    @Test
+    public void testEquals() {
+
+<span class="fc" id="L80">        XYLineAndShapeRenderer r1 = new XYLineAndShapeRenderer();</span>
+<span class="fc" id="L81">        XYLineAndShapeRenderer r2 = new XYLineAndShapeRenderer();</span>
+<span class="fc" id="L82">        assertEquals(r1, r2);</span>
+<span class="fc" id="L83">        assertEquals(r2, r1);</span>
+
+<span class="fc" id="L85">        r1.setLinesVisible(true);</span>
+<span class="fc" id="L86">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L87">        r2.setLinesVisible(true);</span>
+<span class="fc" id="L88">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L90">        r1.setSeriesLinesVisible(3, true);</span>
+<span class="fc" id="L91">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L92">        r2.setSeriesLinesVisible(3, true);</span>
+<span class="fc" id="L93">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L95">        r1.setBaseLinesVisible(false);</span>
+<span class="fc" id="L96">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L97">        r2.setBaseLinesVisible(false);</span>
+<span class="fc" id="L98">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L100">        r1.setLegendLine(new Line2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L101">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L102">        r2.setLegendLine(new Line2D.Double(1.0, 2.0, 3.0, 4.0));</span>
+<span class="fc" id="L103">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L105">        r1.setShapesVisible(true);</span>
+<span class="fc" id="L106">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L107">        r2.setShapesVisible(true);</span>
+<span class="fc" id="L108">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L110">        r1.setSeriesShapesVisible(3, true);</span>
+<span class="fc" id="L111">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L112">        r2.setSeriesShapesVisible(3, true);</span>
+<span class="fc" id="L113">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L115">        r1.setBaseShapesVisible(false);</span>
+<span class="fc" id="L116">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L117">        r2.setBaseShapesVisible(false);</span>
+<span class="fc" id="L118">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L120">        r1.setShapesFilled(true);</span>
+<span class="fc" id="L121">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L122">        r2.setShapesFilled(true);</span>
+<span class="fc" id="L123">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L125">        r1.setSeriesShapesFilled(3, true);</span>
+<span class="fc" id="L126">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L127">        r2.setSeriesShapesFilled(3, true);</span>
+<span class="fc" id="L128">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L130">        r1.setBaseShapesFilled(false);</span>
+<span class="fc" id="L131">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L132">        r2.setBaseShapesFilled(false);</span>
+<span class="fc" id="L133">        assertTrue(r1.equals(r2));</span>
+
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">        r1.setDrawOutlines(!r1.getDrawOutlines());</span>
+<span class="fc" id="L136">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L137">        r2.setDrawOutlines(r1.getDrawOutlines());</span>
+<span class="fc" id="L138">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L140">        r1.setUseOutlinePaint(true);</span>
+<span class="fc" id="L141">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L142">        r2.setUseOutlinePaint(true);</span>
+<span class="fc" id="L143">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L145">        r1.setUseFillPaint(true);</span>
+<span class="fc" id="L146">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L147">        r2.setUseFillPaint(true);</span>
+<span class="fc" id="L148">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L150">        r1.setDrawSeriesLineAsPath(true);</span>
+<span class="fc" id="L151">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L152">        r2.setDrawSeriesLineAsPath(true);</span>
+<span class="fc" id="L153">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L154">    }</span>
+
+    /**
+     * Test that the equals() method works for a TimeSeriesURLGenerator.
+     */
+    @Test
+    public void testEquals2() {
+<span class="fc" id="L161">        XYLineAndShapeRenderer r1 = new XYLineAndShapeRenderer();</span>
+<span class="fc" id="L162">        XYLineAndShapeRenderer r2 = new XYLineAndShapeRenderer();</span>
+<span class="fc" id="L163">        assertEquals(r1, r2);</span>
+<span class="fc" id="L164">        assertEquals(r2, r1);</span>
+
+<span class="fc" id="L166">        r1.setURLGenerator(new TimeSeriesURLGenerator());</span>
+<span class="fc" id="L167">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L168">        r2.setURLGenerator(new TimeSeriesURLGenerator());</span>
+<span class="fc" id="L169">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L170">    }</span>
+
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    @Test
+    public void testHashcode() {
+<span class="fc" id="L178">        XYLineAndShapeRenderer r1 = new XYLineAndShapeRenderer();</span>
+<span class="fc" id="L179">        XYLineAndShapeRenderer r2 = new XYLineAndShapeRenderer();</span>
+<span class="fc" id="L180">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L181">        int h1 = r1.hashCode();</span>
+<span class="fc" id="L182">        int h2 = r2.hashCode();</span>
+<span class="fc" id="L183">        assertEquals(h1, h2);</span>
+<span class="fc" id="L184">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    @Test
+    public void testCloning() throws CloneNotSupportedException {
+<span class="fc" id="L191">        Rectangle2D legendShape = new Rectangle2D.Double(1.0, 2.0, 3.0, 4.0);</span>
+<span class="fc" id="L192">        XYLineAndShapeRenderer r1 = new XYLineAndShapeRenderer();</span>
+<span class="fc" id="L193">        r1.setLegendLine(legendShape);</span>
+<span class="fc" id="L194">        XYLineAndShapeRenderer r2 = (XYLineAndShapeRenderer) r1.clone();</span>
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">        assertTrue(r1 != r2);</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">        assertTrue(r1.getClass() == r2.getClass());</span>
+<span class="fc" id="L197">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L199">        r1.setSeriesLinesVisible(0, false);</span>
+<span class="fc" id="L200">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L201">        r2.setSeriesLinesVisible(0, false);</span>
+<span class="fc" id="L202">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L204">        legendShape.setRect(4.0, 3.0, 2.0, 1.0);</span>
+<span class="fc" id="L205">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L206">        r2.setLegendLine(new Rectangle2D.Double(4.0, 3.0, 2.0, 1.0));</span>
+<span class="fc" id="L207">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L209">        r1.setSeriesShapesVisible(1, true);</span>
+<span class="fc" id="L210">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L211">        r2.setSeriesShapesVisible(1, true);</span>
+<span class="fc" id="L212">        assertTrue(r1.equals(r2));</span>
+
+<span class="fc" id="L214">        r1.setSeriesShapesFilled(1, true);</span>
+<span class="fc" id="L215">        assertFalse(r1.equals(r2));</span>
+<span class="fc" id="L216">        r2.setSeriesShapesFilled(1, true);</span>
+<span class="fc" id="L217">        assertTrue(r1.equals(r2));</span>
+<span class="fc" id="L218">    }</span>
+
+    /**
+     * Verify that this class implements {@link PublicCloneable}.
+     */
+    @Test
+    public void testPublicCloneable() {
+<span class="fc" id="L225">        XYLineAndShapeRenderer r1 = new XYLineAndShapeRenderer();</span>
+<span class="fc" id="L226">        assertTrue(r1 instanceof PublicCloneable);</span>
+<span class="fc" id="L227">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    @Test
+    public void testSerialization() {
+<span class="fc" id="L234">        XYLineAndShapeRenderer r1 = new XYLineAndShapeRenderer();</span>
+<span class="fc" id="L235">        XYLineAndShapeRenderer r2 = (XYLineAndShapeRenderer) </span>
+<span class="fc" id="L236">                TestUtilities.serialised(r1);</span>
+<span class="fc" id="L237">        assertEquals(r1, r2);</span>
+<span class="fc" id="L238">    }</span>
+
+    /**
+     * Check that the renderer is calculating the domain bounds correctly.
+     */
+    @Test
+    public void testFindDomainBounds() {
+        XYSeriesCollection dataset
+<span class="fc" id="L246">                = RendererXYPackageUtils.createTestXYSeriesCollection();</span>
+<span class="fc" id="L247">        JFreeChart chart = ChartFactory.createXYLineChart(</span>
+                &quot;Test Chart&quot;, &quot;X&quot;, &quot;Y&quot;, dataset, PlotOrientation.VERTICAL,
+                false, false, false);
+<span class="fc" id="L250">        XYPlot plot = (XYPlot) chart.getPlot();</span>
+<span class="fc" id="L251">        NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();</span>
+<span class="fc" id="L252">        domainAxis.setAutoRangeIncludesZero(false);</span>
+<span class="fc" id="L253">        Range bounds = domainAxis.getRange();</span>
+<span class="fc" id="L254">        assertFalse(bounds.contains(0.9));</span>
+<span class="fc" id="L255">        assertTrue(bounds.contains(1.0));</span>
+<span class="fc" id="L256">        assertTrue(bounds.contains(2.0));</span>
+<span class="fc" id="L257">        assertFalse(bounds.contains(2.10));</span>
+<span class="fc" id="L258">    }</span>
+
+    /**
+     * Check that the renderer is calculating the range bounds correctly.
+     */
+    @Test
+    public void testFindRangeBounds() {
+        TableXYDataset dataset
+<span class="fc" id="L266">                = RendererXYPackageUtils.createTestTableXYDataset();</span>
+<span class="fc" id="L267">        JFreeChart chart = ChartFactory.createXYLineChart(</span>
+                &quot;Test Chart&quot;, &quot;X&quot;, &quot;Y&quot;, dataset, PlotOrientation.VERTICAL,
+                false, false, false);
+<span class="fc" id="L270">        XYPlot plot = (XYPlot) chart.getPlot();</span>
+<span class="fc" id="L271">        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();</span>
+<span class="fc" id="L272">        rangeAxis.setAutoRangeIncludesZero(false);</span>
+<span class="fc" id="L273">        Range bounds = rangeAxis.getRange();</span>
+<span class="fc" id="L274">        assertFalse(bounds.contains(1.0));</span>
+<span class="fc" id="L275">        assertTrue(bounds.contains(2.0));</span>
+<span class="fc" id="L276">        assertTrue(bounds.contains(5.0));</span>
+<span class="fc" id="L277">        assertFalse(bounds.contains(6.0));</span>
+<span class="fc" id="L278">    }</span>
+
+    /**
+     * A check for the datasetIndex and seriesIndex fields in the LegendItem
+     * returned by the getLegendItem() method.
+     */
+    @Test
+    public void testGetLegendItemSeriesIndex() {
+<span class="fc" id="L286">        XYSeriesCollection d1 = new XYSeriesCollection();</span>
+<span class="fc" id="L287">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L288">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L289">        XYSeries s2 = new XYSeries(&quot;S2&quot;);</span>
+<span class="fc" id="L290">        s2.add(1.0, 1.1);</span>
+<span class="fc" id="L291">        d1.addSeries(s1);</span>
+<span class="fc" id="L292">        d1.addSeries(s2);</span>
+
+<span class="fc" id="L294">        XYSeriesCollection d2 = new XYSeriesCollection();</span>
+<span class="fc" id="L295">        XYSeries s3 = new XYSeries(&quot;S3&quot;);</span>
+<span class="fc" id="L296">        s3.add(1.0, 1.1);</span>
+<span class="fc" id="L297">        XYSeries s4 = new XYSeries(&quot;S4&quot;);</span>
+<span class="fc" id="L298">        s4.add(1.0, 1.1);</span>
+<span class="fc" id="L299">        XYSeries s5 = new XYSeries(&quot;S5&quot;);</span>
+<span class="fc" id="L300">        s5.add(1.0, 1.1);</span>
+<span class="fc" id="L301">        d2.addSeries(s3);</span>
+<span class="fc" id="L302">        d2.addSeries(s4);</span>
+<span class="fc" id="L303">        d2.addSeries(s5);</span>
+
+<span class="fc" id="L305">        XYLineAndShapeRenderer r = new XYLineAndShapeRenderer();</span>
+<span class="fc" id="L306">        XYPlot plot = new XYPlot(d1, new NumberAxis(&quot;x&quot;),</span>
+                new NumberAxis(&quot;y&quot;), r);
+<span class="fc" id="L308">        plot.setDataset(1, d2);</span>
+<span class="fc" id="L309">        /*JFreeChart chart =*/ new JFreeChart(plot);</span>
+<span class="fc" id="L310">        LegendItem li = r.getLegendItem(1, 2);</span>
+<span class="fc" id="L311">        assertEquals(&quot;S5&quot;, li.getLabel());</span>
+<span class="fc" id="L312">        assertEquals(1, li.getDatasetIndex());</span>
+<span class="fc" id="L313">        assertEquals(2, li.getSeriesIndex());</span>
+<span class="fc" id="L314">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

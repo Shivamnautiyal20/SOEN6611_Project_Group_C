@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RelativeDateFormatTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.util</a> &gt; <span class="el_source">RelativeDateFormatTest.java</span></div><h1>RelativeDateFormatTest.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------------
+ * RelativeDateFormatTest.java
+ * ---------------------------
+ * (C) Copyright 2006-2013, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 23-Nov-2006 : Version 1 (DG);
+ * 15-Feb-2008 : Added tests for negative dates (DG);
+ * 01-Sep-2008 : Added a test for hours and minutes with leading zeroes (DG);
+ * 06-Oct-2011 : Fixed bug 3418287 (DG);
+ *
+ */
+
+package org.jfree.chart.util;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Date;
+import java.util.Locale;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
+
+/**
+ * Tests for the {@link RelativeDateFormat} class.
+ */
+<span class="fc" id="L60">public class RelativeDateFormatTest {</span>
+
+    private Locale savedLocale;
+
+    /**
+     * Set a known locale for the tests.
+     */
+    @Before
+    public void setUp() throws Exception {
+<span class="fc" id="L69">        this.savedLocale = Locale.getDefault();</span>
+<span class="fc" id="L70">        Locale.setDefault(Locale.UK);</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * Restore the default locale after the tests complete.
+     */
+    @After
+    public void tearDown() throws Exception {
+<span class="fc" id="L78">        Locale.setDefault(this.savedLocale);</span>
+<span class="fc" id="L79">    }</span>
+
+    /**
+     * Some checks for the formatting.
+     */
+    @Test
+    public void testFormat() {
+<span class="fc" id="L86">        RelativeDateFormat rdf = new RelativeDateFormat();</span>
+<span class="fc" id="L87">        String s = rdf.format(new Date(2 * 60L * 60L * 1000L + 122500L));</span>
+<span class="fc" id="L88">        assertEquals(&quot;2h2m2.500s&quot;, s);</span>
+<span class="fc" id="L89">    }</span>
+
+    /**
+     * Test that we can configure the RelativeDateFormat to show
+     * hh:mm:ss.
+     */
+    public void test2033092() {
+<span class="nc" id="L96">        RelativeDateFormat rdf = new RelativeDateFormat();</span>
+<span class="nc" id="L97">        rdf.setShowZeroDays(false);</span>
+<span class="nc" id="L98">        rdf.setShowZeroHours(false);</span>
+<span class="nc" id="L99">        rdf.setMinuteSuffix(&quot;:&quot;);</span>
+<span class="nc" id="L100">        rdf.setHourSuffix(&quot;:&quot;);</span>
+<span class="nc" id="L101">        rdf.setSecondSuffix(&quot;&quot;);</span>
+<span class="nc" id="L102">        DecimalFormat hoursFormatter = new DecimalFormat();</span>
+<span class="nc" id="L103">        hoursFormatter.setMaximumFractionDigits(0);</span>
+<span class="nc" id="L104">        hoursFormatter.setMaximumIntegerDigits(2);</span>
+<span class="nc" id="L105">        hoursFormatter.setMinimumIntegerDigits(2);</span>
+<span class="nc" id="L106">        rdf.setHourFormatter(hoursFormatter);</span>
+<span class="nc" id="L107">        DecimalFormat minsFormatter = new DecimalFormat();</span>
+<span class="nc" id="L108">        minsFormatter.setMaximumFractionDigits(0);</span>
+<span class="nc" id="L109">        minsFormatter.setMaximumIntegerDigits(2);</span>
+<span class="nc" id="L110">        minsFormatter.setMinimumIntegerDigits(2);</span>
+<span class="nc" id="L111">        rdf.setMinuteFormatter(minsFormatter);</span>
+<span class="nc" id="L112">        DecimalFormat secondsFormatter = new DecimalFormat();</span>
+<span class="nc" id="L113">        secondsFormatter.setMaximumFractionDigits(0);</span>
+<span class="nc" id="L114">        secondsFormatter.setMaximumIntegerDigits(2);</span>
+<span class="nc" id="L115">        secondsFormatter.setMinimumIntegerDigits(2);</span>
+<span class="nc" id="L116">        rdf.setSecondFormatter(secondsFormatter);</span>
+<span class="nc" id="L117">        String s = rdf.format(new Date(2 * 60L * 60L * 1000L + 122500L));</span>
+<span class="nc" id="L118">        assertEquals(&quot;02:02:02&quot;, s);</span>
+<span class="nc" id="L119">    }</span>
+
+    /**
+     * Check that the equals() method can distinguish all fields.
+     */
+    public void testEquals() {
+<span class="nc" id="L125">        RelativeDateFormat df1 = new RelativeDateFormat();</span>
+<span class="nc" id="L126">        RelativeDateFormat df2 = new RelativeDateFormat();</span>
+<span class="nc" id="L127">        assertEquals(df1, df2);</span>
+
+<span class="nc" id="L129">        df1.setBaseMillis(123L);</span>
+<span class="nc" id="L130">        assertFalse(df1.equals(df2));</span>
+<span class="nc" id="L131">        df2.setBaseMillis(123L);</span>
+<span class="nc" id="L132">        assertTrue(df1.equals(df2));</span>
+
+<span class="nc" id="L134">        df1.setDayFormatter(new DecimalFormat(&quot;0%&quot;));</span>
+<span class="nc" id="L135">        assertFalse(df1.equals(df2));</span>
+<span class="nc" id="L136">        df2.setDayFormatter(new DecimalFormat(&quot;0%&quot;));</span>
+<span class="nc" id="L137">        assertTrue(df1.equals(df2));</span>
+
+<span class="nc" id="L139">        df1.setDaySuffix(&quot;D&quot;);</span>
+<span class="nc" id="L140">        assertFalse(df1.equals(df2));</span>
+<span class="nc" id="L141">        df2.setDaySuffix(&quot;D&quot;);</span>
+<span class="nc" id="L142">        assertTrue(df1.equals(df2));</span>
+
+<span class="nc" id="L144">        df1.setHourFormatter(new DecimalFormat(&quot;0%&quot;));</span>
+<span class="nc" id="L145">        assertFalse(df1.equals(df2));</span>
+<span class="nc" id="L146">        df2.setHourFormatter(new DecimalFormat(&quot;0%&quot;));</span>
+<span class="nc" id="L147">        assertTrue(df1.equals(df2));</span>
+
+<span class="nc" id="L149">        df1.setHourSuffix(&quot;H&quot;);</span>
+<span class="nc" id="L150">        assertFalse(df1.equals(df2));</span>
+<span class="nc" id="L151">        df2.setHourSuffix(&quot;H&quot;);</span>
+<span class="nc" id="L152">        assertTrue(df1.equals(df2));</span>
+
+<span class="nc" id="L154">        df1.setMinuteFormatter(new DecimalFormat(&quot;0%&quot;));</span>
+<span class="nc" id="L155">        assertFalse(df1.equals(df2));</span>
+<span class="nc" id="L156">        df2.setMinuteFormatter(new DecimalFormat(&quot;0%&quot;));</span>
+<span class="nc" id="L157">        assertTrue(df1.equals(df2));</span>
+
+<span class="nc" id="L159">        df1.setMinuteSuffix(&quot;M&quot;);</span>
+<span class="nc" id="L160">        assertFalse(df1.equals(df2));</span>
+<span class="nc" id="L161">        df2.setMinuteSuffix(&quot;M&quot;);</span>
+<span class="nc" id="L162">        assertTrue(df1.equals(df2));</span>
+
+<span class="nc" id="L164">        df1.setSecondSuffix(&quot;S&quot;);</span>
+<span class="nc" id="L165">        assertFalse(df1.equals(df2));</span>
+<span class="nc" id="L166">        df2.setSecondSuffix(&quot;S&quot;);</span>
+<span class="nc" id="L167">        assertTrue(df1.equals(df2));</span>
+
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        df1.setShowZeroDays(!df1.getShowZeroDays());</span>
+<span class="nc" id="L170">        assertFalse(df1.equals(df2));</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        df2.setShowZeroDays(!df2.getShowZeroDays());</span>
+<span class="nc" id="L172">        assertTrue(df1.equals(df2));</span>
+
+<span class="nc" id="L174">        df1.setSecondFormatter(new DecimalFormat(&quot;0.0&quot;));</span>
+<span class="nc" id="L175">        assertFalse(df1.equals(df2));</span>
+<span class="nc" id="L176">        df2.setSecondFormatter(new DecimalFormat(&quot;0.0&quot;));</span>
+<span class="nc" id="L177">        assertTrue(df1.equals(df2));</span>
+<span class="nc" id="L178">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    public void testHashCode() {
+<span class="nc" id="L184">        RelativeDateFormat df1 = new RelativeDateFormat(123L);</span>
+<span class="nc" id="L185">        RelativeDateFormat df2 = new RelativeDateFormat(123L);</span>
+<span class="nc" id="L186">        assertTrue(df1.equals(df2));</span>
+<span class="nc" id="L187">        int h1 = df1.hashCode();</span>
+<span class="nc" id="L188">        int h2 = df2.hashCode();</span>
+<span class="nc" id="L189">        assertEquals(h1, h2);</span>
+<span class="nc" id="L190">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() {
+<span class="nc" id="L196">        NumberFormat nf = new DecimalFormat(&quot;0&quot;);</span>
+<span class="nc" id="L197">        RelativeDateFormat df1 = new RelativeDateFormat();</span>
+<span class="nc" id="L198">        df1.setSecondFormatter(nf);</span>
+<span class="nc" id="L199">        RelativeDateFormat df2 = null;</span>
+<span class="nc" id="L200">        df2 = (RelativeDateFormat) df1.clone();</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        assertTrue(df1 != df2);</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        assertTrue(df1.getClass() == df2.getClass());</span>
+<span class="nc" id="L203">        assertTrue(df1.equals(df2));</span>
+
+        // is the clone independent
+<span class="nc" id="L206">        nf.setMinimumFractionDigits(2);</span>
+<span class="nc" id="L207">        assertFalse(df1.equals(df2));</span>
+<span class="nc" id="L208">    }</span>
+
+    /**
+     * Some tests for negative dates.
+     */
+    public void testNegative() {
+<span class="nc" id="L214">        NumberFormat nf = new DecimalFormat(&quot;0&quot;);</span>
+<span class="nc" id="L215">        RelativeDateFormat df1 = new RelativeDateFormat();</span>
+<span class="nc" id="L216">        df1.setSecondFormatter(nf);</span>
+<span class="nc" id="L217">        assertEquals(&quot;-0h0m1s&quot;, df1.format(new Date(-1000L)));</span>
+<span class="nc" id="L218">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
