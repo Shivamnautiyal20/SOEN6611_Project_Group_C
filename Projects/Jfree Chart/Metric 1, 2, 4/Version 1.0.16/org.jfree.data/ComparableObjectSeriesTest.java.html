@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ComparableObjectSeriesTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data</a> &gt; <span class="el_source">ComparableObjectSeriesTest.java</span></div><h1>ComparableObjectSeriesTest.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -------------------------------
+ * ComparableObjectSeriesTest.java
+ * -------------------------------
+ * (C) Copyright 2006-2013, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 20-Oct-2006 : Version 1 (DG);
+ * 31-Oct-2007 : New hashCode() test (DG);
+ *
+ */
+
+package org.jfree.data;
+
+import org.jfree.chart.TestUtilities;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+
+/**
+ * Tests for the {@link ComparableObjectSeries} class.
+ */
+<span class="fc" id="L54">public class ComparableObjectSeriesTest {</span>
+
+    static class MyComparableObjectSeries extends ComparableObjectSeries {
+        /**
+         * Creates a new instance.
+         *
+         * @param key  the series key.
+         */
+        public MyComparableObjectSeries(Comparable key) {
+<span class="fc" id="L63">            super(key);</span>
+<span class="fc" id="L64">        }</span>
+        /**
+         * Creates a new instance.
+         *
+         * @param key  the series key.
+         * @param autoSort  automatically sort by x-value?
+         * @param allowDuplicateXValues  allow duplicate values?
+         */
+        public MyComparableObjectSeries(Comparable key, boolean autoSort,
+                boolean allowDuplicateXValues) {
+<span class="fc" id="L74">            super(key, autoSort, allowDuplicateXValues);</span>
+<span class="fc" id="L75">        }</span>
+        public void add(Comparable x, Object y) {
+<span class="fc" id="L77">            super.add(x, y);</span>
+<span class="fc" id="L78">        }</span>
+
+        public ComparableObjectItem remove(Comparable x) {
+<span class="fc" id="L81">            return super.remove(x);</span>
+        }
+    }
+
+    /**
+     * Some checks for the constructor.
+     */
+    @Test
+    public void testConstructor1() {
+<span class="fc" id="L90">        ComparableObjectSeries s1 = new ComparableObjectSeries(&quot;s1&quot;);</span>
+<span class="fc" id="L91">        assertEquals(&quot;s1&quot;, s1.getKey());</span>
+<span class="fc" id="L92">        assertNull(s1.getDescription());</span>
+<span class="fc" id="L93">        assertTrue(s1.getAllowDuplicateXValues());</span>
+<span class="fc" id="L94">        assertTrue(s1.getAutoSort());</span>
+<span class="fc" id="L95">        assertEquals(0, s1.getItemCount());</span>
+<span class="fc" id="L96">        assertEquals(Integer.MAX_VALUE, s1.getMaximumItemCount());</span>
+
+        // try null key
+<span class="fc" id="L99">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L101">            /*s1 = */new ComparableObjectSeries(null);</span>
+        }
+<span class="fc" id="L103">        catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L104">            pass = true;</span>
+<span class="nc" id="L105">        }</span>
+<span class="fc" id="L106">        assertTrue(pass);</span>
+<span class="fc" id="L107">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    @Test
+    public void testEquals() {
+<span class="fc" id="L114">        MyComparableObjectSeries s1 = new MyComparableObjectSeries(&quot;A&quot;);</span>
+<span class="fc" id="L115">        MyComparableObjectSeries s2 = new MyComparableObjectSeries(&quot;A&quot;);</span>
+<span class="fc" id="L116">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L117">        assertTrue(s2.equals(s1));</span>
+
+        // key
+<span class="fc" id="L120">        s1 = new MyComparableObjectSeries(&quot;B&quot;);</span>
+<span class="fc" id="L121">        assertNotEquals(s1, s2);</span>
+<span class="fc" id="L122">        s2 = new MyComparableObjectSeries(&quot;B&quot;);</span>
+<span class="fc" id="L123">        assertTrue(s1.equals(s2));</span>
+
+        // autoSort
+<span class="fc" id="L126">        s1 = new MyComparableObjectSeries(&quot;B&quot;, false, true);</span>
+<span class="fc" id="L127">        assertNotEquals(s1, s2);</span>
+<span class="fc" id="L128">        s2 = new MyComparableObjectSeries(&quot;B&quot;, false, true);</span>
+<span class="fc" id="L129">        assertTrue(s1.equals(s2));</span>
+
+        // allowDuplicateXValues
+<span class="fc" id="L132">        s1 = new MyComparableObjectSeries(&quot;B&quot;, false, false);</span>
+<span class="fc" id="L133">        assertNotEquals(s1, s2);</span>
+<span class="fc" id="L134">        s2 = new MyComparableObjectSeries(&quot;B&quot;, false, false);</span>
+<span class="fc" id="L135">        assertTrue(s1.equals(s2));</span>
+
+        // add a value
+<span class="fc" id="L138">        s1.add(new Integer(1), &quot;ABC&quot;);</span>
+<span class="fc" id="L139">        assertNotEquals(s1, s2);</span>
+<span class="fc" id="L140">        s2.add(new Integer(1), &quot;ABC&quot;);</span>
+<span class="fc" id="L141">        assertTrue(s1.equals(s2));</span>
+
+        // add another value
+<span class="fc" id="L144">        s1.add(new Integer(0), &quot;DEF&quot;);</span>
+<span class="fc" id="L145">        assertNotEquals(s1, s2);</span>
+<span class="fc" id="L146">        s2.add(new Integer(0), &quot;DEF&quot;);</span>
+<span class="fc" id="L147">        assertTrue(s1.equals(s2));</span>
+
+        // remove an item
+<span class="fc" id="L150">        s1.remove(new Integer(1));</span>
+<span class="fc" id="L151">        assertNotEquals(s1, s2);</span>
+<span class="fc" id="L152">        s2.remove(new Integer(1));</span>
+<span class="fc" id="L153">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L154">    }</span>
+
+    /**
+     * Some checks for the clone() method.
+     */
+    @Test
+    public void testCloning() throws CloneNotSupportedException {
+<span class="fc" id="L161">        MyComparableObjectSeries s1 = new MyComparableObjectSeries(&quot;A&quot;);</span>
+<span class="fc" id="L162">        s1.add(new Integer(1), &quot;ABC&quot;);</span>
+<span class="fc" id="L163">        MyComparableObjectSeries s2 = (MyComparableObjectSeries) s1.clone();</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">        assertTrue(s1 != s2);</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">        assertTrue(s1.getClass() == s2.getClass());</span>
+<span class="fc" id="L166">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L167">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    @Test
+    public void testSerialization() {
+<span class="fc" id="L174">        MyComparableObjectSeries s1 = new MyComparableObjectSeries(&quot;A&quot;);</span>
+<span class="fc" id="L175">        s1.add(new Integer(1), &quot;ABC&quot;);</span>
+<span class="fc" id="L176">        MyComparableObjectSeries s2 = (MyComparableObjectSeries) </span>
+<span class="fc" id="L177">                TestUtilities.serialised(s1);</span>
+<span class="fc" id="L178">        assertEquals(s1, s2);</span>
+<span class="fc" id="L179">    }</span>
+
+    /**
+     * Some simple checks for the hashCode() method.
+     */
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L186">        MyComparableObjectSeries s1 = new MyComparableObjectSeries(&quot;Test&quot;);</span>
+<span class="fc" id="L187">        MyComparableObjectSeries s2 = new MyComparableObjectSeries(&quot;Test&quot;);</span>
+<span class="fc" id="L188">        assertEquals(s1, s2);</span>
+<span class="fc" id="L189">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+
+<span class="fc" id="L191">        s1.add(&quot;A&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L192">        s2.add(&quot;A&quot;, &quot;1&quot;);</span>
+<span class="fc" id="L193">        assertEquals(s1, s2);</span>
+<span class="fc" id="L194">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+
+<span class="fc" id="L196">        s1.add(&quot;B&quot;, null);</span>
+<span class="fc" id="L197">        s2.add(&quot;B&quot;, null);</span>
+<span class="fc" id="L198">        assertEquals(s1, s2);</span>
+<span class="fc" id="L199">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+
+<span class="fc" id="L201">        s1.add(&quot;C&quot;, &quot;3&quot;);</span>
+<span class="fc" id="L202">        s2.add(&quot;C&quot;, &quot;3&quot;);</span>
+<span class="fc" id="L203">        assertEquals(s1, s2);</span>
+<span class="fc" id="L204">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+
+<span class="fc" id="L206">        s1.add(&quot;D&quot;, &quot;4&quot;);</span>
+<span class="fc" id="L207">        s2.add(&quot;D&quot;, &quot;4&quot;);</span>
+<span class="fc" id="L208">        assertEquals(s1, s2);</span>
+<span class="fc" id="L209">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+<span class="fc" id="L210">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

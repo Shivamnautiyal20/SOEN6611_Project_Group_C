@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XYSeriesTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.xy</a> &gt; <span class="el_source">XYSeriesTest.java</span></div><h1>XYSeriesTest.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * -----------------
+ * XYSeriesTest.java
+ * -----------------
+ * (C) Copyright 2003-2013, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 23-Dec-2003 : Version 1 (DG);
+ * 15-Jan-2007 : Added tests for new toArray() method (DG);
+ * 30-Jan-2007 : Fixed some code that won't compile with Java 1.4 (DG);
+ * 31-Oct-2007 : New hashCode() test (DG);
+ * 01-May-2008 : Added testAddOrUpdate3() (DG);
+ * 24-Nov-2008 : Added testBug1955483() (DG);
+ * 06-Mar-2009 : Added tests for cached bounds values (DG);
+ *
+ */
+
+package org.jfree.data.xy;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
+
+import org.jfree.chart.TestUtilities;
+
+import org.jfree.data.general.SeriesException;
+import org.junit.Test;
+
+/**
+ * Tests for the {@link XYSeries} class.
+ */
+<span class="fc" id="L61">public class XYSeriesTest {</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    @Test
+    public void testEquals() {
+<span class="fc" id="L68">        XYSeries s1 = new XYSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L69">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L70">        XYSeries s2 = new XYSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L71">        s2.add(1.0, 1.1);</span>
+<span class="fc" id="L72">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L73">        assertTrue(s2.equals(s1));</span>
+
+<span class="fc" id="L75">        s1.setKey(&quot;Series X&quot;);</span>
+<span class="fc" id="L76">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L77">        s2.setKey(&quot;Series X&quot;);</span>
+<span class="fc" id="L78">        assertTrue(s1.equals(s2));</span>
+
+<span class="fc" id="L80">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L81">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L82">        s2.add(2.0, 2.2);</span>
+<span class="fc" id="L83">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L84">    }</span>
+
+    /**
+     * Some simple checks for the hashCode() method.
+     */
+    @Test
+    public void testHashCode() {
+<span class="fc" id="L91">        XYSeries s1 = new XYSeries(&quot;Test&quot;);</span>
+<span class="fc" id="L92">        XYSeries s2 = new XYSeries(&quot;Test&quot;);</span>
+<span class="fc" id="L93">        assertEquals(s1, s2);</span>
+<span class="fc" id="L94">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+
+<span class="fc" id="L96">        s1.add(1.0, 500.0);</span>
+<span class="fc" id="L97">        s2.add(1.0, 500.0);</span>
+<span class="fc" id="L98">        assertEquals(s1, s2);</span>
+<span class="fc" id="L99">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+
+<span class="fc" id="L101">        s1.add(2.0, null);</span>
+<span class="fc" id="L102">        s2.add(2.0, null);</span>
+<span class="fc" id="L103">        assertEquals(s1, s2);</span>
+<span class="fc" id="L104">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+
+<span class="fc" id="L106">        s1.add(5.0, 111.0);</span>
+<span class="fc" id="L107">        s2.add(5.0, 111.0);</span>
+<span class="fc" id="L108">        assertEquals(s1, s2);</span>
+<span class="fc" id="L109">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+
+<span class="fc" id="L111">        s1.add(9.0, 1.0);</span>
+<span class="fc" id="L112">        s2.add(9.0, 1.0);</span>
+<span class="fc" id="L113">        assertEquals(s1, s2);</span>
+<span class="fc" id="L114">        assertEquals(s1.hashCode(), s2.hashCode());</span>
+<span class="fc" id="L115">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    @Test
+    public void testCloning() throws CloneNotSupportedException {
+<span class="fc" id="L122">        XYSeries s1 = new XYSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L123">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L124">        XYSeries s2 = (XYSeries) s1.clone();</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">        assertTrue(s1 != s2);</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        assertTrue(s1.getClass() == s2.getClass());</span>
+<span class="fc" id="L127">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L128">    }</span>
+
+    /**
+     * Another test of the clone() method.
+     */
+    @Test
+    public void testCloning2() throws CloneNotSupportedException {
+<span class="fc" id="L135">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L136">        s1.add(1.0, 100.0);</span>
+<span class="fc" id="L137">        s1.add(2.0, null);</span>
+<span class="fc" id="L138">        s1.add(3.0, 200.0);</span>
+<span class="fc" id="L139">        XYSeries s2 = (XYSeries) s1.clone();</span>
+<span class="fc" id="L140">        assertTrue(s1.equals(s2));</span>
+
+        // check independence
+<span class="fc" id="L143">        s2.add(4.0, 300.0);</span>
+<span class="fc" id="L144">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L145">        s1.add(4.0, 300.0);</span>
+<span class="fc" id="L146">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L147">    }</span>
+
+    /**
+     * Another test of the clone() method.
+     */
+    @Test
+    public void testCloning3() throws CloneNotSupportedException {
+<span class="fc" id="L154">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L155">        XYSeries s2 = (XYSeries) s1.clone();</span>
+<span class="fc" id="L156">        assertTrue(s1.equals(s2));</span>
+
+        // check independence
+<span class="fc" id="L159">        s2.add(4.0, 300.0);</span>
+<span class="fc" id="L160">        assertFalse(s1.equals(s2));</span>
+<span class="fc" id="L161">        s1.add(4.0, 300.0);</span>
+<span class="fc" id="L162">        assertTrue(s1.equals(s2));</span>
+<span class="fc" id="L163">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    @Test
+    public void testSerialization() {
+<span class="fc" id="L170">        XYSeries s1 = new XYSeries(&quot;Series&quot;);</span>
+<span class="fc" id="L171">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L172">        XYSeries s2 = (XYSeries) TestUtilities.serialised(s1);</span>
+<span class="fc" id="L173">        assertEquals(s1, s2);</span>
+<span class="fc" id="L174">    }</span>
+
+    /**
+     * Simple test for the indexOf() method.
+     */
+    @Test
+    public void testIndexOf() {
+<span class="fc" id="L181">        XYSeries s1 = new XYSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L182">        s1.add(1.0, 1.0);</span>
+<span class="fc" id="L183">        s1.add(2.0, 2.0);</span>
+<span class="fc" id="L184">        s1.add(3.0, 3.0);</span>
+<span class="fc" id="L185">        assertEquals(0, s1.indexOf(new Double(1.0)));</span>
+<span class="fc" id="L186">        assertEquals(1, s1.indexOf(new Double(2.0)));</span>
+<span class="fc" id="L187">        assertEquals(2, s1.indexOf(new Double(3.0)));</span>
+<span class="fc" id="L188">        assertEquals(-4, s1.indexOf(new Double(99.9)));</span>
+<span class="fc" id="L189">    }</span>
+
+    /**
+     * A check for the indexOf() method for an unsorted series.
+     */
+    @Test
+    public void testIndexOf2() {
+<span class="fc" id="L196">        XYSeries s1 = new XYSeries(&quot;Series 1&quot;, false, true);</span>
+<span class="fc" id="L197">        s1.add(1.0, 1.0);</span>
+<span class="fc" id="L198">        s1.add(3.0, 3.0);</span>
+<span class="fc" id="L199">        s1.add(2.0, 2.0);</span>
+<span class="fc" id="L200">        assertEquals(0, s1.indexOf(new Double(1.0)));</span>
+<span class="fc" id="L201">        assertEquals(1, s1.indexOf(new Double(3.0)));</span>
+<span class="fc" id="L202">        assertEquals(2, s1.indexOf(new Double(2.0)));</span>
+<span class="fc" id="L203">    }</span>
+
+    /**
+     * A check for the indexOf(Number) method when the series has duplicate
+     * x-values.
+     */
+    @Test
+    public void testIndexOf3() {
+<span class="fc" id="L211">        XYSeries s1 = new XYSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L212">        s1.add(1.0, 1.0);</span>
+<span class="fc" id="L213">        s1.add(2.0, 2.0);</span>
+<span class="fc" id="L214">        s1.add(2.0, 3.0);</span>
+<span class="fc" id="L215">        assertEquals(0, s1.indexOf(new Double(1.0)));</span>
+<span class="fc" id="L216">        assertEquals(1, s1.indexOf(new Double(2.0)));</span>
+<span class="fc" id="L217">    }</span>
+
+    /**
+     * Simple test for the remove() method.
+     */
+    @Test
+    public void testRemove() {
+<span class="fc" id="L224">        XYSeries s1 = new XYSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L225">        s1.add(1.0, 1.0);</span>
+<span class="fc" id="L226">        s1.add(2.0, 2.0);</span>
+<span class="fc" id="L227">        s1.add(3.0, 3.0);</span>
+<span class="fc" id="L228">        assertEquals(3, s1.getItemCount());</span>
+
+<span class="fc" id="L230">        s1.remove(new Double(2.0));</span>
+<span class="fc" id="L231">        assertEquals(new Double(3.0), s1.getX(1));</span>
+
+<span class="fc" id="L233">        s1.remove(0);</span>
+<span class="fc" id="L234">        assertEquals(new Double(3.0), s1.getX(0));</span>
+<span class="fc" id="L235">    }</span>
+
+    /**
+     * Some checks for the remove(int) method.
+     */
+    @Test
+    public void testRemove2() {
+<span class="fc" id="L242">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L243">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L244">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L245">        s1.add(3.0, 3.3);</span>
+<span class="fc" id="L246">        s1.add(4.0, 4.4);</span>
+<span class="fc" id="L247">        s1.add(5.0, 5.5);</span>
+<span class="fc" id="L248">        s1.add(6.0, 6.6);</span>
+<span class="fc" id="L249">        assertEquals(6, s1.getItemCount());</span>
+<span class="fc" id="L250">        assertEquals(1.0, s1.getMinX(), EPSILON);</span>
+<span class="fc" id="L251">        assertEquals(6.0, s1.getMaxX(), EPSILON);</span>
+<span class="fc" id="L252">        assertEquals(1.1, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L253">        assertEquals(6.6, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L255">        s1.remove(5);</span>
+<span class="fc" id="L256">        assertEquals(5, s1.getItemCount());</span>
+<span class="fc" id="L257">        assertEquals(1.0, s1.getMinX(), EPSILON);</span>
+<span class="fc" id="L258">        assertEquals(5.0, s1.getMaxX(), EPSILON);</span>
+<span class="fc" id="L259">        assertEquals(1.1, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L260">        assertEquals(5.5, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L261">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * When items are added with duplicate x-values, we expect them to remain
+     * in the order they were added.
+     */
+    @Test
+    public void testAdditionOfDuplicateXValues() {
+<span class="fc" id="L271">        XYSeries s1 = new XYSeries(&quot;Series 1&quot;);</span>
+<span class="fc" id="L272">        s1.add(1.0, 1.0);</span>
+<span class="fc" id="L273">        s1.add(2.0, 2.0);</span>
+<span class="fc" id="L274">        s1.add(2.0, 3.0);</span>
+<span class="fc" id="L275">        s1.add(2.0, 4.0);</span>
+<span class="fc" id="L276">        s1.add(3.0, 5.0);</span>
+<span class="fc" id="L277">        assertEquals(1.0, s1.getY(0).doubleValue(), EPSILON);</span>
+<span class="fc" id="L278">        assertEquals(2.0, s1.getY(1).doubleValue(), EPSILON);</span>
+<span class="fc" id="L279">        assertEquals(3.0, s1.getY(2).doubleValue(), EPSILON);</span>
+<span class="fc" id="L280">        assertEquals(4.0, s1.getY(3).doubleValue(), EPSILON);</span>
+<span class="fc" id="L281">        assertEquals(5.0, s1.getY(4).doubleValue(), EPSILON);</span>
+<span class="fc" id="L282">    }</span>
+
+    /**
+     * Some checks for the update(Number, Number) method.
+     */
+    @Test
+    public void testUpdate() {
+<span class="fc" id="L289">        XYSeries series = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L290">        series.add(new Integer(1), new Integer(2));</span>
+<span class="fc" id="L291">        assertEquals(new Integer(2), series.getY(0));</span>
+<span class="fc" id="L292">        series.update(new Integer(1), new Integer(3));</span>
+<span class="fc" id="L293">        assertEquals(new Integer(3), series.getY(0));</span>
+        try {
+<span class="nc" id="L295">            series.update(new Integer(2), new Integer(99));</span>
+<span class="nc" id="L296">            assertTrue(false);</span>
+        }
+<span class="fc" id="L298">        catch (SeriesException e) {</span>
+            // got the required exception
+<span class="nc" id="L300">        }</span>
+<span class="fc" id="L301">    }</span>
+
+    /**
+     * Some checks for the update() method for an unsorted series.
+     */
+    @Test
+    public void testUpdate2() {
+<span class="fc" id="L308">       XYSeries series = new XYSeries(&quot;Series&quot;, false, true);</span>
+<span class="fc" id="L309">       series.add(5.0, 55.0);</span>
+<span class="fc" id="L310">       series.add(4.0, 44.0);</span>
+<span class="fc" id="L311">       series.add(6.0, 66.0);</span>
+<span class="fc" id="L312">       series.update(new Double(4.0), new Double(99.0));</span>
+<span class="fc" id="L313">       assertEquals(new Double(99.0), series.getY(1));</span>
+<span class="fc" id="L314">    }</span>
+
+    /**
+     * Some checks for the addOrUpdate() method.
+     */
+    @Test
+    public void testAddOrUpdate() {
+<span class="fc" id="L321">        XYSeries series = new XYSeries(&quot;S1&quot;, true, false);</span>
+<span class="fc" id="L322">        XYDataItem old = series.addOrUpdate(new Long(1), new Long(2));</span>
+<span class="pc bpc" id="L323" title="1 of 2 branches missed.">        assertTrue(old == null);</span>
+<span class="fc" id="L324">        assertEquals(1, series.getItemCount());</span>
+<span class="fc" id="L325">        assertEquals(new Long(2), series.getY(0));</span>
+
+<span class="fc" id="L327">        old = series.addOrUpdate(new Long(2), new Long(3));</span>
+<span class="pc bpc" id="L328" title="1 of 2 branches missed.">        assertTrue(old == null);</span>
+<span class="fc" id="L329">        assertEquals(2, series.getItemCount());</span>
+<span class="fc" id="L330">        assertEquals(new Long(3), series.getY(1));</span>
+
+<span class="fc" id="L332">        old = series.addOrUpdate(new Long(1), new Long(99));</span>
+<span class="fc" id="L333">        assertEquals(new XYDataItem(new Long(1), new Long(2)), old);</span>
+<span class="fc" id="L334">        assertEquals(2, series.getItemCount());</span>
+<span class="fc" id="L335">        assertEquals(new Long(99), series.getY(0));</span>
+<span class="fc" id="L336">        assertEquals(new Long(3), series.getY(1));</span>
+<span class="fc" id="L337">    }</span>
+
+    /**
+     * Some checks for the addOrUpdate() method for an UNSORTED series.
+     */
+    @Test
+    public void testAddOrUpdate2() {
+<span class="fc" id="L344">        XYSeries series = new XYSeries(&quot;Series&quot;, false, false);</span>
+<span class="fc" id="L345">        series.add(5.0, 5.5);</span>
+<span class="fc" id="L346">        series.add(6.0, 6.6);</span>
+<span class="fc" id="L347">        series.add(3.0, 3.3);</span>
+<span class="fc" id="L348">        series.add(4.0, 4.4);</span>
+<span class="fc" id="L349">        series.add(2.0, 2.2);</span>
+<span class="fc" id="L350">        series.add(1.0, 1.1);</span>
+<span class="fc" id="L351">        series.addOrUpdate(new Double(3.0), new Double(33.3));</span>
+<span class="fc" id="L352">        series.addOrUpdate(new Double(2.0), new Double(22.2));</span>
+<span class="fc" id="L353">        assertEquals(33.3, series.getY(2).doubleValue(), EPSILON);</span>
+<span class="fc" id="L354">        assertEquals(22.2, series.getY(4).doubleValue(), EPSILON);</span>
+<span class="fc" id="L355">    }</span>
+
+    /**
+     * Another test for the addOrUpdate() method.
+     */
+    @Test
+    public void testAddOrUpdate3() {
+<span class="fc" id="L362">        XYSeries series = new XYSeries(&quot;Series&quot;, false, true);</span>
+<span class="fc" id="L363">        series.addOrUpdate(1.0, 1.0);</span>
+<span class="fc" id="L364">        series.addOrUpdate(1.0, 2.0);</span>
+<span class="fc" id="L365">        series.addOrUpdate(1.0, 3.0);</span>
+<span class="fc" id="L366">        assertEquals(new Double(1.0), series.getY(0));</span>
+<span class="fc" id="L367">        assertEquals(new Double(2.0), series.getY(1));</span>
+<span class="fc" id="L368">        assertEquals(new Double(3.0), series.getY(2));</span>
+<span class="fc" id="L369">        assertEquals(3, series.getItemCount());</span>
+<span class="fc" id="L370">    }</span>
+
+    /**
+     * Some checks for the add() method for an UNSORTED series.
+     */
+    @Test
+    public void testAdd() {
+<span class="fc" id="L377">        XYSeries series = new XYSeries(&quot;Series&quot;, false, true);</span>
+<span class="fc" id="L378">        series.add(5.0, 5.50);</span>
+<span class="fc" id="L379">        series.add(5.1, 5.51);</span>
+<span class="fc" id="L380">        series.add(6.0, 6.6);</span>
+<span class="fc" id="L381">        series.add(3.0, 3.3);</span>
+<span class="fc" id="L382">        series.add(4.0, 4.4);</span>
+<span class="fc" id="L383">        series.add(2.0, 2.2);</span>
+<span class="fc" id="L384">        series.add(1.0, 1.1);</span>
+<span class="fc" id="L385">        assertEquals(5.5, series.getY(0).doubleValue(), EPSILON);</span>
+<span class="fc" id="L386">        assertEquals(5.51, series.getY(1).doubleValue(), EPSILON);</span>
+<span class="fc" id="L387">        assertEquals(6.6, series.getY(2).doubleValue(), EPSILON);</span>
+<span class="fc" id="L388">        assertEquals(3.3, series.getY(3).doubleValue(), EPSILON);</span>
+<span class="fc" id="L389">        assertEquals(4.4, series.getY(4).doubleValue(), EPSILON);</span>
+<span class="fc" id="L390">        assertEquals(2.2, series.getY(5).doubleValue(), EPSILON);</span>
+<span class="fc" id="L391">        assertEquals(1.1, series.getY(6).doubleValue(), EPSILON);</span>
+<span class="fc" id="L392">    }</span>
+
+    /**
+     * A simple check that the maximumItemCount attribute is working.
+     */
+    @Test
+    public void testSetMaximumItemCount() {
+<span class="fc" id="L399">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L400">        assertEquals(Integer.MAX_VALUE, s1.getMaximumItemCount());</span>
+<span class="fc" id="L401">        s1.setMaximumItemCount(2);</span>
+<span class="fc" id="L402">        assertEquals(2, s1.getMaximumItemCount());</span>
+<span class="fc" id="L403">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L404">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L405">        s1.add(3.0, 3.3);</span>
+<span class="fc" id="L406">        assertEquals(2.0, s1.getX(0).doubleValue(), EPSILON);</span>
+<span class="fc" id="L407">        assertEquals(3.0, s1.getX(1).doubleValue(), EPSILON);</span>
+<span class="fc" id="L408">    }</span>
+
+    /**
+     * Check that the maximum item count can be applied retrospectively.
+     */
+    @Test
+    public void testSetMaximumItemCount2() {
+<span class="fc" id="L415">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L416">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L417">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L418">        s1.add(3.0, 3.3);</span>
+<span class="fc" id="L419">        s1.setMaximumItemCount(2);</span>
+<span class="fc" id="L420">        assertEquals(2.0, s1.getX(0).doubleValue(), EPSILON);</span>
+<span class="fc" id="L421">        assertEquals(3.0, s1.getX(1).doubleValue(), EPSILON);</span>
+<span class="fc" id="L422">    }</span>
+
+    /**
+     * Check that the item bounds are determined correctly when there is a
+     * maximum item count.
+     */
+    @Test
+    public void testSetMaximumItemCount3() {
+<span class="fc" id="L430">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L431">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L432">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L433">        s1.add(3.0, 3.3);</span>
+<span class="fc" id="L434">        s1.add(4.0, 4.4);</span>
+<span class="fc" id="L435">        s1.add(5.0, 5.5);</span>
+<span class="fc" id="L436">        s1.add(6.0, 6.6);</span>
+<span class="fc" id="L437">        s1.setMaximumItemCount(2);</span>
+<span class="fc" id="L438">        assertEquals(5.0, s1.getX(0).doubleValue(), EPSILON);</span>
+<span class="fc" id="L439">        assertEquals(6.0, s1.getX(1).doubleValue(), EPSILON);</span>
+<span class="fc" id="L440">        assertEquals(5.0, s1.getMinX(), EPSILON);</span>
+<span class="fc" id="L441">        assertEquals(6.0, s1.getMaxX(), EPSILON);</span>
+<span class="fc" id="L442">        assertEquals(5.5, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L443">        assertEquals(6.6, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L444">    }</span>
+
+    /**
+     * Check that the item bounds are determined correctly when there is a
+     * maximum item count.
+     */
+    @Test
+    public void testSetMaximumItemCount4() {
+<span class="fc" id="L452">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L453">        s1.setMaximumItemCount(2);</span>
+<span class="fc" id="L454">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L455">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L456">        s1.add(3.0, 3.3);</span>
+<span class="fc" id="L457">        assertEquals(2.0, s1.getX(0).doubleValue(), EPSILON);</span>
+<span class="fc" id="L458">        assertEquals(3.0, s1.getX(1).doubleValue(), EPSILON);</span>
+<span class="fc" id="L459">        assertEquals(2.0, s1.getMinX(), EPSILON);</span>
+<span class="fc" id="L460">        assertEquals(3.0, s1.getMaxX(), EPSILON);</span>
+<span class="fc" id="L461">        assertEquals(2.2, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L462">        assertEquals(3.3, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L463">    }</span>
+
+    /**
+     * Some checks for the toArray() method.
+     */
+    @Test
+    public void testToArray() {
+<span class="fc" id="L470">        XYSeries s = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L471">        double[][] array = s.toArray();</span>
+<span class="fc" id="L472">        assertEquals(2, array.length);</span>
+<span class="fc" id="L473">        assertEquals(0, array[0].length);</span>
+<span class="fc" id="L474">        assertEquals(0, array[1].length);</span>
+
+<span class="fc" id="L476">        s.add(1.0, 2.0);</span>
+<span class="fc" id="L477">        array = s.toArray();</span>
+<span class="fc" id="L478">        assertEquals(1, array[0].length);</span>
+<span class="fc" id="L479">        assertEquals(1, array[1].length);</span>
+<span class="fc" id="L480">        assertEquals(2, array.length);</span>
+<span class="fc" id="L481">        assertEquals(1.0, array[0][0], EPSILON);</span>
+<span class="fc" id="L482">        assertEquals(2.0, array[1][0], EPSILON);</span>
+
+<span class="fc" id="L484">        s.add(2.0, null);</span>
+<span class="fc" id="L485">        array = s.toArray();</span>
+<span class="fc" id="L486">        assertEquals(2, array.length);</span>
+<span class="fc" id="L487">        assertEquals(2, array[0].length);</span>
+<span class="fc" id="L488">        assertEquals(2, array[1].length);</span>
+<span class="fc" id="L489">        assertEquals(2.0, array[0][1], EPSILON);</span>
+<span class="fc" id="L490">        assertTrue(Double.isNaN(array[1][1]));</span>
+<span class="fc" id="L491">    }</span>
+
+    /**
+     * Some checks for an example using the toArray() method.
+     */
+    @Test
+    public void testToArrayExample() {
+<span class="fc" id="L498">        XYSeries s = new XYSeries(&quot;S&quot;);</span>
+<span class="fc" id="L499">        s.add(1.0, 11.0);</span>
+<span class="fc" id="L500">        s.add(2.0, 22.0);</span>
+<span class="fc" id="L501">        s.add(3.5, 35.0);</span>
+<span class="fc" id="L502">        s.add(5.0, null);</span>
+<span class="fc" id="L503">        DefaultXYDataset dataset = new DefaultXYDataset();</span>
+<span class="fc" id="L504">        dataset.addSeries(&quot;S&quot;, s.toArray());</span>
+<span class="fc" id="L505">        assertEquals(1, dataset.getSeriesCount());</span>
+<span class="fc" id="L506">        assertEquals(4, dataset.getItemCount(0));</span>
+<span class="fc" id="L507">        assertEquals(&quot;S&quot;, dataset.getSeriesKey(0));</span>
+<span class="fc" id="L508">        assertEquals(1.0, dataset.getXValue(0, 0), EPSILON);</span>
+<span class="fc" id="L509">        assertEquals(2.0, dataset.getXValue(0, 1), EPSILON);</span>
+<span class="fc" id="L510">        assertEquals(3.5, dataset.getXValue(0, 2), EPSILON);</span>
+<span class="fc" id="L511">        assertEquals(5.0, dataset.getXValue(0, 3), EPSILON);</span>
+<span class="fc" id="L512">        assertEquals(11.0, dataset.getYValue(0, 0), EPSILON);</span>
+<span class="fc" id="L513">        assertEquals(22.0, dataset.getYValue(0, 1), EPSILON);</span>
+<span class="fc" id="L514">        assertEquals(35.0, dataset.getYValue(0, 2), EPSILON);</span>
+<span class="fc" id="L515">        assertTrue(Double.isNaN(dataset.getYValue(0, 3)));</span>
+<span class="fc" id="L516">    }</span>
+
+    /**
+     * Another test for the addOrUpdate() method.
+     */
+    @Test
+    public void testBug1955483() {
+<span class="fc" id="L523">        XYSeries series = new XYSeries(&quot;Series&quot;, true, true);</span>
+<span class="fc" id="L524">        series.addOrUpdate(1.0, 1.0);</span>
+<span class="fc" id="L525">        series.addOrUpdate(1.0, 2.0);</span>
+<span class="fc" id="L526">        assertEquals(new Double(1.0), series.getY(0));</span>
+<span class="fc" id="L527">        assertEquals(new Double(2.0), series.getY(1));</span>
+<span class="fc" id="L528">        assertEquals(2, series.getItemCount());</span>
+<span class="fc" id="L529">    }</span>
+
+    /**
+     * Some checks for the delete(int, int) method.
+     */
+    @Test
+    public void testDelete() {
+<span class="fc" id="L536">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L537">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L538">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L539">        s1.add(3.0, 3.3);</span>
+<span class="fc" id="L540">        s1.add(4.0, 4.4);</span>
+<span class="fc" id="L541">        s1.add(5.0, 5.5);</span>
+<span class="fc" id="L542">        s1.add(6.0, 6.6);</span>
+<span class="fc" id="L543">        s1.delete(2, 5);</span>
+<span class="fc" id="L544">        assertEquals(2, s1.getItemCount());</span>
+<span class="fc" id="L545">        assertEquals(1.0, s1.getX(0).doubleValue(), EPSILON);</span>
+<span class="fc" id="L546">        assertEquals(2.0, s1.getX(1).doubleValue(), EPSILON);</span>
+<span class="fc" id="L547">        assertEquals(1.0, s1.getMinX(), EPSILON);</span>
+<span class="fc" id="L548">        assertEquals(2.0, s1.getMaxX(), EPSILON);</span>
+<span class="fc" id="L549">        assertEquals(1.1, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L550">        assertEquals(2.2, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L551">    }</span>
+
+    /**
+     * Some checks for the getMinX() method.
+     */
+    @Test
+    public void testGetMinX() {
+<span class="fc" id="L558">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L559">        assertTrue(Double.isNaN(s1.getMinX()));</span>
+
+<span class="fc" id="L561">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L562">        assertEquals(1.0, s1.getMinX(), EPSILON);</span>
+
+<span class="fc" id="L564">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L565">        assertEquals(1.0, s1.getMinX(), EPSILON);</span>
+
+<span class="fc" id="L567">        s1.add(Double.NaN, 99.9);</span>
+<span class="fc" id="L568">        assertEquals(1.0, s1.getMinX(), EPSILON);</span>
+
+<span class="fc" id="L570">        s1.add(-1.0, -1.1);</span>
+<span class="fc" id="L571">        assertEquals(-1.0, s1.getMinX(), EPSILON);</span>
+
+<span class="fc" id="L573">        s1.add(0.0, null);</span>
+<span class="fc" id="L574">        assertEquals(-1.0, s1.getMinX(), EPSILON);</span>
+<span class="fc" id="L575">    }</span>
+
+    /**
+     * Some checks for the getMaxX() method.
+     */
+    @Test
+    public void testGetMaxX() {
+<span class="fc" id="L582">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L583">        assertTrue(Double.isNaN(s1.getMaxX()));</span>
+
+<span class="fc" id="L585">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L586">        assertEquals(1.0, s1.getMaxX(), EPSILON);</span>
+
+<span class="fc" id="L588">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L589">        assertEquals(2.0, s1.getMaxX(), EPSILON);</span>
+
+<span class="fc" id="L591">        s1.add(Double.NaN, 99.9);</span>
+<span class="fc" id="L592">        assertEquals(2.0, s1.getMaxX(), EPSILON);</span>
+
+<span class="fc" id="L594">        s1.add(-1.0, -1.1);</span>
+<span class="fc" id="L595">        assertEquals(2.0, s1.getMaxX(), EPSILON);</span>
+
+<span class="fc" id="L597">        s1.add(0.0, null);</span>
+<span class="fc" id="L598">        assertEquals(2.0, s1.getMaxX(), EPSILON);</span>
+<span class="fc" id="L599">    }</span>
+
+    /**
+     * Some checks for the getMinY() method.
+     */
+    @Test
+    public void testGetMinY() {
+<span class="fc" id="L606">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L607">        assertTrue(Double.isNaN(s1.getMinY()));</span>
+
+<span class="fc" id="L609">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L610">        assertEquals(1.1, s1.getMinY(), EPSILON);</span>
+
+<span class="fc" id="L612">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L613">        assertEquals(1.1, s1.getMinY(), EPSILON);</span>
+
+<span class="fc" id="L615">        s1.add(Double.NaN, 99.9);</span>
+<span class="fc" id="L616">        assertEquals(1.1, s1.getMinY(), EPSILON);</span>
+
+<span class="fc" id="L618">        s1.add(-1.0, -1.1);</span>
+<span class="fc" id="L619">        assertEquals(-1.1, s1.getMinY(), EPSILON);</span>
+
+<span class="fc" id="L621">        s1.add(0.0, null);</span>
+<span class="fc" id="L622">        assertEquals(-1.1, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L623">   }</span>
+
+    /**
+     * Some checks for the getMaxY() method.
+     */
+    @Test
+    public void testGetMaxY() {
+<span class="fc" id="L630">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L631">        assertTrue(Double.isNaN(s1.getMaxY()));</span>
+
+<span class="fc" id="L633">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L634">        assertEquals(1.1, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L636">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L637">        assertEquals(2.2, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L639">        s1.add(Double.NaN, 99.9);</span>
+<span class="fc" id="L640">        assertEquals(99.9, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L642">        s1.add(-1.0, -1.1);</span>
+<span class="fc" id="L643">        assertEquals(99.9, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L645">        s1.add(0.0, null);</span>
+<span class="fc" id="L646">        assertEquals(99.9, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L647">    }</span>
+    
+    /**
+     * A test for a bug reported in the forum:
+     * 
+     * http://www.jfree.org/forum/viewtopic.php?f=3&amp;t=116601
+     */
+    @Test
+    public void testGetMaxY2() {
+<span class="fc" id="L656">        XYSeries series = new XYSeries(1, true, false);</span>
+<span class="fc" id="L657">        series.addOrUpdate(1, 20);</span>
+<span class="fc" id="L658">        series.addOrUpdate(2, 30);</span>
+<span class="fc" id="L659">        series.addOrUpdate(3, 40);</span>
+<span class="fc" id="L660">        assertEquals(40.0, series.getMaxY(), EPSILON);</span>
+<span class="fc" id="L661">        series.addOrUpdate(2, 22);</span>
+<span class="fc" id="L662">        assertEquals(40.0, series.getMaxY(), EPSILON);        </span>
+<span class="fc" id="L663">    }</span>
+
+    /**
+     * A test for the clear method.
+     */
+    @Test
+    public void testClear() {
+<span class="fc" id="L670">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L671">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L672">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L673">        s1.add(3.0, 3.3);</span>
+
+<span class="fc" id="L675">        assertEquals(3, s1.getItemCount());</span>
+
+<span class="fc" id="L677">        s1.clear();</span>
+<span class="fc" id="L678">        assertEquals(0, s1.getItemCount());</span>
+<span class="fc" id="L679">        assertTrue(Double.isNaN(s1.getMinX()));</span>
+<span class="fc" id="L680">        assertTrue(Double.isNaN(s1.getMaxX()));</span>
+<span class="fc" id="L681">        assertTrue(Double.isNaN(s1.getMinY()));</span>
+<span class="fc" id="L682">        assertTrue(Double.isNaN(s1.getMaxY()));</span>
+<span class="fc" id="L683">    }</span>
+
+    /**
+     * Some checks for the updateByIndex() method.
+     */
+    @Test
+    public void testUpdateByIndex() {
+<span class="fc" id="L690">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L691">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L692">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L693">        s1.add(3.0, 3.3);</span>
+
+<span class="fc" id="L695">        assertEquals(1.1, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L696">        assertEquals(3.3, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L698">        s1.updateByIndex(0, new Double(-5.0));</span>
+<span class="fc" id="L699">        assertEquals(-5.0, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L700">        assertEquals(3.3, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L702">        s1.updateByIndex(0, null);</span>
+<span class="fc" id="L703">        assertEquals(2.2, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L704">        assertEquals(3.3, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L706">        s1.updateByIndex(2, null);</span>
+<span class="fc" id="L707">        assertEquals(2.2, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L708">        assertEquals(2.2, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L710">        s1.updateByIndex(1, null);</span>
+<span class="fc" id="L711">        assertTrue(Double.isNaN(s1.getMinY()));</span>
+<span class="fc" id="L712">        assertTrue(Double.isNaN(s1.getMaxY()));</span>
+<span class="fc" id="L713">    }</span>
+
+    /**
+     * Some checks for the updateByIndex() method.
+     */
+    @Test
+    public void testUpdateByIndex2() {
+<span class="fc" id="L720">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L721">        s1.add(1.0, Double.NaN);</span>
+
+<span class="fc" id="L723">        assertTrue(Double.isNaN(s1.getMinY()));</span>
+<span class="fc" id="L724">        assertTrue(Double.isNaN(s1.getMaxY()));</span>
+
+<span class="fc" id="L726">        s1.updateByIndex(0, new Double(1.0));</span>
+<span class="fc" id="L727">        assertEquals(1.0, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L728">        assertEquals(1.0, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L730">        s1.updateByIndex(0, new Double(2.0));</span>
+<span class="fc" id="L731">        assertEquals(2.0, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L732">        assertEquals(2.0, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L734">        s1.add(-1.0, -1.0);</span>
+<span class="fc" id="L735">        s1.updateByIndex(0, new Double(0.0));</span>
+<span class="fc" id="L736">        assertEquals(0.0, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L737">        assertEquals(2.0, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L738">    }</span>
+
+    /**
+     * Some checks for the updateByIndex() method.
+     */
+    @Test
+    public void testUpdateByIndex3() {
+<span class="fc" id="L745">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L746">        s1.add(1.0, 1.1);</span>
+<span class="fc" id="L747">        s1.add(2.0, 2.2);</span>
+<span class="fc" id="L748">        s1.add(3.0, 3.3);</span>
+
+<span class="fc" id="L750">        s1.updateByIndex(1, new Double(2.05));</span>
+<span class="fc" id="L751">        assertEquals(1.1, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L752">        assertEquals(3.3, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L753">    }</span>
+
+    /**
+     * Some checks for the update(Number, Number) method.
+     */
+    @Test
+    public void testUpdateXY() {
+<span class="fc" id="L760">        XYSeries s1 = new XYSeries(&quot;S1&quot;);</span>
+<span class="fc" id="L761">        s1.add(1.0, Double.NaN);</span>
+
+<span class="fc" id="L763">        assertTrue(Double.isNaN(s1.getMinY()));</span>
+<span class="fc" id="L764">        assertTrue(Double.isNaN(s1.getMaxY()));</span>
+
+<span class="fc" id="L766">        s1.update(new Double(1.0), new Double(1.0));</span>
+<span class="fc" id="L767">        assertEquals(1.0, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L768">        assertEquals(1.0, s1.getMaxY(), EPSILON);</span>
+
+<span class="fc" id="L770">        s1.update(new Double(1.0), new Double(2.0));</span>
+<span class="fc" id="L771">        assertEquals(2.0, s1.getMinY(), EPSILON);</span>
+<span class="fc" id="L772">        assertEquals(2.0, s1.getMaxY(), EPSILON);</span>
+<span class="fc" id="L773">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

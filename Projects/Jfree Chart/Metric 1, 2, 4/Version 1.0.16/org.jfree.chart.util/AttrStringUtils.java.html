@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AttrStringUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.util</a> &gt; <span class="el_source">AttrStringUtils.java</span></div><h1>AttrStringUtils.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------
+ * AttrStringUtils.java
+ * --------------------
+ * (C) Copyright 2013 by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes:
+ * --------
+ * 01-Aug-2013 : Version 1, backported from JFreeChart-FSE (DG);
+ *
+ */
+
+package org.jfree.chart.util;
+
+import java.awt.Graphics2D;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
+import java.text.AttributedString;
+import org.jfree.ui.TextAnchor;
+
+/**
+ * Some &lt;code&gt;AttributedString&lt;/code&gt; utilities.
+ */
+public class AttrStringUtils {
+   
+    private AttrStringUtils() {
+        // no need to instantiate this class   
+    }
+    
+    /**
+     * Draws the attributed string at &lt;code&gt;(x, y)&lt;/code&gt;, rotated by the 
+     * specified angle about &lt;code&gt;(x, y)&lt;/code&gt;.
+     * 
+     * @param text  the attributed string (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param g2  the graphics output target.
+     * @param angle  the angle.
+     * @param x  the x-coordinate.
+     * @param y  the y-coordinate.
+     */
+    public static void drawRotatedString(AttributedString text, Graphics2D g2, 
+            double angle, float x, float y) {
+<span class="nc" id="L71">        drawRotatedString(text, g2, x, y, angle, x, y);</span>
+<span class="nc" id="L72">    }</span>
+    
+    /**
+     * Draws the attributed string at &lt;code&gt;(textX, textY)&lt;/code&gt;, rotated by 
+     * the specified angle about &lt;code&gt;(rotateX, rotateY)&lt;/code&gt;.
+     * 
+     * @param text  the attributed string (&lt;code&gt;null&lt;/code&gt; not permitted).
+     * @param g2  the graphics output target.
+     * @param textX
+     * @param textY
+     * @param angle
+     * @param rotateX
+     * @param rotateY 
+     */
+    public static void drawRotatedString(AttributedString text, Graphics2D g2, 
+            float textX, float textY, double angle, float rotateX, 
+            float rotateY) {
+<span class="nc" id="L89">        ParamChecks.nullNotPermitted(text, &quot;text&quot;);</span>
+
+<span class="nc" id="L91">        AffineTransform saved = g2.getTransform();</span>
+<span class="nc" id="L92">        AffineTransform rotate = AffineTransform.getRotateInstance(angle, </span>
+                rotateX, rotateY);
+<span class="nc" id="L94">        g2.transform(rotate);</span>
+<span class="nc" id="L95">        TextLayout tl = new TextLayout(text.getIterator(),</span>
+<span class="nc" id="L96">                    g2.getFontRenderContext());</span>
+<span class="nc" id="L97">        tl.draw(g2, textX, textY);</span>
+        
+<span class="nc" id="L99">        g2.setTransform(saved);        </span>
+<span class="nc" id="L100">    }</span>
+    
+    /**
+     * 
+     * @param text
+     * @param g2
+     * @param x
+     * @param y
+     * @param textAnchor
+     * @param angle
+     * @param rotationX
+     * @param rotationY 
+     */
+    public static void drawRotatedString(AttributedString text, Graphics2D g2, 
+            float x, float y, TextAnchor textAnchor, 
+            final double angle, float rotationX, float rotationY) {
+<span class="nc" id="L116">        ParamChecks.nullNotPermitted(text, &quot;text&quot;);</span>
+<span class="nc" id="L117">        float[] textAdj = deriveTextBoundsAnchorOffsets(g2, text, textAnchor, </span>
+                null);
+<span class="nc" id="L119">        drawRotatedString(text, g2, x + textAdj[0], y + textAdj[1], angle,</span>
+                rotationX, rotationY);        
+<span class="nc" id="L121">    }</span>
+
+    /**
+     * 
+     * @param text
+     * @param g2
+     * @param x
+     * @param y
+     * @param textAnchor
+     * @param angle
+     * @param rotationAnchor 
+     */
+    public static void drawRotatedString(AttributedString text, Graphics2D g2,
+            float x, float y, TextAnchor textAnchor,
+            double angle, TextAnchor rotationAnchor) {
+<span class="nc" id="L136">        ParamChecks.nullNotPermitted(text, &quot;text&quot;);</span>
+<span class="nc" id="L137">        float[] textAdj = deriveTextBoundsAnchorOffsets(g2, text, textAnchor, </span>
+                null);
+<span class="nc" id="L139">        float[] rotateAdj = deriveRotationAnchorOffsets(g2, text, </span>
+                rotationAnchor);
+<span class="nc" id="L141">        drawRotatedString(text, g2, x + textAdj[0], y + textAdj[1],</span>
+                angle, x + textAdj[0] + rotateAdj[0],
+                y + textAdj[1] + rotateAdj[1]);        
+<span class="nc" id="L144">    }</span>
+        
+    private static float[] deriveTextBoundsAnchorOffsets(Graphics2D g2,
+            AttributedString text, TextAnchor anchor, Rectangle2D textBounds) {
+
+<span class="nc" id="L149">        TextLayout layout = new TextLayout(text.getIterator(), g2.getFontRenderContext());</span>
+<span class="nc" id="L150">        Rectangle2D bounds = layout.getBounds();</span>
+
+<span class="nc" id="L152">        float[] result = new float[3];</span>
+<span class="nc" id="L153">        float ascent = layout.getAscent();</span>
+<span class="nc" id="L154">        result[2] = -ascent;</span>
+<span class="nc" id="L155">        float halfAscent = ascent / 2.0f;</span>
+<span class="nc" id="L156">        float descent = layout.getDescent();</span>
+<span class="nc" id="L157">        float leading = layout.getLeading();</span>
+<span class="nc" id="L158">        float xAdj = 0.0f;</span>
+<span class="nc" id="L159">        float yAdj = 0.0f;</span>
+        
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        if (isHorizontalCenter(anchor)) {</span>
+<span class="nc" id="L162">            xAdj = (float) -bounds.getWidth() / 2.0f;</span>
+        }
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        else if (isHorizontalRight(anchor)) {</span>
+<span class="nc" id="L165">            xAdj = (float) -bounds.getWidth();</span>
+        }
+
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        if (isTop(anchor)) {</span>
+<span class="nc" id="L169">            yAdj = -descent - leading + (float) bounds.getHeight();</span>
+        }
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        else if (isHalfAscent(anchor)) {</span>
+<span class="nc" id="L172">            yAdj = halfAscent;</span>
+        }
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        else if (isHalfHeight(anchor)) {</span>
+<span class="nc" id="L175">            yAdj = -descent - leading + (float) (bounds.getHeight() / 2.0);</span>
+        }
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        else if (isBaseline(anchor)) {</span>
+<span class="nc" id="L178">            yAdj = 0.0f;</span>
+        }
+<span class="nc bnc" id="L180" title="All 2 branches missed.">        else if (isBottom(anchor)) {</span>
+<span class="nc" id="L181">            yAdj = -descent - leading;</span>
+        }
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (textBounds != null) {</span>
+<span class="nc" id="L184">            textBounds.setRect(bounds);</span>
+        }
+<span class="nc" id="L186">        result[0] = xAdj;</span>
+<span class="nc" id="L187">        result[1] = yAdj;</span>
+<span class="nc" id="L188">        return result;</span>
+    }
+    
+    /**
+     * A utility method that calculates the rotation anchor offsets for a
+     * string.  These offsets are relative to the text starting coordinate
+     * (BASELINE_LEFT).
+     *
+     * @param g2  the graphics device.
+     * @param text  the text.
+     * @param anchor  the anchor point.
+     *
+     * @return  The offsets.
+     */
+    private static float[] deriveRotationAnchorOffsets(Graphics2D g2, 
+            AttributedString text, TextAnchor anchor) {
+
+<span class="nc" id="L205">        float[] result = new float[2];</span>
+        
+<span class="nc" id="L207">        TextLayout layout = new TextLayout(text.getIterator(), </span>
+<span class="nc" id="L208">                g2.getFontRenderContext());</span>
+<span class="nc" id="L209">        Rectangle2D bounds = layout.getBounds();</span>
+<span class="nc" id="L210">        float ascent = layout.getAscent();</span>
+<span class="nc" id="L211">        float halfAscent = ascent / 2.0f;</span>
+<span class="nc" id="L212">        float descent = layout.getDescent();</span>
+<span class="nc" id="L213">        float leading = layout.getLeading();</span>
+<span class="nc" id="L214">        float xAdj = 0.0f;</span>
+<span class="nc" id="L215">        float yAdj = 0.0f;</span>
+
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        if (isHorizontalLeft(anchor)) {</span>
+<span class="nc" id="L218">            xAdj = 0.0f;</span>
+        }
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        else if (isHorizontalCenter(anchor)) {</span>
+<span class="nc" id="L221">            xAdj = (float) bounds.getWidth() / 2.0f;</span>
+        }
+<span class="nc bnc" id="L223" title="All 2 branches missed.">        else if (isHorizontalRight(anchor)) {</span>
+<span class="nc" id="L224">            xAdj = (float) bounds.getWidth();</span>
+        }
+
+<span class="nc bnc" id="L227" title="All 2 branches missed.">        if (isTop(anchor)) {</span>
+<span class="nc" id="L228">            yAdj = descent + leading - (float) bounds.getHeight();</span>
+        }
+<span class="nc bnc" id="L230" title="All 2 branches missed.">        else if (isHalfHeight(anchor)) {</span>
+<span class="nc" id="L231">            yAdj = descent + leading - (float) (bounds.getHeight() / 2.0);</span>
+        }
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        else if (isHalfAscent(anchor)) {</span>
+<span class="nc" id="L234">            yAdj = -halfAscent;</span>
+        }
+<span class="nc bnc" id="L236" title="All 2 branches missed.">        else if (isBaseline(anchor)) {</span>
+<span class="nc" id="L237">            yAdj = 0.0f;</span>
+        }
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        else if (isBottom(anchor)) {</span>
+<span class="nc" id="L240">            yAdj = descent + leading;</span>
+        }
+<span class="nc" id="L242">        result[0] = xAdj;</span>
+<span class="nc" id="L243">        result[1] = yAdj;</span>
+<span class="nc" id="L244">        return result;</span>
+
+    }
+    
+    private static boolean isTop(TextAnchor anchor) {
+<span class="nc bnc" id="L249" title="All 2 branches missed.">        return anchor.equals(TextAnchor.TOP_LEFT) </span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">                || anchor.equals(TextAnchor.TOP_CENTER) </span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">                || anchor.equals(TextAnchor.TOP_RIGHT);</span>
+    }
+
+    private static boolean isBaseline(TextAnchor anchor) {
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        return anchor.equals(TextAnchor.BASELINE_LEFT) </span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">                || anchor.equals(TextAnchor.BASELINE_CENTER) </span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">                || anchor.equals(TextAnchor.BASELINE_RIGHT);</span>
+    }
+
+    private static boolean isHalfAscent(TextAnchor anchor) {
+<span class="nc bnc" id="L261" title="All 2 branches missed.">        return anchor.equals(TextAnchor.HALF_ASCENT_LEFT) </span>
+<span class="nc bnc" id="L262" title="All 2 branches missed.">                || anchor.equals(TextAnchor.HALF_ASCENT_CENTER)</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">                || anchor.equals(TextAnchor.HALF_ASCENT_RIGHT);</span>
+    }
+
+    private static boolean isHalfHeight(TextAnchor anchor) {
+<span class="nc bnc" id="L267" title="All 2 branches missed.">        return anchor.equals(TextAnchor.CENTER_LEFT) </span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">                || anchor.equals(TextAnchor.CENTER) </span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">                || anchor.equals(TextAnchor.CENTER_RIGHT);</span>
+    }
+
+    private static boolean isBottom(TextAnchor anchor) {
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        return anchor.equals(TextAnchor.BOTTOM_LEFT) </span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">                || anchor.equals(TextAnchor.BOTTOM_CENTER) </span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">                || anchor.equals(TextAnchor.BOTTOM_RIGHT);</span>
+    }
+
+    private static boolean isHorizontalLeft(TextAnchor anchor) {
+<span class="nc bnc" id="L279" title="All 2 branches missed.">        return anchor.equals(TextAnchor.TOP_LEFT) </span>
+<span class="nc bnc" id="L280" title="All 2 branches missed.">                || anchor.equals(TextAnchor.CENTER_LEFT) </span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">                || anchor.equals(TextAnchor.HALF_ASCENT_LEFT) </span>
+<span class="nc bnc" id="L282" title="All 2 branches missed.">                || anchor.equals(TextAnchor.BASELINE_LEFT) </span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">                || anchor.equals(TextAnchor.BOTTOM_LEFT);</span>
+    }
+
+    private static boolean isHorizontalCenter(TextAnchor anchor) {
+<span class="nc bnc" id="L287" title="All 2 branches missed.">        return anchor.equals(TextAnchor.TOP_CENTER) </span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">                || anchor.equals(TextAnchor.CENTER) </span>
+<span class="nc bnc" id="L289" title="All 2 branches missed.">                || anchor.equals(TextAnchor.HALF_ASCENT_CENTER) </span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">                || anchor.equals(TextAnchor.BASELINE_CENTER) </span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">                || anchor.equals(TextAnchor.BOTTOM_CENTER);</span>
+    }
+
+    private static boolean isHorizontalRight(TextAnchor anchor) {
+<span class="nc bnc" id="L295" title="All 2 branches missed.">        return anchor.equals(TextAnchor.TOP_RIGHT) </span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">                || anchor.equals(TextAnchor.CENTER_RIGHT) </span>
+<span class="nc bnc" id="L297" title="All 2 branches missed.">                || anchor.equals(TextAnchor.HALF_ASCENT_RIGHT) </span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">                || anchor.equals(TextAnchor.BASELINE_RIGHT)</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">                || anchor.equals(TextAnchor.BOTTOM_RIGHT);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

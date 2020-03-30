@@ -1,0 +1,1109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SegmentedTimelineTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.axis</a> &gt; <span class="el_source">SegmentedTimelineTest.java</span></div><h1>SegmentedTimelineTest.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ---------------------------
+ * SegmentedTimelineTest.java
+ * ---------------------------
+ * (C) Copyright 2003-2013, by Bill Kelemen and Contributors.
+ *
+ * Original Author:  Bill Kelemen;
+ * Contributor(s):   David Gilbert (for Object Refinery Limited);
+ *
+ * Changes
+ * -------
+ * 24-May-2003 : Version 1 (BK);
+ * 07-Jan-2005 : Added test for hashCode() method (DG);
+ * 02-Feb-2007 : Removed author tags all over JFreeChart sources (DG);
+ *
+ */
+
+package org.jfree.chart.axis;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.text.Format;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+
+import org.jfree.chart.TestUtilities;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+/**
+ * JUnit Tests for the {@link SegmentedTimeline} class.
+ */
+@Ignore
+<span class="nc" id="L67">public class SegmentedTimelineTest {</span>
+
+    /** These constants control test cycles in the validateXXXX methods. */
+    private static final int TEST_CYCLE_START = 0;
+
+    /** These constants control test cycles in the validateXXXX methods. */
+    private static final int TEST_CYCLE_END   = 1000;
+
+    /** These constants control test cycles in the validateXXXX methods. */
+    private static final int TEST_CYCLE_INC   = 55;
+
+    /** Number of ms in five years */
+    private static final long FIVE_YEARS = 5 * 365
+            * SegmentedTimeline.DAY_SEGMENT_SIZE;
+
+    /** Number format object for ms tests. */
+    private static final NumberFormat NUMBER_FORMAT
+<span class="nc" id="L84">            = NumberFormat.getNumberInstance();</span>
+
+    /** Date format object for Monday through Friday tests. */
+    private static final SimpleDateFormat DATE_FORMAT;
+
+    /** Date format object 9:00 AM to 4:00 PM tests. */
+    private static final SimpleDateFormat DATE_TIME_FORMAT;
+
+    /** Some ms exceptions for ms testing. */
+<span class="nc" id="L93">    private static final String[] MS_EXCEPTIONS = {&quot;0&quot;, &quot;2&quot;, &quot;4&quot;, &quot;10&quot;, &quot;15&quot;,</span>
+        &quot;16&quot;, &quot;17&quot;, &quot;18&quot;, &quot;19&quot;, &quot;20&quot;, &quot;21&quot;, &quot;22&quot;, &quot;23&quot;, &quot;24&quot;, &quot;47&quot;, &quot;58&quot;,
+        &quot;100&quot;, &quot;101&quot;};
+
+     /** Some ms4 exceptions for ms testing. */
+<span class="nc" id="L98">     private static final String[] MS2_BASE_TIMELINE_EXCEPTIONS = {&quot;0&quot;, &quot;8&quot;,</span>
+         &quot;16&quot;, &quot;24&quot;, &quot;32&quot;, &quot;40&quot;, &quot;48&quot;, &quot;56&quot;, &quot;64&quot;, &quot;72&quot;, &quot;80&quot;, &quot;88&quot;, &quot;96&quot;,
+         &quot;104&quot;, &quot;112&quot;, &quot;120&quot;, &quot;128&quot;, &quot;136&quot;};
+
+    /** US non-trading dates in 2000 through 2002 to test exceptions. */
+<span class="nc" id="L103">    private static final String[] US_HOLIDAYS = {&quot;2000-01-17&quot;, &quot;2000-02-21&quot;,</span>
+        &quot;2000-04-21&quot;, &quot;2000-05-29&quot;, &quot;2000-07-04&quot;, &quot;2000-09-04&quot;, &quot;2000-11-23&quot;,
+        &quot;2000-12-25&quot;, &quot;2001-01-01&quot;, &quot;2001-01-15&quot;, &quot;2001-02-19&quot;, &quot;2001-04-13&quot;,
+        &quot;2001-05-28&quot;, &quot;2001-07-04&quot;, &quot;2001-09-03&quot;, &quot;2001-09-11&quot;, &quot;2001-09-12&quot;,
+        &quot;2001-09-13&quot;, &quot;2001-09-14&quot;, &quot;2001-11-22&quot;, &quot;2001-12-25&quot;, &quot;2002-01-01&quot;,
+        &quot;2002-01-21&quot;, &quot;2002-02-18&quot;, &quot;2002-03-29&quot;, &quot;2002-05-27&quot;, &quot;2002-07-04&quot;,
+        &quot;2002-09-02&quot;, &quot;2002-11-28&quot;, &quot;2002-12-25&quot;};
+
+     /** Some test exceptions for the fifteen min timeline. */
+<span class="nc" id="L112">     private static final String[] FIFTEEN_MIN_EXCEPTIONS = {</span>
+         &quot;2000-01-10 09:00:00&quot;, &quot;2000-01-10 09:15:00&quot;, &quot;2000-01-10 09:30:00&quot;,
+         &quot;2000-01-10 09:45:00&quot;, &quot;2000-01-10 10:00:00&quot;, &quot;2000-01-10 10:15:00&quot;,
+         &quot;2000-02-15 09:00:00&quot;, &quot;2000-02-15 09:15:00&quot;, &quot;2000-02-15 09:30:00&quot;,
+         &quot;2000-02-15 09:45:00&quot;, &quot;2000-02-15 10:00:00&quot;, &quot;2000-02-15 10:15:00&quot;,
+         &quot;2000-02-16 11:00:00&quot;, &quot;2000-02-16 11:15:00&quot;, &quot;2000-02-16 11:30:00&quot;,
+         &quot;2000-02-16 11:45:00&quot;, &quot;2000-02-16 12:00:00&quot;, &quot;2000-02-16 12:15:00&quot;,
+         &quot;2000-02-16 12:30:00&quot;, &quot;2000-02-16 12:45:00&quot;, &quot;2000-02-16 01:00:00&quot;,
+         &quot;2000-02-16 01:15:00&quot;, &quot;2000-02-16 01:30:00&quot;, &quot;2000-02-16 01:45:00&quot;,
+         &quot;2000-05-17 11:45:00&quot;, &quot;2000-05-17 12:00:00&quot;, &quot;2000-05-17 12:15:00&quot;,
+         &quot;2000-05-17 12:30:00&quot;, &quot;2000-05-17 12:45:00&quot;, &quot;2000-05-17 01:00:00&quot;,
+         &quot;2000-05-17 01:15:00&quot;, &quot;2000-05-17 01:30:00&quot;, &quot;2000-05-17 01:45:00&quot;,
+         &quot;2000-05-17 02:00:00&quot;, &quot;2000-05-17 02:15:00&quot;, &quot;2000-05-17 02:30:00&quot;,
+         &quot;2000-05-17 02:45:00&quot;, &quot;2000-05-17 03:00:00&quot;, &quot;2000-05-17 03:15:00&quot;,
+         &quot;2000-05-17 03:30:00&quot;, &quot;2000-05-17 03:45:00&quot;, &quot;2000-05-17 04:00:00&quot;};
+
+    /** Our 1-ms test timeline using 5 included and 2 excluded segments. */
+    private SegmentedTimeline msTimeline;
+
+    /**
+     * Our 1-ms test timeline (with baseTimeline) using 2 included and 2
+     * excluded segments.
+     */
+    private SegmentedTimeline ms2Timeline;
+
+    /**
+     * Our 4-ms test base timeline for ms2Timeline using 1 included and 1
+     * excluded segments
+     */
+    private SegmentedTimeline ms2BaseTimeline;
+
+    /** Our test Monday through Friday test timeline. */
+    private SegmentedTimeline mondayFridayTimeline;
+
+    /** Our 9:00 AM to 4:00 PM fifteen minute timeline. */
+    private SegmentedTimeline fifteenMinTimeline;
+
+    /** ms from 1970-01-01 to first monday after 2001-01-01. */
+    private Calendar monday;
+
+    /** ms from 1970-01-01 to 9 am first monday after 2001-01-01. */
+    private Calendar monday9am;
+
+    /** Static initialization block. */
+    static {
+<span class="nc" id="L157">        DATE_FORMAT = new SimpleDateFormat(&quot;yyyy-MM-dd&quot;);</span>
+<span class="nc" id="L158">        DATE_FORMAT.setTimeZone(SegmentedTimeline.NO_DST_TIME_ZONE);</span>
+
+<span class="nc" id="L160">        DATE_TIME_FORMAT = new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;);</span>
+<span class="nc" id="L161">        DATE_TIME_FORMAT.setTimeZone(SegmentedTimeline.NO_DST_TIME_ZONE);</span>
+<span class="nc" id="L162">    }</span>
+
+    /**
+     * Sets up the fixture, for example, open a network connection.
+     * This method is called before a test is executed.
+     *
+     * @throws Exception if there is a problem.
+     */
+    @Before
+    public void setUp() throws Exception {
+        // setup our test timelines
+        //
+        // Legend for comments below:
+        // &lt;spaces&gt; = Segments included in the final timeline
+        // EE       = Excluded segments via timeline rules
+        // xx       = Exception segments inherited from base timeline exclusions
+
+        // 1-ms test timeline using 5 included and 2 excluded segments.
+        //
+        // timeline start time = 0
+        //   |
+        //   v
+        //   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 ..
+        // +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+..
+        // |  |  |  |  |  |EE|EE|  |  |  |  |  |EE|EE|  |  |  |  |  |  |EE|EE|    &lt;-- msTimeline
+        // +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+..
+        //  \_________  ________/            \_/
+        //            \/                      |
+        //       segment group         segment size = 1 ms
+        //
+<span class="nc" id="L192">        this.msTimeline = new SegmentedTimeline(1, 5, 2);</span>
+<span class="nc" id="L193">        this.msTimeline.setStartTime(0);</span>
+
+        // 4-ms test base timeline for ms2Timeline using 1 included and 1
+        // excluded segments
+        //
+        // timeline start time = 0
+        //   |
+        //   v
+        //   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 ...
+        // +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+...
+        // |  |  |  |  |EE|EE|EE|EE|  |  |  |  |EE|EE|EE|EE|  |  |  |  |    &lt;-- ms2BaseTimeline
+        // +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+...
+        //  \__________  _________/            \____  _____/
+        //             \/                           \/
+        //        segment group              segment size = 4 ms
+        //
+<span class="nc" id="L209">        this.ms2BaseTimeline = new SegmentedTimeline(4, 1, 1);</span>
+<span class="nc" id="L210">        this.ms2BaseTimeline.setStartTime(0);</span>
+
+        // 1-ms test timeline (with a baseTimeline) using 2 included and 2
+        // excluded segments centered inside each base segment
+        //
+        // The ms2Timeline without a base would look like this:
+        //
+        //    timeline start time = 1
+        //      |
+        //      v
+        //   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 ...
+        // +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+...
+        // |EE|  |  |EE|EE|  |  |EE|EE|  |  |EE|EE|  |  |EE|EE|  |  |EE|    &lt;-- ms2Timeline
+        // +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+...
+        //    \____  _____/            \_/
+        //         \/                   |
+        //    segment group      segment size = 1 ms
+        //
+        // With the base timeline some originally included segments are now
+        // removed (see &quot;xx&quot; below):
+        //
+        //   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 ...
+        // +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+...
+        // |EE|  |  |EE|EE|xx|xx|EE|EE|  |  |EE|EE|xx|xx|EE|EE|  |  |EE|    &lt;-- ms2Timeline
+        // +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+...
+        // |  |  |  |  |EE|EE|EE|EE|  |  |  |  |EE|EE|EE|EE|  |  |  |  |    &lt;-- ms2BaseTimeline
+        // +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+...
+        //
+<span class="nc" id="L238">        this.ms2Timeline = new SegmentedTimeline(1, 2, 2);</span>
+<span class="nc" id="L239">        this.ms2Timeline.setStartTime(1);</span>
+<span class="nc" id="L240">        this.ms2Timeline.setBaseTimeline(this.ms2BaseTimeline);</span>
+
+        // test monday though friday timeline
+<span class="nc" id="L243">        this.mondayFridayTimeline</span>
+<span class="nc" id="L244">                = SegmentedTimeline.newMondayThroughFridayTimeline();</span>
+
+        // test 9am-4pm Monday through Friday timeline
+<span class="nc" id="L247">        this.fifteenMinTimeline</span>
+<span class="nc" id="L248">                = SegmentedTimeline.newFifteenMinuteTimeline();</span>
+
+        // find first Monday after 2001-01-01
+<span class="nc" id="L251">        Calendar cal = new GregorianCalendar(</span>
+                SegmentedTimeline.NO_DST_TIME_ZONE);
+<span class="nc" id="L253">        cal.set(2001, 0, 1, 0, 0, 0);</span>
+<span class="nc" id="L254">        cal.set(Calendar.MILLISECOND, 0);</span>
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        while (cal.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {</span>
+<span class="nc" id="L256">            cal.add(Calendar.DATE, 1);</span>
+        }
+<span class="nc" id="L258">        this.monday = (Calendar) cal.clone();</span>
+
+        // calculate 9am on the first Monday after 2001-01-01
+<span class="nc" id="L261">        cal.add(Calendar.HOUR, 9);</span>
+<span class="nc" id="L262">        this.monday9am = (Calendar) cal.clone();</span>
+<span class="nc" id="L263">    }</span>
+
+    //////////////////////////////////////////////////////////////////////////
+    // test construction process
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Tests that the new method that created the msTimeline segmented
+     * timeline did so correctly.
+     */
+    @Test
+    public void testMsSegmentedTimeline() {
+        // verify attributes set during object construction
+<span class="nc" id="L276">        assertEquals(1, this.msTimeline.getSegmentSize());</span>
+<span class="nc" id="L277">        assertEquals(0, this.msTimeline.getStartTime());</span>
+<span class="nc" id="L278">        assertEquals(5, this.msTimeline.getSegmentsIncluded());</span>
+<span class="nc" id="L279">        assertEquals(2, this.msTimeline.getSegmentsExcluded());</span>
+<span class="nc" id="L280">    }</span>
+
+    /**
+     * Tests that the new method that created the ms2Timeline segmented
+     * timeline did so correctly.
+     */
+    @Test
+    public void testMs2SegmentedTimeline() {
+        // verify attributes set during object construction
+<span class="nc" id="L289">        assertEquals(1, this.ms2Timeline.getSegmentSize());</span>
+<span class="nc" id="L290">        assertEquals(1, this.ms2Timeline.getStartTime());</span>
+<span class="nc" id="L291">        assertEquals(2, this.ms2Timeline.getSegmentsIncluded());</span>
+<span class="nc" id="L292">        assertEquals(2, this.ms2Timeline.getSegmentsExcluded());</span>
+<span class="nc" id="L293">        assertEquals(this.ms2BaseTimeline, this.ms2Timeline.getBaseTimeline());</span>
+<span class="nc" id="L294">    }</span>
+
+    /**
+     * Tests that the factory method that creates Monday through Friday
+     * segmented timeline does so correctly.
+     */
+    @Test
+    public void testMondayThroughFridaySegmentedTimeline() {
+        // verify attributes set during object construction
+<span class="nc" id="L303">        assertEquals(SegmentedTimeline.DAY_SEGMENT_SIZE,</span>
+<span class="nc" id="L304">                this.mondayFridayTimeline.getSegmentSize());</span>
+<span class="nc" id="L305">        assertEquals(SegmentedTimeline.FIRST_MONDAY_AFTER_1900,</span>
+<span class="nc" id="L306">                this.mondayFridayTimeline.getStartTime());</span>
+<span class="nc" id="L307">        assertEquals(5, this.mondayFridayTimeline.getSegmentsIncluded());</span>
+<span class="nc" id="L308">        assertEquals(2, this.mondayFridayTimeline.getSegmentsExcluded());</span>
+<span class="nc" id="L309">    }</span>
+
+    /**
+     * Tests that the factory method that creates a 15-min 9:00 AM  4:00 PM
+     * segmented axis does so correctly.
+     */
+    @Test
+    public void testFifteenMinSegmentedTimeline() {
+<span class="nc" id="L317">        assertEquals(SegmentedTimeline.FIFTEEN_MINUTE_SEGMENT_SIZE,</span>
+<span class="nc" id="L318">                this.fifteenMinTimeline.getSegmentSize());</span>
+<span class="nc" id="L319">        assertEquals(SegmentedTimeline.FIRST_MONDAY_AFTER_1900 + 36</span>
+<span class="nc" id="L320">                * this.fifteenMinTimeline.getSegmentSize(),</span>
+<span class="nc" id="L321">                this.fifteenMinTimeline.getStartTime());</span>
+<span class="nc" id="L322">        assertEquals(28, this.fifteenMinTimeline.getSegmentsIncluded());</span>
+<span class="nc" id="L323">        assertEquals(68, this.fifteenMinTimeline.getSegmentsExcluded());</span>
+<span class="nc" id="L324">    }</span>
+
+    //////////////////////////////////////////////////////////////////////////
+    // test one-segment and adjacent segments
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Tests one segment of the ms timeline. Internal indices
+     * inside one segment as well as adjacent segments are verified.
+     */
+    @Test
+    public void testMsSegment() {
+<span class="nc" id="L336">        verifyOneSegment(this.msTimeline);</span>
+<span class="nc" id="L337">    }</span>
+
+    /**
+     * Tests one segment of the ms timeline. Internal indices
+     * inside one segment as well as adjacent segments are verified.
+     */
+    @Test
+    public void testMs2Segment() {
+<span class="nc" id="L345">        verifyOneSegment(this.ms2Timeline);</span>
+<span class="nc" id="L346">    }</span>
+
+    /**
+     * Tests one segment of the Monday through Friday timeline. Internal indices
+     * inside one segment as well as adjacent segments are verified.
+     */
+    @Test
+    public void testMondayThroughFridaySegment() {
+<span class="nc" id="L354">        verifyOneSegment(this.mondayFridayTimeline);</span>
+<span class="nc" id="L355">    }</span>
+
+    /**
+     * Tests one segment of the Fifteen timeline. Internal indices
+     * inside one segment as well as adjacent segments are verified.
+     */
+    @Test
+    public void testFifteenMinSegment() {
+<span class="nc" id="L363">        verifyOneSegment(this.fifteenMinTimeline);</span>
+<span class="nc" id="L364">    }</span>
+
+    /**
+     * Tests one segment of the Monday through Friday timeline. Internal indices
+     * inside one segment as well as adjacent segments are verified.
+     * @param timeline the timeline to use for verifications.
+     */
+    public void verifyOneSegment(SegmentedTimeline timeline) {
+
+<span class="nc bnc" id="L373" title="All 2 branches missed.">        for (long testCycle = TEST_CYCLE_START; testCycle &lt; TEST_CYCLE_END;</span>
+<span class="nc" id="L374">             testCycle += TEST_CYCLE_INC) {</span>
+
+            // get two consecutive segments for various tests
+<span class="nc" id="L377">            SegmentedTimeline.Segment segment1 = timeline.getSegment(</span>
+<span class="nc" id="L378">                    this.monday.getTime().getTime() + testCycle);</span>
+<span class="nc" id="L379">            SegmentedTimeline.Segment segment2 = timeline.getSegment(</span>
+<span class="nc" id="L380">                    segment1.getSegmentEnd() + 1);</span>
+
+            // verify segments are consecutive and correct
+<span class="nc" id="L383">            assertEquals(segment1.getSegmentNumber() + 1,</span>
+<span class="nc" id="L384">                    segment2.getSegmentNumber());</span>
+<span class="nc" id="L385">            assertEquals(segment1.getSegmentEnd() + 1,</span>
+<span class="nc" id="L386">                    segment2.getSegmentStart());</span>
+<span class="nc" id="L387">            assertEquals(segment1.getSegmentStart()</span>
+<span class="nc" id="L388">                    + timeline.getSegmentSize() - 1, segment1.getSegmentEnd());</span>
+<span class="nc" id="L389">            assertEquals(segment1.getSegmentStart() + timeline.getSegmentSize(),</span>
+<span class="nc" id="L390">                    segment2.getSegmentStart());</span>
+<span class="nc" id="L391">            assertEquals(segment1.getSegmentEnd() + timeline.getSegmentSize(),</span>
+<span class="nc" id="L392">                    segment2.getSegmentEnd());</span>
+
+            // verify various indices inside a segment are the same segment
+            long delta;
+<span class="nc bnc" id="L396" title="All 2 branches missed.">            if (timeline.getSegmentSize() &gt; 1000000) {</span>
+<span class="nc" id="L397">                delta = timeline.getSegmentSize() / 10000;</span>
+            }
+<span class="nc bnc" id="L399" title="All 2 branches missed.">            else if (timeline.getSegmentSize() &gt; 100000) {</span>
+<span class="nc" id="L400">                delta = timeline.getSegmentSize() / 1000;</span>
+            }
+<span class="nc bnc" id="L402" title="All 2 branches missed.">            else if (timeline.getSegmentSize() &gt; 10000) {</span>
+<span class="nc" id="L403">                delta = timeline.getSegmentSize() / 100;</span>
+            }
+<span class="nc bnc" id="L405" title="All 2 branches missed.">            else if (timeline.getSegmentSize() &gt; 1000) {</span>
+<span class="nc" id="L406">                delta = timeline.getSegmentSize() / 10;</span>
+            }
+<span class="nc bnc" id="L408" title="All 2 branches missed.">            else if (timeline.getSegmentSize() &gt; 100) {</span>
+<span class="nc" id="L409">                delta = timeline.getSegmentSize() / 5;</span>
+            }
+            else {
+<span class="nc" id="L412">                delta = 1;</span>
+            }
+
+<span class="nc" id="L415">            long start = segment1.getSegmentStart() + delta;</span>
+<span class="nc" id="L416">            long end = segment1.getSegmentStart()</span>
+<span class="nc" id="L417">                       + timeline.getSegmentSize() - 1;</span>
+<span class="nc" id="L418">            SegmentedTimeline.Segment lastSeg = timeline.getSegment(</span>
+<span class="nc" id="L419">                    segment1.getSegmentStart());</span>
+            SegmentedTimeline.Segment seg;
+<span class="nc bnc" id="L421" title="All 2 branches missed.">            for (long i = start; i &lt; end; i += delta) {</span>
+<span class="nc" id="L422">                seg = timeline.getSegment(i);</span>
+<span class="nc" id="L423">                assertEquals(lastSeg.getSegmentNumber(),</span>
+<span class="nc" id="L424">                        seg.getSegmentNumber());</span>
+<span class="nc" id="L425">                assertEquals(lastSeg.getSegmentStart(), seg.getSegmentStart());</span>
+<span class="nc" id="L426">                assertEquals(lastSeg.getSegmentEnd(), seg.getSegmentEnd());</span>
+<span class="nc bnc" id="L427" title="All 2 branches missed.">                assertTrue(lastSeg.getMillisecond() &lt; seg.getMillisecond());</span>
+<span class="nc" id="L428">                lastSeg = seg;</span>
+            }
+
+            // try next segment
+<span class="nc" id="L432">            seg = timeline.getSegment(end + 1);</span>
+<span class="nc" id="L433">            assertEquals(segment2.getSegmentNumber(), seg.getSegmentNumber());</span>
+<span class="nc" id="L434">            assertEquals(segment2.getSegmentStart(), seg.getSegmentStart());</span>
+<span class="nc" id="L435">            assertEquals(segment2.getSegmentEnd(), seg.getSegmentEnd());</span>
+        }
+<span class="nc" id="L437">    }</span>
+
+    //////////////////////////////////////////////////////////////////////////
+    // test inc methods
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Tests the inc methods on the msTimeline.
+     */
+    @Test
+    public void testMsInc() {
+<span class="nc" id="L448">        verifyInc(this.msTimeline);</span>
+<span class="nc" id="L449">    }</span>
+
+    /**
+     * Tests the inc methods on the msTimeline.
+     */
+    @Test
+    public void testMs2Inc() {
+<span class="nc" id="L456">        verifyInc(this.ms2Timeline);</span>
+<span class="nc" id="L457">    }</span>
+
+    /**
+     * Tests the inc methods on the Monday through Friday timeline.
+     */
+    @Test
+    public void testMondayThroughFridayInc() {
+<span class="nc" id="L464">        verifyInc(this.mondayFridayTimeline);</span>
+<span class="nc" id="L465">    }</span>
+
+    /**
+     * Tests the inc methods on the Fifteen minute timeline.
+     */
+    @Test
+    public void testFifteenMinInc() {
+<span class="nc" id="L472">        verifyInc(this.fifteenMinTimeline);</span>
+<span class="nc" id="L473">    }</span>
+
+    /**
+     * Tests the inc methods.
+     * @param timeline the timeline to use for verifications.
+     */
+    public void verifyInc(SegmentedTimeline timeline) {
+<span class="nc bnc" id="L480" title="All 2 branches missed.">        for (long testCycle = TEST_CYCLE_START; testCycle &lt; TEST_CYCLE_END;</span>
+<span class="nc" id="L481">             testCycle += TEST_CYCLE_INC) {</span>
+
+<span class="nc" id="L483">            long m = timeline.getSegmentSize();</span>
+<span class="nc" id="L484">            SegmentedTimeline.Segment segment = timeline.getSegment(testCycle);</span>
+<span class="nc" id="L485">            SegmentedTimeline.Segment seg1 = segment.copy();</span>
+<span class="nc bnc" id="L486" title="All 2 branches missed.">            for (int i = 0; i &lt; 1000; i++) {</span>
+
+                // test inc() method
+<span class="nc" id="L489">                SegmentedTimeline.Segment seg2 = seg1.copy();</span>
+<span class="nc" id="L490">                seg2.inc();</span>
+
+<span class="nc bnc" id="L492" title="All 2 branches missed.">                if ((seg1.getSegmentEnd() + 1) != seg2.getSegmentStart()) {</span>
+                    // logically consecutive segments non-physically consecutive
+                    // (with non-contained time in between)
+<span class="nc bnc" id="L495" title="All 2 branches missed.">                    assertTrue(!timeline.containsDomainRange(</span>
+<span class="nc" id="L496">                            seg1.getSegmentEnd() + 1,</span>
+<span class="nc" id="L497">                            seg2.getSegmentStart() - 1));</span>
+<span class="nc" id="L498">                    assertEquals(0, (seg2.getSegmentStart()</span>
+<span class="nc" id="L499">                            - seg1.getSegmentStart()) % m);</span>
+<span class="nc" id="L500">                    assertEquals(0, (seg2.getSegmentEnd()</span>
+<span class="nc" id="L501">                            - seg1.getSegmentEnd()) % m);</span>
+<span class="nc" id="L502">                    assertEquals(0, (seg2.getMillisecond()</span>
+<span class="nc" id="L503">                            - seg1.getMillisecond()) % m);</span>
+                }
+                else {
+                    // physically consecutive
+<span class="nc" id="L507">                    assertEquals(seg1.getSegmentStart() + m,</span>
+<span class="nc" id="L508">                            seg2.getSegmentStart());</span>
+<span class="nc" id="L509">                    assertEquals(seg1.getSegmentEnd() + m,</span>
+<span class="nc" id="L510">                            seg2.getSegmentEnd());</span>
+<span class="nc" id="L511">                    assertEquals(seg1.getMillisecond() + m,</span>
+<span class="nc" id="L512">                            seg2.getMillisecond());</span>
+                }
+
+                // test inc(n) method
+<span class="nc" id="L516">                SegmentedTimeline.Segment seg3 = seg1.copy();</span>
+<span class="nc" id="L517">                SegmentedTimeline.Segment seg4 = seg1.copy();</span>
+
+<span class="nc bnc" id="L519" title="All 2 branches missed.">                for (int j = 0; j &lt; i; j++) {</span>
+<span class="nc" id="L520">                    seg3.inc();</span>
+                }
+<span class="nc" id="L522">                seg4.inc(i);</span>
+
+<span class="nc" id="L524">                assertEquals(seg3.getSegmentStart(), seg4.getSegmentStart());</span>
+<span class="nc" id="L525">                assertEquals(seg3.getSegmentEnd(), seg4.getSegmentEnd());</span>
+<span class="nc" id="L526">                assertEquals(seg3.getMillisecond(), seg4.getMillisecond());</span>
+
+                // go to another segment to continue test
+<span class="nc" id="L529">                seg1.inc();</span>
+            }
+        }
+<span class="nc" id="L532">    }</span>
+
+    //////////////////////////////////////////////////////////////////////////
+    // main include and excluded segments
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Tests that the msTimeline's included and excluded
+     * segments are being calculated correctly.
+     */
+    @Test
+    public void testMsIncludedAndExcludedSegments() {
+<span class="nc" id="L544">        verifyIncludedAndExcludedSegments(this.msTimeline, 0);</span>
+<span class="nc" id="L545">    }</span>
+
+    /**
+     * Tests that the ms2Timeline's included and excluded
+     * segments are being calculated correctly.
+     */
+    @Test
+    public void testMs2IncludedAndExcludedSegments() {
+<span class="nc" id="L553">        verifyIncludedAndExcludedSegments(this.ms2Timeline, 1);</span>
+<span class="nc" id="L554">    }</span>
+
+    /**
+     * Tests that the Monday through Friday timeline's included and excluded
+     * segments are being calculated correctly. The test is performed starting
+     * on the first monday after 1/1/2000 and for five years.
+     */
+    @Test
+    public void testMondayThroughFridayIncludedAndExcludedSegments() {
+<span class="nc" id="L563">        verifyIncludedAndExcludedSegments(this.mondayFridayTimeline,</span>
+<span class="nc" id="L564">                this.monday.getTime().getTime());</span>
+<span class="nc" id="L565">    }</span>
+
+    /**
+     * Tests that the Fifteen-Min timeline's included and excluded
+     * segments are being calculated correctly. The test is performed starting
+     * on the first monday after 1/1/2000 and for five years.
+     */
+    @Test
+    public void testFifteenMinIncludedAndExcludedSegments() {
+<span class="nc" id="L574">        verifyIncludedAndExcludedSegments(this.fifteenMinTimeline,</span>
+<span class="nc" id="L575">                this.monday9am.getTime().getTime());</span>
+<span class="nc" id="L576">    }</span>
+
+    /**
+     * Tests that a timeline's included and excluded segments are being
+     * calculated correctly.
+     *
+     * @param timeline the timeline to verify
+     * @param n the first segment number to start verifying
+     */
+    public void verifyIncludedAndExcludedSegments(SegmentedTimeline timeline,
+                                                  long n) {
+        // clear any exceptions in this timeline
+<span class="nc" id="L588">        timeline.setExceptionSegments(new java.util.ArrayList());</span>
+
+        // test some included and excluded segments
+<span class="nc" id="L591">        SegmentedTimeline.Segment segment = timeline.getSegment(n);</span>
+<span class="nc bnc" id="L592" title="All 2 branches missed.">        for (int i = 0; i &lt; 1000; i++) {</span>
+<span class="nc" id="L593">            int d = (i % timeline.getGroupSegmentCount());</span>
+<span class="nc bnc" id="L594" title="All 2 branches missed.">            if (d &lt; timeline.getSegmentsIncluded()) {</span>
+                // should be an included segment
+<span class="nc" id="L596">                assertTrue(segment.inIncludeSegments());</span>
+<span class="nc bnc" id="L597" title="All 2 branches missed.">                assertTrue(!segment.inExcludeSegments());</span>
+<span class="nc bnc" id="L598" title="All 2 branches missed.">                assertTrue(!segment.inExceptionSegments());</span>
+            }
+            else {
+                // should be an excluded segment
+<span class="nc bnc" id="L602" title="All 2 branches missed.">                assertTrue(!segment.inIncludeSegments());</span>
+<span class="nc" id="L603">                assertTrue(segment.inExcludeSegments());</span>
+<span class="nc bnc" id="L604" title="All 2 branches missed.">                assertTrue(!segment.inExceptionSegments());</span>
+            }
+<span class="nc" id="L606">            segment.inc();</span>
+        }
+<span class="nc" id="L608">    }</span>
+
+    //////////////////////////////////////////////////////////////////////////
+    // test exception segments
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Tests methods related to exceptions methods in the msTimeline.
+     *
+     * @throws ParseException if there is a parsing error.
+     */
+    @Test
+    public void testMsExceptionSegments() throws ParseException {
+<span class="nc" id="L621">        verifyExceptionSegments(this.msTimeline, MS_EXCEPTIONS, NUMBER_FORMAT);</span>
+<span class="nc" id="L622">    }</span>
+
+    /**
+     * Tests methods related to exceptions methods in the ms2BaseTimeline.
+     *
+     * @throws ParseException if there is a parsing error.
+     */
+    @Test
+    public void testMs2BaseTimelineExceptionSegments() throws ParseException {
+<span class="nc" id="L631">        verifyExceptionSegments(this.ms2BaseTimeline,</span>
+                MS2_BASE_TIMELINE_EXCEPTIONS, NUMBER_FORMAT);
+<span class="nc" id="L633">    }</span>
+
+    /**
+     * Tests methods related to exceptions methods in the mondayFridayTimeline.
+     *
+     * @throws ParseException if there is a parsing error.
+     */
+    @Test
+    public void testMondayThoughFridayExceptionSegments()
+        throws ParseException {
+<span class="nc" id="L643">        verifyExceptionSegments(this.mondayFridayTimeline,</span>
+                US_HOLIDAYS, DATE_FORMAT);
+<span class="nc" id="L645">    }</span>
+
+    /**
+     * Tests methods related to exceptions methods in the fifteenMinTimeline.
+     *
+     * @throws ParseException if there is a parsing error.
+     */
+    @Test
+    public void testFifteenMinExceptionSegments() throws ParseException {
+<span class="nc" id="L654">        verifyExceptionSegments(this.fifteenMinTimeline,</span>
+                FIFTEEN_MIN_EXCEPTIONS, DATE_TIME_FORMAT);
+<span class="nc" id="L656">    }</span>
+
+    /**
+     * Tests methods related to adding exceptions.
+     *
+     * @param timeline the timeline to verify
+     * @param exceptionString array of Strings that represent the exceptions
+     * @param fmt Format object that can parse the exceptionString strings
+     *
+     * @throws ParseException if there is a parsing error.
+     */
+    public void verifyExceptionSegments(SegmentedTimeline timeline,
+                                        String[] exceptionString,
+                                        Format fmt)
+        throws ParseException {
+
+        // fill in the exceptions
+<span class="nc" id="L673">        long[] exception = verifyFillInExceptions(timeline, exceptionString,</span>
+                fmt);
+
+<span class="nc" id="L676">        int m = exception.length;</span>
+
+        // verify list of exceptions
+<span class="nc" id="L679">        assertEquals(exception.length, timeline.getExceptionSegments().size());</span>
+<span class="nc" id="L680">        SegmentedTimeline.Segment lastSegment = timeline.getSegment(</span>
+                exception[m - 1]);
+<span class="nc bnc" id="L682" title="All 2 branches missed.">        for (int i = 0; i &lt; m; i++) {</span>
+<span class="nc" id="L683">            SegmentedTimeline.Segment segment = timeline.getSegment(</span>
+                    exception[i]);
+<span class="nc" id="L685">            assertTrue(segment.inExceptionSegments());</span>
+            // include current exception and last one
+<span class="nc" id="L687">            assertEquals(m - i, timeline.getExceptionSegmentCount(</span>
+<span class="nc" id="L688">                    segment.getSegmentStart(), lastSegment.getSegmentEnd()));</span>
+            // exclude current exception and last one
+<span class="nc" id="L690">            assertEquals(Math.max(0, m - i - 2),</span>
+<span class="nc" id="L691">                    timeline.getExceptionSegmentCount(exception[i] + 1,</span>
+                    exception[m - 1] - 1));
+        }
+
+<span class="nc" id="L695">    }</span>
+
+    //////////////////////////////////////////////////////////////////////////
+    // test timeline translations
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Tests translations for 1-ms timeline
+     *
+     * @throws ParseException if there is a parsing error.
+     */
+    @Test
+    public void testMsTranslations() throws ParseException {
+<span class="nc" id="L708">        verifyFillInExceptions(this.msTimeline, MS_EXCEPTIONS, NUMBER_FORMAT);</span>
+<span class="nc" id="L709">        verifyTranslations(this.msTimeline, 0);</span>
+<span class="nc" id="L710">    }</span>
+
+    /**
+     * Tests translations for the base timeline used for the ms2Timeline
+     *
+     * @throws ParseException if there is a parsing error.
+     */
+    @Test
+    public void testMs2BaseTimelineTranslations() throws ParseException {
+<span class="nc" id="L719">        verifyFillInExceptions(this.ms2BaseTimeline,</span>
+                MS2_BASE_TIMELINE_EXCEPTIONS, NUMBER_FORMAT);
+<span class="nc" id="L721">        verifyTranslations(this.ms2BaseTimeline, 0);</span>
+<span class="nc" id="L722">    }</span>
+
+    /**
+     * Tests translations for the Monday through Friday timeline
+     *
+     * @throws ParseException if there is a parsing error.
+     */
+    @Test
+    public void testMs2Translations() throws ParseException {
+<span class="nc" id="L731">        fillInBaseTimelineExceptions(this.ms2Timeline,</span>
+                MS2_BASE_TIMELINE_EXCEPTIONS, NUMBER_FORMAT);
+<span class="nc" id="L733">        fillInBaseTimelineExclusionsAsExceptions(this.ms2Timeline, 0, 5000);</span>
+<span class="nc" id="L734">        verifyTranslations(this.ms2Timeline, 1);</span>
+<span class="nc" id="L735">    }</span>
+
+    /**
+     * Tests translations for the Monday through Friday timeline
+     *
+     * @throws ParseException if there is a parsing error.
+     */
+    @Test
+    public void testMondayThroughFridayTranslations() throws ParseException {
+<span class="nc" id="L744">        verifyFillInExceptions(this.mondayFridayTimeline, US_HOLIDAYS,</span>
+                DATE_FORMAT);
+<span class="nc" id="L746">        verifyTranslations(this.mondayFridayTimeline,</span>
+<span class="nc" id="L747">                this.monday.getTime().getTime());</span>
+<span class="nc" id="L748">    }</span>
+
+    /**
+     * Tests translations for the Fifteen Min timeline
+     *
+     * @throws ParseException if there is a parsing error.
+     */
+    @Test
+    public void testFifteenMinTranslations() throws ParseException {
+<span class="nc" id="L757">        verifyFillInExceptions(this.fifteenMinTimeline,</span>
+                FIFTEEN_MIN_EXCEPTIONS, DATE_TIME_FORMAT);
+<span class="nc" id="L759">        fillInBaseTimelineExceptions(this.fifteenMinTimeline,</span>
+                US_HOLIDAYS, DATE_FORMAT);
+<span class="nc" id="L761">        fillInBaseTimelineExclusionsAsExceptions(this.fifteenMinTimeline,</span>
+<span class="nc" id="L762">                this.monday9am.getTime().getTime(),</span>
+<span class="nc" id="L763">                this.monday9am.getTime().getTime() + FIVE_YEARS);</span>
+<span class="nc" id="L764">        verifyTranslations(this.fifteenMinTimeline,</span>
+<span class="nc" id="L765">                this.monday9am.getTime().getTime());</span>
+<span class="nc" id="L766">    }</span>
+
+    /**
+     * Tests translations between timelines.
+     *
+     * @param timeline the timeline to use for verifications.
+     * @param startTest  ??.
+     */
+    public void verifyTranslations(SegmentedTimeline timeline, long startTest) {
+<span class="nc bnc" id="L775" title="All 2 branches missed.">        for (long testCycle = TEST_CYCLE_START; testCycle &lt; TEST_CYCLE_END;</span>
+<span class="nc" id="L776">             testCycle += TEST_CYCLE_INC) {</span>
+
+<span class="nc" id="L778">            long millisecond = startTest + testCycle</span>
+<span class="nc" id="L779">                               * timeline.getSegmentSize();</span>
+<span class="nc" id="L780">            SegmentedTimeline.Segment segment = timeline.getSegment(</span>
+                    millisecond);
+
+<span class="nc bnc" id="L783" title="All 2 branches missed.">            for (int i = 0; i &lt; 1000; i++) {</span>
+<span class="nc" id="L784">                long translatedValue = timeline.toTimelineValue(</span>
+<span class="nc" id="L785">                        segment.getMillisecond());</span>
+<span class="nc" id="L786">                long newValue = timeline.toMillisecond(translatedValue);</span>
+
+<span class="nc bnc" id="L788" title="All 2 branches missed.">                if (segment.inExcludeSegments()</span>
+<span class="nc bnc" id="L789" title="All 2 branches missed.">                        || segment.inExceptionSegments()) {</span>
+                    // the reverse transformed value will be in the start of the
+                    // next non-excluded and non-exception segment
+<span class="nc" id="L792">                    SegmentedTimeline.Segment tempSegment = segment.copy();</span>
+<span class="nc" id="L793">                    tempSegment.moveIndexToStart();</span>
+                    do {
+<span class="nc" id="L795">                        tempSegment.inc();</span>
+                    }
+<span class="nc bnc" id="L797" title="All 2 branches missed.">                    while (!tempSegment.inIncludeSegments());</span>
+<span class="nc" id="L798">                    assertEquals(tempSegment.getMillisecond(), newValue);</span>
+<span class="nc" id="L799">                }</span>
+
+                else {
+<span class="nc" id="L802">                    assertEquals(segment.getMillisecond(), newValue);</span>
+                }
+<span class="nc" id="L804">                segment.inc();</span>
+            }
+        }
+<span class="nc" id="L807">    }</span>
+
+    //////////////////////////////////////////////////////////////////////////
+    // test serialization
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    @Test
+    public void testSerialization() {
+<span class="nc" id="L818">        verifySerialization(this.msTimeline);</span>
+<span class="nc" id="L819">        verifySerialization(this.ms2Timeline);</span>
+<span class="nc" id="L820">        verifySerialization(this.ms2BaseTimeline);</span>
+<span class="nc" id="L821">        verifySerialization(SegmentedTimeline.newMondayThroughFridayTimeline());</span>
+<span class="nc" id="L822">        verifySerialization(SegmentedTimeline.newFifteenMinuteTimeline());</span>
+<span class="nc" id="L823">    }</span>
+
+    /**
+     * Tests serialization of an instance.
+     * @param a1 The timeline to verify the serialization
+     */
+    private void verifySerialization(SegmentedTimeline a1) {
+<span class="nc" id="L830">        SegmentedTimeline a2 = (SegmentedTimeline) TestUtilities.serialised(a1);</span>
+<span class="nc" id="L831">        assertEquals(a1, a2);</span>
+<span class="nc" id="L832">    }</span>
+
+    /**
+     * Adds an array of exceptions to the timeline. The timeline exception list
+     * is first cleared.
+     * @param timeline The timeline where the exceptions will be stored
+     * @param exceptionString The exceptions to load
+     * @param fmt The date formatter to use to parse each exceptions[i] value
+     * @throws ParseException If there is any exception parsing each
+     *         exceptions[i] value.
+     * @return An array of Dates[] containing each exception date.
+     */
+    private long[] verifyFillInExceptions(SegmentedTimeline timeline,
+                                         String[] exceptionString,
+                                         Format fmt) throws ParseException {
+        // make sure there are no exceptions
+<span class="nc" id="L848">        timeline.setExceptionSegments(new java.util.ArrayList());</span>
+<span class="nc" id="L849">        assertEquals(0, timeline.getExceptionSegments().size());</span>
+
+        // add our exceptions and store locally in ArrayList of Longs
+<span class="nc" id="L852">        ArrayList exceptionList = new ArrayList();</span>
+<span class="nc bnc" id="L853" title="All 2 branches missed.">        for (int i = 0; i &lt; exceptionString.length; i++) {</span>
+            long e;
+<span class="nc bnc" id="L855" title="All 2 branches missed.">            if (fmt instanceof NumberFormat) {</span>
+<span class="nc" id="L856">                e = ((NumberFormat) fmt).parse(exceptionString[i]).longValue();</span>
+            }
+            else {
+<span class="nc" id="L859">                e = timeline.getTime(((SimpleDateFormat) fmt)</span>
+<span class="nc" id="L860">                        .parse(exceptionString[i]));</span>
+            }
+            // only add an exception if it is currently an included segment
+<span class="nc" id="L863">            SegmentedTimeline.Segment segment = timeline.getSegment(e);</span>
+<span class="nc bnc" id="L864" title="All 2 branches missed.">            if (segment.inIncludeSegments()) {</span>
+<span class="nc" id="L865">                timeline.addException(e);</span>
+<span class="nc" id="L866">                exceptionList.add(new Long(e));</span>
+<span class="nc" id="L867">                assertEquals(exceptionList.size(),</span>
+<span class="nc" id="L868">                        timeline.getExceptionSegments().size());</span>
+<span class="nc" id="L869">                assertTrue(segment.inExceptionSegments());</span>
+            }
+        }
+
+        // make array of exceptions
+<span class="nc" id="L874">        long[] exception = new long[exceptionList.size()];</span>
+<span class="nc" id="L875">        int i = 0;</span>
+<span class="nc bnc" id="L876" title="All 2 branches missed.">        for (Iterator iter = exceptionList.iterator(); iter.hasNext();) {</span>
+<span class="nc" id="L877">            Long l = (Long) iter.next();</span>
+<span class="nc" id="L878">            exception[i++] = l.longValue();</span>
+<span class="nc" id="L879">        }</span>
+
+<span class="nc" id="L881">        return (exception);</span>
+
+    }
+
+    /**
+     * Adds an array of exceptions relative to the base timeline.
+     *
+     * @param timeline The timeline where the exceptions will be stored
+     * @param exceptionString The exceptions to load
+     * @param fmt The date formatter to use to parse each exceptions[i] value
+     * @throws ParseException If there is any exception parsing each
+     *                        exceptions[i] value.
+     */
+    private void fillInBaseTimelineExceptions(SegmentedTimeline timeline,
+                                             String[] exceptionString,
+                                             Format fmt) throws ParseException {
+<span class="nc" id="L897">        SegmentedTimeline baseTimeline = timeline.getBaseTimeline();</span>
+<span class="nc bnc" id="L898" title="All 2 branches missed.">        for (int i = 0; i &lt; exceptionString.length; i++) {</span>
+            long e;
+<span class="nc bnc" id="L900" title="All 2 branches missed.">            if (fmt instanceof NumberFormat) {</span>
+<span class="nc" id="L901">                e = ((NumberFormat) fmt).parse(exceptionString[i]).longValue();</span>
+            }
+            else {
+<span class="nc" id="L904">                e = timeline.getTime(((SimpleDateFormat) fmt)</span>
+<span class="nc" id="L905">                        .parse(exceptionString[i]));</span>
+            }
+<span class="nc" id="L907">            timeline.addBaseTimelineException(e);</span>
+
+            // verify all timeline segments included in the
+            // baseTimeline.segment are now exceptions
+<span class="nc" id="L911">            SegmentedTimeline.Segment segment1 = baseTimeline.getSegment(e);</span>
+<span class="nc" id="L912">            for (SegmentedTimeline.Segment segment2</span>
+<span class="nc" id="L913">                    = timeline.getSegment(segment1.getSegmentStart());</span>
+<span class="nc bnc" id="L914" title="All 2 branches missed.">                 segment2.getSegmentStart() &lt;= segment1.getSegmentEnd();</span>
+<span class="nc" id="L915">                 segment2.inc()) {</span>
+<span class="nc bnc" id="L916" title="All 2 branches missed.">                if (!segment2.inExcludeSegments()) {</span>
+<span class="nc" id="L917">                    assertTrue(segment2.inExceptionSegments());</span>
+                }
+            }
+
+        }
+<span class="nc" id="L922">    }</span>
+
+    /**
+     * Adds new exceptions to a timeline. The exceptions are the excluded
+     * segments from its base timeline.
+     *
+     * @param timeline  the timeline.
+     * @param from  the start.
+     * @param to  the end.
+     */
+    private void fillInBaseTimelineExclusionsAsExceptions(
+            SegmentedTimeline timeline, long from, long to) {
+
+        // add the base timeline exclusions as timeline's esceptions
+<span class="nc" id="L936">        timeline.addBaseTimelineExclusions(from, to);</span>
+
+        // validate base timeline exclusions added as timeline's esceptions
+<span class="nc" id="L939">        for (SegmentedTimeline.Segment segment1 = timeline.getBaseTimeline()</span>
+<span class="nc" id="L940">                .getSegment(from);</span>
+<span class="nc bnc" id="L941" title="All 2 branches missed.">             segment1.getSegmentStart() &lt;= to;</span>
+<span class="nc" id="L942">             segment1.inc()) {</span>
+
+<span class="nc bnc" id="L944" title="All 2 branches missed.">            if (segment1.inExcludeSegments()) {</span>
+
+                // verify all timeline segments included in the
+                // baseTimeline.segment are now exceptions
+<span class="nc" id="L948">                for (SegmentedTimeline.Segment segment2 = timeline.getSegment(</span>
+<span class="nc" id="L949">                        segment1.getSegmentStart());</span>
+<span class="nc bnc" id="L950" title="All 2 branches missed.">                    segment2.getSegmentStart() &lt;= segment1.getSegmentEnd();</span>
+<span class="nc" id="L951">                    segment2.inc()) {</span>
+<span class="nc bnc" id="L952" title="All 2 branches missed.">                    if (!segment2.inExcludeSegments()) {</span>
+<span class="nc" id="L953">                        assertTrue(segment2.inExceptionSegments());</span>
+                    }
+                }
+            }
+        }
+<span class="nc" id="L958">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    @Test
+    public void testCloning() throws CloneNotSupportedException {
+<span class="nc" id="L965">        SegmentedTimeline l1 = new SegmentedTimeline(1000, 5, 2);</span>
+<span class="nc" id="L966">        SegmentedTimeline l2 = (SegmentedTimeline) l1.clone();</span>
+<span class="nc bnc" id="L967" title="All 2 branches missed.">        assertTrue(l1 != l2);</span>
+<span class="nc bnc" id="L968" title="All 2 branches missed.">        assertTrue(l1.getClass() == l2.getClass());</span>
+<span class="nc" id="L969">        assertTrue(l1.equals(l2));</span>
+<span class="nc" id="L970">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    @Test
+    public void testEquals() {
+
+<span class="nc" id="L978">        SegmentedTimeline l1 = new SegmentedTimeline(1000, 5, 2);</span>
+<span class="nc" id="L979">        SegmentedTimeline l2 = new SegmentedTimeline(1000, 5, 2);</span>
+<span class="nc" id="L980">        assertTrue(l1.equals(l2));</span>
+
+<span class="nc" id="L982">        l1 = new SegmentedTimeline(1000, 5, 2);</span>
+<span class="nc" id="L983">        l2 = new SegmentedTimeline(1001, 5, 2);</span>
+<span class="nc" id="L984">        assertFalse(l1.equals(l2));</span>
+
+<span class="nc" id="L986">        l1 = new SegmentedTimeline(1000, 5, 2);</span>
+<span class="nc" id="L987">        l2 = new SegmentedTimeline(1000, 4, 2);</span>
+<span class="nc" id="L988">        assertFalse(l1.equals(l2));</span>
+
+<span class="nc" id="L990">        l1 = new SegmentedTimeline(1000, 5, 2);</span>
+<span class="nc" id="L991">        l2 = new SegmentedTimeline(1000, 5, 1);</span>
+<span class="nc" id="L992">        assertFalse(l1.equals(l2));</span>
+
+<span class="nc" id="L994">        l1 = new SegmentedTimeline(1000, 5, 2);</span>
+<span class="nc" id="L995">        l2 = new SegmentedTimeline(1000, 5, 2);</span>
+
+        // start time...
+<span class="nc" id="L998">        l1.setStartTime(1234L);</span>
+<span class="nc" id="L999">        assertFalse(l1.equals(l2));</span>
+<span class="nc" id="L1000">        l2.setStartTime(1234L);</span>
+<span class="nc" id="L1001">        assertTrue(l1.equals(l2));</span>
+
+<span class="nc" id="L1003">    }</span>
+
+    /**
+     * Two objects that are equal are required to return the same hashCode.
+     */
+    @Test
+    public void testHashCode() {
+<span class="nc" id="L1010">        SegmentedTimeline l1 = new SegmentedTimeline(1000, 5, 2);</span>
+<span class="nc" id="L1011">        SegmentedTimeline l2 = new SegmentedTimeline(1000, 5, 2);</span>
+<span class="nc" id="L1012">        assertTrue(l1.equals(l2));</span>
+<span class="nc" id="L1013">        int h1 = l1.hashCode();</span>
+<span class="nc" id="L1014">        int h2 = l2.hashCode();</span>
+<span class="nc" id="L1015">        assertEquals(h1, h2);</span>
+<span class="nc" id="L1016">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    @Test
+    public void testSerialization2() {
+<span class="nc" id="L1023">        SegmentedTimeline l1 = new SegmentedTimeline(1000, 5, 2);</span>
+<span class="nc" id="L1024">        SegmentedTimeline l2 = (SegmentedTimeline) TestUtilities.serialised(l1);</span>
+<span class="nc" id="L1025">        assertEquals(l1, l2);</span>
+<span class="nc" id="L1026">    }</span>
+
+    //////////////////////////////////////////////////////////////////////////
+    // utility methods
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Tests a basic segmented timeline.
+     */
+    @Test
+    public void testBasicSegmentedTimeline() {
+<span class="nc" id="L1037">        SegmentedTimeline stl = new SegmentedTimeline(10, 2, 3);</span>
+<span class="nc" id="L1038">        stl.setStartTime(946684800000L);  // 1-Jan-2000</span>
+<span class="nc" id="L1039">        assertFalse(stl.containsDomainValue(946684799999L));</span>
+<span class="nc" id="L1040">        assertTrue(stl.containsDomainValue(946684800000L));</span>
+<span class="nc" id="L1041">        assertTrue(stl.containsDomainValue(946684800019L));</span>
+<span class="nc" id="L1042">        assertFalse(stl.containsDomainValue(946684800020L));</span>
+<span class="nc" id="L1043">        assertFalse(stl.containsDomainValue(946684800049L));</span>
+<span class="nc" id="L1044">        assertTrue(stl.containsDomainValue(946684800050L));</span>
+<span class="nc" id="L1045">        assertTrue(stl.containsDomainValue(946684800069L));</span>
+<span class="nc" id="L1046">        assertFalse(stl.containsDomainValue(946684800070L));</span>
+<span class="nc" id="L1047">        assertFalse(stl.containsDomainValue(946684800099L));</span>
+<span class="nc" id="L1048">        assertTrue(stl.containsDomainValue(946684800100L));</span>
+
+<span class="nc" id="L1050">        assertEquals(0, stl.toTimelineValue(946684800000L));</span>
+<span class="nc" id="L1051">        assertEquals(19, stl.toTimelineValue(946684800019L));</span>
+<span class="nc" id="L1052">        assertEquals(20, stl.toTimelineValue(946684800020L));</span>
+<span class="nc" id="L1053">        assertEquals(20, stl.toTimelineValue(946684800049L));</span>
+<span class="nc" id="L1054">        assertEquals(20, stl.toTimelineValue(946684800050L));</span>
+<span class="nc" id="L1055">        assertEquals(39, stl.toTimelineValue(946684800069L));</span>
+<span class="nc" id="L1056">        assertEquals(40, stl.toTimelineValue(946684800070L));</span>
+<span class="nc" id="L1057">        assertEquals(40, stl.toTimelineValue(946684800099L));</span>
+<span class="nc" id="L1058">        assertEquals(40, stl.toTimelineValue(946684800100L));</span>
+
+<span class="nc" id="L1060">        assertEquals(946684800000L, stl.toMillisecond(0));</span>
+<span class="nc" id="L1061">        assertEquals(946684800019L, stl.toMillisecond(19));</span>
+<span class="nc" id="L1062">        assertEquals(946684800050L, stl.toMillisecond(20));</span>
+<span class="nc" id="L1063">        assertEquals(946684800069L, stl.toMillisecond(39));</span>
+<span class="nc" id="L1064">        assertEquals(946684800100L, stl.toMillisecond(40));</span>
+
+<span class="nc" id="L1066">    }</span>
+
+    /**
+     * Tests a basic time line with one exception.
+     */
+    @Test
+    public void testSegmentedTimelineWithException1() {
+<span class="nc" id="L1073">        SegmentedTimeline stl = new SegmentedTimeline(10, 2, 3);</span>
+<span class="nc" id="L1074">        stl.setStartTime(946684800000L);  // 1-Jan-2000</span>
+<span class="nc" id="L1075">        stl.addException(946684800050L);</span>
+<span class="nc" id="L1076">        assertFalse(stl.containsDomainValue(946684799999L));</span>
+<span class="nc" id="L1077">        assertTrue(stl.containsDomainValue(946684800000L));</span>
+<span class="nc" id="L1078">        assertTrue(stl.containsDomainValue(946684800019L));</span>
+<span class="nc" id="L1079">        assertFalse(stl.containsDomainValue(946684800020L));</span>
+<span class="nc" id="L1080">        assertFalse(stl.containsDomainValue(946684800049L));</span>
+<span class="nc" id="L1081">        assertFalse(stl.containsDomainValue(946684800050L));</span>
+<span class="nc" id="L1082">        assertFalse(stl.containsDomainValue(946684800059L));</span>
+<span class="nc" id="L1083">        assertTrue(stl.containsDomainValue(946684800060L));</span>
+<span class="nc" id="L1084">        assertTrue(stl.containsDomainValue(946684800069L));</span>
+<span class="nc" id="L1085">        assertFalse(stl.containsDomainValue(946684800070L));</span>
+<span class="nc" id="L1086">        assertFalse(stl.containsDomainValue(946684800099L));</span>
+<span class="nc" id="L1087">        assertTrue(stl.containsDomainValue(946684800100L));</span>
+
+        //long v = stl.toTimelineValue(946684800020L);
+<span class="nc" id="L1090">        assertEquals(0, stl.toTimelineValue(946684800000L));</span>
+<span class="nc" id="L1091">        assertEquals(19, stl.toTimelineValue(946684800019L));</span>
+<span class="nc" id="L1092">        assertEquals(20, stl.toTimelineValue(946684800020L));</span>
+<span class="nc" id="L1093">        assertEquals(20, stl.toTimelineValue(946684800049L));</span>
+<span class="nc" id="L1094">        assertEquals(20, stl.toTimelineValue(946684800050L));</span>
+<span class="nc" id="L1095">        assertEquals(29, stl.toTimelineValue(946684800069L));</span>
+<span class="nc" id="L1096">        assertEquals(30, stl.toTimelineValue(946684800070L));</span>
+<span class="nc" id="L1097">        assertEquals(30, stl.toTimelineValue(946684800099L));</span>
+<span class="nc" id="L1098">        assertEquals(30, stl.toTimelineValue(946684800100L));</span>
+
+<span class="nc" id="L1100">        assertEquals(946684800000L, stl.toMillisecond(0));</span>
+<span class="nc" id="L1101">        assertEquals(946684800019L, stl.toMillisecond(19));</span>
+<span class="nc" id="L1102">        assertEquals(946684800060L, stl.toMillisecond(20));</span>
+<span class="nc" id="L1103">        assertEquals(946684800069L, stl.toMillisecond(29));</span>
+<span class="nc" id="L1104">        assertEquals(946684800100L, stl.toMillisecond(30));</span>
+
+<span class="nc" id="L1106">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

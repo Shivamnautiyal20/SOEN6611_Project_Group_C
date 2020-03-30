@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultCategoryDatasetTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.data.category</a> &gt; <span class="el_source">DefaultCategoryDatasetTest.java</span></div><h1>DefaultCategoryDatasetTest.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * --------------------------------
+ * DefaultCategoryDatasetTests.java
+ * --------------------------------
+ * (C) Copyright 2004-2008, by Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   -;
+ *
+ * Changes
+ * -------
+ * 23-Mar-2004 : Version 1 (DG);
+ * 08-Mar-2007 : Added testCloning() (DG);
+ * 21-Nov-2007 : Added testBug1835955() method (DG);
+ * 09-May-2008 : Added testPublicCloneable() (DG);
+ *
+ */
+
+package org.jfree.data.category;
+
+import org.jfree.chart.TestUtilities;
+import org.jfree.data.UnknownKeyException;
+import org.jfree.util.PublicCloneable;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
+import org.junit.Test;
+
+/**
+ * Tests for the {@link DefaultCategoryDataset} class.
+ */
+<span class="fc" id="L59">public class DefaultCategoryDatasetTest {</span>
+
+    /**
+     * Some checks for the getValue() method.
+     */
+    @Test
+    public void testGetValue() {
+<span class="fc" id="L66">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="fc" id="L67">        d.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="fc" id="L68">        assertEquals(new Double(1.0), d.getValue(&quot;R1&quot;, &quot;C1&quot;));</span>
+<span class="fc" id="L69">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L71">            d.getValue(&quot;XX&quot;, &quot;C1&quot;);</span>
+        }
+<span class="fc" id="L73">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L74">            pass = true;</span>
+<span class="nc" id="L75">        }</span>
+<span class="fc" id="L76">        assertTrue(pass);</span>
+
+<span class="fc" id="L78">        pass = false;</span>
+        try {
+<span class="nc" id="L80">            d.getValue(&quot;R1&quot;, &quot;XX&quot;);</span>
+        }
+<span class="fc" id="L82">        catch (UnknownKeyException e) {</span>
+<span class="fc" id="L83">            pass = true;</span>
+<span class="nc" id="L84">        }</span>
+<span class="fc" id="L85">        assertTrue(pass);</span>
+<span class="fc" id="L86">    }</span>
+
+    /**
+     * A simple check for the getValue(int, int) method.
+     */
+    public void testGetValue2() {
+<span class="nc" id="L92">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="nc" id="L93">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L95">            /* Number n =*/ d.getValue(0, 0);</span>
+        }
+<span class="nc" id="L97">        catch (IndexOutOfBoundsException e) {</span>
+<span class="nc" id="L98">            pass = true;</span>
+<span class="nc" id="L99">        }</span>
+<span class="nc" id="L100">        assertTrue(pass);</span>
+<span class="nc" id="L101">    }</span>
+
+    /**
+     * Some checks for the incrementValue() method.
+     */
+    public void testIncrementValue() {
+<span class="nc" id="L107">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="nc" id="L108">        d.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L109">        d.incrementValue(2.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L110">        assertEquals(new Double(3.0), d.getValue(&quot;R1&quot;, &quot;C1&quot;));</span>
+
+        // increment a null value
+<span class="nc" id="L113">        d.addValue(null, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L114">        d.incrementValue(2.0, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L115">        assertEquals(new Double(2.0), d.getValue(&quot;R2&quot;, &quot;C1&quot;));</span>
+
+        // increment an unknown row
+<span class="nc" id="L118">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L120">            d.incrementValue(1.0, &quot;XX&quot;, &quot;C1&quot;);</span>
+        }
+<span class="nc" id="L122">        catch (UnknownKeyException e) {</span>
+<span class="nc" id="L123">            pass = true;</span>
+<span class="nc" id="L124">        }</span>
+<span class="nc" id="L125">        assertTrue(pass);</span>
+
+        // increment an unknown column
+<span class="nc" id="L128">        pass = false;</span>
+        try {
+<span class="nc" id="L130">            d.incrementValue(1.0, &quot;R1&quot;, &quot;XX&quot;);</span>
+        }
+<span class="nc" id="L132">        catch (UnknownKeyException e) {</span>
+<span class="nc" id="L133">            pass = true;</span>
+<span class="nc" id="L134">        }</span>
+<span class="nc" id="L135">        assertTrue(pass);</span>
+<span class="nc" id="L136">    }</span>
+
+    /**
+     * Some tests for the getRowCount() method.
+     */
+    public void testGetRowCount() {
+<span class="nc" id="L142">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        assertTrue(d.getRowCount() == 0);</span>
+
+<span class="nc" id="L145">        d.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        assertTrue(d.getRowCount() == 1);</span>
+
+<span class="nc" id="L148">        d.addValue(1.0, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        assertTrue(d.getRowCount() == 2);</span>
+
+<span class="nc" id="L151">        d.addValue(2.0, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        assertTrue(d.getRowCount() == 2);</span>
+
+        // a row of all null values is still counted...
+<span class="nc" id="L155">        d.setValue(null, &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        assertTrue(d.getRowCount() == 2);</span>
+<span class="nc" id="L157">    }</span>
+
+    /**
+     * Some tests for the getColumnCount() method.
+     */
+    public void testGetColumnCount() {
+<span class="nc" id="L163">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        assertTrue(d.getColumnCount() == 0);</span>
+
+<span class="nc" id="L166">        d.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        assertTrue(d.getColumnCount() == 1);</span>
+
+<span class="nc" id="L169">        d.addValue(1.0, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        assertTrue(d.getColumnCount() == 2);</span>
+
+<span class="nc" id="L172">        d.addValue(2.0, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        assertTrue(d.getColumnCount() == 2);</span>
+
+        // a column of all null values is still counted...
+<span class="nc" id="L176">        d.setValue(null, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">        assertTrue(d.getColumnCount() == 2);</span>
+<span class="nc" id="L178">    }</span>
+
+    /**
+     * Confirm that the equals method can distinguish all the required fields.
+     */
+    public void testEquals() {
+<span class="nc" id="L184">        DefaultCategoryDataset d1 = new DefaultCategoryDataset();</span>
+<span class="nc" id="L185">        d1.setValue(23.4, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L186">        DefaultCategoryDataset d2 = new DefaultCategoryDataset();</span>
+<span class="nc" id="L187">        d2.setValue(23.4, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L188">        assertTrue(d1.equals(d2));</span>
+<span class="nc" id="L189">        assertTrue(d2.equals(d1));</span>
+
+<span class="nc" id="L191">        d1.setValue(36.5, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="nc" id="L192">        assertFalse(d1.equals(d2));</span>
+<span class="nc" id="L193">        d2.setValue(36.5, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="nc" id="L194">        assertTrue(d1.equals(d2));</span>
+
+<span class="nc" id="L196">        d1.setValue(null, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L197">        assertFalse(d1.equals(d2));</span>
+<span class="nc" id="L198">        d2.setValue(null, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L199">        assertTrue(d1.equals(d2));</span>
+<span class="nc" id="L200">    }</span>
+
+    /**
+     * Serialize an instance, restore it, and check for equality.
+     */
+    public void testSerialization() {
+<span class="nc" id="L206">        DefaultCategoryDataset d1 = new DefaultCategoryDataset();</span>
+<span class="nc" id="L207">        d1.setValue(23.4, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L208">        DefaultCategoryDataset d2 = (DefaultCategoryDataset) </span>
+<span class="nc" id="L209">                TestUtilities.serialised(d1);</span>
+<span class="nc" id="L210">        assertEquals(d1, d2);</span>
+<span class="nc" id="L211">    }</span>
+
+    /**
+     * Some checks for the addValue() method.
+     */
+    public void testAddValue() {
+<span class="nc" id="L217">        DefaultCategoryDataset d1 = new DefaultCategoryDataset();</span>
+<span class="nc" id="L218">        d1.addValue(null, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L219">        assertNull(d1.getValue(&quot;R1&quot;, &quot;C1&quot;));</span>
+<span class="nc" id="L220">        d1.addValue(new Double(1.0), &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L221">        assertEquals(new Double(1.0), d1.getValue(&quot;R2&quot;, &quot;C1&quot;));</span>
+
+<span class="nc" id="L223">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L225">            d1.addValue(new Double(1.1), null, &quot;C2&quot;);</span>
+        }
+<span class="nc" id="L227">        catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L228">            pass = true;</span>
+<span class="nc" id="L229">        }</span>
+<span class="nc" id="L230">        assertTrue(pass);</span>
+<span class="nc" id="L231">    }</span>
+
+    /**
+     * Some basic checks for the removeValue() method.
+     */
+    public void testRemoveValue() {
+<span class="nc" id="L237">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="nc" id="L238">        d.removeValue(&quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L239">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L240">        d.removeValue(&quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L241">        assertEquals(0, d.getRowCount());</span>
+<span class="nc" id="L242">        assertEquals(0, d.getColumnCount());</span>
+
+<span class="nc" id="L244">        d.addValue(new Double(1.0), &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L245">        d.addValue(new Double(2.0), &quot;R2&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L246">        d.removeValue(&quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L247">        assertEquals(new Double(2.0), d.getValue(0, 0));</span>
+
+<span class="nc" id="L249">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L251">            d.removeValue(null, &quot;C1&quot;);</span>
+        }
+<span class="nc" id="L253">        catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L254">            pass = true;</span>
+<span class="nc" id="L255">        }</span>
+<span class="nc" id="L256">        assertTrue(pass);</span>
+
+<span class="nc" id="L258">        pass = false;</span>
+        try {
+<span class="nc" id="L260">            d.removeValue(&quot;R1&quot;, null);</span>
+        }
+<span class="nc" id="L262">        catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L263">            pass = true;</span>
+<span class="nc" id="L264">        }</span>
+<span class="nc" id="L265">        assertTrue(pass);</span>
+<span class="nc" id="L266">    }</span>
+
+    /**
+     * Confirm that cloning works.
+     */
+    public void testCloning() throws CloneNotSupportedException {
+<span class="nc" id="L272">        DefaultCategoryDataset d1 = new DefaultCategoryDataset();</span>
+<span class="nc" id="L273">        DefaultCategoryDataset d2 = (DefaultCategoryDataset) d1.clone();</span>
+
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="nc" id="L277">        assertTrue(d1.equals(d2));</span>
+
+        // try a dataset with some content...
+<span class="nc" id="L280">        d1.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L281">        d1.addValue(2.0, &quot;R1&quot;, &quot;C2&quot;);</span>
+<span class="nc" id="L282">        d2 = (DefaultCategoryDataset) d1.clone();</span>
+
+<span class="nc bnc" id="L284" title="All 2 branches missed.">        assertTrue(d1 != d2);</span>
+<span class="nc bnc" id="L285" title="All 2 branches missed.">        assertTrue(d1.getClass() == d2.getClass());</span>
+<span class="nc" id="L286">        assertTrue(d1.equals(d2));</span>
+
+        // check that the clone doesn't share the same underlying arrays.
+<span class="nc" id="L289">        d1.addValue(3.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L290">        assertFalse(d1.equals(d2));</span>
+<span class="nc" id="L291">        d2.addValue(3.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L292">        assertTrue(d1.equals(d2));</span>
+<span class="nc" id="L293">    }</span>
+
+    /**
+     * Check that this class implements PublicCloneable.
+     */
+    public void testPublicCloneable() {
+<span class="nc" id="L299">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="nc" id="L300">        assertTrue(d instanceof PublicCloneable);</span>
+<span class="nc" id="L301">    }</span>
+
+    private static final double EPSILON = 0.0000000001;
+
+    /**
+     * A test for bug 1835955.
+     */
+    public void testBug1835955() {
+<span class="nc" id="L309">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="nc" id="L310">        d.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L311">        d.addValue(2.0, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="nc" id="L312">        d.removeColumn(&quot;C2&quot;);</span>
+<span class="nc" id="L313">        d.addValue(3.0, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="nc" id="L314">        assertEquals(3.0, d.getValue(&quot;R2&quot;, &quot;C2&quot;).doubleValue(), EPSILON);</span>
+<span class="nc" id="L315">    }</span>
+
+    /**
+     * Some checks for the removeColumn(Comparable) method.
+     */
+    public void testRemoveColumn() {
+<span class="nc" id="L321">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="nc" id="L322">        d.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L323">        d.addValue(2.0, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="nc" id="L324">        assertEquals(2, d.getColumnCount());</span>
+<span class="nc" id="L325">        d.removeColumn(&quot;C2&quot;);</span>
+<span class="nc" id="L326">        assertEquals(1, d.getColumnCount());</span>
+
+<span class="nc" id="L328">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L330">            d.removeColumn(&quot;XXX&quot;);</span>
+        }
+<span class="nc" id="L332">        catch (UnknownKeyException e) {</span>
+<span class="nc" id="L333">            pass = true;</span>
+<span class="nc" id="L334">        }</span>
+<span class="nc" id="L335">        assertTrue(pass);</span>
+
+<span class="nc" id="L337">        pass = false;</span>
+        try {
+<span class="nc" id="L339">            d.removeColumn(null);</span>
+        }
+<span class="nc" id="L341">        catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L342">            pass = true;</span>
+<span class="nc" id="L343">        }</span>
+<span class="nc" id="L344">        assertTrue(pass);</span>
+<span class="nc" id="L345">    }</span>
+
+    /**
+     * Some checks for the removeRow(Comparable) method.
+     */
+    public void testRemoveRow() {
+<span class="nc" id="L351">        DefaultCategoryDataset d = new DefaultCategoryDataset();</span>
+<span class="nc" id="L352">        d.addValue(1.0, &quot;R1&quot;, &quot;C1&quot;);</span>
+<span class="nc" id="L353">        d.addValue(2.0, &quot;R2&quot;, &quot;C2&quot;);</span>
+<span class="nc" id="L354">        assertEquals(2, d.getRowCount());</span>
+<span class="nc" id="L355">        d.removeRow(&quot;R2&quot;);</span>
+<span class="nc" id="L356">        assertEquals(1, d.getRowCount());</span>
+
+<span class="nc" id="L358">        boolean pass = false;</span>
+        try {
+<span class="nc" id="L360">            d.removeRow(&quot;XXX&quot;);</span>
+        }
+<span class="nc" id="L362">        catch (UnknownKeyException e) {</span>
+<span class="nc" id="L363">            pass = true;</span>
+<span class="nc" id="L364">        }</span>
+<span class="nc" id="L365">        assertTrue(pass);</span>
+
+<span class="nc" id="L367">        pass = false;</span>
+        try {
+<span class="nc" id="L369">            d.removeRow(null);</span>
+        }
+<span class="nc" id="L371">        catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L372">            pass = true;</span>
+<span class="nc" id="L373">        }</span>
+<span class="nc" id="L374">        assertTrue(pass);</span>
+<span class="nc" id="L375">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

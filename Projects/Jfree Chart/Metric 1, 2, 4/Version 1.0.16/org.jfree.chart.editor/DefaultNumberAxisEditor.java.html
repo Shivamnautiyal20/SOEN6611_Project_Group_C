@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultNumberAxisEditor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jfreechart$JaCoCo.exec</a> &gt; <a href="index.source.html" class="el_package">org.jfree.chart.editor</a> &gt; <span class="el_source">DefaultNumberAxisEditor.java</span></div><h1>DefaultNumberAxisEditor.java</h1><pre class="source lang-java linenums">/* ===========================================================
+ * JFreeChart : a free chart library for the Java(tm) platform
+ * ===========================================================
+ *
+ * (C) Copyright 2000-2013, by Object Refinery Limited and Contributors.
+ *
+ * Project Info:  http://www.jfree.org/jfreechart/index.html
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
+ *
+ * [Oracle and Java are registered trademarks of Oracle and/or its affiliates. 
+ * Other names may be trademarks of their respective owners.]
+ *
+ * ----------------------------
+ * DefaultNumberAxisEditor.java
+ * ----------------------------
+ * (C) Copyright 2005-2009, Object Refinery Limited and Contributors.
+ *
+ * Original Author:  David Gilbert (for Object Refinery Limited);
+ * Contributor(s):   Arnaud Lelievre;
+ *
+ * Changes:
+ * --------
+ * 24-Nov-2005 : Version 1, based on NumberAxisPropertyEditor (DG);
+ * 18-Dec-2008 : Use ResourceBundleWrapper - see patch 1607918 by
+ *               Jess Thrysoee (DG);
+ * 27-Feb-2009 : Fixed bug 2612649, NullPointerException (DG);
+ * 03-Nov-2011 : Refactoring to use new DefaultValueAxisEditor (MH);
+ */
+
+package org.jfree.chart.editor;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import org.jfree.chart.axis.Axis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.layout.LCBLayout;
+
+/**
+ * A panel for editing the properties of a value axis.
+ */
+class DefaultNumberAxisEditor extends DefaultValueAxisEditor
+    implements FocusListener {
+
+    private double manualTickUnitValue;
+
+    private JTextField manualTickUnit;
+
+
+    /**
+     * Standard constructor: builds a property panel for the specified axis.
+     *
+     * @param axis  the axis, which should be changed.
+     */
+    public DefaultNumberAxisEditor(NumberAxis axis) {
+
+<span class="nc" id="L79">        super(axis);</span>
+
+<span class="nc" id="L81">        this.manualTickUnitValue = axis.getTickUnit().getSize();</span>
+<span class="nc" id="L82">        validateTickUnit();</span>
+<span class="nc" id="L83">    }</span>
+
+    protected JPanel createTickUnitPanel()
+    {
+<span class="nc" id="L87">        JPanel tickUnitPanel = new JPanel(new LCBLayout(3));</span>
+<span class="nc" id="L88">        tickUnitPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));</span>
+
+<span class="nc" id="L90">        tickUnitPanel.add(new JPanel());</span>
+<span class="nc" id="L91">        JCheckBox autoTickUnitSelectionCheckBox = new JCheckBox(</span>
+<span class="nc" id="L92">                localizationResources.getString(&quot;Auto-TickUnit_Selection&quot;),</span>
+<span class="nc" id="L93">                isAutoTickUnitSelection());</span>
+<span class="nc" id="L94">        autoTickUnitSelectionCheckBox.setActionCommand(&quot;AutoTickOnOff&quot;);</span>
+<span class="nc" id="L95">        autoTickUnitSelectionCheckBox.addActionListener(this);</span>
+<span class="nc" id="L96">        setAutoTickUnitSelectionCheckBox(autoTickUnitSelectionCheckBox);</span>
+<span class="nc" id="L97">        tickUnitPanel.add(getAutoTickUnitSelectionCheckBox());</span>
+<span class="nc" id="L98">        tickUnitPanel.add(new JPanel());</span>
+
+<span class="nc" id="L100">        tickUnitPanel.add(new JLabel(localizationResources.getString(</span>
+                &quot;Manual_TickUnit_value&quot;)));
+<span class="nc" id="L102">        this.manualTickUnit = new JTextField(Double.toString(</span>
+                this.manualTickUnitValue));
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        this.manualTickUnit.setEnabled(!isAutoTickUnitSelection());</span>
+<span class="nc" id="L105">        this.manualTickUnit.setActionCommand(&quot;TickUnitValue&quot;);</span>
+<span class="nc" id="L106">        this.manualTickUnit.addActionListener(this);</span>
+<span class="nc" id="L107">        this.manualTickUnit.addFocusListener(this);</span>
+<span class="nc" id="L108">        tickUnitPanel.add(this.manualTickUnit);</span>
+<span class="nc" id="L109">        tickUnitPanel.add(new JPanel());</span>
+
+<span class="nc" id="L111">        return tickUnitPanel;</span>
+    }
+
+    /**
+     * Handles actions from within the property panel.
+     * @param event an event.
+     */
+    public void actionPerformed(ActionEvent event) {
+<span class="nc" id="L119">        String command = event.getActionCommand();</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (command.equals(&quot;TickUnitValue&quot;)) {</span>
+<span class="nc" id="L121">            validateTickUnit();</span>
+        }
+        else {
+            // pass to the super-class for handling
+<span class="nc" id="L125">            super.actionPerformed(event);</span>
+        }
+<span class="nc" id="L127">    }</span>
+
+    public void focusLost(FocusEvent event) {
+<span class="nc" id="L130">        super.focusLost(event);</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        if (event.getSource() == this.manualTickUnit) {</span>
+<span class="nc" id="L132">            validateTickUnit();</span>
+        }
+<span class="nc" id="L134">    }</span>
+
+    public void toggleAutoTick() {
+<span class="nc" id="L137">        super.toggleAutoTick();</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        if (isAutoTickUnitSelection()) {</span>
+<span class="nc" id="L139">            this.manualTickUnit.setText(Double.toString(this.manualTickUnitValue));</span>
+<span class="nc" id="L140">            this.manualTickUnit.setEnabled(false);</span>
+        }
+        else {
+<span class="nc" id="L143">            this.manualTickUnit.setEnabled(true);</span>
+        }
+<span class="nc" id="L145">    }</span>
+
+    public void validateTickUnit() {
+        double newTickUnit;
+        try {
+<span class="nc" id="L150">            newTickUnit = Double.parseDouble(this.manualTickUnit.getText());</span>
+        }
+<span class="nc" id="L152">        catch (NumberFormatException e) {</span>
+<span class="nc" id="L153">            newTickUnit = this.manualTickUnitValue;</span>
+<span class="nc" id="L154">        }</span>
+
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (newTickUnit &gt; 0.0) {</span>
+<span class="nc" id="L157">            this.manualTickUnitValue = newTickUnit;</span>
+        }
+<span class="nc" id="L159">        this.manualTickUnit.setText(Double.toString(this.manualTickUnitValue));</span>
+<span class="nc" id="L160">    }</span>
+
+    /**
+     * Sets the properties of the specified axis to match the properties
+     * defined on this panel.
+     *
+     * @param axis  the axis.
+     */
+    public void setAxisProperties(Axis axis) {
+<span class="nc" id="L169">        super.setAxisProperties(axis);</span>
+<span class="nc" id="L170">        NumberAxis numberAxis = (NumberAxis) axis;</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">        if (!isAutoTickUnitSelection()) {</span>
+<span class="nc" id="L172">            numberAxis.setTickUnit(new NumberTickUnit(manualTickUnitValue));</span>
+        }
+<span class="nc" id="L174">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
