@@ -1,6 +1,6 @@
 # Project Structure
 
-The main folder is called Project, which contains four folders:
+### 1. The foldercalled Project, which contains four folders:
 
 * Apache Commons Configuration.
 * Apache Commons Math.
@@ -12,11 +12,14 @@ Each of the four folders is named after the respective project. Each of these fo
 The pom files for the five different versions of each project.
 Folders named 'Metric 1,2,4', Metric3, Metric5, Metric6 containing the results for the respective metric.
 
-## Documents: 
+### 2. Folder Correlation Data Analysis: 
+Which contains the correlation data and the correlation coefficients in seperate .xlsx files as well as the .csv files extracted from the Pit and Jacoco.
+It also contains the steps and description about the tool used to generate correlation and cofficient.
+
+### 3. Documents: 
 Contains all of the reports and documents related to this project.
 
-## Folder Correlation Data Analysis: 
-Which contains the correlation data and the correlation coefficients in seperate .xlsx files as well as the .csv files extracted from the Pit and Jacoco.
+
 
 # Project Description
 
