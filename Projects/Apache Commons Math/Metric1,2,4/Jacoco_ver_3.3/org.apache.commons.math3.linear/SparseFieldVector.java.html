@@ -1,0 +1,795 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SparseFieldVector.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Math</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math3.linear</a> &gt; <span class="el_source">SparseFieldVector.java</span></div><h1>SparseFieldVector.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.math3.linear;
+
+import java.io.Serializable;
+
+import org.apache.commons.math3.Field;
+import org.apache.commons.math3.FieldElement;
+import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.exception.MathArithmeticException;
+import org.apache.commons.math3.exception.NotPositiveException;
+import org.apache.commons.math3.exception.NullArgumentException;
+import org.apache.commons.math3.exception.NumberIsTooSmallException;
+import org.apache.commons.math3.exception.OutOfRangeException;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.apache.commons.math3.util.MathArrays;
+import org.apache.commons.math3.util.MathUtils;
+import org.apache.commons.math3.util.OpenIntToFieldHashMap;
+
+/**
+ * This class implements the {@link FieldVector} interface with a {@link OpenIntToFieldHashMap} backing store.
+ * &lt;p&gt;
+ *  Caveat: This implementation assumes that, for any {@code x},
+ *  the equality {@code x * 0d == 0d} holds. But it is is not true for
+ *  {@code NaN}. Moreover, zero entries will lose their sign.
+ *  Some operations (that involve {@code NaN} and/or infinities) may
+ *  thus give incorrect results.
+ * &lt;/p&gt;
+ * @param &lt;T&gt; the type of the field elements
+ * @version $Id$
+ * @since 2.0
+ */
+public class SparseFieldVector&lt;T extends FieldElement&lt;T&gt;&gt; implements FieldVector&lt;T&gt;, Serializable {
+    /**  Serialization identifier. */
+    private static final long serialVersionUID = 7841233292190413362L;
+    /** Field to which the elements belong. */
+    private final Field&lt;T&gt; field;
+    /** Entries of the vector. */
+    private final OpenIntToFieldHashMap&lt;T&gt; entries;
+    /** Dimension of the vector. */
+    private final int virtualSize;
+
+    /**
+     * Build a 0-length vector.
+     * Zero-length vectors may be used to initialize construction of vectors
+     * by data gathering. We start with zero-length and use either the {@link
+     * #SparseFieldVector(SparseFieldVector, int)} constructor
+     * or one of the {@code append} method ({@link #append(FieldVector)} or
+     * {@link #append(SparseFieldVector)}) to gather data into this vector.
+     *
+     * @param field Field to which the elements belong.
+     */
+    public SparseFieldVector(Field&lt;T&gt; field) {
+<span class="nc" id="L68">        this(field, 0);</span>
+<span class="nc" id="L69">    }</span>
+
+
+    /**
+     * Construct a vector of zeroes.
+     *
+     * @param field Field to which the elements belong.
+     * @param dimension Size of the vector.
+     */
+<span class="fc" id="L78">    public SparseFieldVector(Field&lt;T&gt; field, int dimension) {</span>
+<span class="fc" id="L79">        this.field = field;</span>
+<span class="fc" id="L80">        virtualSize = dimension;</span>
+<span class="fc" id="L81">        entries = new OpenIntToFieldHashMap&lt;T&gt;(field);</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Build a resized vector, for use with append.
+     *
+     * @param v Original vector
+     * @param resize Amount to add.
+     */
+<span class="nc" id="L90">    protected SparseFieldVector(SparseFieldVector&lt;T&gt; v, int resize) {</span>
+<span class="nc" id="L91">        field = v.field;</span>
+<span class="nc" id="L92">        virtualSize = v.getDimension() + resize;</span>
+<span class="nc" id="L93">        entries = new OpenIntToFieldHashMap&lt;T&gt;(v.entries);</span>
+<span class="nc" id="L94">    }</span>
+
+
+    /**
+     * Build a vector with known the sparseness (for advanced use only).
+     *
+     * @param field Field to which the elements belong.
+     * @param dimension Size of the vector.
+     * @param expectedSize Expected number of non-zero entries.
+     */
+<span class="nc" id="L104">    public SparseFieldVector(Field&lt;T&gt; field, int dimension, int expectedSize) {</span>
+<span class="nc" id="L105">        this.field = field;</span>
+<span class="nc" id="L106">        virtualSize = dimension;</span>
+<span class="nc" id="L107">        entries = new OpenIntToFieldHashMap&lt;T&gt;(field,expectedSize);</span>
+<span class="nc" id="L108">    }</span>
+
+    /**
+     * Create from a Field array.
+     * Only non-zero entries will be stored.
+     *
+     * @param field Field to which the elements belong.
+     * @param values Set of values to create from.
+     * @exception NullArgumentException if values is null
+     */
+<span class="fc" id="L118">    public SparseFieldVector(Field&lt;T&gt; field, T[] values) throws NullArgumentException {</span>
+<span class="fc" id="L119">        MathUtils.checkNotNull(values);</span>
+<span class="fc" id="L120">        this.field = field;</span>
+<span class="fc" id="L121">        virtualSize = values.length;</span>
+<span class="fc" id="L122">        entries = new OpenIntToFieldHashMap&lt;T&gt;(field);</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        for (int key = 0; key &lt; values.length; key++) {</span>
+<span class="fc" id="L124">            T value = values[key];</span>
+<span class="fc" id="L125">            entries.put(key, value);</span>
+        }
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Copy constructor.
+     *
+     * @param v Instance to copy.
+     */
+<span class="fc" id="L134">    public SparseFieldVector(SparseFieldVector&lt;T&gt; v) {</span>
+<span class="fc" id="L135">        field = v.field;</span>
+<span class="fc" id="L136">        virtualSize = v.getDimension();</span>
+<span class="fc" id="L137">        entries = new OpenIntToFieldHashMap&lt;T&gt;(v.getEntries());</span>
+<span class="fc" id="L138">    }</span>
+
+    /**
+     * Get the entries of this instance.
+     *
+     * @return the entries of this instance
+     */
+    private OpenIntToFieldHashMap&lt;T&gt; getEntries() {
+<span class="fc" id="L146">        return entries;</span>
+    }
+
+    /**
+     * Optimized method to add sparse vectors.
+     *
+     * @param v Vector to add.
+     * @return {@code this + v}.
+     * @throws DimensionMismatchException if {@code v} is not the same size as
+     * {@code this}.
+     */
+    public FieldVector&lt;T&gt; add(SparseFieldVector&lt;T&gt; v)
+        throws DimensionMismatchException {
+<span class="fc" id="L159">        checkVectorDimensions(v.getDimension());</span>
+<span class="fc" id="L160">        SparseFieldVector&lt;T&gt; res = (SparseFieldVector&lt;T&gt;)copy();</span>
+<span class="fc" id="L161">        OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = v.getEntries().iterator();</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L163">            iter.advance();</span>
+<span class="fc" id="L164">            int key = iter.key();</span>
+<span class="fc" id="L165">            T value = iter.value();</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">            if (entries.containsKey(key)) {</span>
+<span class="fc" id="L167">                res.setEntry(key, entries.get(key).add(value));</span>
+            } else {
+<span class="nc" id="L169">                res.setEntry(key, value);</span>
+            }
+<span class="fc" id="L171">        }</span>
+<span class="fc" id="L172">        return res;</span>
+
+    }
+
+    /**
+     * Construct a vector by appending a vector to this vector.
+     *
+     * @param v Vector to append to this one.
+     * @return a new vector.
+     */
+    public FieldVector&lt;T&gt; append(SparseFieldVector&lt;T&gt; v) {
+<span class="nc" id="L183">        SparseFieldVector&lt;T&gt; res = new SparseFieldVector&lt;T&gt;(this, v.getDimension());</span>
+<span class="nc" id="L184">        OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = v.entries.iterator();</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">        while (iter.hasNext()) {</span>
+<span class="nc" id="L186">            iter.advance();</span>
+<span class="nc" id="L187">            res.setEntry(iter.key() + virtualSize, iter.value());</span>
+        }
+<span class="nc" id="L189">        return res;</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; append(FieldVector&lt;T&gt; v) {
+<span class="nc bnc" id="L194" title="All 2 branches missed.">        if (v instanceof SparseFieldVector&lt;?&gt;) {</span>
+<span class="nc" id="L195">            return append((SparseFieldVector&lt;T&gt;) v);</span>
+        } else {
+<span class="nc" id="L197">            final int n = v.getDimension();</span>
+<span class="nc" id="L198">            FieldVector&lt;T&gt; res = new SparseFieldVector&lt;T&gt;(this, n);</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L200">                res.setEntry(i + virtualSize, v.getEntry(i));</span>
+            }
+<span class="nc" id="L202">            return res;</span>
+        }
+    }
+
+    /** {@inheritDoc}
+     * @exception NullArgumentException if d is null
+     */
+    public FieldVector&lt;T&gt; append(T d) throws NullArgumentException {
+<span class="nc" id="L210">        MathUtils.checkNotNull(d);</span>
+<span class="nc" id="L211">        FieldVector&lt;T&gt; res = new SparseFieldVector&lt;T&gt;(this, 1);</span>
+<span class="nc" id="L212">        res.setEntry(virtualSize, d);</span>
+<span class="nc" id="L213">        return res;</span>
+     }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; copy() {
+<span class="fc" id="L218">        return new SparseFieldVector&lt;T&gt;(this);</span>
+    }
+
+    /** {@inheritDoc} */
+    public T dotProduct(FieldVector&lt;T&gt; v) throws DimensionMismatchException {
+<span class="fc" id="L223">        checkVectorDimensions(v.getDimension());</span>
+<span class="fc" id="L224">        T res = field.getZero();</span>
+<span class="fc" id="L225">        OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = entries.iterator();</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L227">            iter.advance();</span>
+<span class="fc" id="L228">            res = res.add(v.getEntry(iter.key()).multiply(iter.value()));</span>
+        }
+<span class="fc" id="L230">        return res;</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; ebeDivide(FieldVector&lt;T&gt; v)
+        throws DimensionMismatchException, MathArithmeticException {
+<span class="fc" id="L236">        checkVectorDimensions(v.getDimension());</span>
+<span class="fc" id="L237">        SparseFieldVector&lt;T&gt; res = new SparseFieldVector&lt;T&gt;(this);</span>
+<span class="fc" id="L238">        OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = res.entries.iterator();</span>
+<span class="fc bfc" id="L239" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L240">            iter.advance();</span>
+<span class="fc" id="L241">            res.setEntry(iter.key(), iter.value().divide(v.getEntry(iter.key())));</span>
+        }
+<span class="fc" id="L243">        return res;</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; ebeMultiply(FieldVector&lt;T&gt; v)
+        throws DimensionMismatchException {
+<span class="fc" id="L249">        checkVectorDimensions(v.getDimension());</span>
+<span class="fc" id="L250">        SparseFieldVector&lt;T&gt; res = new SparseFieldVector&lt;T&gt;(this);</span>
+<span class="fc" id="L251">        OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = res.entries.iterator();</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L253">            iter.advance();</span>
+<span class="fc" id="L254">            res.setEntry(iter.key(), iter.value().multiply(v.getEntry(iter.key())));</span>
+        }
+<span class="fc" id="L256">        return res;</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @deprecated as of 3.1, to be removed in 4.0. Please use the {@link #toArray()} method instead.
+     */
+    @Deprecated
+    public T[] getData() {
+<span class="nc" id="L266">        return toArray();</span>
+    }
+
+    /** {@inheritDoc} */
+    public int getDimension() {
+<span class="fc" id="L271">        return virtualSize;</span>
+    }
+
+    /** {@inheritDoc} */
+    public T getEntry(int index) throws OutOfRangeException {
+<span class="fc" id="L276">        checkIndex(index);</span>
+<span class="fc" id="L277">        return entries.get(index);</span>
+   }
+
+    /** {@inheritDoc} */
+    public Field&lt;T&gt; getField() {
+<span class="nc" id="L282">        return field;</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; getSubVector(int index, int n)
+        throws OutOfRangeException, NotPositiveException {
+<span class="nc bnc" id="L288" title="All 2 branches missed.">        if (n &lt; 0) {</span>
+<span class="nc" id="L289">            throw new NotPositiveException(LocalizedFormats.NUMBER_OF_ELEMENTS_SHOULD_BE_POSITIVE, n);</span>
+        }
+<span class="nc" id="L291">        checkIndex(index);</span>
+<span class="nc" id="L292">        checkIndex(index + n - 1);</span>
+<span class="nc" id="L293">        SparseFieldVector&lt;T&gt; res = new SparseFieldVector&lt;T&gt;(field,n);</span>
+<span class="nc" id="L294">        int end = index + n;</span>
+<span class="nc" id="L295">        OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = entries.iterator();</span>
+<span class="nc bnc" id="L296" title="All 2 branches missed.">        while (iter.hasNext()) {</span>
+<span class="nc" id="L297">            iter.advance();</span>
+<span class="nc" id="L298">            int key = iter.key();</span>
+<span class="nc bnc" id="L299" title="All 4 branches missed.">            if (key &gt;= index &amp;&amp; key &lt; end) {</span>
+<span class="nc" id="L300">                res.setEntry(key - index, iter.value());</span>
+            }
+<span class="nc" id="L302">        }</span>
+<span class="nc" id="L303">        return res;</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; mapAdd(T d) throws NullArgumentException {
+<span class="fc" id="L308">        return copy().mapAddToSelf(d);</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; mapAddToSelf(T d) throws NullArgumentException {
+<span class="fc bfc" id="L313" title="All 2 branches covered.">        for (int i = 0; i &lt; virtualSize; i++) {</span>
+<span class="fc" id="L314">            setEntry(i, getEntry(i).add(d));</span>
+        }
+<span class="fc" id="L316">        return this;</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; mapDivide(T d)
+        throws NullArgumentException, MathArithmeticException {
+<span class="fc" id="L322">        return copy().mapDivideToSelf(d);</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; mapDivideToSelf(T d)
+        throws NullArgumentException, MathArithmeticException {
+<span class="fc" id="L328">        OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = entries.iterator();</span>
+<span class="fc bfc" id="L329" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L330">            iter.advance();</span>
+<span class="fc" id="L331">            entries.put(iter.key(), iter.value().divide(d));</span>
+        }
+<span class="fc" id="L333">        return this;</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; mapInv() throws MathArithmeticException {
+<span class="fc" id="L338">        return copy().mapInvToSelf();</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; mapInvToSelf() throws MathArithmeticException {
+<span class="fc bfc" id="L343" title="All 2 branches covered.">        for (int i = 0; i &lt; virtualSize; i++) {</span>
+<span class="fc" id="L344">            setEntry(i, field.getOne().divide(getEntry(i)));</span>
+        }
+<span class="fc" id="L346">        return this;</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; mapMultiply(T d) throws NullArgumentException {
+<span class="fc" id="L351">        return copy().mapMultiplyToSelf(d);</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; mapMultiplyToSelf(T d) throws NullArgumentException {
+<span class="fc" id="L356">        OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = entries.iterator();</span>
+<span class="fc bfc" id="L357" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L358">            iter.advance();</span>
+<span class="fc" id="L359">            entries.put(iter.key(), iter.value().multiply(d));</span>
+        }
+<span class="fc" id="L361">        return this;</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; mapSubtract(T d) throws NullArgumentException {
+<span class="fc" id="L366">        return copy().mapSubtractToSelf(d);</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; mapSubtractToSelf(T d) throws NullArgumentException {
+<span class="fc" id="L371">        return mapAddToSelf(field.getZero().subtract(d));</span>
+    }
+
+    /**
+     * Optimized method to compute outer product when both vectors are sparse.
+     * @param v vector with which outer product should be computed
+     * @return the matrix outer product between instance and v
+     */
+    public FieldMatrix&lt;T&gt; outerProduct(SparseFieldVector&lt;T&gt; v) {
+<span class="fc" id="L380">        final int n = v.getDimension();</span>
+<span class="fc" id="L381">        SparseFieldMatrix&lt;T&gt; res = new SparseFieldMatrix&lt;T&gt;(field, virtualSize, n);</span>
+<span class="fc" id="L382">        OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = entries.iterator();</span>
+<span class="fc bfc" id="L383" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L384">            iter.advance();</span>
+<span class="fc" id="L385">            OpenIntToFieldHashMap&lt;T&gt;.Iterator iter2 = v.entries.iterator();</span>
+<span class="fc bfc" id="L386" title="All 2 branches covered.">            while (iter2.hasNext()) {</span>
+<span class="fc" id="L387">                iter2.advance();</span>
+<span class="fc" id="L388">                res.setEntry(iter.key(), iter2.key(), iter.value().multiply(iter2.value()));</span>
+            }
+<span class="fc" id="L390">        }</span>
+<span class="fc" id="L391">        return res;</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldMatrix&lt;T&gt; outerProduct(FieldVector&lt;T&gt; v) {
+<span class="pc bpc" id="L396" title="1 of 2 branches missed.">        if (v instanceof SparseFieldVector&lt;?&gt;) {</span>
+<span class="nc" id="L397">            return outerProduct((SparseFieldVector&lt;T&gt;)v);</span>
+        } else {
+<span class="fc" id="L399">            final int n = v.getDimension();</span>
+<span class="fc" id="L400">            FieldMatrix&lt;T&gt; res = new SparseFieldMatrix&lt;T&gt;(field, virtualSize, n);</span>
+<span class="fc" id="L401">            OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = entries.iterator();</span>
+<span class="fc bfc" id="L402" title="All 2 branches covered.">            while (iter.hasNext()) {</span>
+<span class="fc" id="L403">                iter.advance();</span>
+<span class="fc" id="L404">                int row = iter.key();</span>
+<span class="fc" id="L405">                FieldElement&lt;T&gt;value = iter.value();</span>
+<span class="fc bfc" id="L406" title="All 2 branches covered.">                for (int col = 0; col &lt; n; col++) {</span>
+<span class="fc" id="L407">                    res.setEntry(row, col, value.multiply(v.getEntry(col)));</span>
+                }
+<span class="fc" id="L409">            }</span>
+<span class="fc" id="L410">            return res;</span>
+        }
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; projection(FieldVector&lt;T&gt; v)
+        throws DimensionMismatchException, MathArithmeticException {
+<span class="nc" id="L417">        checkVectorDimensions(v.getDimension());</span>
+<span class="nc" id="L418">        return v.mapMultiply(dotProduct(v).divide(v.dotProduct(v)));</span>
+    }
+
+    /** {@inheritDoc}
+     * @exception NullArgumentException if value is null
+     */
+    public void set(T value) {
+<span class="nc" id="L425">        MathUtils.checkNotNull(value);</span>
+<span class="nc bnc" id="L426" title="All 2 branches missed.">        for (int i = 0; i &lt; virtualSize; i++) {</span>
+<span class="nc" id="L427">            setEntry(i, value);</span>
+        }
+<span class="nc" id="L429">    }</span>
+
+    /** {@inheritDoc}
+     * @exception NullArgumentException if value is null
+     */
+    public void setEntry(int index, T value) throws NullArgumentException, OutOfRangeException {
+<span class="fc" id="L435">        MathUtils.checkNotNull(value);</span>
+<span class="fc" id="L436">        checkIndex(index);</span>
+<span class="fc" id="L437">        entries.put(index, value);</span>
+<span class="fc" id="L438">    }</span>
+
+    /** {@inheritDoc} */
+    public void setSubVector(int index, FieldVector&lt;T&gt; v)
+        throws OutOfRangeException {
+<span class="nc" id="L443">        checkIndex(index);</span>
+<span class="nc" id="L444">        checkIndex(index + v.getDimension() - 1);</span>
+<span class="nc" id="L445">        final int n = v.getDimension();</span>
+<span class="nc bnc" id="L446" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L447">            setEntry(i + index, v.getEntry(i));</span>
+        }
+<span class="nc" id="L449">    }</span>
+
+    /**
+     * Optimized method to compute {@code this} minus {@code v}.
+     * @param v vector to be subtracted
+     * @return {@code this - v}
+     * @throws DimensionMismatchException if {@code v} is not the same size as
+     * {@code this}.
+     */
+    public SparseFieldVector&lt;T&gt; subtract(SparseFieldVector&lt;T&gt; v)
+        throws DimensionMismatchException {
+<span class="fc" id="L460">        checkVectorDimensions(v.getDimension());</span>
+<span class="fc" id="L461">        SparseFieldVector&lt;T&gt; res = (SparseFieldVector&lt;T&gt;)copy();</span>
+<span class="fc" id="L462">        OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = v.getEntries().iterator();</span>
+<span class="fc bfc" id="L463" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L464">            iter.advance();</span>
+<span class="fc" id="L465">            int key = iter.key();</span>
+<span class="pc bpc" id="L466" title="1 of 2 branches missed.">            if (entries.containsKey(key)) {</span>
+<span class="fc" id="L467">                res.setEntry(key, entries.get(key).subtract(iter.value()));</span>
+            } else {
+<span class="nc" id="L469">                res.setEntry(key, field.getZero().subtract(iter.value()));</span>
+            }
+<span class="fc" id="L471">        }</span>
+<span class="fc" id="L472">        return res;</span>
+    }
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; subtract(FieldVector&lt;T&gt; v)
+        throws DimensionMismatchException {
+<span class="pc bpc" id="L478" title="1 of 2 branches missed.">        if (v instanceof SparseFieldVector&lt;?&gt;) {</span>
+<span class="nc" id="L479">            return subtract((SparseFieldVector&lt;T&gt;)v);</span>
+        } else {
+<span class="fc" id="L481">            final int n = v.getDimension();</span>
+<span class="fc" id="L482">            checkVectorDimensions(n);</span>
+<span class="fc" id="L483">            SparseFieldVector&lt;T&gt; res = new SparseFieldVector&lt;T&gt;(this);</span>
+<span class="fc bfc" id="L484" title="All 2 branches covered.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="pc bpc" id="L485" title="1 of 2 branches missed.">                if (entries.containsKey(i)) {</span>
+<span class="fc" id="L486">                    res.setEntry(i, entries.get(i).subtract(v.getEntry(i)));</span>
+                } else {
+<span class="nc" id="L488">                    res.setEntry(i, field.getZero().subtract(v.getEntry(i)));</span>
+                }
+            }
+<span class="fc" id="L491">            return res;</span>
+        }
+    }
+
+    /** {@inheritDoc} */
+    public T[] toArray() {
+<span class="fc" id="L497">        T[] res = MathArrays.buildArray(field, virtualSize);</span>
+<span class="fc" id="L498">        OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = entries.iterator();</span>
+<span class="fc bfc" id="L499" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L500">            iter.advance();</span>
+<span class="fc" id="L501">            res[iter.key()] = iter.value();</span>
+        }
+<span class="fc" id="L503">        return res;</span>
+    }
+
+    /**
+     * Check whether an index is valid.
+     *
+     * @param index Index to check.
+     * @throws OutOfRangeException if the index is not valid.
+     */
+    private void checkIndex(final int index) throws OutOfRangeException {
+<span class="pc bpc" id="L513" title="2 of 4 branches missed.">        if (index &lt; 0 || index &gt;= getDimension()) {</span>
+<span class="nc" id="L514">            throw new OutOfRangeException(index, 0, getDimension() - 1);</span>
+        }
+<span class="fc" id="L516">    }</span>
+
+    /**
+     * Checks that the indices of a subvector are valid.
+     *
+     * @param start the index of the first entry of the subvector
+     * @param end the index of the last entry of the subvector (inclusive)
+     * @throws OutOfRangeException if {@code start} of {@code end} are not valid
+     * @throws NumberIsTooSmallException if {@code end &lt; start}
+     * @since 3.3
+     */
+    private void checkIndices(final int start, final int end)
+        throws NumberIsTooSmallException, OutOfRangeException {
+<span class="fc" id="L529">        final int dim = getDimension();</span>
+<span class="fc bfc" id="L530" title="All 4 branches covered.">        if ((start &lt; 0) || (start &gt;= dim)) {</span>
+<span class="fc" id="L531">            throw new OutOfRangeException(LocalizedFormats.INDEX, start, 0,</span>
+<span class="fc" id="L532">                                          dim - 1);</span>
+        }
+<span class="fc bfc" id="L534" title="All 4 branches covered.">        if ((end &lt; 0) || (end &gt;= dim)) {</span>
+<span class="fc" id="L535">            throw new OutOfRangeException(LocalizedFormats.INDEX, end, 0,</span>
+<span class="fc" id="L536">                                          dim - 1);</span>
+        }
+<span class="fc bfc" id="L538" title="All 2 branches covered.">        if (end &lt; start) {</span>
+<span class="fc" id="L539">            throw new NumberIsTooSmallException(LocalizedFormats.INITIAL_ROW_AFTER_FINAL_ROW,</span>
+<span class="fc" id="L540">                                                end, start, false);</span>
+        }
+<span class="fc" id="L542">    }</span>
+
+    /**
+     * Check if instance dimension is equal to some expected value.
+     *
+     * @param n Expected dimension.
+     * @throws DimensionMismatchException if the dimensions do not match.
+     */
+    protected void checkVectorDimensions(int n)
+        throws DimensionMismatchException {
+<span class="fc bfc" id="L552" title="All 2 branches covered.">        if (getDimension() != n) {</span>
+<span class="fc" id="L553">            throw new DimensionMismatchException(getDimension(), n);</span>
+        }
+<span class="fc" id="L555">    }</span>
+
+    /** {@inheritDoc} */
+    public FieldVector&lt;T&gt; add(FieldVector&lt;T&gt; v) throws DimensionMismatchException {
+<span class="pc bpc" id="L559" title="1 of 2 branches missed.">        if (v instanceof SparseFieldVector&lt;?&gt;) {</span>
+<span class="nc" id="L560">            return add((SparseFieldVector&lt;T&gt;) v);</span>
+        } else {
+<span class="fc" id="L562">            final int n = v.getDimension();</span>
+<span class="fc" id="L563">            checkVectorDimensions(n);</span>
+<span class="fc" id="L564">            SparseFieldVector&lt;T&gt; res = new SparseFieldVector&lt;T&gt;(field,</span>
+<span class="fc" id="L565">                                                                getDimension());</span>
+<span class="fc bfc" id="L566" title="All 2 branches covered.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="fc" id="L567">                res.setEntry(i, v.getEntry(i).add(getEntry(i)));</span>
+            }
+<span class="fc" id="L569">            return res;</span>
+        }
+    }
+
+    /**
+     * Visits (but does not alter) all entries of this vector in default order
+     * (increasing index).
+     *
+     * @param visitor the visitor to be used to process the entries of this
+     * vector
+     * @return the value returned by {@link FieldVectorPreservingVisitor#end()}
+     * at the end of the walk
+     * @since 3.3
+     */
+    public T walkInDefaultOrder(final FieldVectorPreservingVisitor&lt;T&gt; visitor) {
+<span class="fc" id="L584">        final int dim = getDimension();</span>
+<span class="fc" id="L585">        visitor.start(dim, 0, dim - 1);</span>
+<span class="fc bfc" id="L586" title="All 2 branches covered.">        for (int i = 0; i &lt; dim; i++) {</span>
+<span class="fc" id="L587">            visitor.visit(i, getEntry(i));</span>
+        }
+<span class="fc" id="L589">        return visitor.end();</span>
+    }
+
+    /**
+     * Visits (but does not alter) some entries of this vector in default order
+     * (increasing index).
+     *
+     * @param visitor visitor to be used to process the entries of this vector
+     * @param start the index of the first entry to be visited
+     * @param end the index of the last entry to be visited (inclusive)
+     * @return the value returned by {@link FieldVectorPreservingVisitor#end()}
+     * at the end of the walk
+     * @throws NumberIsTooSmallException if {@code end &lt; start}.
+     * @throws OutOfRangeException if the indices are not valid.
+     * @since 3.3
+     */
+    public T walkInDefaultOrder(final FieldVectorPreservingVisitor&lt;T&gt; visitor,
+                                final int start, final int end)
+        throws NumberIsTooSmallException, OutOfRangeException {
+<span class="fc" id="L608">        checkIndices(start, end);</span>
+<span class="fc" id="L609">        visitor.start(getDimension(), start, end);</span>
+<span class="fc bfc" id="L610" title="All 2 branches covered.">        for (int i = start; i &lt;= end; i++) {</span>
+<span class="fc" id="L611">            visitor.visit(i, getEntry(i));</span>
+        }
+<span class="fc" id="L613">        return visitor.end();</span>
+    }
+
+    /**
+     * Visits (but does not alter) all entries of this vector in optimized
+     * order. The order in which the entries are visited is selected so as to
+     * lead to the most efficient implementation; it might depend on the
+     * concrete implementation of this abstract class.
+     *
+     * @param visitor the visitor to be used to process the entries of this
+     * vector
+     * @return the value returned by {@link FieldVectorPreservingVisitor#end()}
+     * at the end of the walk
+     * @since 3.3
+     */
+    public T walkInOptimizedOrder(final FieldVectorPreservingVisitor&lt;T&gt; visitor) {
+<span class="fc" id="L629">        return walkInDefaultOrder(visitor);</span>
+    }
+
+    /**
+     * Visits (but does not alter) some entries of this vector in optimized
+     * order. The order in which the entries are visited is selected so as to
+     * lead to the most efficient implementation; it might depend on the
+     * concrete implementation of this abstract class.
+     *
+     * @param visitor visitor to be used to process the entries of this vector
+     * @param start the index of the first entry to be visited
+     * @param end the index of the last entry to be visited (inclusive)
+     * @return the value returned by {@link FieldVectorPreservingVisitor#end()}
+     * at the end of the walk
+     * @throws NumberIsTooSmallException if {@code end &lt; start}.
+     * @throws OutOfRangeException if the indices are not valid.
+     * @since 3.3
+     */
+    public T walkInOptimizedOrder(final FieldVectorPreservingVisitor&lt;T&gt; visitor,
+                                  final int start, final int end)
+        throws NumberIsTooSmallException, OutOfRangeException {
+<span class="fc" id="L650">        return walkInDefaultOrder(visitor, start, end);</span>
+    }
+
+    /**
+     * Visits (and possibly alters) all entries of this vector in default order
+     * (increasing index).
+     *
+     * @param visitor the visitor to be used to process and modify the entries
+     * of this vector
+     * @return the value returned by {@link FieldVectorChangingVisitor#end()}
+     * at the end of the walk
+     * @since 3.3
+     */
+    public T walkInDefaultOrder(final FieldVectorChangingVisitor&lt;T&gt; visitor) {
+<span class="fc" id="L664">        final int dim = getDimension();</span>
+<span class="fc" id="L665">        visitor.start(dim, 0, dim - 1);</span>
+<span class="fc bfc" id="L666" title="All 2 branches covered.">        for (int i = 0; i &lt; dim; i++) {</span>
+<span class="fc" id="L667">            setEntry(i, visitor.visit(i, getEntry(i)));</span>
+        }
+<span class="fc" id="L669">        return visitor.end();</span>
+    }
+
+    /**
+     * Visits (and possibly alters) some entries of this vector in default order
+     * (increasing index).
+     *
+     * @param visitor visitor to be used to process the entries of this vector
+     * @param start the index of the first entry to be visited
+     * @param end the index of the last entry to be visited (inclusive)
+     * @return the value returned by {@link FieldVectorChangingVisitor#end()}
+     * at the end of the walk
+     * @throws NumberIsTooSmallException if {@code end &lt; start}.
+     * @throws OutOfRangeException if the indices are not valid.
+     * @since 3.3
+     */
+    public T walkInDefaultOrder(final FieldVectorChangingVisitor&lt;T&gt; visitor,
+                                final int start, final int end)
+        throws NumberIsTooSmallException, OutOfRangeException {
+<span class="fc" id="L688">        checkIndices(start, end);</span>
+<span class="fc" id="L689">        visitor.start(getDimension(), start, end);</span>
+<span class="fc bfc" id="L690" title="All 2 branches covered.">        for (int i = start; i &lt;= end; i++) {</span>
+<span class="fc" id="L691">            setEntry(i, visitor.visit(i, getEntry(i)));</span>
+        }
+<span class="fc" id="L693">        return visitor.end();</span>
+    }
+
+    /**
+     * Visits (and possibly alters) all entries of this vector in optimized
+     * order. The order in which the entries are visited is selected so as to
+     * lead to the most efficient implementation; it might depend on the
+     * concrete implementation of this abstract class.
+     *
+     * @param visitor the visitor to be used to process the entries of this
+     * vector
+     * @return the value returned by {@link FieldVectorChangingVisitor#end()}
+     * at the end of the walk
+     * @since 3.3
+     */
+    public T walkInOptimizedOrder(final FieldVectorChangingVisitor&lt;T&gt; visitor) {
+<span class="fc" id="L709">        return walkInDefaultOrder(visitor);</span>
+    }
+
+    /**
+     * Visits (and possibly change) some entries of this vector in optimized
+     * order. The order in which the entries are visited is selected so as to
+     * lead to the most efficient implementation; it might depend on the
+     * concrete implementation of this abstract class.
+     *
+     * @param visitor visitor to be used to process the entries of this vector
+     * @param start the index of the first entry to be visited
+     * @param end the index of the last entry to be visited (inclusive)
+     * @return the value returned by {@link FieldVectorChangingVisitor#end()}
+     * at the end of the walk
+     * @throws NumberIsTooSmallException if {@code end &lt; start}.
+     * @throws OutOfRangeException if the indices are not valid.
+     * @since 3.3
+     */
+    public T walkInOptimizedOrder(final FieldVectorChangingVisitor&lt;T&gt; visitor,
+                                  final int start, final int end)
+        throws NumberIsTooSmallException, OutOfRangeException {
+<span class="fc" id="L730">        return walkInDefaultOrder(visitor, start, end);</span>
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+<span class="fc" id="L736">        final int prime = 31;</span>
+<span class="fc" id="L737">        int result = 1;</span>
+<span class="pc bpc" id="L738" title="1 of 2 branches missed.">        result = prime * result + ((field == null) ? 0 : field.hashCode());</span>
+<span class="fc" id="L739">        result = prime * result + virtualSize;</span>
+<span class="fc" id="L740">        OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = entries.iterator();</span>
+<span class="fc bfc" id="L741" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L742">            iter.advance();</span>
+<span class="fc" id="L743">            int temp = iter.value().hashCode();</span>
+<span class="fc" id="L744">            result = prime * result + temp;</span>
+<span class="fc" id="L745">        }</span>
+<span class="fc" id="L746">        return result;</span>
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(Object obj) {
+
+<span class="pc bpc" id="L754" title="1 of 2 branches missed.">        if (this == obj) {</span>
+<span class="nc" id="L755">            return true;</span>
+        }
+
+<span class="pc bpc" id="L758" title="1 of 2 branches missed.">        if (!(obj instanceof SparseFieldVector&lt;?&gt;)) {</span>
+<span class="nc" id="L759">            return false;</span>
+        }
+
+        @SuppressWarnings(&quot;unchecked&quot;) // OK, because &quot;else if&quot; check below ensures that
+                                       // other must be the same type as this
+<span class="fc" id="L764">        SparseFieldVector&lt;T&gt; other = (SparseFieldVector&lt;T&gt;) obj;</span>
+<span class="pc bpc" id="L765" title="1 of 2 branches missed.">        if (field == null) {</span>
+<span class="nc bnc" id="L766" title="All 2 branches missed.">            if (other.field != null) {</span>
+<span class="nc" id="L767">                return false;</span>
+            }
+<span class="pc bpc" id="L769" title="1 of 2 branches missed.">        } else if (!field.equals(other.field)) {</span>
+<span class="nc" id="L770">            return false;</span>
+        }
+<span class="pc bpc" id="L772" title="1 of 2 branches missed.">        if (virtualSize != other.virtualSize) {</span>
+<span class="nc" id="L773">            return false;</span>
+        }
+
+<span class="fc" id="L776">        OpenIntToFieldHashMap&lt;T&gt;.Iterator iter = entries.iterator();</span>
+<span class="fc bfc" id="L777" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L778">            iter.advance();</span>
+<span class="fc" id="L779">            T test = other.getEntry(iter.key());</span>
+<span class="pc bpc" id="L780" title="1 of 2 branches missed.">            if (!test.equals(iter.value())) {</span>
+<span class="nc" id="L781">                return false;</span>
+            }
+<span class="fc" id="L783">        }</span>
+<span class="fc" id="L784">        iter = other.getEntries().iterator();</span>
+<span class="fc bfc" id="L785" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L786">            iter.advance();</span>
+<span class="fc" id="L787">            T test = iter.value();</span>
+<span class="pc bpc" id="L788" title="1 of 2 branches missed.">            if (!test.equals(getEntry(iter.key()))) {</span>
+<span class="nc" id="L789">                return false;</span>
+            }
+<span class="fc" id="L791">        }</span>
+<span class="fc" id="L792">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

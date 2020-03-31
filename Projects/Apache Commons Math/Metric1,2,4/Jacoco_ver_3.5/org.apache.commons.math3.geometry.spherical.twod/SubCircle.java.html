@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SubCircle.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Math</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math3.geometry.spherical.twod</a> &gt; <span class="el_source">SubCircle.java</span></div><h1>SubCircle.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.math3.geometry.spherical.twod;
+
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.partitioning.AbstractSubHyperplane;
+import org.apache.commons.math3.geometry.partitioning.Hyperplane;
+import org.apache.commons.math3.geometry.partitioning.Region;
+import org.apache.commons.math3.geometry.partitioning.Side;
+import org.apache.commons.math3.geometry.spherical.oned.Arc;
+import org.apache.commons.math3.geometry.spherical.oned.ArcsSet;
+import org.apache.commons.math3.geometry.spherical.oned.Sphere1D;
+import org.apache.commons.math3.util.FastMath;
+
+/** This class represents a sub-hyperplane for {@link Circle}.
+ * @since 3.3
+ */
+public class SubCircle extends AbstractSubHyperplane&lt;Sphere2D, Sphere1D&gt; {
+
+    /** Simple constructor.
+     * @param hyperplane underlying hyperplane
+     * @param remainingRegion remaining region of the hyperplane
+     */
+    public SubCircle(final Hyperplane&lt;Sphere2D&gt; hyperplane,
+                     final Region&lt;Sphere1D&gt; remainingRegion) {
+<span class="fc" id="L40">        super(hyperplane, remainingRegion);</span>
+<span class="fc" id="L41">    }</span>
+
+    /** {@inheritDoc} */
+    @Override
+    protected AbstractSubHyperplane&lt;Sphere2D, Sphere1D&gt; buildNew(final Hyperplane&lt;Sphere2D&gt; hyperplane,
+                                                                 final Region&lt;Sphere1D&gt; remainingRegion) {
+<span class="fc" id="L47">        return new SubCircle(hyperplane, remainingRegion);</span>
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Side side(final Hyperplane&lt;Sphere2D&gt; hyperplane) {
+
+<span class="fc" id="L54">        final Circle thisCircle  = (Circle) getHyperplane();</span>
+<span class="fc" id="L55">        final Circle otherCircle = (Circle) hyperplane;</span>
+<span class="fc" id="L56">        final double angle = Vector3D.angle(thisCircle.getPole(), otherCircle.getPole());</span>
+
+<span class="fc bfc" id="L58" title="All 4 branches covered.">        if (angle &lt; thisCircle.getTolerance() || angle &gt; FastMath.PI - thisCircle.getTolerance()) {</span>
+            // the two circles are aligned or opposite
+<span class="fc" id="L60">            return Side.HYPER;</span>
+        } else {
+            // the two circles intersect each other
+<span class="fc" id="L63">            return ((ArcsSet) getRemainingRegion()).side(thisCircle.getInsideArc(otherCircle));</span>
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SplitSubHyperplane&lt;Sphere2D&gt; split(final Hyperplane&lt;Sphere2D&gt; hyperplane) {
+
+<span class="fc" id="L72">        final Circle thisCircle   = (Circle) getHyperplane();</span>
+<span class="fc" id="L73">        final Circle otherCircle  = (Circle) hyperplane;</span>
+<span class="fc" id="L74">        final double angle = Vector3D.angle(thisCircle.getPole(), otherCircle.getPole());</span>
+
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        if (angle &lt; thisCircle.getTolerance()) {</span>
+            // the two circles are aligned
+<span class="fc" id="L78">            return new SplitSubHyperplane&lt;Sphere2D&gt;(null, this);</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        } else if (angle &gt; FastMath.PI - thisCircle.getTolerance()) {</span>
+            // the two circles are opposite
+<span class="fc" id="L81">            return new SplitSubHyperplane&lt;Sphere2D&gt;(this, null);</span>
+        } else {
+            // the two circles intersect each other
+<span class="fc" id="L84">            final Arc    arc          = thisCircle.getInsideArc(otherCircle);</span>
+<span class="fc" id="L85">            final ArcsSet.Split split = ((ArcsSet) getRemainingRegion()).split(arc);</span>
+<span class="fc" id="L86">            final ArcsSet plus        = split.getPlus();</span>
+<span class="fc" id="L87">            final ArcsSet minus       = split.getMinus();</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">            return new SplitSubHyperplane&lt;Sphere2D&gt;(plus  == null ? null : new SubCircle(thisCircle.copySelf(), plus),</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">                                                    minus == null ? null : new SubCircle(thisCircle.copySelf(), minus));</span>
+        }
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

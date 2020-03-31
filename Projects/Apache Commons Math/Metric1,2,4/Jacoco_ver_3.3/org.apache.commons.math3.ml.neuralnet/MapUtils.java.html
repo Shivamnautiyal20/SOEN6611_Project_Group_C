@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MapUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Math</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math3.ml.neuralnet</a> &gt; <span class="el_source">MapUtils.java</span></div><h1>MapUtils.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.math3.ml.neuralnet;
+
+import java.util.HashMap;
+import java.util.Collection;
+import org.apache.commons.math3.ml.distance.DistanceMeasure;
+import org.apache.commons.math3.ml.neuralnet.twod.NeuronSquareMesh2D;
+import org.apache.commons.math3.exception.NoDataException;
+import org.apache.commons.math3.util.Pair;
+
+/**
+ * Utilities for network maps.
+ *
+ * @version $Id$
+ * @since 3.3
+ */
+public class MapUtils {
+    /**
+     * Class contains only static methods.
+     */
+    private MapUtils() {}
+
+    /**
+     * Finds the neuron that best matches the given features.
+     *
+     * @param features Data.
+     * @param neurons List of neurons to scan. If the list is empty
+     * {@code null} will be returned.
+     * @param distance Distance function. The neuron's features are
+     * passed as the first argument to {@link DistanceMeasure#compute(double[],double[])}.
+     * @return the neuron whose features are closest to the given data.
+     * @throws org.apache.commons.math3.exception.DimensionMismatchException
+     * if the size of the input is not compatible with the neurons features
+     * size.
+     */
+    public static Neuron findBest(double[] features,
+                                  Iterable&lt;Neuron&gt; neurons,
+                                  DistanceMeasure distance) {
+<span class="fc" id="L55">        Neuron best = null;</span>
+<span class="fc" id="L56">        double min = Double.POSITIVE_INFINITY;</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        for (final Neuron n : neurons) {</span>
+<span class="fc" id="L58">            final double d = distance.compute(n.getFeatures(), features);</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">            if (d &lt; min) {</span>
+<span class="fc" id="L60">                min = d;</span>
+<span class="fc" id="L61">                best = n;</span>
+            }
+<span class="fc" id="L63">        }</span>
+
+<span class="fc" id="L65">        return best;</span>
+    }
+
+    /**
+     * Finds the two neurons that best match the given features.
+     *
+     * @param features Data.
+     * @param neurons List of neurons to scan. If the list is empty
+     * {@code null} will be returned.
+     * @param distance Distance function. The neuron's features are
+     * passed as the first argument to {@link DistanceMeasure#compute(double[],double[])}.
+     * @return the two neurons whose features are closest to the given data.
+     * @throws org.apache.commons.math3.exception.DimensionMismatchException
+     * if the size of the input is not compatible with the neurons features
+     * size.
+     */
+    public static Pair&lt;Neuron, Neuron&gt; findBestAndSecondBest(double[] features,
+                                                             Iterable&lt;Neuron&gt; neurons,
+                                                             DistanceMeasure distance) {
+<span class="nc" id="L84">        Neuron[] best = { null, null };</span>
+<span class="nc" id="L85">        double[] min = { Double.POSITIVE_INFINITY,</span>
+                         Double.POSITIVE_INFINITY };
+<span class="nc bnc" id="L87" title="All 2 branches missed.">        for (final Neuron n : neurons) {</span>
+<span class="nc" id="L88">            final double d = distance.compute(n.getFeatures(), features);</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            if (d &lt; min[0]) {</span>
+                // Replace second best with old best.
+<span class="nc" id="L91">                min[1] = min[0];</span>
+<span class="nc" id="L92">                best[1] = best[0];</span>
+
+                // Store current as new best.
+<span class="nc" id="L95">                min[0] = d;</span>
+<span class="nc" id="L96">                best[0] = n;</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">            } else if (d &lt; min[1]) {</span>
+                // Replace old second best with current.
+<span class="nc" id="L99">                min[1] = d;</span>
+<span class="nc" id="L100">                best[1] = n;</span>
+            }
+<span class="nc" id="L102">        }</span>
+
+<span class="nc" id="L104">        return new Pair&lt;Neuron, Neuron&gt;(best[0], best[1]);</span>
+    }
+
+    /**
+     * Computes the &lt;a href=&quot;http://en.wikipedia.org/wiki/U-Matrix&quot;&gt;
+     *  U-matrix&lt;/a&gt; of a two-dimensional map.
+     *
+     * @param map Network.
+     * @param distance Function to use for computing the average
+     * distance from a neuron to its neighbours.
+     * @return the matrix of average distances.
+     */
+    public static double[][] computeU(NeuronSquareMesh2D map,
+                                      DistanceMeasure distance) {
+<span class="nc" id="L118">        final int numRows = map.getNumberOfRows();</span>
+<span class="nc" id="L119">        final int numCols = map.getNumberOfColumns();</span>
+<span class="nc" id="L120">        final double[][] uMatrix = new double[numRows][numCols];</span>
+
+<span class="nc" id="L122">        final Network net = map.getNetwork();</span>
+
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        for (int i = 0; i &lt; numRows; i++) {</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">            for (int j = 0; j &lt; numCols; j++) {</span>
+<span class="nc" id="L126">                final Neuron neuron = map.getNeuron(i, j);</span>
+<span class="nc" id="L127">                final Collection&lt;Neuron&gt; neighbours = net.getNeighbours(neuron);</span>
+<span class="nc" id="L128">                final double[] features = neuron.getFeatures();</span>
+
+<span class="nc" id="L130">                double d = 0;</span>
+<span class="nc" id="L131">                int count = 0;</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">                for (Neuron n : neighbours) {</span>
+<span class="nc" id="L133">                    ++count;</span>
+<span class="nc" id="L134">                    d += distance.compute(features, n.getFeatures());</span>
+<span class="nc" id="L135">                }</span>
+
+<span class="nc" id="L137">                uMatrix[i][j] = d / count;</span>
+            }
+        }
+
+<span class="nc" id="L141">        return uMatrix;</span>
+    }
+
+    /**
+     * Computes the &quot;hit&quot; histogram of a two-dimensional map.
+     *
+     * @param data Feature vectors.
+     * @param map Network.
+     * @param distance Function to use for determining the best matching unit.
+     * @return the number of hits for each neuron in the map.
+     */
+    public static int[][] computeHitHistogram(Iterable&lt;double[]&gt; data,
+                                              NeuronSquareMesh2D map,
+                                              DistanceMeasure distance) {
+<span class="nc" id="L155">        final HashMap&lt;Neuron, Integer&gt; hit = new HashMap&lt;Neuron, Integer&gt;();</span>
+<span class="nc" id="L156">        final Network net = map.getNetwork();</span>
+
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        for (double[] f : data) {</span>
+<span class="nc" id="L159">            final Neuron best = findBest(f, net, distance);</span>
+<span class="nc" id="L160">            final Integer count = hit.get(best);</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            if (count == null) {</span>
+<span class="nc" id="L162">                hit.put(best, 1);</span>
+            } else {
+<span class="nc" id="L164">                hit.put(best, count + 1);</span>
+            }
+<span class="nc" id="L166">        }</span>
+
+        // Copy the histogram data into a 2D map.
+<span class="nc" id="L169">        final int numRows = map.getNumberOfRows();</span>
+<span class="nc" id="L170">        final int numCols = map.getNumberOfColumns();</span>
+<span class="nc" id="L171">        final int[][] histo = new int[numRows][numCols];</span>
+
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        for (int i = 0; i &lt; numRows; i++) {</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">            for (int j = 0; j &lt; numCols; j++) {</span>
+<span class="nc" id="L175">                final Neuron neuron = map.getNeuron(i, j);</span>
+<span class="nc" id="L176">                final Integer count = hit.get(neuron);</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">                if (count == null) {</span>
+<span class="nc" id="L178">                    histo[i][j] = 0;</span>
+                } else {
+<span class="nc" id="L180">                    histo[i][j] = count;</span>
+                }
+            }
+        }
+
+<span class="nc" id="L185">        return histo;</span>
+    }
+
+    /**
+     * Computes the quantization error.
+     * The quantization error is the average distance between a feature vector
+     * and its &quot;best matching unit&quot; (closest neuron).
+     *
+     * @param data Feature vectors.
+     * @param neurons List of neurons to scan.
+     * @param distance Distance function.
+     * @return the error.
+     * @throws NoDataException if {@code data} is empty.
+     */
+    public static double computeQuantizationError(Iterable&lt;double[]&gt; data,
+                                                  Iterable&lt;Neuron&gt; neurons,
+                                                  DistanceMeasure distance) {
+<span class="nc" id="L202">        double d = 0;</span>
+<span class="nc" id="L203">        int count = 0;</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        for (double[] f : data) {</span>
+<span class="nc" id="L205">            ++count;</span>
+<span class="nc" id="L206">            d += distance.compute(f, findBest(f, neurons, distance).getFeatures());</span>
+<span class="nc" id="L207">        }</span>
+
+<span class="nc bnc" id="L209" title="All 2 branches missed.">        if (count == 0) {</span>
+<span class="nc" id="L210">            throw new NoDataException();</span>
+        }
+
+<span class="nc" id="L213">        return d / count;</span>
+    }
+
+    /**
+     * Computes the topographic error.
+     * The topographic error is the proportion of data for which first and
+     * second best matching units are not adjacent in the map.
+     *
+     * @param data Feature vectors.
+     * @param net Network.
+     * @param distance Distance function.
+     * @return the error.
+     * @throws NoDataException if {@code data} is empty.
+     */
+    public static double computeTopographicError(Iterable&lt;double[]&gt; data,
+                                                 Network net,
+                                                 DistanceMeasure distance) {
+<span class="nc" id="L230">        int notAdjacentCount = 0;</span>
+<span class="nc" id="L231">        int count = 0;</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        for (double[] f : data) {</span>
+<span class="nc" id="L233">            ++count;</span>
+<span class="nc" id="L234">            final Pair&lt;Neuron, Neuron&gt; p = findBestAndSecondBest(f, net, distance);</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">            if (!net.getNeighbours(p.getFirst()).contains(p.getSecond())) {</span>
+                // Increment count if first and second best matching units
+                // are not neighbours.
+<span class="nc" id="L238">                ++notAdjacentCount;</span>
+            }
+<span class="nc" id="L240">        }</span>
+
+<span class="nc bnc" id="L242" title="All 2 branches missed.">        if (count == 0) {</span>
+<span class="nc" id="L243">            throw new NoDataException();</span>
+        }
+
+<span class="nc" id="L246">        return ((double) notAdjacentCount) / count;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

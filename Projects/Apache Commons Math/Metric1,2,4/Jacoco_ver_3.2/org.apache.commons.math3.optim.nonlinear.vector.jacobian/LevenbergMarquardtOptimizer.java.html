@@ -1,0 +1,958 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LevenbergMarquardtOptimizer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Commons Math</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math3.optim.nonlinear.vector.jacobian</a> &gt; <span class="el_source">LevenbergMarquardtOptimizer.java</span></div><h1>LevenbergMarquardtOptimizer.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.math3.optim.nonlinear.vector.jacobian;
+
+import java.util.Arrays;
+import org.apache.commons.math3.exception.ConvergenceException;
+import org.apache.commons.math3.exception.MathUnsupportedOperationException;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.apache.commons.math3.optim.PointVectorValuePair;
+import org.apache.commons.math3.optim.ConvergenceChecker;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.util.Precision;
+import org.apache.commons.math3.util.FastMath;
+
+
+/**
+ * This class solves a least-squares problem using the Levenberg-Marquardt
+ * algorithm.
+ * &lt;br/&gt;
+ * Constraints are not supported: the call to
+ * {@link #optimize(OptimizationData[]) optimize} will throw
+ * {@link MathUnsupportedOperationException} if bounds are passed to it.
+ *
+ * &lt;p&gt;This implementation &lt;em&gt;should&lt;/em&gt; work even for over-determined systems
+ * (i.e. systems having more point than equations). Over-determined systems
+ * are solved by ignoring the point which have the smallest impact according
+ * to their jacobian column norm. Only the rank of the matrix and some loop bounds
+ * are changed to implement this.&lt;/p&gt;
+ *
+ * &lt;p&gt;The resolution engine is a simple translation of the MINPACK &lt;a
+ * href=&quot;http://www.netlib.org/minpack/lmder.f&quot;&gt;lmder&lt;/a&gt; routine with minor
+ * changes. The changes include the over-determined resolution, the use of
+ * inherited convergence checker and the Q.R. decomposition which has been
+ * rewritten following the algorithm described in the
+ * P. Lascaux and R. Theodor book &lt;i&gt;Analyse num&amp;eacute;rique matricielle
+ * appliqu&amp;eacute;e &amp;agrave; l'art de l'ing&amp;eacute;nieur&lt;/i&gt;, Masson 1986.&lt;/p&gt;
+ * &lt;p&gt;The authors of the original fortran version are:
+ * &lt;ul&gt;
+ * &lt;li&gt;Argonne National Laboratory. MINPACK project. March 1980&lt;/li&gt;
+ * &lt;li&gt;Burton S. Garbow&lt;/li&gt;
+ * &lt;li&gt;Kenneth E. Hillstrom&lt;/li&gt;
+ * &lt;li&gt;Jorge J. More&lt;/li&gt;
+ * &lt;/ul&gt;
+ * The redistribution policy for MINPACK is available &lt;a
+ * href=&quot;http://www.netlib.org/minpack/disclaimer&quot;&gt;here&lt;/a&gt;, for convenience, it
+ * is reproduced below.&lt;/p&gt;
+ *
+ * &lt;table border=&quot;0&quot; width=&quot;80%&quot; cellpadding=&quot;10&quot; align=&quot;center&quot; bgcolor=&quot;#E0E0E0&quot;&gt;
+ * &lt;tr&gt;&lt;td&gt;
+ *    Minpack Copyright Notice (1999) University of Chicago.
+ *    All rights reserved
+ * &lt;/td&gt;&lt;/tr&gt;
+ * &lt;tr&gt;&lt;td&gt;
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * &lt;ol&gt;
+ *  &lt;li&gt;Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.&lt;/li&gt;
+ * &lt;li&gt;Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.&lt;/li&gt;
+ * &lt;li&gt;The end-user documentation included with the redistribution, if any,
+ *     must include the following acknowledgment:
+ *     &lt;code&gt;This product includes software developed by the University of
+ *           Chicago, as Operator of Argonne National Laboratory.&lt;/code&gt;
+ *     Alternately, this acknowledgment may appear in the software itself,
+ *     if and wherever such third-party acknowledgments normally appear.&lt;/li&gt;
+ * &lt;li&gt;&lt;strong&gt;WARRANTY DISCLAIMER. THE SOFTWARE IS SUPPLIED &quot;AS IS&quot;
+ *     WITHOUT WARRANTY OF ANY KIND. THE COPYRIGHT HOLDER, THE
+ *     UNITED STATES, THE UNITED STATES DEPARTMENT OF ENERGY, AND
+ *     THEIR EMPLOYEES: (1) DISCLAIM ANY WARRANTIES, EXPRESS OR
+ *     IMPLIED, INCLUDING BUT NOT LIMITED TO ANY IMPLIED WARRANTIES
+ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE
+ *     OR NON-INFRINGEMENT, (2) DO NOT ASSUME ANY LEGAL LIABILITY
+ *     OR RESPONSIBILITY FOR THE ACCURACY, COMPLETENESS, OR
+ *     USEFULNESS OF THE SOFTWARE, (3) DO NOT REPRESENT THAT USE OF
+ *     THE SOFTWARE WOULD NOT INFRINGE PRIVATELY OWNED RIGHTS, (4)
+ *     DO NOT WARRANT THAT THE SOFTWARE WILL FUNCTION
+ *     UNINTERRUPTED, THAT IT IS ERROR-FREE OR THAT ANY ERRORS WILL
+ *     BE CORRECTED.&lt;/strong&gt;&lt;/li&gt;
+ * &lt;li&gt;&lt;strong&gt;LIMITATION OF LIABILITY. IN NO EVENT WILL THE COPYRIGHT
+ *     HOLDER, THE UNITED STATES, THE UNITED STATES DEPARTMENT OF
+ *     ENERGY, OR THEIR EMPLOYEES: BE LIABLE FOR ANY INDIRECT,
+ *     INCIDENTAL, CONSEQUENTIAL, SPECIAL OR PUNITIVE DAMAGES OF
+ *     ANY KIND OR NATURE, INCLUDING BUT NOT LIMITED TO LOSS OF
+ *     PROFITS OR LOSS OF DATA, FOR ANY REASON WHATSOEVER, WHETHER
+ *     SUCH LIABILITY IS ASSERTED ON THE BASIS OF CONTRACT, TORT
+ *     (INCLUDING NEGLIGENCE OR STRICT LIABILITY), OR OTHERWISE,
+ *     EVEN IF ANY OF SAID PARTIES HAS BEEN WARNED OF THE
+ *     POSSIBILITY OF SUCH LOSS OR DAMAGES.&lt;/strong&gt;&lt;/li&gt;
+ * &lt;ol&gt;&lt;/td&gt;&lt;/tr&gt;
+ * &lt;/table&gt;
+ *
+ * @version $Id$
+ * @since 2.0
+ */
+public class LevenbergMarquardtOptimizer
+    extends AbstractLeastSquaresOptimizer {
+    /** Twice the &quot;epsilon machine&quot;. */
+<span class="fc" id="L116">    private static final double TWO_EPS = 2 * Precision.EPSILON;</span>
+    /** Number of solved point. */
+    private int solvedCols;
+    /** Diagonal elements of the R matrix in the Q.R. decomposition. */
+    private double[] diagR;
+    /** Norms of the columns of the jacobian matrix. */
+    private double[] jacNorm;
+    /** Coefficients of the Householder transforms vectors. */
+    private double[] beta;
+    /** Columns permutation array. */
+    private int[] permutation;
+    /** Rank of the jacobian matrix. */
+    private int rank;
+    /** Levenberg-Marquardt parameter. */
+    private double lmPar;
+    /** Parameters evolution direction associated with lmPar. */
+    private double[] lmDir;
+    /** Positive input variable used in determining the initial step bound. */
+    private final double initialStepBoundFactor;
+    /** Desired relative error in the sum of squares. */
+    private final double costRelativeTolerance;
+    /**  Desired relative error in the approximate solution parameters. */
+    private final double parRelativeTolerance;
+    /** Desired max cosine on the orthogonality between the function vector
+     * and the columns of the jacobian. */
+    private final double orthoTolerance;
+    /** Threshold for QR ranking. */
+    private final double qrRankingThreshold;
+    /** Weighted residuals. */
+    private double[] weightedResidual;
+    /** Weighted Jacobian. */
+    private double[][] weightedJacobian;
+
+    /**
+     * Build an optimizer for least squares problems with default values
+     * for all the tuning parameters (see the {@link
+     * #LevenbergMarquardtOptimizer(double,double,double,double,double)
+     * other contructor}.
+     * The default values for the algorithm settings are:
+     * &lt;ul&gt;
+     *  &lt;li&gt;Initial step bound factor: 100&lt;/li&gt;
+     *  &lt;li&gt;Cost relative tolerance: 1e-10&lt;/li&gt;
+     *  &lt;li&gt;Parameters relative tolerance: 1e-10&lt;/li&gt;
+     *  &lt;li&gt;Orthogonality tolerance: 1e-10&lt;/li&gt;
+     *  &lt;li&gt;QR ranking threshold: {@link Precision#SAFE_MIN}&lt;/li&gt;
+     * &lt;/ul&gt;
+     */
+    public LevenbergMarquardtOptimizer() {
+<span class="fc" id="L164">        this(100, 1e-10, 1e-10, 1e-10, Precision.SAFE_MIN);</span>
+<span class="fc" id="L165">    }</span>
+
+    /**
+     * Constructor that allows the specification of a custom convergence
+     * checker.
+     * Note that all the usual convergence checks will be &lt;em&gt;disabled&lt;/em&gt;.
+     * The default values for the algorithm settings are:
+     * &lt;ul&gt;
+     *  &lt;li&gt;Initial step bound factor: 100&lt;/li&gt;
+     *  &lt;li&gt;Cost relative tolerance: 1e-10&lt;/li&gt;
+     *  &lt;li&gt;Parameters relative tolerance: 1e-10&lt;/li&gt;
+     *  &lt;li&gt;Orthogonality tolerance: 1e-10&lt;/li&gt;
+     *  &lt;li&gt;QR ranking threshold: {@link Precision#SAFE_MIN}&lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @param checker Convergence checker.
+     */
+    public LevenbergMarquardtOptimizer(ConvergenceChecker&lt;PointVectorValuePair&gt; checker) {
+<span class="fc" id="L183">        this(100, checker, 1e-10, 1e-10, 1e-10, Precision.SAFE_MIN);</span>
+<span class="fc" id="L184">    }</span>
+
+    /**
+     * Constructor that allows the specification of a custom convergence
+     * checker, in addition to the standard ones.
+     *
+     * @param initialStepBoundFactor Positive input variable used in
+     * determining the initial step bound. This bound is set to the
+     * product of initialStepBoundFactor and the euclidean norm of
+     * {@code diag * x} if non-zero, or else to {@code initialStepBoundFactor}
+     * itself. In most cases factor should lie in the interval
+     * {@code (0.1, 100.0)}. {@code 100} is a generally recommended value.
+     * @param checker Convergence checker.
+     * @param costRelativeTolerance Desired relative error in the sum of
+     * squares.
+     * @param parRelativeTolerance Desired relative error in the approximate
+     * solution parameters.
+     * @param orthoTolerance Desired max cosine on the orthogonality between
+     * the function vector and the columns of the Jacobian.
+     * @param threshold Desired threshold for QR ranking. If the squared norm
+     * of a column vector is smaller or equal to this threshold during QR
+     * decomposition, it is considered to be a zero vector and hence the rank
+     * of the matrix is reduced.
+     */
+    public LevenbergMarquardtOptimizer(double initialStepBoundFactor,
+                                       ConvergenceChecker&lt;PointVectorValuePair&gt; checker,
+                                       double costRelativeTolerance,
+                                       double parRelativeTolerance,
+                                       double orthoTolerance,
+                                       double threshold) {
+<span class="fc" id="L214">        super(checker);</span>
+<span class="fc" id="L215">        this.initialStepBoundFactor = initialStepBoundFactor;</span>
+<span class="fc" id="L216">        this.costRelativeTolerance = costRelativeTolerance;</span>
+<span class="fc" id="L217">        this.parRelativeTolerance = parRelativeTolerance;</span>
+<span class="fc" id="L218">        this.orthoTolerance = orthoTolerance;</span>
+<span class="fc" id="L219">        this.qrRankingThreshold = threshold;</span>
+<span class="fc" id="L220">    }</span>
+
+    /**
+     * Build an optimizer for least squares problems with default values
+     * for some of the tuning parameters (see the {@link
+     * #LevenbergMarquardtOptimizer(double,double,double,double,double)
+     * other contructor}.
+     * The default values for the algorithm settings are:
+     * &lt;ul&gt;
+     *  &lt;li&gt;Initial step bound factor}: 100&lt;/li&gt;
+     *  &lt;li&gt;QR ranking threshold}: {@link Precision#SAFE_MIN}&lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @param costRelativeTolerance Desired relative error in the sum of
+     * squares.
+     * @param parRelativeTolerance Desired relative error in the approximate
+     * solution parameters.
+     * @param orthoTolerance Desired max cosine on the orthogonality between
+     * the function vector and the columns of the Jacobian.
+     */
+    public LevenbergMarquardtOptimizer(double costRelativeTolerance,
+                                       double parRelativeTolerance,
+                                       double orthoTolerance) {
+<span class="fc" id="L243">        this(100,</span>
+             costRelativeTolerance, parRelativeTolerance, orthoTolerance,
+             Precision.SAFE_MIN);
+<span class="fc" id="L246">    }</span>
+
+    /**
+     * The arguments control the behaviour of the default convergence checking
+     * procedure.
+     * Additional criteria can defined through the setting of a {@link
+     * ConvergenceChecker}.
+     *
+     * @param initialStepBoundFactor Positive input variable used in
+     * determining the initial step bound. This bound is set to the
+     * product of initialStepBoundFactor and the euclidean norm of
+     * {@code diag * x} if non-zero, or else to {@code initialStepBoundFactor}
+     * itself. In most cases factor should lie in the interval
+     * {@code (0.1, 100.0)}. {@code 100} is a generally recommended value.
+     * @param costRelativeTolerance Desired relative error in the sum of
+     * squares.
+     * @param parRelativeTolerance Desired relative error in the approximate
+     * solution parameters.
+     * @param orthoTolerance Desired max cosine on the orthogonality between
+     * the function vector and the columns of the Jacobian.
+     * @param threshold Desired threshold for QR ranking. If the squared norm
+     * of a column vector is smaller or equal to this threshold during QR
+     * decomposition, it is considered to be a zero vector and hence the rank
+     * of the matrix is reduced.
+     */
+    public LevenbergMarquardtOptimizer(double initialStepBoundFactor,
+                                       double costRelativeTolerance,
+                                       double parRelativeTolerance,
+                                       double orthoTolerance,
+                                       double threshold) {
+<span class="fc" id="L276">        super(null); // No custom convergence criterion.</span>
+<span class="fc" id="L277">        this.initialStepBoundFactor = initialStepBoundFactor;</span>
+<span class="fc" id="L278">        this.costRelativeTolerance = costRelativeTolerance;</span>
+<span class="fc" id="L279">        this.parRelativeTolerance = parRelativeTolerance;</span>
+<span class="fc" id="L280">        this.orthoTolerance = orthoTolerance;</span>
+<span class="fc" id="L281">        this.qrRankingThreshold = threshold;</span>
+<span class="fc" id="L282">    }</span>
+
+    /** {@inheritDoc} */
+    @Override
+    protected PointVectorValuePair doOptimize() {
+<span class="fc" id="L287">        checkParameters();</span>
+
+<span class="fc" id="L289">        final int nR = getTarget().length; // Number of observed data.</span>
+<span class="fc" id="L290">        final double[] currentPoint = getStartPoint();</span>
+<span class="fc" id="L291">        final int nC = currentPoint.length; // Number of parameters.</span>
+
+        // arrays shared with the other private methods
+<span class="fc" id="L294">        solvedCols  = FastMath.min(nR, nC);</span>
+<span class="fc" id="L295">        diagR       = new double[nC];</span>
+<span class="fc" id="L296">        jacNorm     = new double[nC];</span>
+<span class="fc" id="L297">        beta        = new double[nC];</span>
+<span class="fc" id="L298">        permutation = new int[nC];</span>
+<span class="fc" id="L299">        lmDir       = new double[nC];</span>
+
+        // local point
+<span class="fc" id="L302">        double   delta   = 0;</span>
+<span class="fc" id="L303">        double   xNorm   = 0;</span>
+<span class="fc" id="L304">        double[] diag    = new double[nC];</span>
+<span class="fc" id="L305">        double[] oldX    = new double[nC];</span>
+<span class="fc" id="L306">        double[] oldRes  = new double[nR];</span>
+<span class="fc" id="L307">        double[] oldObj  = new double[nR];</span>
+<span class="fc" id="L308">        double[] qtf     = new double[nR];</span>
+<span class="fc" id="L309">        double[] work1   = new double[nC];</span>
+<span class="fc" id="L310">        double[] work2   = new double[nC];</span>
+<span class="fc" id="L311">        double[] work3   = new double[nC];</span>
+
+<span class="fc" id="L313">        final RealMatrix weightMatrixSqrt = getWeightSquareRoot();</span>
+
+        // Evaluate the function at the starting point and calculate its norm.
+<span class="fc" id="L316">        double[] currentObjective = computeObjectiveValue(currentPoint);</span>
+<span class="fc" id="L317">        double[] currentResiduals = computeResiduals(currentObjective);</span>
+<span class="fc" id="L318">        PointVectorValuePair current = new PointVectorValuePair(currentPoint, currentObjective);</span>
+<span class="fc" id="L319">        double currentCost = computeCost(currentResiduals);</span>
+
+        // Outer loop.
+<span class="fc" id="L322">        lmPar = 0;</span>
+<span class="fc" id="L323">        boolean firstIteration = true;</span>
+<span class="fc" id="L324">        final ConvergenceChecker&lt;PointVectorValuePair&gt; checker = getConvergenceChecker();</span>
+        while (true) {
+<span class="fc" id="L326">            incrementIterationCount();</span>
+
+<span class="fc" id="L328">            final PointVectorValuePair previous = current;</span>
+
+            // QR decomposition of the jacobian matrix
+<span class="fc" id="L331">            qrDecomposition(computeWeightedJacobian(currentPoint));</span>
+
+<span class="fc" id="L333">            weightedResidual = weightMatrixSqrt.operate(currentResiduals);</span>
+<span class="fc bfc" id="L334" title="All 2 branches covered.">            for (int i = 0; i &lt; nR; i++) {</span>
+<span class="fc" id="L335">                qtf[i] = weightedResidual[i];</span>
+            }
+
+            // compute Qt.res
+<span class="fc" id="L339">            qTy(qtf);</span>
+
+            // now we don't need Q anymore,
+            // so let jacobian contain the R matrix with its diagonal elements
+<span class="fc bfc" id="L343" title="All 2 branches covered.">            for (int k = 0; k &lt; solvedCols; ++k) {</span>
+<span class="fc" id="L344">                int pk = permutation[k];</span>
+<span class="fc" id="L345">                weightedJacobian[k][pk] = diagR[pk];</span>
+            }
+
+<span class="fc bfc" id="L348" title="All 2 branches covered.">            if (firstIteration) {</span>
+                // scale the point according to the norms of the columns
+                // of the initial jacobian
+<span class="fc" id="L351">                xNorm = 0;</span>
+<span class="fc bfc" id="L352" title="All 2 branches covered.">                for (int k = 0; k &lt; nC; ++k) {</span>
+<span class="fc" id="L353">                    double dk = jacNorm[k];</span>
+<span class="fc bfc" id="L354" title="All 2 branches covered.">                    if (dk == 0) {</span>
+<span class="fc" id="L355">                        dk = 1.0;</span>
+                    }
+<span class="fc" id="L357">                    double xk = dk * currentPoint[k];</span>
+<span class="fc" id="L358">                    xNorm  += xk * xk;</span>
+<span class="fc" id="L359">                    diag[k] = dk;</span>
+                }
+<span class="fc" id="L361">                xNorm = FastMath.sqrt(xNorm);</span>
+
+                // initialize the step bound delta
+<span class="fc bfc" id="L364" title="All 2 branches covered.">                delta = (xNorm == 0) ? initialStepBoundFactor : (initialStepBoundFactor * xNorm);</span>
+            }
+
+            // check orthogonality between function vector and jacobian columns
+<span class="fc" id="L368">            double maxCosine = 0;</span>
+<span class="fc bfc" id="L369" title="All 2 branches covered.">            if (currentCost != 0) {</span>
+<span class="fc bfc" id="L370" title="All 2 branches covered.">                for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L371">                    int    pj = permutation[j];</span>
+<span class="fc" id="L372">                    double s  = jacNorm[pj];</span>
+<span class="fc bfc" id="L373" title="All 2 branches covered.">                    if (s != 0) {</span>
+<span class="fc" id="L374">                        double sum = 0;</span>
+<span class="fc bfc" id="L375" title="All 2 branches covered.">                        for (int i = 0; i &lt;= j; ++i) {</span>
+<span class="fc" id="L376">                            sum += weightedJacobian[i][pj] * qtf[i];</span>
+                        }
+<span class="fc" id="L378">                        maxCosine = FastMath.max(maxCosine, FastMath.abs(sum) / (s * currentCost));</span>
+                    }
+                }
+            }
+<span class="fc bfc" id="L382" title="All 2 branches covered.">            if (maxCosine &lt;= orthoTolerance) {</span>
+                // Convergence has been reached.
+<span class="fc" id="L384">                setCost(currentCost);</span>
+<span class="fc" id="L385">                return current;</span>
+            }
+
+            // rescale if necessary
+<span class="fc bfc" id="L389" title="All 2 branches covered.">            for (int j = 0; j &lt; nC; ++j) {</span>
+<span class="fc" id="L390">                diag[j] = FastMath.max(diag[j], jacNorm[j]);</span>
+            }
+
+            // Inner loop.
+<span class="fc bfc" id="L394" title="All 2 branches covered.">            for (double ratio = 0; ratio &lt; 1.0e-4;) {</span>
+
+                // save the state
+<span class="fc bfc" id="L397" title="All 2 branches covered.">                for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L398">                    int pj = permutation[j];</span>
+<span class="fc" id="L399">                    oldX[pj] = currentPoint[pj];</span>
+                }
+<span class="fc" id="L401">                final double previousCost = currentCost;</span>
+<span class="fc" id="L402">                double[] tmpVec = weightedResidual;</span>
+<span class="fc" id="L403">                weightedResidual = oldRes;</span>
+<span class="fc" id="L404">                oldRes    = tmpVec;</span>
+<span class="fc" id="L405">                tmpVec    = currentObjective;</span>
+<span class="fc" id="L406">                currentObjective = oldObj;</span>
+<span class="fc" id="L407">                oldObj    = tmpVec;</span>
+
+                // determine the Levenberg-Marquardt parameter
+<span class="fc" id="L410">                determineLMParameter(qtf, delta, diag, work1, work2, work3);</span>
+
+                // compute the new point and the norm of the evolution direction
+<span class="fc" id="L413">                double lmNorm = 0;</span>
+<span class="fc bfc" id="L414" title="All 2 branches covered.">                for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L415">                    int pj = permutation[j];</span>
+<span class="fc" id="L416">                    lmDir[pj] = -lmDir[pj];</span>
+<span class="fc" id="L417">                    currentPoint[pj] = oldX[pj] + lmDir[pj];</span>
+<span class="fc" id="L418">                    double s = diag[pj] * lmDir[pj];</span>
+<span class="fc" id="L419">                    lmNorm  += s * s;</span>
+                }
+<span class="fc" id="L421">                lmNorm = FastMath.sqrt(lmNorm);</span>
+                // on the first iteration, adjust the initial step bound.
+<span class="fc bfc" id="L423" title="All 2 branches covered.">                if (firstIteration) {</span>
+<span class="fc" id="L424">                    delta = FastMath.min(delta, lmNorm);</span>
+                }
+
+                // Evaluate the function at x + p and calculate its norm.
+<span class="fc" id="L428">                currentObjective = computeObjectiveValue(currentPoint);</span>
+<span class="fc" id="L429">                currentResiduals = computeResiduals(currentObjective);</span>
+<span class="fc" id="L430">                current = new PointVectorValuePair(currentPoint, currentObjective);</span>
+<span class="fc" id="L431">                currentCost = computeCost(currentResiduals);</span>
+
+                // compute the scaled actual reduction
+<span class="fc" id="L434">                double actRed = -1.0;</span>
+<span class="fc bfc" id="L435" title="All 2 branches covered.">                if (0.1 * currentCost &lt; previousCost) {</span>
+<span class="fc" id="L436">                    double r = currentCost / previousCost;</span>
+<span class="fc" id="L437">                    actRed = 1.0 - r * r;</span>
+                }
+
+                // compute the scaled predicted reduction
+                // and the scaled directional derivative
+<span class="fc bfc" id="L442" title="All 2 branches covered.">                for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L443">                    int pj = permutation[j];</span>
+<span class="fc" id="L444">                    double dirJ = lmDir[pj];</span>
+<span class="fc" id="L445">                    work1[j] = 0;</span>
+<span class="fc bfc" id="L446" title="All 2 branches covered.">                    for (int i = 0; i &lt;= j; ++i) {</span>
+<span class="fc" id="L447">                        work1[i] += weightedJacobian[i][pj] * dirJ;</span>
+                    }
+                }
+<span class="fc" id="L450">                double coeff1 = 0;</span>
+<span class="fc bfc" id="L451" title="All 2 branches covered.">                for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L452">                    coeff1 += work1[j] * work1[j];</span>
+                }
+<span class="fc" id="L454">                double pc2 = previousCost * previousCost;</span>
+<span class="fc" id="L455">                coeff1 = coeff1 / pc2;</span>
+<span class="fc" id="L456">                double coeff2 = lmPar * lmNorm * lmNorm / pc2;</span>
+<span class="fc" id="L457">                double preRed = coeff1 + 2 * coeff2;</span>
+<span class="fc" id="L458">                double dirDer = -(coeff1 + coeff2);</span>
+
+                // ratio of the actual to the predicted reduction
+<span class="pc bpc" id="L461" title="1 of 2 branches missed.">                ratio = (preRed == 0) ? 0 : (actRed / preRed);</span>
+
+                // update the step bound
+<span class="fc bfc" id="L464" title="All 2 branches covered.">                if (ratio &lt;= 0.25) {</span>
+                    double tmp =
+<span class="fc bfc" id="L466" title="All 2 branches covered.">                        (actRed &lt; 0) ? (0.5 * dirDer / (dirDer + 0.5 * actRed)) : 0.5;</span>
+<span class="fc bfc" id="L467" title="All 4 branches covered.">                        if ((0.1 * currentCost &gt;= previousCost) || (tmp &lt; 0.1)) {</span>
+<span class="fc" id="L468">                            tmp = 0.1;</span>
+                        }
+<span class="fc" id="L470">                        delta = tmp * FastMath.min(delta, 10.0 * lmNorm);</span>
+<span class="fc" id="L471">                        lmPar /= tmp;</span>
+<span class="fc bfc" id="L472" title="All 4 branches covered.">                } else if ((lmPar == 0) || (ratio &gt;= 0.75)) {</span>
+<span class="fc" id="L473">                    delta = 2 * lmNorm;</span>
+<span class="fc" id="L474">                    lmPar *= 0.5;</span>
+                }
+
+                // test for successful iteration.
+<span class="fc bfc" id="L478" title="All 2 branches covered.">                if (ratio &gt;= 1.0e-4) {</span>
+                    // successful iteration, update the norm
+<span class="fc" id="L480">                    firstIteration = false;</span>
+<span class="fc" id="L481">                    xNorm = 0;</span>
+<span class="fc bfc" id="L482" title="All 2 branches covered.">                    for (int k = 0; k &lt; nC; ++k) {</span>
+<span class="fc" id="L483">                        double xK = diag[k] * currentPoint[k];</span>
+<span class="fc" id="L484">                        xNorm += xK * xK;</span>
+                    }
+<span class="fc" id="L486">                    xNorm = FastMath.sqrt(xNorm);</span>
+
+                    // tests for convergence.
+<span class="pc bpc" id="L489" title="1 of 4 branches missed.">                    if (checker != null &amp;&amp; checker.converged(getIterations(), previous, current)) {</span>
+<span class="nc" id="L490">                        setCost(currentCost);</span>
+<span class="nc" id="L491">                        return current;</span>
+                    }
+                } else {
+                    // failed iteration, reset the previous values
+<span class="fc" id="L495">                    currentCost = previousCost;</span>
+<span class="fc bfc" id="L496" title="All 2 branches covered.">                    for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L497">                        int pj = permutation[j];</span>
+<span class="fc" id="L498">                        currentPoint[pj] = oldX[pj];</span>
+                    }
+<span class="fc" id="L500">                    tmpVec    = weightedResidual;</span>
+<span class="fc" id="L501">                    weightedResidual = oldRes;</span>
+<span class="fc" id="L502">                    oldRes    = tmpVec;</span>
+<span class="fc" id="L503">                    tmpVec    = currentObjective;</span>
+<span class="fc" id="L504">                    currentObjective = oldObj;</span>
+<span class="fc" id="L505">                    oldObj    = tmpVec;</span>
+                    // Reset &quot;current&quot; to previous values.
+<span class="fc" id="L507">                    current = new PointVectorValuePair(currentPoint, currentObjective);</span>
+                }
+
+                // Default convergence criteria.
+<span class="fc bfc" id="L511" title="All 8 branches covered.">                if ((FastMath.abs(actRed) &lt;= costRelativeTolerance &amp;&amp;</span>
+                     preRed &lt;= costRelativeTolerance &amp;&amp;
+                     ratio &lt;= 2.0) ||
+                    delta &lt;= parRelativeTolerance * xNorm) {
+<span class="fc" id="L515">                    setCost(currentCost);</span>
+<span class="fc" id="L516">                    return current;</span>
+                }
+
+                // tests for termination and stringent tolerances
+<span class="pc bpc" id="L520" title="2 of 6 branches missed.">                if (FastMath.abs(actRed) &lt;= TWO_EPS &amp;&amp;</span>
+                    preRed &lt;= TWO_EPS &amp;&amp;
+                    ratio &lt;= 2.0) {
+<span class="nc" id="L523">                    throw new ConvergenceException(LocalizedFormats.TOO_SMALL_COST_RELATIVE_TOLERANCE,</span>
+<span class="nc" id="L524">                                                   costRelativeTolerance);</span>
+<span class="pc bpc" id="L525" title="1 of 2 branches missed.">                } else if (delta &lt;= TWO_EPS * xNorm) {</span>
+<span class="nc" id="L526">                    throw new ConvergenceException(LocalizedFormats.TOO_SMALL_PARAMETERS_RELATIVE_TOLERANCE,</span>
+<span class="nc" id="L527">                                                   parRelativeTolerance);</span>
+<span class="pc bpc" id="L528" title="1 of 2 branches missed.">                } else if (maxCosine &lt;= TWO_EPS) {</span>
+<span class="nc" id="L529">                    throw new ConvergenceException(LocalizedFormats.TOO_SMALL_ORTHOGONALITY_TOLERANCE,</span>
+<span class="nc" id="L530">                                                   orthoTolerance);</span>
+                }
+<span class="fc" id="L532">            }</span>
+<span class="fc" id="L533">        }</span>
+    }
+
+    /**
+     * Determine the Levenberg-Marquardt parameter.
+     * &lt;p&gt;This implementation is a translation in Java of the MINPACK
+     * &lt;a href=&quot;http://www.netlib.org/minpack/lmpar.f&quot;&gt;lmpar&lt;/a&gt;
+     * routine.&lt;/p&gt;
+     * &lt;p&gt;This method sets the lmPar and lmDir attributes.&lt;/p&gt;
+     * &lt;p&gt;The authors of the original fortran function are:&lt;/p&gt;
+     * &lt;ul&gt;
+     *   &lt;li&gt;Argonne National Laboratory. MINPACK project. March 1980&lt;/li&gt;
+     *   &lt;li&gt;Burton  S. Garbow&lt;/li&gt;
+     *   &lt;li&gt;Kenneth E. Hillstrom&lt;/li&gt;
+     *   &lt;li&gt;Jorge   J. More&lt;/li&gt;
+     * &lt;/ul&gt;
+     * &lt;p&gt;Luc Maisonobe did the Java translation.&lt;/p&gt;
+     *
+     * @param qy array containing qTy
+     * @param delta upper bound on the euclidean norm of diagR * lmDir
+     * @param diag diagonal matrix
+     * @param work1 work array
+     * @param work2 work array
+     * @param work3 work array
+     */
+    private void determineLMParameter(double[] qy, double delta, double[] diag,
+                                      double[] work1, double[] work2, double[] work3) {
+<span class="fc" id="L560">        final int nC = weightedJacobian[0].length;</span>
+
+        // compute and store in x the gauss-newton direction, if the
+        // jacobian is rank-deficient, obtain a least squares solution
+<span class="fc bfc" id="L564" title="All 2 branches covered.">        for (int j = 0; j &lt; rank; ++j) {</span>
+<span class="fc" id="L565">            lmDir[permutation[j]] = qy[j];</span>
+        }
+<span class="fc bfc" id="L567" title="All 2 branches covered.">        for (int j = rank; j &lt; nC; ++j) {</span>
+<span class="fc" id="L568">            lmDir[permutation[j]] = 0;</span>
+        }
+<span class="fc bfc" id="L570" title="All 2 branches covered.">        for (int k = rank - 1; k &gt;= 0; --k) {</span>
+<span class="fc" id="L571">            int pk = permutation[k];</span>
+<span class="fc" id="L572">            double ypk = lmDir[pk] / diagR[pk];</span>
+<span class="fc bfc" id="L573" title="All 2 branches covered.">            for (int i = 0; i &lt; k; ++i) {</span>
+<span class="fc" id="L574">                lmDir[permutation[i]] -= ypk * weightedJacobian[i][pk];</span>
+            }
+<span class="fc" id="L576">            lmDir[pk] = ypk;</span>
+        }
+
+        // evaluate the function at the origin, and test
+        // for acceptance of the Gauss-Newton direction
+<span class="fc" id="L581">        double dxNorm = 0;</span>
+<span class="fc bfc" id="L582" title="All 2 branches covered.">        for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L583">            int pj = permutation[j];</span>
+<span class="fc" id="L584">            double s = diag[pj] * lmDir[pj];</span>
+<span class="fc" id="L585">            work1[pj] = s;</span>
+<span class="fc" id="L586">            dxNorm += s * s;</span>
+        }
+<span class="fc" id="L588">        dxNorm = FastMath.sqrt(dxNorm);</span>
+<span class="fc" id="L589">        double fp = dxNorm - delta;</span>
+<span class="fc bfc" id="L590" title="All 2 branches covered.">        if (fp &lt;= 0.1 * delta) {</span>
+<span class="fc" id="L591">            lmPar = 0;</span>
+<span class="fc" id="L592">            return;</span>
+        }
+
+        // if the jacobian is not rank deficient, the Newton step provides
+        // a lower bound, parl, for the zero of the function,
+        // otherwise set this bound to zero
+        double sum2;
+<span class="fc" id="L599">        double parl = 0;</span>
+<span class="fc bfc" id="L600" title="All 2 branches covered.">        if (rank == solvedCols) {</span>
+<span class="fc bfc" id="L601" title="All 2 branches covered.">            for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L602">                int pj = permutation[j];</span>
+<span class="fc" id="L603">                work1[pj] *= diag[pj] / dxNorm;</span>
+            }
+<span class="fc" id="L605">            sum2 = 0;</span>
+<span class="fc bfc" id="L606" title="All 2 branches covered.">            for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L607">                int pj = permutation[j];</span>
+<span class="fc" id="L608">                double sum = 0;</span>
+<span class="fc bfc" id="L609" title="All 2 branches covered.">                for (int i = 0; i &lt; j; ++i) {</span>
+<span class="fc" id="L610">                    sum += weightedJacobian[i][pj] * work1[permutation[i]];</span>
+                }
+<span class="fc" id="L612">                double s = (work1[pj] - sum) / diagR[pj];</span>
+<span class="fc" id="L613">                work1[pj] = s;</span>
+<span class="fc" id="L614">                sum2 += s * s;</span>
+            }
+<span class="fc" id="L616">            parl = fp / (delta * sum2);</span>
+        }
+
+        // calculate an upper bound, paru, for the zero of the function
+<span class="fc" id="L620">        sum2 = 0;</span>
+<span class="fc bfc" id="L621" title="All 2 branches covered.">        for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L622">            int pj = permutation[j];</span>
+<span class="fc" id="L623">            double sum = 0;</span>
+<span class="fc bfc" id="L624" title="All 2 branches covered.">            for (int i = 0; i &lt;= j; ++i) {</span>
+<span class="fc" id="L625">                sum += weightedJacobian[i][pj] * qy[i];</span>
+            }
+<span class="fc" id="L627">            sum /= diag[pj];</span>
+<span class="fc" id="L628">            sum2 += sum * sum;</span>
+        }
+<span class="fc" id="L630">        double gNorm = FastMath.sqrt(sum2);</span>
+<span class="fc" id="L631">        double paru = gNorm / delta;</span>
+<span class="pc bpc" id="L632" title="1 of 2 branches missed.">        if (paru == 0) {</span>
+<span class="nc" id="L633">            paru = Precision.SAFE_MIN / FastMath.min(delta, 0.1);</span>
+        }
+
+        // if the input par lies outside of the interval (parl,paru),
+        // set par to the closer endpoint
+<span class="fc" id="L638">        lmPar = FastMath.min(paru, FastMath.max(lmPar, parl));</span>
+<span class="fc bfc" id="L639" title="All 2 branches covered.">        if (lmPar == 0) {</span>
+<span class="fc" id="L640">            lmPar = gNorm / dxNorm;</span>
+        }
+
+<span class="pc bpc" id="L643" title="1 of 2 branches missed.">        for (int countdown = 10; countdown &gt;= 0; --countdown) {</span>
+
+            // evaluate the function at the current value of lmPar
+<span class="fc bfc" id="L646" title="All 2 branches covered.">            if (lmPar == 0) {</span>
+<span class="fc" id="L647">                lmPar = FastMath.max(Precision.SAFE_MIN, 0.001 * paru);</span>
+            }
+<span class="fc" id="L649">            double sPar = FastMath.sqrt(lmPar);</span>
+<span class="fc bfc" id="L650" title="All 2 branches covered.">            for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L651">                int pj = permutation[j];</span>
+<span class="fc" id="L652">                work1[pj] = sPar * diag[pj];</span>
+            }
+<span class="fc" id="L654">            determineLMDirection(qy, work1, work2, work3);</span>
+
+<span class="fc" id="L656">            dxNorm = 0;</span>
+<span class="fc bfc" id="L657" title="All 2 branches covered.">            for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L658">                int pj = permutation[j];</span>
+<span class="fc" id="L659">                double s = diag[pj] * lmDir[pj];</span>
+<span class="fc" id="L660">                work3[pj] = s;</span>
+<span class="fc" id="L661">                dxNorm += s * s;</span>
+            }
+<span class="fc" id="L663">            dxNorm = FastMath.sqrt(dxNorm);</span>
+<span class="fc" id="L664">            double previousFP = fp;</span>
+<span class="fc" id="L665">            fp = dxNorm - delta;</span>
+
+            // if the function is small enough, accept the current value
+            // of lmPar, also test for the exceptional cases where parl is zero
+<span class="pc bpc" id="L669" title="1 of 8 branches missed.">            if ((FastMath.abs(fp) &lt;= 0.1 * delta) ||</span>
+                    ((parl == 0) &amp;&amp; (fp &lt;= previousFP) &amp;&amp; (previousFP &lt; 0))) {
+<span class="fc" id="L671">                return;</span>
+            }
+
+            // compute the Newton correction
+<span class="fc bfc" id="L675" title="All 2 branches covered.">            for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L676">                int pj = permutation[j];</span>
+<span class="fc" id="L677">                work1[pj] = work3[pj] * diag[pj] / dxNorm;</span>
+            }
+<span class="fc bfc" id="L679" title="All 2 branches covered.">            for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L680">                int pj = permutation[j];</span>
+<span class="fc" id="L681">                work1[pj] /= work2[j];</span>
+<span class="fc" id="L682">                double tmp = work1[pj];</span>
+<span class="fc bfc" id="L683" title="All 2 branches covered.">                for (int i = j + 1; i &lt; solvedCols; ++i) {</span>
+<span class="fc" id="L684">                    work1[permutation[i]] -= weightedJacobian[i][pj] * tmp;</span>
+                }
+            }
+<span class="fc" id="L687">            sum2 = 0;</span>
+<span class="fc bfc" id="L688" title="All 2 branches covered.">            for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L689">                double s = work1[permutation[j]];</span>
+<span class="fc" id="L690">                sum2 += s * s;</span>
+            }
+<span class="fc" id="L692">            double correction = fp / (delta * sum2);</span>
+
+            // depending on the sign of the function, update parl or paru.
+<span class="fc bfc" id="L695" title="All 2 branches covered.">            if (fp &gt; 0) {</span>
+<span class="fc" id="L696">                parl = FastMath.max(parl, lmPar);</span>
+<span class="pc bpc" id="L697" title="1 of 2 branches missed.">            } else if (fp &lt; 0) {</span>
+<span class="fc" id="L698">                paru = FastMath.min(paru, lmPar);</span>
+            }
+
+            // compute an improved estimate for lmPar
+<span class="fc" id="L702">            lmPar = FastMath.max(parl, lmPar + correction);</span>
+
+        }
+<span class="nc" id="L705">    }</span>
+
+    /**
+     * Solve a*x = b and d*x = 0 in the least squares sense.
+     * &lt;p&gt;This implementation is a translation in Java of the MINPACK
+     * &lt;a href=&quot;http://www.netlib.org/minpack/qrsolv.f&quot;&gt;qrsolv&lt;/a&gt;
+     * routine.&lt;/p&gt;
+     * &lt;p&gt;This method sets the lmDir and lmDiag attributes.&lt;/p&gt;
+     * &lt;p&gt;The authors of the original fortran function are:&lt;/p&gt;
+     * &lt;ul&gt;
+     *   &lt;li&gt;Argonne National Laboratory. MINPACK project. March 1980&lt;/li&gt;
+     *   &lt;li&gt;Burton  S. Garbow&lt;/li&gt;
+     *   &lt;li&gt;Kenneth E. Hillstrom&lt;/li&gt;
+     *   &lt;li&gt;Jorge   J. More&lt;/li&gt;
+     * &lt;/ul&gt;
+     * &lt;p&gt;Luc Maisonobe did the Java translation.&lt;/p&gt;
+     *
+     * @param qy array containing qTy
+     * @param diag diagonal matrix
+     * @param lmDiag diagonal elements associated with lmDir
+     * @param work work array
+     */
+    private void determineLMDirection(double[] qy, double[] diag,
+                                      double[] lmDiag, double[] work) {
+
+        // copy R and Qty to preserve input and initialize s
+        //  in particular, save the diagonal elements of R in lmDir
+<span class="fc bfc" id="L732" title="All 2 branches covered.">        for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="fc" id="L733">            int pj = permutation[j];</span>
+<span class="fc bfc" id="L734" title="All 2 branches covered.">            for (int i = j + 1; i &lt; solvedCols; ++i) {</span>
+<span class="fc" id="L735">                weightedJacobian[i][pj] = weightedJacobian[j][permutation[i]];</span>
+            }
+<span class="fc" id="L737">            lmDir[j] = diagR[pj];</span>
+<span class="fc" id="L738">            work[j]  = qy[j];</span>
+        }
+
+        // eliminate the diagonal matrix d using a Givens rotation
+<span class="fc bfc" id="L742" title="All 2 branches covered.">        for (int j = 0; j &lt; solvedCols; ++j) {</span>
+
+            // prepare the row of d to be eliminated, locating the
+            // diagonal element using p from the Q.R. factorization
+<span class="fc" id="L746">            int pj = permutation[j];</span>
+<span class="fc" id="L747">            double dpj = diag[pj];</span>
+<span class="pc bpc" id="L748" title="1 of 2 branches missed.">            if (dpj != 0) {</span>
+<span class="fc" id="L749">                Arrays.fill(lmDiag, j + 1, lmDiag.length, 0);</span>
+            }
+<span class="fc" id="L751">            lmDiag[j] = dpj;</span>
+
+            //  the transformations to eliminate the row of d
+            // modify only a single element of Qty
+            // beyond the first n, which is initially zero.
+<span class="fc" id="L756">            double qtbpj = 0;</span>
+<span class="fc bfc" id="L757" title="All 2 branches covered.">            for (int k = j; k &lt; solvedCols; ++k) {</span>
+<span class="fc" id="L758">                int pk = permutation[k];</span>
+
+                // determine a Givens rotation which eliminates the
+                // appropriate element in the current row of d
+<span class="fc bfc" id="L762" title="All 2 branches covered.">                if (lmDiag[k] != 0) {</span>
+
+                    final double sin;
+                    final double cos;
+<span class="fc" id="L766">                    double rkk = weightedJacobian[k][pk];</span>
+<span class="fc bfc" id="L767" title="All 2 branches covered.">                    if (FastMath.abs(rkk) &lt; FastMath.abs(lmDiag[k])) {</span>
+<span class="fc" id="L768">                        final double cotan = rkk / lmDiag[k];</span>
+<span class="fc" id="L769">                        sin   = 1.0 / FastMath.sqrt(1.0 + cotan * cotan);</span>
+<span class="fc" id="L770">                        cos   = sin * cotan;</span>
+<span class="fc" id="L771">                    } else {</span>
+<span class="fc" id="L772">                        final double tan = lmDiag[k] / rkk;</span>
+<span class="fc" id="L773">                        cos = 1.0 / FastMath.sqrt(1.0 + tan * tan);</span>
+<span class="fc" id="L774">                        sin = cos * tan;</span>
+                    }
+
+                    // compute the modified diagonal element of R and
+                    // the modified element of (Qty,0)
+<span class="fc" id="L779">                    weightedJacobian[k][pk] = cos * rkk + sin * lmDiag[k];</span>
+<span class="fc" id="L780">                    final double temp = cos * work[k] + sin * qtbpj;</span>
+<span class="fc" id="L781">                    qtbpj = -sin * work[k] + cos * qtbpj;</span>
+<span class="fc" id="L782">                    work[k] = temp;</span>
+
+                    // accumulate the tranformation in the row of s
+<span class="fc bfc" id="L785" title="All 2 branches covered.">                    for (int i = k + 1; i &lt; solvedCols; ++i) {</span>
+<span class="fc" id="L786">                        double rik = weightedJacobian[i][pk];</span>
+<span class="fc" id="L787">                        final double temp2 = cos * rik + sin * lmDiag[i];</span>
+<span class="fc" id="L788">                        lmDiag[i] = -sin * rik + cos * lmDiag[i];</span>
+<span class="fc" id="L789">                        weightedJacobian[i][pk] = temp2;</span>
+                    }
+                }
+            }
+
+            // store the diagonal element of s and restore
+            // the corresponding diagonal element of R
+<span class="fc" id="L796">            lmDiag[j] = weightedJacobian[j][permutation[j]];</span>
+<span class="fc" id="L797">            weightedJacobian[j][permutation[j]] = lmDir[j];</span>
+        }
+
+        // solve the triangular system for z, if the system is
+        // singular, then obtain a least squares solution
+<span class="fc" id="L802">        int nSing = solvedCols;</span>
+<span class="fc bfc" id="L803" title="All 2 branches covered.">        for (int j = 0; j &lt; solvedCols; ++j) {</span>
+<span class="pc bpc" id="L804" title="3 of 4 branches missed.">            if ((lmDiag[j] == 0) &amp;&amp; (nSing == solvedCols)) {</span>
+<span class="nc" id="L805">                nSing = j;</span>
+            }
+<span class="pc bpc" id="L807" title="1 of 2 branches missed.">            if (nSing &lt; solvedCols) {</span>
+<span class="nc" id="L808">                work[j] = 0;</span>
+            }
+        }
+<span class="pc bpc" id="L811" title="1 of 2 branches missed.">        if (nSing &gt; 0) {</span>
+<span class="fc bfc" id="L812" title="All 2 branches covered.">            for (int j = nSing - 1; j &gt;= 0; --j) {</span>
+<span class="fc" id="L813">                int pj = permutation[j];</span>
+<span class="fc" id="L814">                double sum = 0;</span>
+<span class="fc bfc" id="L815" title="All 2 branches covered.">                for (int i = j + 1; i &lt; nSing; ++i) {</span>
+<span class="fc" id="L816">                    sum += weightedJacobian[i][pj] * work[i];</span>
+                }
+<span class="fc" id="L818">                work[j] = (work[j] - sum) / lmDiag[j];</span>
+            }
+        }
+
+        // permute the components of z back to components of lmDir
+<span class="fc bfc" id="L823" title="All 2 branches covered.">        for (int j = 0; j &lt; lmDir.length; ++j) {</span>
+<span class="fc" id="L824">            lmDir[permutation[j]] = work[j];</span>
+        }
+<span class="fc" id="L826">    }</span>
+
+    /**
+     * Decompose a matrix A as A.P = Q.R using Householder transforms.
+     * &lt;p&gt;As suggested in the P. Lascaux and R. Theodor book
+     * &lt;i&gt;Analyse num&amp;eacute;rique matricielle appliqu&amp;eacute;e &amp;agrave;
+     * l'art de l'ing&amp;eacute;nieur&lt;/i&gt; (Masson, 1986), instead of representing
+     * the Householder transforms with u&lt;sub&gt;k&lt;/sub&gt; unit vectors such that:
+     * &lt;pre&gt;
+     * H&lt;sub&gt;k&lt;/sub&gt; = I - 2u&lt;sub&gt;k&lt;/sub&gt;.u&lt;sub&gt;k&lt;/sub&gt;&lt;sup&gt;t&lt;/sup&gt;
+     * &lt;/pre&gt;
+     * we use &lt;sub&gt;k&lt;/sub&gt; non-unit vectors such that:
+     * &lt;pre&gt;
+     * H&lt;sub&gt;k&lt;/sub&gt; = I - beta&lt;sub&gt;k&lt;/sub&gt;v&lt;sub&gt;k&lt;/sub&gt;.v&lt;sub&gt;k&lt;/sub&gt;&lt;sup&gt;t&lt;/sup&gt;
+     * &lt;/pre&gt;
+     * where v&lt;sub&gt;k&lt;/sub&gt; = a&lt;sub&gt;k&lt;/sub&gt; - alpha&lt;sub&gt;k&lt;/sub&gt; e&lt;sub&gt;k&lt;/sub&gt;.
+     * The beta&lt;sub&gt;k&lt;/sub&gt; coefficients are provided upon exit as recomputing
+     * them from the v&lt;sub&gt;k&lt;/sub&gt; vectors would be costly.&lt;/p&gt;
+     * &lt;p&gt;This decomposition handles rank deficient cases since the tranformations
+     * are performed in non-increasing columns norms order thanks to columns
+     * pivoting. The diagonal elements of the R matrix are therefore also in
+     * non-increasing absolute values order.&lt;/p&gt;
+     *
+     * @param jacobian Weighted Jacobian matrix at the current point.
+     * @exception ConvergenceException if the decomposition cannot be performed
+     */
+    private void qrDecomposition(RealMatrix jacobian) throws ConvergenceException {
+        // Code in this class assumes that the weighted Jacobian is -(W^(1/2) J),
+        // hence the multiplication by -1.
+<span class="fc" id="L855">        weightedJacobian = jacobian.scalarMultiply(-1).getData();</span>
+
+<span class="fc" id="L857">        final int nR = weightedJacobian.length;</span>
+<span class="fc" id="L858">        final int nC = weightedJacobian[0].length;</span>
+
+        // initializations
+<span class="fc bfc" id="L861" title="All 2 branches covered.">        for (int k = 0; k &lt; nC; ++k) {</span>
+<span class="fc" id="L862">            permutation[k] = k;</span>
+<span class="fc" id="L863">            double norm2 = 0;</span>
+<span class="fc bfc" id="L864" title="All 2 branches covered.">            for (int i = 0; i &lt; nR; ++i) {</span>
+<span class="fc" id="L865">                double akk = weightedJacobian[i][k];</span>
+<span class="fc" id="L866">                norm2 += akk * akk;</span>
+            }
+<span class="fc" id="L868">            jacNorm[k] = FastMath.sqrt(norm2);</span>
+        }
+
+        // transform the matrix column after column
+<span class="fc bfc" id="L872" title="All 2 branches covered.">        for (int k = 0; k &lt; nC; ++k) {</span>
+
+            // select the column with the greatest norm on active components
+<span class="fc" id="L875">            int nextColumn = -1;</span>
+<span class="fc" id="L876">            double ak2 = Double.NEGATIVE_INFINITY;</span>
+<span class="fc bfc" id="L877" title="All 2 branches covered.">            for (int i = k; i &lt; nC; ++i) {</span>
+<span class="fc" id="L878">                double norm2 = 0;</span>
+<span class="fc bfc" id="L879" title="All 2 branches covered.">                for (int j = k; j &lt; nR; ++j) {</span>
+<span class="fc" id="L880">                    double aki = weightedJacobian[j][permutation[i]];</span>
+<span class="fc" id="L881">                    norm2 += aki * aki;</span>
+                }
+<span class="pc bpc" id="L883" title="2 of 4 branches missed.">                if (Double.isInfinite(norm2) || Double.isNaN(norm2)) {</span>
+<span class="nc" id="L884">                    throw new ConvergenceException(LocalizedFormats.UNABLE_TO_PERFORM_QR_DECOMPOSITION_ON_JACOBIAN,</span>
+<span class="nc" id="L885">                                                   nR, nC);</span>
+                }
+<span class="fc bfc" id="L887" title="All 2 branches covered.">                if (norm2 &gt; ak2) {</span>
+<span class="fc" id="L888">                    nextColumn = i;</span>
+<span class="fc" id="L889">                    ak2        = norm2;</span>
+                }
+            }
+<span class="fc bfc" id="L892" title="All 2 branches covered.">            if (ak2 &lt;= qrRankingThreshold) {</span>
+<span class="fc" id="L893">                rank = k;</span>
+<span class="fc" id="L894">                return;</span>
+            }
+<span class="fc" id="L896">            int pk                  = permutation[nextColumn];</span>
+<span class="fc" id="L897">            permutation[nextColumn] = permutation[k];</span>
+<span class="fc" id="L898">            permutation[k]          = pk;</span>
+
+            // choose alpha such that Hk.u = alpha ek
+<span class="fc" id="L901">            double akk   = weightedJacobian[k][pk];</span>
+<span class="fc bfc" id="L902" title="All 2 branches covered.">            double alpha = (akk &gt; 0) ? -FastMath.sqrt(ak2) : FastMath.sqrt(ak2);</span>
+<span class="fc" id="L903">            double betak = 1.0 / (ak2 - akk * alpha);</span>
+<span class="fc" id="L904">            beta[pk]     = betak;</span>
+
+            // transform the current column
+<span class="fc" id="L907">            diagR[pk]        = alpha;</span>
+<span class="fc" id="L908">            weightedJacobian[k][pk] -= alpha;</span>
+
+            // transform the remaining columns
+<span class="fc bfc" id="L911" title="All 2 branches covered.">            for (int dk = nC - 1 - k; dk &gt; 0; --dk) {</span>
+<span class="fc" id="L912">                double gamma = 0;</span>
+<span class="fc bfc" id="L913" title="All 2 branches covered.">                for (int j = k; j &lt; nR; ++j) {</span>
+<span class="fc" id="L914">                    gamma += weightedJacobian[j][pk] * weightedJacobian[j][permutation[k + dk]];</span>
+                }
+<span class="fc" id="L916">                gamma *= betak;</span>
+<span class="fc bfc" id="L917" title="All 2 branches covered.">                for (int j = k; j &lt; nR; ++j) {</span>
+<span class="fc" id="L918">                    weightedJacobian[j][permutation[k + dk]] -= gamma * weightedJacobian[j][pk];</span>
+                }
+            }
+        }
+<span class="fc" id="L922">        rank = solvedCols;</span>
+<span class="fc" id="L923">    }</span>
+
+    /**
+     * Compute the product Qt.y for some Q.R. decomposition.
+     *
+     * @param y vector to multiply (will be overwritten with the result)
+     */
+    private void qTy(double[] y) {
+<span class="fc" id="L931">        final int nR = weightedJacobian.length;</span>
+<span class="fc" id="L932">        final int nC = weightedJacobian[0].length;</span>
+
+<span class="fc bfc" id="L934" title="All 2 branches covered.">        for (int k = 0; k &lt; nC; ++k) {</span>
+<span class="fc" id="L935">            int pk = permutation[k];</span>
+<span class="fc" id="L936">            double gamma = 0;</span>
+<span class="fc bfc" id="L937" title="All 2 branches covered.">            for (int i = k; i &lt; nR; ++i) {</span>
+<span class="fc" id="L938">                gamma += weightedJacobian[i][pk] * y[i];</span>
+            }
+<span class="fc" id="L940">            gamma *= beta[pk];</span>
+<span class="fc bfc" id="L941" title="All 2 branches covered.">            for (int i = k; i &lt; nR; ++i) {</span>
+<span class="fc" id="L942">                y[i] -= gamma * weightedJacobian[i][pk];</span>
+            }
+        }
+<span class="fc" id="L945">    }</span>
+
+    /**
+     * @throws MathUnsupportedOperationException if bounds were passed to the
+     * {@link #optimize(OptimizationData[]) optimize} method.
+     */
+    private void checkParameters() {
+<span class="fc bfc" id="L952" title="All 2 branches covered.">        if (getLowerBound() != null ||</span>
+<span class="pc bpc" id="L953" title="1 of 2 branches missed.">            getUpperBound() != null) {</span>
+<span class="fc" id="L954">            throw new MathUnsupportedOperationException(LocalizedFormats.CONSTRAINT);</span>
+        }
+<span class="fc" id="L956">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ZipfDistribution.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Math</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math3.distribution</a> &gt; <span class="el_source">ZipfDistribution.java</span></div><h1>ZipfDistribution.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.math3.distribution;
+
+import org.apache.commons.math3.exception.NotStrictlyPositiveException;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well19937c;
+import org.apache.commons.math3.util.FastMath;
+
+/**
+ * Implementation of the Zipf distribution.
+ *
+ * @see &lt;a href=&quot;http://mathworld.wolfram.com/ZipfDistribution.html&quot;&gt;Zipf distribution (MathWorld)&lt;/a&gt;
+ */
+public class ZipfDistribution extends AbstractIntegerDistribution {
+    /** Serializable version identifier. */
+    private static final long serialVersionUID = -140627372283420404L;
+    /** Number of elements. */
+    private final int numberOfElements;
+    /** Exponent parameter of the distribution. */
+    private final double exponent;
+    /** Cached numerical mean */
+<span class="fc" id="L39">    private double numericalMean = Double.NaN;</span>
+    /** Whether or not the numerical mean has been calculated */
+<span class="fc" id="L41">    private boolean numericalMeanIsCalculated = false;</span>
+    /** Cached numerical variance */
+<span class="fc" id="L43">    private double numericalVariance = Double.NaN;</span>
+    /** Whether or not the numerical variance has been calculated */
+<span class="fc" id="L45">    private boolean numericalVarianceIsCalculated = false;</span>
+
+    /**
+     * Create a new Zipf distribution with the given number of elements and
+     * exponent.
+     * &lt;p&gt;
+     * &lt;b&gt;Note:&lt;/b&gt; this constructor will implicitly create an instance of
+     * {@link Well19937c} as random generator to be used for sampling only (see
+     * {@link #sample()} and {@link #sample(int)}). In case no sampling is
+     * needed for the created distribution, it is advised to pass {@code null}
+     * as random generator via the appropriate constructors to avoid the
+     * additional initialisation overhead.
+     *
+     * @param numberOfElements Number of elements.
+     * @param exponent Exponent.
+     * @exception NotStrictlyPositiveException if {@code numberOfElements &lt;= 0}
+     * or {@code exponent &lt;= 0}.
+     */
+    public ZipfDistribution(final int numberOfElements, final double exponent) {
+<span class="fc" id="L64">        this(new Well19937c(), numberOfElements, exponent);</span>
+<span class="fc" id="L65">    }</span>
+
+    /**
+     * Creates a Zipf distribution.
+     *
+     * @param rng Random number generator.
+     * @param numberOfElements Number of elements.
+     * @param exponent Exponent.
+     * @exception NotStrictlyPositiveException if {@code numberOfElements &lt;= 0}
+     * or {@code exponent &lt;= 0}.
+     * @since 3.1
+     */
+    public ZipfDistribution(RandomGenerator rng,
+                            int numberOfElements,
+                            double exponent)
+        throws NotStrictlyPositiveException {
+<span class="fc" id="L81">        super(rng);</span>
+
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (numberOfElements &lt;= 0) {</span>
+<span class="fc" id="L84">            throw new NotStrictlyPositiveException(LocalizedFormats.DIMENSION,</span>
+<span class="fc" id="L85">                                                   numberOfElements);</span>
+        }
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (exponent &lt;= 0) {</span>
+<span class="fc" id="L88">            throw new NotStrictlyPositiveException(LocalizedFormats.EXPONENT,</span>
+<span class="fc" id="L89">                                                   exponent);</span>
+        }
+
+<span class="fc" id="L92">        this.numberOfElements = numberOfElements;</span>
+<span class="fc" id="L93">        this.exponent = exponent;</span>
+<span class="fc" id="L94">    }</span>
+
+    /**
+     * Get the number of elements (e.g. corpus size) for the distribution.
+     *
+     * @return the number of elements
+     */
+    public int getNumberOfElements() {
+<span class="fc" id="L102">        return numberOfElements;</span>
+    }
+
+    /**
+     * Get the exponent characterizing the distribution.
+     *
+     * @return the exponent
+     */
+    public double getExponent() {
+<span class="fc" id="L111">        return exponent;</span>
+    }
+
+    /** {@inheritDoc} */
+    public double probability(final int x) {
+<span class="fc bfc" id="L116" title="All 4 branches covered.">        if (x &lt;= 0 || x &gt; numberOfElements) {</span>
+<span class="fc" id="L117">            return 0.0;</span>
+        }
+
+<span class="fc" id="L120">        return (1.0 / FastMath.pow(x, exponent)) / generalizedHarmonic(numberOfElements, exponent);</span>
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double logProbability(int x) {
+<span class="fc bfc" id="L126" title="All 4 branches covered.">        if (x &lt;= 0 || x &gt; numberOfElements) {</span>
+<span class="fc" id="L127">            return Double.NEGATIVE_INFINITY;</span>
+        }
+
+<span class="fc" id="L130">        return -FastMath.log(x) * exponent - FastMath.log(generalizedHarmonic(numberOfElements, exponent));</span>
+    }
+
+    /** {@inheritDoc} */
+    public double cumulativeProbability(final int x) {
+<span class="fc bfc" id="L135" title="All 2 branches covered.">        if (x &lt;= 0) {</span>
+<span class="fc" id="L136">            return 0.0;</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        } else if (x &gt;= numberOfElements) {</span>
+<span class="fc" id="L138">            return 1.0;</span>
+        }
+
+<span class="fc" id="L141">        return generalizedHarmonic(x, exponent) / generalizedHarmonic(numberOfElements, exponent);</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * For number of elements {@code N} and exponent {@code s}, the mean is
+     * {@code Hs1 / Hs}, where
+     * &lt;ul&gt;
+     *  &lt;li&gt;{@code Hs1 = generalizedHarmonic(N, s - 1)},&lt;/li&gt;
+     *  &lt;li&gt;{@code Hs = generalizedHarmonic(N, s)}.&lt;/li&gt;
+     * &lt;/ul&gt;
+     */
+    public double getNumericalMean() {
+<span class="fc bfc" id="L155" title="All 2 branches covered.">        if (!numericalMeanIsCalculated) {</span>
+<span class="fc" id="L156">            numericalMean = calculateNumericalMean();</span>
+<span class="fc" id="L157">            numericalMeanIsCalculated = true;</span>
+        }
+<span class="fc" id="L159">        return numericalMean;</span>
+    }
+
+    /**
+     * Used by {@link #getNumericalMean()}.
+     *
+     * @return the mean of this distribution
+     */
+    protected double calculateNumericalMean() {
+<span class="fc" id="L168">        final int N = getNumberOfElements();</span>
+<span class="fc" id="L169">        final double s = getExponent();</span>
+
+<span class="fc" id="L171">        final double Hs1 = generalizedHarmonic(N, s - 1);</span>
+<span class="fc" id="L172">        final double Hs = generalizedHarmonic(N, s);</span>
+
+<span class="fc" id="L174">        return Hs1 / Hs;</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * For number of elements {@code N} and exponent {@code s}, the mean is
+     * {@code (Hs2 / Hs) - (Hs1^2 / Hs^2)}, where
+     * &lt;ul&gt;
+     *  &lt;li&gt;{@code Hs2 = generalizedHarmonic(N, s - 2)},&lt;/li&gt;
+     *  &lt;li&gt;{@code Hs1 = generalizedHarmonic(N, s - 1)},&lt;/li&gt;
+     *  &lt;li&gt;{@code Hs = generalizedHarmonic(N, s)}.&lt;/li&gt;
+     * &lt;/ul&gt;
+     */
+    public double getNumericalVariance() {
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        if (!numericalVarianceIsCalculated) {</span>
+<span class="fc" id="L190">            numericalVariance = calculateNumericalVariance();</span>
+<span class="fc" id="L191">            numericalVarianceIsCalculated = true;</span>
+        }
+<span class="fc" id="L193">        return numericalVariance;</span>
+    }
+
+    /**
+     * Used by {@link #getNumericalVariance()}.
+     *
+     * @return the variance of this distribution
+     */
+    protected double calculateNumericalVariance() {
+<span class="fc" id="L202">        final int N = getNumberOfElements();</span>
+<span class="fc" id="L203">        final double s = getExponent();</span>
+
+<span class="fc" id="L205">        final double Hs2 = generalizedHarmonic(N, s - 2);</span>
+<span class="fc" id="L206">        final double Hs1 = generalizedHarmonic(N, s - 1);</span>
+<span class="fc" id="L207">        final double Hs = generalizedHarmonic(N, s);</span>
+
+<span class="fc" id="L209">        return (Hs2 / Hs) - ((Hs1 * Hs1) / (Hs * Hs));</span>
+    }
+
+    /**
+     * Calculates the Nth generalized harmonic number. See
+     * &lt;a href=&quot;http://mathworld.wolfram.com/HarmonicSeries.html&quot;&gt;Harmonic
+     * Series&lt;/a&gt;.
+     *
+     * @param n Term in the series to calculate (must be larger than 1)
+     * @param m Exponent (special case {@code m = 1} is the harmonic series).
+     * @return the n&lt;sup&gt;th&lt;/sup&gt; generalized harmonic number.
+     */
+    private double generalizedHarmonic(final int n, final double m) {
+<span class="fc" id="L222">        double value = 0;</span>
+<span class="fc bfc" id="L223" title="All 2 branches covered.">        for (int k = n; k &gt; 0; --k) {</span>
+<span class="fc" id="L224">            value += 1.0 / FastMath.pow(k, m);</span>
+        }
+<span class="fc" id="L226">        return value;</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * The lower bound of the support is always 1 no matter the parameters.
+     *
+     * @return lower bound of the support (always 1)
+     */
+    public int getSupportLowerBound() {
+<span class="fc" id="L237">        return 1;</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * The upper bound of the support is the number of elements.
+     *
+     * @return upper bound of the support
+     */
+    public int getSupportUpperBound() {
+<span class="fc" id="L248">        return getNumberOfElements();</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * The support of this distribution is connected.
+     *
+     * @return {@code true}
+     */
+    public boolean isSupportConnected() {
+<span class="nc" id="L259">        return true;</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

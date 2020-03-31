@@ -1,0 +1,685 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Frequency.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Math</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math3.stat</a> &gt; <span class="el_source">Frequency.java</span></div><h1>Frequency.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.math3.stat;
+
+import java.io.Serializable;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+
+import org.apache.commons.math3.exception.MathIllegalArgumentException;
+import org.apache.commons.math3.exception.NullArgumentException;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.apache.commons.math3.util.MathUtils;
+
+/**
+ * Maintains a frequency distribution.
+ * &lt;p&gt;
+ * Accepts int, long, char or Comparable values.  New values added must be
+ * comparable to those that have been added, otherwise the add method will
+ * throw an IllegalArgumentException.&lt;/p&gt;
+ * &lt;p&gt;
+ * Integer values (int, long, Integer, Long) are not distinguished by type --
+ * i.e. &lt;code&gt;addValue(Long.valueOf(2)), addValue(2), addValue(2l)&lt;/code&gt; all have
+ * the same effect (similarly for arguments to &lt;code&gt;getCount,&lt;/code&gt; etc.).&lt;/p&gt;
+ * &lt;p&gt;NOTE: byte and short values will be implicitly converted to int values
+ * by the compiler, thus there are no explicit overloaded methods for these
+ * primitive types.&lt;/p&gt;
+ * &lt;p&gt;
+ * char values are converted by &lt;code&gt;addValue&lt;/code&gt; to Character instances.
+ * As such, these values are not comparable to integral values, so attempts
+ * to combine integral types with chars in a frequency distribution will fail.
+ * &lt;/p&gt;
+ * &lt;p&gt;
+ * Float is not coerced to Double.
+ * Since they are not Comparable with each other the user must do any necessary coercion.
+ * Float.NaN and Double.NaN are not treated specially; they may occur in input and will
+ * occur in output if appropriate.
+ * &lt;/b&gt;
+ * &lt;p&gt;
+ * The values are ordered using the default (natural order), unless a
+ * &lt;code&gt;Comparator&lt;/code&gt; is supplied in the constructor.&lt;/p&gt;
+ *
+ */
+public class Frequency implements Serializable {
+
+    /** Serializable version identifier */
+    private static final long serialVersionUID = -3845586908418844111L;
+
+    /** underlying collection */
+    private final TreeMap&lt;Comparable&lt;?&gt;, Long&gt; freqTable;
+
+    /**
+     * Default constructor.
+     */
+<span class="fc" id="L75">    public Frequency() {</span>
+<span class="fc" id="L76">        freqTable = new TreeMap&lt;Comparable&lt;?&gt;, Long&gt;();</span>
+<span class="fc" id="L77">    }</span>
+
+    /**
+     * Constructor allowing values Comparator to be specified.
+     *
+     * @param comparator Comparator used to order values
+     */
+    @SuppressWarnings(&quot;unchecked&quot;) // TODO is the cast OK?
+<span class="fc" id="L85">    public Frequency(Comparator&lt;?&gt; comparator) {</span>
+<span class="fc" id="L86">        freqTable = new TreeMap&lt;Comparable&lt;?&gt;, Long&gt;((Comparator&lt;? super Comparable&lt;?&gt;&gt;) comparator);</span>
+<span class="fc" id="L87">    }</span>
+
+    /**
+     * Return a string representation of this frequency distribution.
+     *
+     * @return a string representation.
+     */
+    @Override
+    public String toString() {
+<span class="fc" id="L96">        NumberFormat nf = NumberFormat.getPercentInstance();</span>
+<span class="fc" id="L97">        StringBuilder outBuffer = new StringBuilder();</span>
+<span class="fc" id="L98">        outBuffer.append(&quot;Value \t Freq. \t Pct. \t Cum Pct. \n&quot;);</span>
+<span class="fc" id="L99">        Iterator&lt;Comparable&lt;?&gt;&gt; iter = freqTable.keySet().iterator();</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L101">            Comparable&lt;?&gt; value = iter.next();</span>
+<span class="fc" id="L102">            outBuffer.append(value);</span>
+<span class="fc" id="L103">            outBuffer.append('\t');</span>
+<span class="fc" id="L104">            outBuffer.append(getCount(value));</span>
+<span class="fc" id="L105">            outBuffer.append('\t');</span>
+<span class="fc" id="L106">            outBuffer.append(nf.format(getPct(value)));</span>
+<span class="fc" id="L107">            outBuffer.append('\t');</span>
+<span class="fc" id="L108">            outBuffer.append(nf.format(getCumPct(value)));</span>
+<span class="fc" id="L109">            outBuffer.append('\n');</span>
+<span class="fc" id="L110">        }</span>
+<span class="fc" id="L111">        return outBuffer.toString();</span>
+    }
+
+    /**
+     * Adds 1 to the frequency count for v.
+     * &lt;p&gt;
+     * If other objects have already been added to this Frequency, v must
+     * be comparable to those that have already been added.
+     * &lt;/p&gt;
+     *
+     * @param v the value to add.
+     * @throws MathIllegalArgumentException if &lt;code&gt;v&lt;/code&gt; is not comparable with previous entries
+     */
+    public void addValue(Comparable&lt;?&gt; v) throws MathIllegalArgumentException {
+<span class="fc" id="L125">        incrementValue(v, 1);</span>
+<span class="fc" id="L126">    }</span>
+
+    /**
+     * Adds 1 to the frequency count for v.
+     *
+     * @param v the value to add.
+     * @throws MathIllegalArgumentException if the table contains entries not
+     * comparable to Long
+     */
+    public void addValue(int v) throws MathIllegalArgumentException {
+<span class="fc" id="L136">        addValue(Long.valueOf(v));</span>
+<span class="fc" id="L137">    }</span>
+
+    /**
+     * Adds 1 to the frequency count for v.
+     *
+     * @param v the value to add.
+     * @throws MathIllegalArgumentException if the table contains entries not
+     * comparable to Long
+     */
+    public void addValue(long v) throws MathIllegalArgumentException {
+<span class="fc" id="L147">        addValue(Long.valueOf(v));</span>
+<span class="fc" id="L148">    }</span>
+
+    /**
+     * Adds 1 to the frequency count for v.
+     *
+     * @param v the value to add.
+     * @throws MathIllegalArgumentException if the table contains entries not
+     * comparable to Char
+     */
+    public void addValue(char v) throws MathIllegalArgumentException {
+<span class="fc" id="L158">        addValue(Character.valueOf(v));</span>
+<span class="fc" id="L159">    }</span>
+
+    /**
+     * Increments the frequency count for v.
+     * &lt;p&gt;
+     * If other objects have already been added to this Frequency, v must
+     * be comparable to those that have already been added.
+     * &lt;/p&gt;
+     *
+     * @param v the value to add.
+     * @param increment the amount by which the value should be incremented
+     * @throws MathIllegalArgumentException if &lt;code&gt;v&lt;/code&gt; is not comparable with previous entries
+     * @since 3.1
+     */
+    public void incrementValue(Comparable&lt;?&gt; v, long increment) throws MathIllegalArgumentException {
+<span class="fc" id="L174">        Comparable&lt;?&gt; obj = v;</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        if (v instanceof Integer) {</span>
+<span class="fc" id="L176">            obj = Long.valueOf(((Integer) v).longValue());</span>
+        }
+        try {
+<span class="fc" id="L179">            Long count = freqTable.get(obj);</span>
+<span class="fc bfc" id="L180" title="All 2 branches covered.">            if (count == null) {</span>
+<span class="fc" id="L181">                freqTable.put(obj, Long.valueOf(increment));</span>
+            } else {
+<span class="fc" id="L183">                freqTable.put(obj, Long.valueOf(count.longValue() + increment));</span>
+            }
+<span class="fc" id="L185">        } catch (ClassCastException ex) {</span>
+            //TreeMap will throw ClassCastException if v is not comparable
+<span class="fc" id="L187">            throw new MathIllegalArgumentException(</span>
+                  LocalizedFormats.INSTANCES_NOT_COMPARABLE_TO_EXISTING_VALUES,
+<span class="fc" id="L189">                  v.getClass().getName());</span>
+<span class="fc" id="L190">        }</span>
+<span class="fc" id="L191">    }</span>
+
+    /**
+     * Increments the frequency count for v.
+     * &lt;p&gt;
+     * If other objects have already been added to this Frequency, v must
+     * be comparable to those that have already been added.
+     * &lt;/p&gt;
+     *
+     * @param v the value to add.
+     * @param increment the amount by which the value should be incremented
+     * @throws MathIllegalArgumentException if the table contains entries not
+     * comparable to Long
+     * @since 3.3
+     */
+    public void incrementValue(int v, long increment) throws MathIllegalArgumentException {
+<span class="fc" id="L207">        incrementValue(Long.valueOf(v), increment);</span>
+<span class="fc" id="L208">    }</span>
+
+    /**
+     * Increments the frequency count for v.
+     * &lt;p&gt;
+     * If other objects have already been added to this Frequency, v must
+     * be comparable to those that have already been added.
+     * &lt;/p&gt;
+     *
+     * @param v the value to add.
+     * @param increment the amount by which the value should be incremented
+     * @throws MathIllegalArgumentException if the table contains entries not
+     * comparable to Long
+     * @since 3.3
+     */
+    public void incrementValue(long v, long increment) throws MathIllegalArgumentException {
+<span class="fc" id="L224">        incrementValue(Long.valueOf(v), increment);</span>
+<span class="fc" id="L225">    }</span>
+
+    /**
+     * Increments the frequency count for v.
+     * &lt;p&gt;
+     * If other objects have already been added to this Frequency, v must
+     * be comparable to those that have already been added.
+     * &lt;/p&gt;
+     *
+     * @param v the value to add.
+     * @param increment the amount by which the value should be incremented
+     * @throws MathIllegalArgumentException if the table contains entries not
+     * comparable to Char
+     * @since 3.3
+     */
+    public void incrementValue(char v, long increment) throws MathIllegalArgumentException {
+<span class="fc" id="L241">        incrementValue(Character.valueOf(v), increment);</span>
+<span class="fc" id="L242">    }</span>
+
+    /** Clears the frequency table */
+    public void clear() {
+<span class="fc" id="L246">        freqTable.clear();</span>
+<span class="fc" id="L247">    }</span>
+
+    /**
+     * Returns an Iterator over the set of values that have been added.
+     * &lt;p&gt;
+     * If added values are integral (i.e., integers, longs, Integers, or Longs),
+     * they are converted to Longs when they are added, so the objects returned
+     * by the Iterator will in this case be Longs.&lt;/p&gt;
+     *
+     * @return values Iterator
+     */
+    public Iterator&lt;Comparable&lt;?&gt;&gt; valuesIterator() {
+<span class="fc" id="L259">        return freqTable.keySet().iterator();</span>
+    }
+
+    /**
+     * Return an Iterator over the set of keys and values that have been added.
+     * Using the entry set to iterate is more efficient in the case where you
+     * need to access respective counts as well as values, since it doesn't
+     * require a &quot;get&quot; for every key...the value is provided in the Map.Entry.
+     * &lt;p&gt;
+     * If added values are integral (i.e., integers, longs, Integers, or Longs),
+     * they are converted to Longs when they are added, so the values of the
+     * map entries returned by the Iterator will in this case be Longs.&lt;/p&gt;
+     *
+     * @return entry set Iterator
+     * @since 3.1
+     */
+    public Iterator&lt;Map.Entry&lt;Comparable&lt;?&gt;, Long&gt;&gt; entrySetIterator() {
+<span class="fc" id="L276">        return freqTable.entrySet().iterator();</span>
+    }
+
+    //-------------------------------------------------------------------------
+
+    /**
+     * Returns the sum of all frequencies.
+     *
+     * @return the total frequency count.
+     */
+    public long getSumFreq() {
+<span class="fc" id="L287">        long result = 0;</span>
+<span class="fc" id="L288">        Iterator&lt;Long&gt; iterator = freqTable.values().iterator();</span>
+<span class="fc bfc" id="L289" title="All 2 branches covered.">        while (iterator.hasNext())  {</span>
+<span class="fc" id="L290">            result += iterator.next().longValue();</span>
+        }
+<span class="fc" id="L292">        return result;</span>
+    }
+
+    /**
+     * Returns the number of values equal to v.
+     * Returns 0 if the value is not comparable.
+     *
+     * @param v the value to lookup.
+     * @return the frequency of v.
+     */
+    public long getCount(Comparable&lt;?&gt; v) {
+<span class="fc bfc" id="L303" title="All 2 branches covered.">        if (v instanceof Integer) {</span>
+<span class="fc" id="L304">            return getCount(((Integer) v).longValue());</span>
+        }
+<span class="fc" id="L306">        long result = 0;</span>
+        try {
+<span class="fc" id="L308">            Long count =  freqTable.get(v);</span>
+<span class="fc bfc" id="L309" title="All 2 branches covered.">            if (count != null) {</span>
+<span class="fc" id="L310">                result = count.longValue();</span>
+            }
+<span class="fc" id="L312">        } catch (ClassCastException ex) { // NOPMD</span>
+            // ignore and return 0 -- ClassCastException will be thrown if value is not comparable
+<span class="fc" id="L314">        }</span>
+<span class="fc" id="L315">        return result;</span>
+    }
+
+    /**
+     * Returns the number of values equal to v.
+     *
+     * @param v the value to lookup.
+     * @return the frequency of v.
+     */
+    public long getCount(int v) {
+<span class="fc" id="L325">        return getCount(Long.valueOf(v));</span>
+    }
+
+    /**
+     * Returns the number of values equal to v.
+     *
+     * @param v the value to lookup.
+     * @return the frequency of v.
+     */
+    public long getCount(long v) {
+<span class="fc" id="L335">        return getCount(Long.valueOf(v));</span>
+    }
+
+    /**
+     * Returns the number of values equal to v.
+     *
+     * @param v the value to lookup.
+     * @return the frequency of v.
+     */
+    public long getCount(char v) {
+<span class="fc" id="L345">        return getCount(Character.valueOf(v));</span>
+    }
+
+    /**
+     * Returns the number of values in the frequency table.
+     *
+     * @return the number of unique values that have been added to the frequency table.
+     * @see #valuesIterator()
+     */
+    public int getUniqueCount(){
+<span class="fc" id="L355">        return freqTable.keySet().size();</span>
+    }
+
+    /**
+     * Returns the percentage of values that are equal to v
+     * (as a proportion between 0 and 1).
+     * &lt;p&gt;
+     * Returns &lt;code&gt;Double.NaN&lt;/code&gt; if no values have been added.
+     * Returns 0 if at least one value has been added, but v is not comparable
+     * to the values set.&lt;/p&gt;
+     *
+     * @param v the value to lookup
+     * @return the proportion of values equal to v
+     */
+    public double getPct(Comparable&lt;?&gt; v) {
+<span class="fc" id="L370">        final long sumFreq = getSumFreq();</span>
+<span class="fc bfc" id="L371" title="All 2 branches covered.">        if (sumFreq == 0) {</span>
+<span class="fc" id="L372">            return Double.NaN;</span>
+        }
+<span class="fc" id="L374">        return (double) getCount(v) / (double) sumFreq;</span>
+    }
+
+    /**
+     * Returns the percentage of values that are equal to v
+     * (as a proportion between 0 and 1).
+     *
+     * @param v the value to lookup
+     * @return the proportion of values equal to v
+     */
+    public double getPct(int v) {
+<span class="fc" id="L385">        return getPct(Long.valueOf(v));</span>
+    }
+
+    /**
+     * Returns the percentage of values that are equal to v
+     * (as a proportion between 0 and 1).
+     *
+     * @param v the value to lookup
+     * @return the proportion of values equal to v
+     */
+    public double getPct(long v) {
+<span class="fc" id="L396">        return getPct(Long.valueOf(v));</span>
+    }
+
+    /**
+     * Returns the percentage of values that are equal to v
+     * (as a proportion between 0 and 1).
+     *
+     * @param v the value to lookup
+     * @return the proportion of values equal to v
+     */
+    public double getPct(char v) {
+<span class="fc" id="L407">        return getPct(Character.valueOf(v));</span>
+    }
+
+    //-----------------------------------------------------------------------------------------
+
+    /**
+     * Returns the cumulative frequency of values less than or equal to v.
+     * &lt;p&gt;
+     * Returns 0 if v is not comparable to the values set.&lt;/p&gt;
+     *
+     * @param v the value to lookup.
+     * @return the proportion of values equal to v
+     */
+    @SuppressWarnings({ &quot;rawtypes&quot;, &quot;unchecked&quot; })
+    public long getCumFreq(Comparable&lt;?&gt; v) {
+<span class="fc bfc" id="L422" title="All 2 branches covered.">        if (getSumFreq() == 0) {</span>
+<span class="fc" id="L423">            return 0;</span>
+        }
+<span class="fc bfc" id="L425" title="All 2 branches covered.">        if (v instanceof Integer) {</span>
+<span class="fc" id="L426">            return getCumFreq(((Integer) v).longValue());</span>
+        }
+<span class="fc" id="L428">        Comparator&lt;Comparable&lt;?&gt;&gt; c = (Comparator&lt;Comparable&lt;?&gt;&gt;) freqTable.comparator();</span>
+<span class="fc bfc" id="L429" title="All 2 branches covered.">        if (c == null) {</span>
+<span class="fc" id="L430">            c = new NaturalComparator();</span>
+        }
+<span class="fc" id="L432">        long result = 0;</span>
+
+        try {
+<span class="fc" id="L435">            Long value = freqTable.get(v);</span>
+<span class="fc bfc" id="L436" title="All 2 branches covered.">            if (value != null) {</span>
+<span class="fc" id="L437">                result = value.longValue();</span>
+            }
+<span class="fc" id="L439">        } catch (ClassCastException ex) {</span>
+<span class="fc" id="L440">            return result;   // v is not comparable</span>
+<span class="fc" id="L441">        }</span>
+
+<span class="fc bfc" id="L443" title="All 2 branches covered.">        if (c.compare(v, freqTable.firstKey()) &lt; 0) {</span>
+<span class="fc" id="L444">            return 0;  // v is comparable, but less than first value</span>
+        }
+
+<span class="fc bfc" id="L447" title="All 2 branches covered.">        if (c.compare(v, freqTable.lastKey()) &gt;= 0) {</span>
+<span class="fc" id="L448">            return getSumFreq();    // v is comparable, but greater than the last value</span>
+        }
+
+<span class="fc" id="L451">        Iterator&lt;Comparable&lt;?&gt;&gt; values = valuesIterator();</span>
+<span class="pc bpc" id="L452" title="1 of 2 branches missed.">        while (values.hasNext()) {</span>
+<span class="fc" id="L453">            Comparable&lt;?&gt; nextValue = values.next();</span>
+<span class="fc bfc" id="L454" title="All 2 branches covered.">            if (c.compare(v, nextValue) &gt; 0) {</span>
+<span class="fc" id="L455">                result += getCount(nextValue);</span>
+            } else {
+<span class="fc" id="L457">                return result;</span>
+            }
+<span class="fc" id="L459">        }</span>
+<span class="nc" id="L460">        return result;</span>
+    }
+
+     /**
+     * Returns the cumulative frequency of values less than or equal to v.
+     * &lt;p&gt;
+     * Returns 0 if v is not comparable to the values set.&lt;/p&gt;
+     *
+     * @param v the value to lookup
+     * @return the proportion of values equal to v
+     */
+    public long getCumFreq(int v) {
+<span class="fc" id="L472">        return getCumFreq(Long.valueOf(v));</span>
+    }
+
+     /**
+     * Returns the cumulative frequency of values less than or equal to v.
+     * &lt;p&gt;
+     * Returns 0 if v is not comparable to the values set.&lt;/p&gt;
+     *
+     * @param v the value to lookup
+     * @return the proportion of values equal to v
+     */
+    public long getCumFreq(long v) {
+<span class="fc" id="L484">        return getCumFreq(Long.valueOf(v));</span>
+    }
+
+    /**
+     * Returns the cumulative frequency of values less than or equal to v.
+     * &lt;p&gt;
+     * Returns 0 if v is not comparable to the values set.&lt;/p&gt;
+     *
+     * @param v the value to lookup
+     * @return the proportion of values equal to v
+     */
+    public long getCumFreq(char v) {
+<span class="fc" id="L496">        return getCumFreq(Character.valueOf(v));</span>
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    /**
+     * Returns the cumulative percentage of values less than or equal to v
+     * (as a proportion between 0 and 1).
+     * &lt;p&gt;
+     * Returns &lt;code&gt;Double.NaN&lt;/code&gt; if no values have been added.
+     * Returns 0 if at least one value has been added, but v is not comparable
+     * to the values set.&lt;/p&gt;
+     *
+     * @param v the value to lookup
+     * @return the proportion of values less than or equal to v
+     */
+    public double getCumPct(Comparable&lt;?&gt; v) {
+<span class="fc" id="L513">        final long sumFreq = getSumFreq();</span>
+<span class="fc bfc" id="L514" title="All 2 branches covered.">        if (sumFreq == 0) {</span>
+<span class="fc" id="L515">            return Double.NaN;</span>
+        }
+<span class="fc" id="L517">        return (double) getCumFreq(v) / (double) sumFreq;</span>
+    }
+
+    /**
+     * Returns the cumulative percentage of values less than or equal to v
+     * (as a proportion between 0 and 1).
+     * &lt;p&gt;
+     * Returns 0 if v is not comparable to the values set.&lt;/p&gt;
+     *
+     * @param v the value to lookup
+     * @return the proportion of values less than or equal to v
+     */
+    public double getCumPct(int v) {
+<span class="fc" id="L530">        return getCumPct(Long.valueOf(v));</span>
+    }
+
+    /**
+     * Returns the cumulative percentage of values less than or equal to v
+     * (as a proportion between 0 and 1).
+     * &lt;p&gt;
+     * Returns 0 if v is not comparable to the values set.&lt;/p&gt;
+     *
+     * @param v the value to lookup
+     * @return the proportion of values less than or equal to v
+     */
+    public double getCumPct(long v) {
+<span class="fc" id="L543">        return getCumPct(Long.valueOf(v));</span>
+    }
+
+    /**
+     * Returns the cumulative percentage of values less than or equal to v
+     * (as a proportion between 0 and 1).
+     * &lt;p&gt;
+     * Returns 0 if v is not comparable to the values set.&lt;/p&gt;
+     *
+     * @param v the value to lookup
+     * @return the proportion of values less than or equal to v
+     */
+    public double getCumPct(char v) {
+<span class="fc" id="L556">        return getCumPct(Character.valueOf(v));</span>
+    }
+
+    /**
+     * Returns the mode value(s) in comparator order.
+     *
+     * @return a list containing the value(s) which appear most often.
+     * @since 3.3
+     */
+    public List&lt;Comparable&lt;?&gt;&gt; getMode() {
+<span class="fc" id="L566">        long mostPopular = 0; // frequencies are always positive</span>
+
+        // Get the max count first, so we avoid having to recreate the List each time
+<span class="fc bfc" id="L569" title="All 2 branches covered.">        for(Long l : freqTable.values()) {</span>
+<span class="fc" id="L570">            long frequency = l.longValue();</span>
+<span class="fc bfc" id="L571" title="All 2 branches covered.">            if (frequency &gt; mostPopular) {</span>
+<span class="fc" id="L572">                mostPopular = frequency;</span>
+            }
+<span class="fc" id="L574">        }</span>
+
+<span class="fc" id="L576">        List&lt;Comparable&lt;?&gt;&gt; modeList = new ArrayList&lt;Comparable&lt;?&gt;&gt;();</span>
+<span class="fc bfc" id="L577" title="All 2 branches covered.">        for (Entry&lt;Comparable&lt;?&gt;, Long&gt; ent : freqTable.entrySet()) {</span>
+<span class="fc" id="L578">            long frequency = ent.getValue().longValue();</span>
+<span class="fc bfc" id="L579" title="All 2 branches covered.">            if (frequency == mostPopular) {</span>
+<span class="fc" id="L580">               modeList.add(ent.getKey());</span>
+            }
+<span class="fc" id="L582">        }</span>
+<span class="fc" id="L583">        return modeList;</span>
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    /**
+     * Merge another Frequency object's counts into this instance.
+     * This Frequency's counts will be incremented (or set when not already set)
+     * by the counts represented by other.
+     *
+     * @param other the other {@link Frequency} object to be merged
+     * @throws NullArgumentException if {@code other} is null
+     * @since 3.1
+     */
+    public void merge(final Frequency other) throws NullArgumentException {
+<span class="fc" id="L598">        MathUtils.checkNotNull(other, LocalizedFormats.NULL_NOT_ALLOWED);</span>
+
+<span class="fc" id="L600">        final Iterator&lt;Map.Entry&lt;Comparable&lt;?&gt;, Long&gt;&gt; iter = other.entrySetIterator();</span>
+<span class="fc bfc" id="L601" title="All 2 branches covered.">        while (iter.hasNext()) {</span>
+<span class="fc" id="L602">            final Map.Entry&lt;Comparable&lt;?&gt;, Long&gt; entry = iter.next();</span>
+<span class="fc" id="L603">            incrementValue(entry.getKey(), entry.getValue().longValue());</span>
+<span class="fc" id="L604">        }</span>
+<span class="fc" id="L605">    }</span>
+
+    /**
+     * Merge a {@link Collection} of {@link Frequency} objects into this instance.
+     * This Frequency's counts will be incremented (or set when not already set)
+     * by the counts represented by each of the others.
+     *
+     * @param others the other {@link Frequency} objects to be merged
+     * @throws NullArgumentException if the collection is null
+     * @since 3.1
+     */
+    public void merge(final Collection&lt;Frequency&gt; others) throws NullArgumentException {
+<span class="fc" id="L617">        MathUtils.checkNotNull(others, LocalizedFormats.NULL_NOT_ALLOWED);</span>
+
+<span class="fc bfc" id="L619" title="All 2 branches covered.">        for (final Frequency freq : others) {</span>
+<span class="fc" id="L620">            merge(freq);</span>
+<span class="fc" id="L621">        }</span>
+<span class="fc" id="L622">    }</span>
+
+    //----------------------------------------------------------------------------------------------
+
+    /**
+     * A Comparator that compares comparable objects using the
+     * natural order.  Copied from Commons Collections ComparableComparator.
+     */
+    private static class NaturalComparator&lt;T extends Comparable&lt;T&gt;&gt; implements Comparator&lt;Comparable&lt;T&gt;&gt;, Serializable {
+
+        /** Serializable version identifier */
+        private static final long serialVersionUID = -3852193713161395148L;
+
+        /**
+         * Compare the two {@link Comparable Comparable} arguments.
+         * This method is equivalent to:
+         * &lt;pre&gt;(({@link Comparable Comparable})o1).{@link Comparable#compareTo compareTo}(o2)&lt;/pre&gt;
+         *
+         * @param  o1 the first object
+         * @param  o2 the second object
+         * @return  result of comparison
+         * @throws NullPointerException when &lt;i&gt;o1&lt;/i&gt; is &lt;code&gt;null&lt;/code&gt;,
+         *         or when &lt;code&gt;((Comparable)o1).compareTo(o2)&lt;/code&gt; does
+         * @throws ClassCastException when &lt;i&gt;o1&lt;/i&gt; is not a {@link Comparable Comparable},
+         *         or when &lt;code&gt;((Comparable)o1).compareTo(o2)&lt;/code&gt; does
+         */
+        @SuppressWarnings(&quot;unchecked&quot;) // cast to (T) may throw ClassCastException, see Javadoc
+        public int compare(Comparable&lt;T&gt; o1, Comparable&lt;T&gt; o2) {
+<span class="fc" id="L650">            return o1.compareTo((T) o2);</span>
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+<span class="nc" id="L657">        final int prime = 31;</span>
+<span class="nc" id="L658">        int result = 1;</span>
+<span class="nc" id="L659">        result = prime * result +</span>
+<span class="nc bnc" id="L660" title="All 2 branches missed.">                 ((freqTable == null) ? 0 : freqTable.hashCode());</span>
+<span class="nc" id="L661">        return result;</span>
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L667" title="1 of 2 branches missed.">        if (this == obj) {</span>
+<span class="nc" id="L668">            return true;</span>
+        }
+<span class="pc bpc" id="L670" title="1 of 2 branches missed.">        if (!(obj instanceof Frequency)) {</span>
+<span class="nc" id="L671">            return false;</span>
+        }
+<span class="fc" id="L673">        Frequency other = (Frequency) obj;</span>
+<span class="pc bpc" id="L674" title="1 of 2 branches missed.">        if (freqTable == null) {</span>
+<span class="nc bnc" id="L675" title="All 2 branches missed.">            if (other.freqTable != null) {</span>
+<span class="nc" id="L676">                return false;</span>
+            }
+<span class="pc bpc" id="L678" title="1 of 2 branches missed.">        } else if (!freqTable.equals(other.freqTable)) {</span>
+<span class="nc" id="L679">            return false;</span>
+        }
+<span class="fc" id="L681">        return true;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

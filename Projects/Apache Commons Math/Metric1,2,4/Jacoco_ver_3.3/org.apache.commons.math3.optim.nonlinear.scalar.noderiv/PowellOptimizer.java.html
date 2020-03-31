@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PowellOptimizer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Math</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math3.optim.nonlinear.scalar.noderiv</a> &gt; <span class="el_source">PowellOptimizer.java</span></div><h1>PowellOptimizer.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.math3.optim.nonlinear.scalar.noderiv;
+
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathArrays;
+import org.apache.commons.math3.exception.NumberIsTooSmallException;
+import org.apache.commons.math3.exception.NotStrictlyPositiveException;
+import org.apache.commons.math3.exception.MathUnsupportedOperationException;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.PointValuePair;
+import org.apache.commons.math3.optim.ConvergenceChecker;
+import org.apache.commons.math3.optim.nonlinear.scalar.MultivariateOptimizer;
+import org.apache.commons.math3.optim.nonlinear.scalar.LineSearch;
+import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
+
+/**
+ * Powell's algorithm.
+ * This code is translated and adapted from the Python version of this
+ * algorithm (as implemented in module {@code optimize.py} v0.5 of
+ * &lt;em&gt;SciPy&lt;/em&gt;).
+ * &lt;br/&gt;
+ * The default stopping criterion is based on the differences of the
+ * function value between two successive iterations. It is however possible
+ * to define a custom convergence checker that might terminate the algorithm
+ * earlier.
+ * &lt;br/&gt;
+ * Line search is performed by the {@link LineSearch} class.
+ * &lt;br/&gt;
+ * Constraints are not supported: the call to
+ * {@link #optimize(OptimizationData[]) optimize} will throw
+ * {@link MathUnsupportedOperationException} if bounds are passed to it.
+ * In order to impose simple constraints, the objective function must be
+ * wrapped in an adapter like
+ * {@link org.apache.commons.math3.optim.nonlinear.scalar.MultivariateFunctionMappingAdapter
+ * MultivariateFunctionMappingAdapter} or
+ * {@link org.apache.commons.math3.optim.nonlinear.scalar.MultivariateFunctionPenaltyAdapter
+ * MultivariateFunctionPenaltyAdapter}.
+ *
+ * @version $Id$
+ * @since 2.2
+ */
+public class PowellOptimizer
+    extends MultivariateOptimizer {
+    /**
+     * Minimum relative tolerance.
+     */
+<span class="fc" id="L63">    private static final double MIN_RELATIVE_TOLERANCE = 2 * FastMath.ulp(1d);</span>
+    /**
+     * Relative threshold.
+     */
+    private final double relativeThreshold;
+    /**
+     * Absolute threshold.
+     */
+    private final double absoluteThreshold;
+    /**
+     * Line search.
+     */
+    private final LineSearch line;
+
+    /**
+     * This constructor allows to specify a user-defined convergence checker,
+     * in addition to the parameters that control the default convergence
+     * checking procedure.
+     * &lt;br/&gt;
+     * The internal line search tolerances are set to the square-root of their
+     * corresponding value in the multivariate optimizer.
+     *
+     * @param rel Relative threshold.
+     * @param abs Absolute threshold.
+     * @param checker Convergence checker.
+     * @throws NotStrictlyPositiveException if {@code abs &lt;= 0}.
+     * @throws NumberIsTooSmallException if {@code rel &lt; 2 * Math.ulp(1d)}.
+     */
+    public PowellOptimizer(double rel,
+                           double abs,
+                           ConvergenceChecker&lt;PointValuePair&gt; checker) {
+<span class="fc" id="L94">        this(rel, abs, FastMath.sqrt(rel), FastMath.sqrt(abs), checker);</span>
+<span class="fc" id="L95">    }</span>
+
+    /**
+     * This constructor allows to specify a user-defined convergence checker,
+     * in addition to the parameters that control the default convergence
+     * checking procedure and the line search tolerances.
+     *
+     * @param rel Relative threshold for this optimizer.
+     * @param abs Absolute threshold for this optimizer.
+     * @param lineRel Relative threshold for the internal line search optimizer.
+     * @param lineAbs Absolute threshold for the internal line search optimizer.
+     * @param checker Convergence checker.
+     * @throws NotStrictlyPositiveException if {@code abs &lt;= 0}.
+     * @throws NumberIsTooSmallException if {@code rel &lt; 2 * Math.ulp(1d)}.
+     */
+    public PowellOptimizer(double rel,
+                           double abs,
+                           double lineRel,
+                           double lineAbs,
+                           ConvergenceChecker&lt;PointValuePair&gt; checker) {
+<span class="fc" id="L115">        super(checker);</span>
+
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">        if (rel &lt; MIN_RELATIVE_TOLERANCE) {</span>
+<span class="nc" id="L118">            throw new NumberIsTooSmallException(rel, MIN_RELATIVE_TOLERANCE, true);</span>
+        }
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        if (abs &lt;= 0) {</span>
+<span class="nc" id="L121">            throw new NotStrictlyPositiveException(abs);</span>
+        }
+<span class="fc" id="L123">        relativeThreshold = rel;</span>
+<span class="fc" id="L124">        absoluteThreshold = abs;</span>
+
+        // Create the line search optimizer.
+<span class="fc" id="L127">        line = new LineSearch(this,</span>
+                              lineRel,
+                              lineAbs,
+                              1d);
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * The parameters control the default convergence checking procedure.
+     * &lt;br/&gt;
+     * The internal line search tolerances are set to the square-root of their
+     * corresponding value in the multivariate optimizer.
+     *
+     * @param rel Relative threshold.
+     * @param abs Absolute threshold.
+     * @throws NotStrictlyPositiveException if {@code abs &lt;= 0}.
+     * @throws NumberIsTooSmallException if {@code rel &lt; 2 * Math.ulp(1d)}.
+     */
+    public PowellOptimizer(double rel,
+                           double abs) {
+<span class="fc" id="L146">        this(rel, abs, null);</span>
+<span class="fc" id="L147">    }</span>
+
+    /**
+     * Builds an instance with the default convergence checking procedure.
+     *
+     * @param rel Relative threshold.
+     * @param abs Absolute threshold.
+     * @param lineRel Relative threshold for the internal line search optimizer.
+     * @param lineAbs Absolute threshold for the internal line search optimizer.
+     * @throws NotStrictlyPositiveException if {@code abs &lt;= 0}.
+     * @throws NumberIsTooSmallException if {@code rel &lt; 2 * Math.ulp(1d)}.
+     */
+    public PowellOptimizer(double rel,
+                           double abs,
+                           double lineRel,
+                           double lineAbs) {
+<span class="fc" id="L163">        this(rel, abs, lineRel, lineAbs, null);</span>
+<span class="fc" id="L164">    }</span>
+
+    /** {@inheritDoc} */
+    @Override
+    protected PointValuePair doOptimize() {
+<span class="fc" id="L169">        checkParameters();</span>
+
+<span class="fc" id="L171">        final GoalType goal = getGoalType();</span>
+<span class="fc" id="L172">        final double[] guess = getStartPoint();</span>
+<span class="fc" id="L173">        final int n = guess.length;</span>
+
+<span class="fc" id="L175">        final double[][] direc = new double[n][n];</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="fc" id="L177">            direc[i][i] = 1;</span>
+        }
+
+<span class="fc" id="L180">        final ConvergenceChecker&lt;PointValuePair&gt; checker</span>
+<span class="fc" id="L181">            = getConvergenceChecker();</span>
+
+<span class="fc" id="L183">        double[] x = guess;</span>
+<span class="fc" id="L184">        double fVal = computeObjectiveValue(x);</span>
+<span class="fc" id="L185">        double[] x1 = x.clone();</span>
+        while (true) {
+<span class="fc" id="L187">            incrementIterationCount();</span>
+
+<span class="fc" id="L189">            double fX = fVal;</span>
+<span class="fc" id="L190">            double fX2 = 0;</span>
+<span class="fc" id="L191">            double delta = 0;</span>
+<span class="fc" id="L192">            int bigInd = 0;</span>
+<span class="fc" id="L193">            double alphaMin = 0;</span>
+
+<span class="fc bfc" id="L195" title="All 2 branches covered.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="fc" id="L196">                final double[] d = MathArrays.copyOf(direc[i]);</span>
+
+<span class="fc" id="L198">                fX2 = fVal;</span>
+
+<span class="fc" id="L200">                final UnivariatePointValuePair optimum = line.search(x, d);</span>
+<span class="fc" id="L201">                fVal = optimum.getValue();</span>
+<span class="fc" id="L202">                alphaMin = optimum.getPoint();</span>
+<span class="fc" id="L203">                final double[][] result = newPointAndDirection(x, d, alphaMin);</span>
+<span class="fc" id="L204">                x = result[0];</span>
+
+<span class="fc bfc" id="L206" title="All 2 branches covered.">                if ((fX2 - fVal) &gt; delta) {</span>
+<span class="fc" id="L207">                    delta = fX2 - fVal;</span>
+<span class="fc" id="L208">                    bigInd = i;</span>
+                }
+            }
+
+            // Default convergence check.
+<span class="fc" id="L213">            boolean stop = 2 * (fX - fVal) &lt;=</span>
+<span class="fc bfc" id="L214" title="All 2 branches covered.">                (relativeThreshold * (FastMath.abs(fX) + FastMath.abs(fVal)) +</span>
+                 absoluteThreshold);
+
+<span class="fc" id="L217">            final PointValuePair previous = new PointValuePair(x1, fX);</span>
+<span class="fc" id="L218">            final PointValuePair current = new PointValuePair(x, fVal);</span>
+<span class="pc bpc" id="L219" title="1 of 4 branches missed.">            if (!stop &amp;&amp; checker != null) { // User-defined stopping criteria.</span>
+<span class="nc" id="L220">                stop = checker.converged(getIterations(), previous, current);</span>
+            }
+<span class="fc bfc" id="L222" title="All 2 branches covered.">            if (stop) {</span>
+<span class="fc bfc" id="L223" title="All 2 branches covered.">                if (goal == GoalType.MINIMIZE) {</span>
+<span class="fc bfc" id="L224" title="All 2 branches covered.">                    return (fVal &lt; fX) ? current : previous;</span>
+                } else {
+<span class="fc bfc" id="L226" title="All 2 branches covered.">                    return (fVal &gt; fX) ? current : previous;</span>
+                }
+            }
+
+<span class="fc" id="L230">            final double[] d = new double[n];</span>
+<span class="fc" id="L231">            final double[] x2 = new double[n];</span>
+<span class="fc bfc" id="L232" title="All 2 branches covered.">            for (int i = 0; i &lt; n; i++) {</span>
+<span class="fc" id="L233">                d[i] = x[i] - x1[i];</span>
+<span class="fc" id="L234">                x2[i] = 2 * x[i] - x1[i];</span>
+            }
+
+<span class="fc" id="L237">            x1 = x.clone();</span>
+<span class="fc" id="L238">            fX2 = computeObjectiveValue(x2);</span>
+
+<span class="fc bfc" id="L240" title="All 2 branches covered.">            if (fX &gt; fX2) {</span>
+<span class="fc" id="L241">                double t = 2 * (fX + fX2 - 2 * fVal);</span>
+<span class="fc" id="L242">                double temp = fX - fVal - delta;</span>
+<span class="fc" id="L243">                t *= temp * temp;</span>
+<span class="fc" id="L244">                temp = fX - fX2;</span>
+<span class="fc" id="L245">                t -= delta * temp * temp;</span>
+
+<span class="fc bfc" id="L247" title="All 2 branches covered.">                if (t &lt; 0.0) {</span>
+<span class="fc" id="L248">                    final UnivariatePointValuePair optimum = line.search(x, d);</span>
+<span class="fc" id="L249">                    fVal = optimum.getValue();</span>
+<span class="fc" id="L250">                    alphaMin = optimum.getPoint();</span>
+<span class="fc" id="L251">                    final double[][] result = newPointAndDirection(x, d, alphaMin);</span>
+<span class="fc" id="L252">                    x = result[0];</span>
+
+<span class="fc" id="L254">                    final int lastInd = n - 1;</span>
+<span class="fc" id="L255">                    direc[bigInd] = direc[lastInd];</span>
+<span class="fc" id="L256">                    direc[lastInd] = result[1];</span>
+                }
+            }
+<span class="fc" id="L259">        }</span>
+    }
+
+    /**
+     * Compute a new point (in the original space) and a new direction
+     * vector, resulting from the line search.
+     *
+     * @param p Point used in the line search.
+     * @param d Direction used in the line search.
+     * @param optimum Optimum found by the line search.
+     * @return a 2-element array containing the new point (at index 0) and
+     * the new direction (at index 1).
+     */
+    private double[][] newPointAndDirection(double[] p,
+                                            double[] d,
+                                            double optimum) {
+<span class="fc" id="L275">        final int n = p.length;</span>
+<span class="fc" id="L276">        final double[] nP = new double[n];</span>
+<span class="fc" id="L277">        final double[] nD = new double[n];</span>
+<span class="fc bfc" id="L278" title="All 2 branches covered.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="fc" id="L279">            nD[i] = d[i] * optimum;</span>
+<span class="fc" id="L280">            nP[i] = p[i] + nD[i];</span>
+        }
+
+<span class="fc" id="L283">        final double[][] result = new double[2][];</span>
+<span class="fc" id="L284">        result[0] = nP;</span>
+<span class="fc" id="L285">        result[1] = nD;</span>
+
+<span class="fc" id="L287">        return result;</span>
+    }
+
+    /**
+     * @throws MathUnsupportedOperationException if bounds were passed to the
+     * {@link #optimize(OptimizationData[]) optimize} method.
+     */
+    private void checkParameters() {
+<span class="fc bfc" id="L295" title="All 2 branches covered.">        if (getLowerBound() != null ||</span>
+<span class="pc bpc" id="L296" title="1 of 2 branches missed.">            getUpperBound() != null) {</span>
+<span class="fc" id="L297">            throw new MathUnsupportedOperationException(LocalizedFormats.CONSTRAINT);</span>
+        }
+<span class="fc" id="L299">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

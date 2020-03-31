@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NeuronSquareMesh2D.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Math</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math3.ml.neuralnet.twod</a> &gt; <span class="el_source">NeuronSquareMesh2D.java</span></div><h1>NeuronSquareMesh2D.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.commons.math3.ml.neuralnet.twod;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.io.Serializable;
+import java.io.ObjectInputStream;
+import org.apache.commons.math3.ml.neuralnet.Neuron;
+import org.apache.commons.math3.ml.neuralnet.Network;
+import org.apache.commons.math3.ml.neuralnet.FeatureInitializer;
+import org.apache.commons.math3.ml.neuralnet.SquareNeighbourhood;
+import org.apache.commons.math3.exception.NumberIsTooSmallException;
+import org.apache.commons.math3.exception.OutOfRangeException;
+import org.apache.commons.math3.exception.MathInternalError;
+
+/**
+ * Neural network with the topology of a two-dimensional surface.
+ * Each neuron defines one surface element.
+ * &lt;br/&gt;
+ * This network is primarily intended to represent a
+ * &lt;a href=&quot;http://en.wikipedia.org/wiki/Kohonen&quot;&gt;
+ *  Self Organizing Feature Map&lt;/a&gt;.
+ *
+ * @see org.apache.commons.math3.ml.neuralnet.sofm
+ * @version $Id$
+ * @since 3.3
+ */
+public class NeuronSquareMesh2D implements Serializable {
+    /** Underlying network. */
+    private final Network network;
+    /** Number of rows. */
+    private final int numberOfRows;
+    /** Number of columns. */
+    private final int numberOfColumns;
+    /** Wrap. */
+    private final boolean wrapRows;
+    /** Wrap. */
+    private final boolean wrapColumns;
+    /** Neighbourhood type. */
+    private final SquareNeighbourhood neighbourhood;
+    /**
+     * Mapping of the 2D coordinates (in the rectangular mesh) to
+     * the neuron identifiers (attributed by the {@link #network}
+     * instance).
+     */
+    private final long[][] identifiers;
+
+    /**
+     * Constructor with restricted access, solely used for deserialization.
+     *
+     * @param wrapRowDim Whether to wrap the first dimension (i.e the first
+     * and last neurons will be linked together).
+     * @param wrapColDim Whether to wrap the second dimension (i.e the first
+     * and last neurons will be linked together).
+     * @param neighbourhoodType Neighbourhood type.
+     * @param featuresList Arrays that will initialize the features sets of
+     * the network's neurons.
+     * @throws NumberIsTooSmallException if {@code numRows &lt; 2} or
+     * {@code numCols &lt; 2}.
+     */
+    NeuronSquareMesh2D(boolean wrapRowDim,
+                       boolean wrapColDim,
+                       SquareNeighbourhood neighbourhoodType,
+<span class="fc" id="L80">                       double[][][] featuresList) {</span>
+<span class="fc" id="L81">        numberOfRows = featuresList.length;</span>
+<span class="fc" id="L82">        numberOfColumns = featuresList[0].length;</span>
+
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">        if (numberOfRows &lt; 2) {</span>
+<span class="nc" id="L85">            throw new NumberIsTooSmallException(numberOfRows, 2, true);</span>
+        }
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        if (numberOfColumns &lt; 2) {</span>
+<span class="nc" id="L88">            throw new NumberIsTooSmallException(numberOfColumns, 2, true);</span>
+        }
+
+<span class="fc" id="L91">        wrapRows = wrapRowDim;</span>
+<span class="fc" id="L92">        wrapColumns = wrapColDim;</span>
+<span class="fc" id="L93">        neighbourhood = neighbourhoodType;</span>
+
+<span class="fc" id="L95">        final int fLen = featuresList[0][0].length;</span>
+<span class="fc" id="L96">        network = new Network(0, fLen);</span>
+<span class="fc" id="L97">        identifiers = new long[numberOfRows][numberOfColumns];</span>
+
+        // Add neurons.
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        for (int i = 0; i &lt; numberOfRows; i++) {</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">            for (int j = 0; j &lt; numberOfColumns; j++) {</span>
+<span class="fc" id="L102">                identifiers[i][j] = network.createNeuron(featuresList[i][j]);</span>
+            }
+        }
+
+        // Add links.
+<span class="fc" id="L107">        createLinks();</span>
+<span class="fc" id="L108">    }</span>
+
+    /**
+     * Creates a two-dimensional network composed of square cells:
+     * Each neuron not located on the border of the mesh has four
+     * neurons linked to it.
+     * &lt;br/&gt;
+     * The links are bi-directional.
+     * &lt;br/&gt;
+     * The topology of the network can also be a cylinder (if one
+     * of the dimensions is wrapped) or a torus (if both dimensions
+     * are wrapped).
+     *
+     * @param numRows Number of neurons in the first dimension.
+     * @param wrapRowDim Whether to wrap the first dimension (i.e the first
+     * and last neurons will be linked together).
+     * @param numCols Number of neurons in the second dimension.
+     * @param wrapColDim Whether to wrap the second dimension (i.e the first
+     * and last neurons will be linked together).
+     * @param neighbourhoodType Neighbourhood type.
+     * @param featureInit Array of functions that will initialize the
+     * corresponding element of the features set of each newly created
+     * neuron. In particular, the size of this array defines the size of
+     * feature set.
+     * @throws NumberIsTooSmallException if {@code numRows &lt; 2} or
+     * {@code numCols &lt; 2}.
+     */
+    public NeuronSquareMesh2D(int numRows,
+                              boolean wrapRowDim,
+                              int numCols,
+                              boolean wrapColDim,
+                              SquareNeighbourhood neighbourhoodType,
+<span class="fc" id="L140">                              FeatureInitializer[] featureInit) {</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        if (numRows &lt; 2) {</span>
+<span class="fc" id="L142">            throw new NumberIsTooSmallException(numRows, 2, true);</span>
+        }
+<span class="fc bfc" id="L144" title="All 2 branches covered.">        if (numCols &lt; 2) {</span>
+<span class="fc" id="L145">            throw new NumberIsTooSmallException(numCols, 2, true);</span>
+        }
+
+<span class="fc" id="L148">        numberOfRows = numRows;</span>
+<span class="fc" id="L149">        wrapRows = wrapRowDim;</span>
+<span class="fc" id="L150">        numberOfColumns = numCols;</span>
+<span class="fc" id="L151">        wrapColumns = wrapColDim;</span>
+<span class="fc" id="L152">        neighbourhood = neighbourhoodType;</span>
+<span class="fc" id="L153">        identifiers = new long[numberOfRows][numberOfColumns];</span>
+
+<span class="fc" id="L155">        final int fLen = featureInit.length;</span>
+<span class="fc" id="L156">        network = new Network(0, fLen);</span>
+
+        // Add neurons.
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        for (int i = 0; i &lt; numRows; i++) {</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">            for (int j = 0; j &lt; numCols; j++) {</span>
+<span class="fc" id="L161">                final double[] features = new double[fLen];</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">                for (int fIndex = 0; fIndex &lt; fLen; fIndex++) {</span>
+<span class="fc" id="L163">                    features[fIndex] = featureInit[fIndex].value();</span>
+                }
+<span class="fc" id="L165">                identifiers[i][j] = network.createNeuron(features);</span>
+            }
+        }
+
+        // Add links.
+<span class="fc" id="L170">        createLinks();</span>
+<span class="fc" id="L171">    }</span>
+
+    /**
+     * Retrieves the underlying network.
+     * A reference is returned (enabling, for example, the network to be
+     * trained).
+     * This also implies that calling methods that modify the {@link Network}
+     * topology may cause this class to become inconsistent.
+     *
+     * @return the network.
+     */
+    public Network getNetwork() {
+<span class="fc" id="L183">        return network;</span>
+    }
+
+    /**
+     * Gets the number of neurons in each row of this map.
+     *
+     * @return the number of rows.
+     */
+    public int getNumberOfRows() {
+<span class="nc" id="L192">        return numberOfRows;</span>
+    }
+
+    /**
+     * Gets the number of neurons in each column of this map.
+     *
+     * @return the number of column.
+     */
+    public int getNumberOfColumns() {
+<span class="nc" id="L201">        return numberOfColumns;</span>
+    }
+
+    /**
+     * Retrieves the neuron at location {@code (i, j)} in the map.
+     *
+     * @param i Row index.
+     * @param j Column index.
+     * @return the neuron at {@code (i, j)}.
+     * @throws OutOfRangeException if {@code i} or {@code j} is
+     * out of range.
+     */
+    public Neuron getNeuron(int i,
+                            int j) {
+<span class="pc bpc" id="L215" title="2 of 4 branches missed.">        if (i &lt; 0 ||</span>
+            i &gt;= numberOfRows) {
+<span class="nc" id="L217">            throw new OutOfRangeException(i, 0, numberOfRows - 1);</span>
+        }
+<span class="pc bpc" id="L219" title="2 of 4 branches missed.">        if (j &lt; 0 ||</span>
+            j &gt;= numberOfColumns) {
+<span class="nc" id="L221">            throw new OutOfRangeException(j, 0, numberOfColumns - 1);</span>
+        }
+
+<span class="fc" id="L224">        return network.getNeuron(identifiers[i][j]);</span>
+    }
+
+    /**
+     * Creates the neighbour relationships between neurons.
+     */
+    private void createLinks() {
+        // &quot;linkEnd&quot; will store the identifiers of the &quot;neighbours&quot;.
+<span class="fc" id="L232">        final List&lt;Long&gt; linkEnd = new ArrayList&lt;Long&gt;();</span>
+<span class="fc" id="L233">        final int iLast = numberOfRows - 1;</span>
+<span class="fc" id="L234">        final int jLast = numberOfColumns - 1;</span>
+<span class="fc bfc" id="L235" title="All 2 branches covered.">        for (int i = 0; i &lt; numberOfRows; i++) {</span>
+<span class="fc bfc" id="L236" title="All 2 branches covered.">            for (int j = 0; j &lt; numberOfColumns; j++) {</span>
+<span class="fc" id="L237">                linkEnd.clear();</span>
+
+<span class="pc bpc" id="L239" title="1 of 3 branches missed.">                switch (neighbourhood) {</span>
+
+                case MOORE:
+                    // Add links to &quot;diagonal&quot; neighbours.
+<span class="fc bfc" id="L243" title="All 2 branches covered.">                    if (i &gt; 0) {</span>
+<span class="fc bfc" id="L244" title="All 2 branches covered.">                        if (j &gt; 0) {</span>
+<span class="fc" id="L245">                            linkEnd.add(identifiers[i - 1][j - 1]);</span>
+                        }
+<span class="fc bfc" id="L247" title="All 2 branches covered.">                        if (j &lt; jLast) {</span>
+<span class="fc" id="L248">                            linkEnd.add(identifiers[i - 1][j + 1]);</span>
+                        }
+                    }
+<span class="fc bfc" id="L251" title="All 2 branches covered.">                    if (i &lt; iLast) {</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">                        if (j &gt; 0) {</span>
+<span class="fc" id="L253">                            linkEnd.add(identifiers[i + 1][j - 1]);</span>
+                        }
+<span class="fc bfc" id="L255" title="All 2 branches covered.">                        if (j &lt; jLast) {</span>
+<span class="fc" id="L256">                            linkEnd.add(identifiers[i + 1][j + 1]);</span>
+                        }
+                    }
+<span class="fc bfc" id="L259" title="All 2 branches covered.">                    if (wrapRows) {</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">                        if (i == 0) {</span>
+<span class="fc bfc" id="L261" title="All 2 branches covered.">                            if (j &gt; 0) {</span>
+<span class="fc" id="L262">                                linkEnd.add(identifiers[iLast][j - 1]);</span>
+                            }
+<span class="fc bfc" id="L264" title="All 2 branches covered.">                            if (j &lt; jLast) {</span>
+<span class="fc" id="L265">                                linkEnd.add(identifiers[iLast][j + 1]);</span>
+                            }
+<span class="fc bfc" id="L267" title="All 2 branches covered.">                        } else if (i == iLast) {</span>
+<span class="fc bfc" id="L268" title="All 2 branches covered.">                            if (j &gt; 0) {</span>
+<span class="fc" id="L269">                                linkEnd.add(identifiers[0][j - 1]);</span>
+                            }
+<span class="fc bfc" id="L271" title="All 2 branches covered.">                            if (j &lt; jLast) {</span>
+<span class="fc" id="L272">                                linkEnd.add(identifiers[0][j + 1]);</span>
+                            }
+                        }
+                    }
+<span class="fc bfc" id="L276" title="All 2 branches covered.">                    if (wrapColumns) {</span>
+<span class="fc bfc" id="L277" title="All 2 branches covered.">                        if (j == 0) {</span>
+<span class="fc bfc" id="L278" title="All 2 branches covered.">                            if (i &gt; 0) {</span>
+<span class="fc" id="L279">                                linkEnd.add(identifiers[i - 1][jLast]);</span>
+                            }
+<span class="fc bfc" id="L281" title="All 2 branches covered.">                            if (i &lt; iLast) {</span>
+<span class="fc" id="L282">                                linkEnd.add(identifiers[i + 1][jLast]);</span>
+                            }
+<span class="fc bfc" id="L284" title="All 2 branches covered.">                        } else if (j == jLast) {</span>
+<span class="fc bfc" id="L285" title="All 2 branches covered.">                             if (i &gt; 0) {</span>
+<span class="fc" id="L286">                                 linkEnd.add(identifiers[i - 1][0]);</span>
+                             }
+<span class="fc bfc" id="L288" title="All 2 branches covered.">                             if (i &lt; iLast) {</span>
+<span class="fc" id="L289">                                 linkEnd.add(identifiers[i + 1][0]);</span>
+                             }
+                        }
+                    }
+<span class="pc bpc" id="L293" title="1 of 4 branches missed.">                    if (wrapRows &amp;&amp;</span>
+                        wrapColumns) {
+<span class="fc bfc" id="L295" title="All 4 branches covered.">                        if (i == 0 &amp;&amp;</span>
+                            j == 0) {
+<span class="fc" id="L297">                            linkEnd.add(identifiers[iLast][jLast]);</span>
+<span class="fc bfc" id="L298" title="All 4 branches covered.">                        } else if (i == 0 &amp;&amp;</span>
+                                   j == jLast) {
+<span class="fc" id="L300">                            linkEnd.add(identifiers[iLast][0]);</span>
+<span class="fc bfc" id="L301" title="All 4 branches covered.">                        } else if (i == iLast &amp;&amp;</span>
+                                   j == 0) {
+<span class="fc" id="L303">                            linkEnd.add(identifiers[0][jLast]);</span>
+<span class="fc bfc" id="L304" title="All 4 branches covered.">                        } else if (i == iLast &amp;&amp;</span>
+                                   j == jLast) {
+<span class="fc" id="L306">                            linkEnd.add(identifiers[0][0]);</span>
+                        }
+                    }
+
+                    // Case falls through since the &quot;Moore&quot; neighbourhood
+                    // also contains the neurons that belong to the &quot;Von
+                    // Neumann&quot; neighbourhood.
+
+                    // fallthru (CheckStyle)
+                case VON_NEUMANN:
+                    // Links to preceding and following &quot;row&quot;.
+<span class="fc bfc" id="L317" title="All 2 branches covered.">                    if (i &gt; 0) {</span>
+<span class="fc" id="L318">                        linkEnd.add(identifiers[i - 1][j]);</span>
+                    }
+<span class="fc bfc" id="L320" title="All 2 branches covered.">                    if (i &lt; iLast) {</span>
+<span class="fc" id="L321">                        linkEnd.add(identifiers[i + 1][j]);</span>
+                    }
+<span class="fc bfc" id="L323" title="All 2 branches covered.">                    if (wrapRows) {</span>
+<span class="fc bfc" id="L324" title="All 2 branches covered.">                        if (i == 0) {</span>
+<span class="fc" id="L325">                            linkEnd.add(identifiers[iLast][j]);</span>
+<span class="fc bfc" id="L326" title="All 2 branches covered.">                        } else if (i == iLast) {</span>
+<span class="fc" id="L327">                            linkEnd.add(identifiers[0][j]);</span>
+                        }
+                    }
+
+                    // Links to preceding and following &quot;column&quot;.
+<span class="fc bfc" id="L332" title="All 2 branches covered.">                    if (j &gt; 0) {</span>
+<span class="fc" id="L333">                        linkEnd.add(identifiers[i][j - 1]);</span>
+                    }
+<span class="fc bfc" id="L335" title="All 2 branches covered.">                    if (j &lt; jLast) {</span>
+<span class="fc" id="L336">                        linkEnd.add(identifiers[i][j + 1]);</span>
+                    }
+<span class="fc bfc" id="L338" title="All 2 branches covered.">                    if (wrapColumns) {</span>
+<span class="fc bfc" id="L339" title="All 2 branches covered.">                        if (j == 0) {</span>
+<span class="fc" id="L340">                            linkEnd.add(identifiers[i][jLast]);</span>
+<span class="fc bfc" id="L341" title="All 2 branches covered.">                        } else if (j == jLast) {</span>
+<span class="fc" id="L342">                            linkEnd.add(identifiers[i][0]);</span>
+                        }
+                    }
+                    break;
+
+                default:
+<span class="nc" id="L348">                    throw new MathInternalError(); // Cannot happen.</span>
+                }
+
+<span class="fc" id="L351">                final Neuron aNeuron = network.getNeuron(identifiers[i][j]);</span>
+<span class="fc bfc" id="L352" title="All 2 branches covered.">                for (long b : linkEnd) {</span>
+<span class="fc" id="L353">                    final Neuron bNeuron = network.getNeuron(b);</span>
+                    // Link to all neighbours.
+                    // The reverse links will be added as the loop proceeds.
+<span class="fc" id="L356">                    network.addLink(aNeuron, bNeuron);</span>
+<span class="fc" id="L357">                }</span>
+            }
+        }
+<span class="fc" id="L360">    }</span>
+
+    /**
+     * Prevents proxy bypass.
+     *
+     * @param in Input stream.
+     */
+    private void readObject(ObjectInputStream in) {
+<span class="nc" id="L368">        throw new IllegalStateException();</span>
+    }
+
+    /**
+     * Custom serialization.
+     *
+     * @return the proxy instance that will be actually serialized.
+     */
+    private Object writeReplace() {
+<span class="fc" id="L377">        final double[][][] featuresList = new double[numberOfRows][numberOfColumns][];</span>
+<span class="fc bfc" id="L378" title="All 2 branches covered.">        for (int i = 0; i &lt; numberOfRows; i++) {</span>
+<span class="fc bfc" id="L379" title="All 2 branches covered.">            for (int j = 0; j &lt; numberOfColumns; j++) {</span>
+<span class="fc" id="L380">                featuresList[i][j] = getNeuron(i, j).getFeatures();</span>
+            }
+        }
+
+<span class="fc" id="L384">        return new SerializationProxy(wrapRows,</span>
+                                      wrapColumns,
+                                      neighbourhood,
+                                      featuresList);
+    }
+
+    /**
+     * Serialization.
+     */
+    private static class SerializationProxy implements Serializable {
+        /** Serializable. */
+        private static final long serialVersionUID = 20130226L;
+        /** Wrap. */
+        private final boolean wrapRows;
+        /** Wrap. */
+        private final boolean wrapColumns;
+        /** Neighbourhood type. */
+        private final SquareNeighbourhood neighbourhood;
+        /** Neurons' features. */
+        private final double[][][] featuresList;
+
+        /**
+         * @param wrapRows Whether the row dimension is wrapped.
+         * @param wrapColumns Whether the column dimension is wrapped.
+         * @param neighbourhood Neighbourhood type.
+         * @param featuresList List of neurons features.
+         * {@code neuronList}.
+         */
+        SerializationProxy(boolean wrapRows,
+                           boolean wrapColumns,
+                           SquareNeighbourhood neighbourhood,
+<span class="fc" id="L415">                           double[][][] featuresList) {</span>
+<span class="fc" id="L416">            this.wrapRows = wrapRows;</span>
+<span class="fc" id="L417">            this.wrapColumns = wrapColumns;</span>
+<span class="fc" id="L418">            this.neighbourhood = neighbourhood;</span>
+<span class="fc" id="L419">            this.featuresList = featuresList;</span>
+<span class="fc" id="L420">        }</span>
+
+        /**
+         * Custom serialization.
+         *
+         * @return the {@link Neuron} for which this instance is the proxy.
+         */
+        private Object readResolve() {
+<span class="fc" id="L428">            return new NeuronSquareMesh2D(wrapRows,</span>
+                                          wrapColumns,
+                                          neighbourhood,
+                                          featuresList);
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

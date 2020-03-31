@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GaussianCurveFitter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Math</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math3.fitting</a> &gt; <span class="el_source">GaussianCurveFitter.java</span></div><h1>GaussianCurveFitter.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.math3.fitting;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import org.apache.commons.math3.analysis.function.Gaussian;
+import org.apache.commons.math3.exception.NotStrictlyPositiveException;
+import org.apache.commons.math3.exception.NullArgumentException;
+import org.apache.commons.math3.exception.NumberIsTooSmallException;
+import org.apache.commons.math3.exception.OutOfRangeException;
+import org.apache.commons.math3.exception.ZeroException;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
+import org.apache.commons.math3.linear.DiagonalMatrix;
+import org.apache.commons.math3.util.FastMath;
+
+/**
+ * Fits points to a {@link
+ * org.apache.commons.math3.analysis.function.Gaussian.Parametric Gaussian}
+ * function.
+ * &lt;br/&gt;
+ * The {@link #withStartPoint(double[]) initial guess values} must be passed
+ * in the following order:
+ * &lt;ul&gt;
+ *  &lt;li&gt;Normalization&lt;/li&gt;
+ *  &lt;li&gt;Mean&lt;/li&gt;
+ *  &lt;li&gt;Sigma&lt;/li&gt;
+ * &lt;/ul&gt;
+ * The optimal values will be returned in the same order.
+ *
+ * &lt;p&gt;
+ * Usage example:
+ * &lt;pre&gt;
+ *   WeightedObservedPoints obs = new WeightedObservedPoints();
+ *   obs.add(4.0254623,  531026.0);
+ *   obs.add(4.03128248, 984167.0);
+ *   obs.add(4.03839603, 1887233.0);
+ *   obs.add(4.04421621, 2687152.0);
+ *   obs.add(4.05132976, 3461228.0);
+ *   obs.add(4.05326982, 3580526.0);
+ *   obs.add(4.05779662, 3439750.0);
+ *   obs.add(4.0636168,  2877648.0);
+ *   obs.add(4.06943698, 2175960.0);
+ *   obs.add(4.07525716, 1447024.0);
+ *   obs.add(4.08237071, 717104.0);
+ *   obs.add(4.08366408, 620014.0);
+ *   double[] parameters = GaussianCurveFitter.create().fit(obs.toList());
+ * &lt;/pre&gt;
+ *
+ * @since 3.3
+ */
+public class GaussianCurveFitter extends AbstractCurveFitter {
+    /** Parametric function to be fitted. */
+<span class="fc" id="L74">    private static final Gaussian.Parametric FUNCTION = new Gaussian.Parametric() {</span>
+            @Override
+            public double value(double x, double ... p) {
+<span class="fc" id="L77">                double v = Double.POSITIVE_INFINITY;</span>
+                try {
+<span class="fc" id="L79">                    v = super.value(x, p);</span>
+<span class="fc" id="L80">                } catch (NotStrictlyPositiveException e) { // NOPMD</span>
+                    // Do nothing.
+<span class="fc" id="L82">                }</span>
+<span class="fc" id="L83">                return v;</span>
+            }
+
+            @Override
+            public double[] gradient(double x, double ... p) {
+<span class="fc" id="L88">                double[] v = { Double.POSITIVE_INFINITY,</span>
+                               Double.POSITIVE_INFINITY,
+                               Double.POSITIVE_INFINITY };
+                try {
+<span class="fc" id="L92">                    v = super.gradient(x, p);</span>
+<span class="fc" id="L93">                } catch (NotStrictlyPositiveException e) { // NOPMD</span>
+                    // Do nothing.
+<span class="fc" id="L95">                }</span>
+<span class="fc" id="L96">                return v;</span>
+            }
+        };
+    /** Initial guess. */
+    private final double[] initialGuess;
+    /** Maximum number of iterations of the optimization algorithm. */
+    private final int maxIter;
+
+    /**
+     * Contructor used by the factory methods.
+     *
+     * @param initialGuess Initial guess. If set to {@code null}, the initial guess
+     * will be estimated using the {@link ParameterGuesser}.
+     * @param maxIter Maximum number of iterations of the optimization algorithm.
+     */
+    private GaussianCurveFitter(double[] initialGuess,
+<span class="fc" id="L112">                                int maxIter) {</span>
+<span class="fc" id="L113">        this.initialGuess = initialGuess;</span>
+<span class="fc" id="L114">        this.maxIter = maxIter;</span>
+<span class="fc" id="L115">    }</span>
+
+    /**
+     * Creates a default curve fitter.
+     * The initial guess for the parameters will be {@link ParameterGuesser}
+     * computed automatically, and the maximum number of iterations of the
+     * optimization algorithm is set to {@link Integer#MAX_VALUE}.
+     *
+     * @return a curve fitter.
+     *
+     * @see #withStartPoint(double[])
+     * @see #withMaxIterations(int)
+     */
+    public static GaussianCurveFitter create() {
+<span class="fc" id="L129">        return new GaussianCurveFitter(null, Integer.MAX_VALUE);</span>
+    }
+
+    /**
+     * Configure the start point (initial guess).
+     * @param newStart new start point (initial guess)
+     * @return a new instance.
+     */
+    public GaussianCurveFitter withStartPoint(double[] newStart) {
+<span class="fc" id="L138">        return new GaussianCurveFitter(newStart.clone(),</span>
+                                       maxIter);
+    }
+
+    /**
+     * Configure the maximum number of iterations.
+     * @param newMaxIter maximum number of iterations
+     * @return a new instance.
+     */
+    public GaussianCurveFitter withMaxIterations(int newMaxIter) {
+<span class="fc" id="L148">        return new GaussianCurveFitter(initialGuess,</span>
+                                       newMaxIter);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected LeastSquaresProblem getProblem(Collection&lt;WeightedObservedPoint&gt; observations) {
+
+        // Prepare least-squares problem.
+<span class="fc" id="L157">        final int len = observations.size();</span>
+<span class="fc" id="L158">        final double[] target  = new double[len];</span>
+<span class="fc" id="L159">        final double[] weights = new double[len];</span>
+
+<span class="fc" id="L161">        int i = 0;</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        for (WeightedObservedPoint obs : observations) {</span>
+<span class="fc" id="L163">            target[i]  = obs.getY();</span>
+<span class="fc" id="L164">            weights[i] = obs.getWeight();</span>
+<span class="fc" id="L165">            ++i;</span>
+<span class="fc" id="L166">        }</span>
+
+<span class="fc" id="L168">        final AbstractCurveFitter.TheoreticalValuesFunction model =</span>
+                new AbstractCurveFitter.TheoreticalValuesFunction(FUNCTION, observations);
+
+<span class="fc bfc" id="L171" title="All 2 branches covered.">        final double[] startPoint = initialGuess != null ?</span>
+<span class="fc" id="L172">            initialGuess :</span>
+            // Compute estimation.
+<span class="fc" id="L174">            new ParameterGuesser(observations).guess();</span>
+
+        // Return a new least squares problem set up to fit a Gaussian curve to the
+        // observed points.
+<span class="fc" id="L178">        return new LeastSquaresBuilder().</span>
+<span class="fc" id="L179">                maxEvaluations(Integer.MAX_VALUE).</span>
+<span class="fc" id="L180">                maxIterations(maxIter).</span>
+<span class="fc" id="L181">                start(startPoint).</span>
+<span class="fc" id="L182">                target(target).</span>
+<span class="fc" id="L183">                weight(new DiagonalMatrix(weights)).</span>
+<span class="fc" id="L184">                model(model.getModelFunction(), model.getModelFunctionJacobian()).</span>
+<span class="fc" id="L185">                build();</span>
+
+    }
+
+    /**
+     * Guesses the parameters {@code norm}, {@code mean}, and {@code sigma}
+     * of a {@link org.apache.commons.math3.analysis.function.Gaussian.Parametric}
+     * based on the specified observed points.
+     */
+    public static class ParameterGuesser {
+        /** Normalization factor. */
+        private final double norm;
+        /** Mean. */
+        private final double mean;
+        /** Standard deviation. */
+        private final double sigma;
+
+        /**
+         * Constructs instance with the specified observed points.
+         *
+         * @param observations Observed points from which to guess the
+         * parameters of the Gaussian.
+         * @throws NullArgumentException if {@code observations} is
+         * {@code null}.
+         * @throws NumberIsTooSmallException if there are less than 3
+         * observations.
+         */
+<span class="fc" id="L212">        public ParameterGuesser(Collection&lt;WeightedObservedPoint&gt; observations) {</span>
+<span class="pc bpc" id="L213" title="1 of 2 branches missed.">            if (observations == null) {</span>
+<span class="nc" id="L214">                throw new NullArgumentException(LocalizedFormats.INPUT_ARRAY);</span>
+            }
+<span class="fc bfc" id="L216" title="All 2 branches covered.">            if (observations.size() &lt; 3) {</span>
+<span class="fc" id="L217">                throw new NumberIsTooSmallException(observations.size(), 3, true);</span>
+            }
+
+<span class="fc" id="L220">            final List&lt;WeightedObservedPoint&gt; sorted = sortObservations(observations);</span>
+<span class="fc" id="L221">            final double[] params = basicGuess(sorted.toArray(new WeightedObservedPoint[0]));</span>
+
+<span class="fc" id="L223">            norm = params[0];</span>
+<span class="fc" id="L224">            mean = params[1];</span>
+<span class="fc" id="L225">            sigma = params[2];</span>
+<span class="fc" id="L226">        }</span>
+
+        /**
+         * Gets an estimation of the parameters.
+         *
+         * @return the guessed parameters, in the following order:
+         * &lt;ul&gt;
+         *  &lt;li&gt;Normalization factor&lt;/li&gt;
+         *  &lt;li&gt;Mean&lt;/li&gt;
+         *  &lt;li&gt;Standard deviation&lt;/li&gt;
+         * &lt;/ul&gt;
+         */
+        public double[] guess() {
+<span class="fc" id="L239">            return new double[] { norm, mean, sigma };</span>
+        }
+
+        /**
+         * Sort the observations.
+         *
+         * @param unsorted Input observations.
+         * @return the input observations, sorted.
+         */
+        private List&lt;WeightedObservedPoint&gt; sortObservations(Collection&lt;WeightedObservedPoint&gt; unsorted) {
+<span class="fc" id="L249">            final List&lt;WeightedObservedPoint&gt; observations = new ArrayList&lt;WeightedObservedPoint&gt;(unsorted);</span>
+
+<span class="fc" id="L251">            final Comparator&lt;WeightedObservedPoint&gt; cmp = new Comparator&lt;WeightedObservedPoint&gt;() {</span>
+                public int compare(WeightedObservedPoint p1,
+                                   WeightedObservedPoint p2) {
+<span class="pc bpc" id="L254" title="3 of 4 branches missed.">                    if (p1 == null &amp;&amp; p2 == null) {</span>
+<span class="nc" id="L255">                        return 0;</span>
+                    }
+<span class="pc bpc" id="L257" title="1 of 2 branches missed.">                    if (p1 == null) {</span>
+<span class="nc" id="L258">                        return -1;</span>
+                    }
+<span class="pc bpc" id="L260" title="1 of 2 branches missed.">                    if (p2 == null) {</span>
+<span class="nc" id="L261">                        return 1;</span>
+                    }
+<span class="pc bpc" id="L263" title="1 of 2 branches missed.">                    if (p1.getX() &lt; p2.getX()) {</span>
+<span class="nc" id="L264">                        return -1;</span>
+                    }
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">                    if (p1.getX() &gt; p2.getX()) {</span>
+<span class="fc" id="L267">                        return 1;</span>
+                    }
+<span class="nc bnc" id="L269" title="All 2 branches missed.">                    if (p1.getY() &lt; p2.getY()) {</span>
+<span class="nc" id="L270">                        return -1;</span>
+                    }
+<span class="nc bnc" id="L272" title="All 2 branches missed.">                    if (p1.getY() &gt; p2.getY()) {</span>
+<span class="nc" id="L273">                        return 1;</span>
+                    }
+<span class="nc bnc" id="L275" title="All 2 branches missed.">                    if (p1.getWeight() &lt; p2.getWeight()) {</span>
+<span class="nc" id="L276">                        return -1;</span>
+                    }
+<span class="nc bnc" id="L278" title="All 2 branches missed.">                    if (p1.getWeight() &gt; p2.getWeight()) {</span>
+<span class="nc" id="L279">                        return 1;</span>
+                    }
+<span class="nc" id="L281">                    return 0;</span>
+                }
+            };
+
+<span class="fc" id="L285">            Collections.sort(observations, cmp);</span>
+<span class="fc" id="L286">            return observations;</span>
+        }
+
+        /**
+         * Guesses the parameters based on the specified observed points.
+         *
+         * @param points Observed points, sorted.
+         * @return the guessed parameters (normalization factor, mean and
+         * sigma).
+         */
+        private double[] basicGuess(WeightedObservedPoint[] points) {
+<span class="fc" id="L297">            final int maxYIdx = findMaxY(points);</span>
+<span class="fc" id="L298">            final double n = points[maxYIdx].getY();</span>
+<span class="fc" id="L299">            final double m = points[maxYIdx].getX();</span>
+
+            double fwhmApprox;
+            try {
+<span class="fc" id="L303">                final double halfY = n + ((m - n) / 2);</span>
+<span class="fc" id="L304">                final double fwhmX1 = interpolateXAtY(points, maxYIdx, -1, halfY);</span>
+<span class="fc" id="L305">                final double fwhmX2 = interpolateXAtY(points, maxYIdx, 1, halfY);</span>
+<span class="fc" id="L306">                fwhmApprox = fwhmX2 - fwhmX1;</span>
+<span class="fc" id="L307">            } catch (OutOfRangeException e) {</span>
+                // TODO: Exceptions should not be used for flow control.
+<span class="fc" id="L309">                fwhmApprox = points[points.length - 1].getX() - points[0].getX();</span>
+<span class="fc" id="L310">            }</span>
+<span class="fc" id="L311">            final double s = fwhmApprox / (2 * FastMath.sqrt(2 * FastMath.log(2)));</span>
+
+<span class="fc" id="L313">            return new double[] { n, m, s };</span>
+        }
+
+        /**
+         * Finds index of point in specified points with the largest Y.
+         *
+         * @param points Points to search.
+         * @return the index in specified points array.
+         */
+        private int findMaxY(WeightedObservedPoint[] points) {
+<span class="fc" id="L323">            int maxYIdx = 0;</span>
+<span class="fc bfc" id="L324" title="All 2 branches covered.">            for (int i = 1; i &lt; points.length; i++) {</span>
+<span class="fc bfc" id="L325" title="All 2 branches covered.">                if (points[i].getY() &gt; points[maxYIdx].getY()) {</span>
+<span class="fc" id="L326">                    maxYIdx = i;</span>
+                }
+            }
+<span class="fc" id="L329">            return maxYIdx;</span>
+        }
+
+        /**
+         * Interpolates using the specified points to determine X at the
+         * specified Y.
+         *
+         * @param points Points to use for interpolation.
+         * @param startIdx Index within points from which to start the search for
+         * interpolation bounds points.
+         * @param idxStep Index step for searching interpolation bounds points.
+         * @param y Y value for which X should be determined.
+         * @return the value of X for the specified Y.
+         * @throws ZeroException if {@code idxStep} is 0.
+         * @throws OutOfRangeException if specified {@code y} is not within the
+         * range of the specified {@code points}.
+         */
+        private double interpolateXAtY(WeightedObservedPoint[] points,
+                                       int startIdx,
+                                       int idxStep,
+                                       double y)
+            throws OutOfRangeException {
+<span class="pc bpc" id="L351" title="1 of 2 branches missed.">            if (idxStep == 0) {</span>
+<span class="nc" id="L352">                throw new ZeroException();</span>
+            }
+<span class="fc" id="L354">            final WeightedObservedPoint[] twoPoints</span>
+<span class="fc" id="L355">                = getInterpolationPointsForY(points, startIdx, idxStep, y);</span>
+<span class="fc" id="L356">            final WeightedObservedPoint p1 = twoPoints[0];</span>
+<span class="fc" id="L357">            final WeightedObservedPoint p2 = twoPoints[1];</span>
+<span class="pc bpc" id="L358" title="1 of 2 branches missed.">            if (p1.getY() == y) {</span>
+<span class="nc" id="L359">                return p1.getX();</span>
+            }
+<span class="pc bpc" id="L361" title="1 of 2 branches missed.">            if (p2.getY() == y) {</span>
+<span class="nc" id="L362">                return p2.getX();</span>
+            }
+<span class="fc" id="L364">            return p1.getX() + (((y - p1.getY()) * (p2.getX() - p1.getX())) /</span>
+<span class="fc" id="L365">                                (p2.getY() - p1.getY()));</span>
+        }
+
+        /**
+         * Gets the two bounding interpolation points from the specified points
+         * suitable for determining X at the specified Y.
+         *
+         * @param points Points to use for interpolation.
+         * @param startIdx Index within points from which to start search for
+         * interpolation bounds points.
+         * @param idxStep Index step for search for interpolation bounds points.
+         * @param y Y value for which X should be determined.
+         * @return the array containing two points suitable for determining X at
+         * the specified Y.
+         * @throws ZeroException if {@code idxStep} is 0.
+         * @throws OutOfRangeException if specified {@code y} is not within the
+         * range of the specified {@code points}.
+         */
+        private WeightedObservedPoint[] getInterpolationPointsForY(WeightedObservedPoint[] points,
+                                                                   int startIdx,
+                                                                   int idxStep,
+                                                                   double y)
+            throws OutOfRangeException {
+<span class="pc bpc" id="L388" title="1 of 2 branches missed.">            if (idxStep == 0) {</span>
+<span class="nc" id="L389">                throw new ZeroException();</span>
+            }
+<span class="fc" id="L391">            for (int i = startIdx;</span>
+<span class="fc bfc" id="L392" title="All 6 branches covered.">                 idxStep &lt; 0 ? i + idxStep &gt;= 0 : i + idxStep &lt; points.length;</span>
+<span class="fc" id="L393">                 i += idxStep) {</span>
+<span class="fc" id="L394">                final WeightedObservedPoint p1 = points[i];</span>
+<span class="fc" id="L395">                final WeightedObservedPoint p2 = points[i + idxStep];</span>
+<span class="fc bfc" id="L396" title="All 2 branches covered.">                if (isBetween(y, p1.getY(), p2.getY())) {</span>
+<span class="fc bfc" id="L397" title="All 2 branches covered.">                    if (idxStep &lt; 0) {</span>
+<span class="fc" id="L398">                        return new WeightedObservedPoint[] { p2, p1 };</span>
+                    } else {
+<span class="fc" id="L400">                        return new WeightedObservedPoint[] { p1, p2 };</span>
+                    }
+                }
+            }
+
+            // Boundaries are replaced by dummy values because the raised
+            // exception is caught and the message never displayed.
+            // TODO: Exceptions should not be used for flow control.
+<span class="fc" id="L408">            throw new OutOfRangeException(y,</span>
+<span class="fc" id="L409">                                          Double.NEGATIVE_INFINITY,</span>
+<span class="fc" id="L410">                                          Double.POSITIVE_INFINITY);</span>
+        }
+
+        /**
+         * Determines whether a value is between two other values.
+         *
+         * @param value Value to test whether it is between {@code boundary1}
+         * and {@code boundary2}.
+         * @param boundary1 One end of the range.
+         * @param boundary2 Other end of the range.
+         * @return {@code true} if {@code value} is between {@code boundary1} and
+         * {@code boundary2} (inclusive), {@code false} otherwise.
+         */
+        private boolean isBetween(double value,
+                                  double boundary1,
+                                  double boundary2) {
+<span class="pc bpc" id="L426" title="1 of 8 branches missed.">            return (value &gt;= boundary1 &amp;&amp; value &lt;= boundary2) ||</span>
+                (value &gt;= boundary2 &amp;&amp; value &lt;= boundary1);
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>

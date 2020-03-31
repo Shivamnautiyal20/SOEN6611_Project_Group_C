@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LeastSquaresFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Math</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.math3.fitting.leastsquares</a> &gt; <span class="el_source">LeastSquaresFactory.java</span></div><h1>LeastSquaresFactory.java</h1><pre class="source lang-java linenums">/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the &quot;License&quot;); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.commons.math3.fitting.leastsquares;
+
+import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
+import org.apache.commons.math3.analysis.MultivariateVectorFunction;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem.Evaluation;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.DiagonalMatrix;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.optim.AbstractOptimizationProblem;
+import org.apache.commons.math3.optim.ConvergenceChecker;
+import org.apache.commons.math3.optim.PointVectorValuePair;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Incrementor;
+import org.apache.commons.math3.util.Pair;
+
+/**
+ * A Factory for creating {@link LeastSquaresProblem}s.
+ *
+ * @version $Id$
+ * @since 3.3
+ */
+public class LeastSquaresFactory {
+
+    /** Prevent instantiation. */
+    private LeastSquaresFactory() {
+    }
+
+     /**
+     * Create a {@link org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem}
+     * from the given elements. There will be no weights applied (Identity weights).
+     *
+     * @param model          the model function. Produces the computed values.
+     * @param observed       the observed (target) values
+     * @param start          the initial guess.
+     * @param checker        convergence checker
+     * @param maxEvaluations the maximum number of times to evaluate the model
+     * @param maxIterations  the maximum number to times to iterate in the algorithm
+     * @return the specified General Least Squares problem.
+     */
+    public static LeastSquaresProblem create(final MultivariateJacobianFunction model,
+                                             final RealVector observed,
+                                             final RealVector start,
+                                             final ConvergenceChecker&lt;Evaluation&gt; checker,
+                                             final int maxEvaluations,
+                                             final int maxIterations) {
+<span class="fc" id="L65">        return new LocalLeastSquaresProblem(</span>
+                model,
+                observed,
+                start,
+                checker,
+                maxEvaluations,
+                maxIterations
+        );
+    }
+
+    /**
+     * Create a {@link org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem}
+     * from the given elements.
+     *
+     * @param model          the model function. Produces the computed values.
+     * @param observed       the observed (target) values
+     * @param start          the initial guess.
+     * @param weight         the weight matrix
+     * @param checker        convergence checker
+     * @param maxEvaluations the maximum number of times to evaluate the model
+     * @param maxIterations  the maximum number to times to iterate in the algorithm
+     * @return the specified General Least Squares problem.
+     */
+    public static LeastSquaresProblem create(final MultivariateJacobianFunction model,
+                                             final RealVector observed,
+                                             final RealVector start,
+                                             final RealMatrix weight,
+                                             final ConvergenceChecker&lt;Evaluation&gt; checker,
+                                             final int maxEvaluations,
+                                             final int maxIterations) {
+<span class="fc" id="L95">        return weightMatrix(</span>
+<span class="fc" id="L96">                create(</span>
+                        model,
+                        observed,
+                        start,
+                        checker,
+                        maxEvaluations,
+                        maxIterations
+                ),
+                weight);
+    }
+
+    /**
+     * Create a {@link org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem}
+     * from the given elements.
+     * &lt;p/&gt;
+     * This factory method is provided for continuity with previous interfaces. Newer
+     * applications should use {@link #create(MultivariateJacobianFunction, RealVector,
+     * RealVector, ConvergenceChecker, int, int)}, or {@link #create(MultivariateJacobianFunction,
+     * RealVector, RealVector, RealMatrix, ConvergenceChecker, int, int)}.
+     *
+     * @param model          the model function. Produces the computed values.
+     * @param jacobian       the jacobian of the model with respect to the parameters
+     * @param observed       the observed (target) values
+     * @param start          the initial guess.
+     * @param weight         the weight matrix
+     * @param checker        convergence checker
+     * @param maxEvaluations the maximum number of times to evaluate the model
+     * @param maxIterations  the maximum number to times to iterate in the algorithm
+     * @return the specified General Least Squares problem.
+     */
+    public static LeastSquaresProblem create(final MultivariateVectorFunction model,
+                                             final MultivariateMatrixFunction jacobian,
+                                             final double[] observed,
+                                             final double[] start,
+                                             final RealMatrix weight,
+                                             final ConvergenceChecker&lt;Evaluation&gt; checker,
+                                             final int maxEvaluations,
+                                             final int maxIterations) {
+<span class="nc" id="L134">        return create(</span>
+<span class="nc" id="L135">                model(model, jacobian),</span>
+                new ArrayRealVector(observed, false),
+                new ArrayRealVector(start, false),
+                weight,
+                checker,
+                maxEvaluations,
+                maxIterations
+        );
+    }
+
+    /**
+     * Apply a dense weight matrix to the {@link LeastSquaresProblem}.
+     *
+     * @param problem the unweighted problem
+     * @param weights the matrix of weights
+     * @return a new {@link LeastSquaresProblem} with the weights applied. The original
+     *         {@code problem} is not modified.
+     */
+    public static LeastSquaresProblem weightMatrix(final LeastSquaresProblem problem,
+                                                   final RealMatrix weights) {
+<span class="fc" id="L155">        final RealMatrix weightSquareRoot = squareRoot(weights);</span>
+<span class="fc" id="L156">        return new LeastSquaresAdapter(problem) {</span>
+            @Override
+            public Evaluation evaluate(final RealVector point) {
+<span class="fc" id="L159">                return new DenseWeightedEvaluation(super.evaluate(point), weightSquareRoot);</span>
+            }
+        };
+    }
+
+    /**
+     * Apply a diagonal weight matrix to the {@link LeastSquaresProblem}.
+     *
+     * @param problem the unweighted problem
+     * @param weights the diagonal of the weight matrix
+     * @return a new {@link LeastSquaresProblem} with the weights applied. The original
+     *         {@code problem} is not modified.
+     */
+    public static LeastSquaresProblem weightDiagonal(final LeastSquaresProblem problem,
+                                                     final RealVector weights) {
+        //TODO more efficient implementation
+<span class="nc" id="L175">        return weightMatrix(problem, new DiagonalMatrix(weights.toArray()));</span>
+    }
+
+    /**
+     * Count the evaluations of a particular problem. The {@code counter} will be
+     * incremented every time {@link LeastSquaresProblem#evaluate(RealVector)} is called on
+     * the &lt;em&gt;returned&lt;/em&gt; problem.
+     *
+     * @param problem the problem to track.
+     * @param counter the counter to increment.
+     * @return a least squares problem that tracks evaluations
+     */
+    public static LeastSquaresProblem countEvaluations(final LeastSquaresProblem problem,
+                                                       final Incrementor counter) {
+<span class="nc" id="L189">        return new LeastSquaresAdapter(problem) {</span>
+
+            public Evaluation evaluate(final RealVector point) {
+<span class="nc" id="L192">                counter.incrementCount();</span>
+<span class="nc" id="L193">                return super.evaluate(point);</span>
+            }
+
+            /* delegate the rest */
+
+        };
+    }
+
+    /**
+     * View a convergence checker specified for a {@link PointVectorValuePair} as one
+     * specified for an {@link Evaluation}.
+     *
+     * @param checker the convergence checker to adapt.
+     * @return a convergence checker that delegates to {@code checker}.
+     */
+    public static ConvergenceChecker&lt;Evaluation&gt; evaluationChecker(
+            final ConvergenceChecker&lt;PointVectorValuePair&gt; checker
+    ) {
+<span class="fc" id="L211">        return new ConvergenceChecker&lt;Evaluation&gt;() {</span>
+            public boolean converged(final int iteration,
+                                     final Evaluation previous,
+                                     final Evaluation current) {
+<span class="fc" id="L215">                return checker.converged(</span>
+                        iteration,
+                        new PointVectorValuePair(
+<span class="fc" id="L218">                                previous.getPoint().toArray(),</span>
+<span class="fc" id="L219">                                previous.getResiduals().toArray(),</span>
+                                false),
+                        new PointVectorValuePair(
+<span class="fc" id="L222">                                current.getPoint().toArray(),</span>
+<span class="fc" id="L223">                                current.getResiduals().toArray(),</span>
+                                false)
+                );
+            }
+        };
+    }
+
+    /**
+     * Computes the square-root of the weight matrix.
+     *
+     * @param m Symmetric, positive-definite (weight) matrix.
+     * @return the square-root of the weight matrix.
+     */
+    private static RealMatrix squareRoot(final RealMatrix m) {
+<span class="fc bfc" id="L237" title="All 2 branches covered.">        if (m instanceof DiagonalMatrix) {</span>
+<span class="fc" id="L238">            final int dim = m.getRowDimension();</span>
+<span class="fc" id="L239">            final RealMatrix sqrtM = new DiagonalMatrix(dim);</span>
+<span class="fc bfc" id="L240" title="All 2 branches covered.">            for (int i = 0; i &lt; dim; i++) {</span>
+<span class="fc" id="L241">                sqrtM.setEntry(i, i, FastMath.sqrt(m.getEntry(i, i)));</span>
+            }
+<span class="fc" id="L243">            return sqrtM;</span>
+        } else {
+<span class="fc" id="L245">            final EigenDecomposition dec = new EigenDecomposition(m);</span>
+<span class="fc" id="L246">            return dec.getSquareRoot();</span>
+        }
+    }
+
+    /**
+     * Combine a {@link MultivariateVectorFunction} with a {@link
+     * MultivariateMatrixFunction} to produce a {@link MultivariateJacobianFunction}.
+     *
+     * @param value    the vector value function
+     * @param jacobian the Jacobian function
+     * @return a function that computes both at the same time
+     */
+    public static MultivariateJacobianFunction model(
+            final MultivariateVectorFunction value,
+            final MultivariateMatrixFunction jacobian
+    ) {
+<span class="fc" id="L262">        return new MultivariateJacobianFunction() {</span>
+            public Pair&lt;RealVector, RealMatrix&gt; value(final RealVector point) {
+                //TODO get array from RealVector without copying?
+<span class="fc" id="L265">                final double[] pointArray = point.toArray();</span>
+                //evaluate and return data without copying
+<span class="fc" id="L267">                return new Pair&lt;RealVector, RealMatrix&gt;(</span>
+<span class="fc" id="L268">                        new ArrayRealVector(value.value(pointArray), false),</span>
+<span class="fc" id="L269">                        new Array2DRowRealMatrix(jacobian.value(pointArray), false));</span>
+            }
+        };
+    }
+
+    /**
+     * A private, &quot;field&quot; immutable (not &quot;real&quot; immutable) implementation of {@link
+     * LeastSquaresProblem}.
+     * @since 3.3
+     */
+    private static class LocalLeastSquaresProblem
+            extends AbstractOptimizationProblem&lt;Evaluation&gt;
+            implements LeastSquaresProblem {
+
+        /** Target values for the model function at optimum. */
+        private RealVector target;
+        /** Model function. */
+        private MultivariateJacobianFunction model;
+        /** Initial guess. */
+        private RealVector start;
+
+        /**
+         * Create a {@link LeastSquaresProblem} from the given data.
+         *
+         * @param model          the model function
+         * @param target         the observed data
+         * @param start          the initial guess
+         * @param checker        the convergence checker
+         * @param maxEvaluations the allowed evaluations
+         * @param maxIterations  the allowed iterations
+         */
+        LocalLeastSquaresProblem(final MultivariateJacobianFunction model,
+                                final RealVector target,
+                                final RealVector start,
+                                final ConvergenceChecker&lt;Evaluation&gt; checker,
+                                final int maxEvaluations,
+                                final int maxIterations) {
+<span class="fc" id="L306">            super(maxEvaluations, maxIterations, checker);</span>
+<span class="fc" id="L307">            this.target = target;</span>
+<span class="fc" id="L308">            this.model = model;</span>
+<span class="fc" id="L309">            this.start = start;</span>
+<span class="fc" id="L310">        }</span>
+
+        /** {@inheritDoc} */
+        public int getObservationSize() {
+<span class="fc" id="L314">            return target.getDimension();</span>
+        }
+
+        /** {@inheritDoc} */
+        public int getParameterSize() {
+<span class="fc" id="L319">            return start.getDimension();</span>
+        }
+
+        /** {@inheritDoc} */
+        public RealVector getStart() {
+<span class="pc bpc" id="L324" title="1 of 2 branches missed.">            return start == null ? null : start.copy();</span>
+        }
+
+        /** {@inheritDoc} */
+        public Evaluation evaluate(final RealVector point) {
+            //evaluate value and jacobian in one function call
+<span class="fc" id="L330">            final Pair&lt;RealVector, RealMatrix&gt; value = this.model.value(point);</span>
+<span class="fc" id="L331">            return new UnweightedEvaluation(</span>
+<span class="fc" id="L332">                    value.getFirst(),</span>
+<span class="fc" id="L333">                    value.getSecond(),</span>
+                    this.target,
+                    // copy so optimizer can change point without changing our instance
+<span class="fc" id="L336">                    point.copy());</span>
+        }
+
+        /**
+         * Container with the model evaluation at a particular point.
+         * &lt;p/&gt;
+         * TODO revisit lazy evaluation
+         */
+        private static class UnweightedEvaluation extends AbstractEvaluation {
+
+            /** the point of evaluation */
+            private final RealVector point;
+            /** deriviative at point */
+            private final RealMatrix jacobian;
+            /** the computed residuals. */
+            private final RealVector residuals;
+
+            /**
+             * Create an {@link Evaluation} with no weights.
+             *
+             * @param values   the computed function values
+             * @param jacobian the computed function Jacobian
+             * @param target   the observed values
+             * @param point    the abscissa
+             */
+            private UnweightedEvaluation(final RealVector values,
+                                         final RealMatrix jacobian,
+                                         final RealVector target,
+                                         final RealVector point) {
+<span class="fc" id="L365">                super(target.getDimension());</span>
+<span class="fc" id="L366">                this.jacobian = jacobian;</span>
+<span class="fc" id="L367">                this.point = point;</span>
+<span class="fc" id="L368">                this.residuals = target.subtract(values);</span>
+<span class="fc" id="L369">            }</span>
+
+            /** {@inheritDoc} */
+            public RealMatrix getJacobian() {
+<span class="fc" id="L373">                return this.jacobian;</span>
+            }
+
+            /** {@inheritDoc} */
+            public RealVector getPoint() {
+<span class="fc" id="L378">                return this.point;</span>
+            }
+
+            /** {@inheritDoc} */
+            public RealVector getResiduals() {
+<span class="fc" id="L383">                return this.residuals;</span>
+            }
+
+        }
+
+    }
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
