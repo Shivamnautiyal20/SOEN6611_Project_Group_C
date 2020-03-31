@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="iso-8859-1"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AbstractMethodHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Digester</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.digester3.annotations.handlers</a> &gt; <span class="el_source">AbstractMethodHandler.java</span></div><h1>AbstractMethodHandler.java</h1><pre class="source lang-java linenums">package org.apache.commons.digester3.annotations.handlers;
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+import static org.apache.commons.digester3.annotations.utils.AnnotationUtils.getAnnotationNamespaceURI;
+import static org.apache.commons.digester3.annotations.utils.AnnotationUtils.getAnnotationPattern;
+import static org.apache.commons.digester3.annotations.utils.AnnotationUtils.getAnnotationValue;
+import static org.apache.commons.digester3.annotations.utils.AnnotationUtils.getAnnotationsArrayValue;
+import static org.apache.commons.digester3.annotations.utils.AnnotationUtils.getFireOnBegin;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
+import org.apache.commons.digester3.annotations.AnnotationHandler;
+import org.apache.commons.digester3.annotations.DigesterRule;
+import org.apache.commons.digester3.annotations.DigesterRuleList;
+import org.apache.commons.digester3.annotations.FromAnnotationsRuleModule;
+import org.apache.commons.digester3.annotations.rules.CreationRule;
+import org.apache.commons.digester3.binder.RulesBinder;
+
+/**
+ * Handler that takes care to create the
+ * {@link org.apache.commons.digester3.annotations.rules.SetNext}
+ * and
+ * {@link org.apache.commons.digester3.annotations.rules.SetRoot}.
+ *
+ * @since 3.0
+ */
+<span class="fc" id="L47">abstract class AbstractMethodHandler&lt;A extends Annotation&gt; implements AnnotationHandler&lt;A, Method&gt;</span>
+{
+
+    /**
+     * The default args size the method has to have in order to be analyzed.
+     */
+    private static final int SUPPORTED_ARGS = 1;
+
+    /**
+     * {@inheritDoc}
+     */
+    public void handle( A annotation, Method element, RulesBinder rulesBinder )
+    {
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        if ( SUPPORTED_ARGS != element.getParameterTypes().length )</span>
+        {
+<span class="nc" id="L62">            DigesterRule rule = annotation.annotationType().getAnnotation( DigesterRule.class );</span>
+
+<span class="nc" id="L64">            rulesBinder.addError( &quot;Methods annotated with digester annotation rule @%s must have just one argument&quot;,</span>
+<span class="nc" id="L65">                                  rule.reflectsRule().getName() );</span>
+<span class="nc" id="L66">            return;</span>
+        }
+
+<span class="fc" id="L69">        Object explicitTypesObject = getAnnotationValue( annotation );</span>
+<span class="pc bpc" id="L70" title="2 of 4 branches missed.">        if ( explicitTypesObject == null || !explicitTypesObject.getClass().isArray()</span>
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">            || Class.class != explicitTypesObject.getClass().getComponentType() )</span>
+        {
+<span class="nc" id="L73">            rulesBinder.addError( &quot;Impossible to apply this handler, @%s.value() has to be of type 'Class&lt;?&gt;[]'&quot;,</span>
+<span class="nc" id="L74">                                  annotation.getClass().getName() );</span>
+<span class="nc" id="L75">            return;</span>
+        }
+
+<span class="fc" id="L78">        Class&lt;?&gt;[] explicitTypes = (Class&lt;?&gt;[]) explicitTypesObject;</span>
+<span class="fc" id="L79">        Class&lt;?&gt; paramType = element.getParameterTypes()[0];</span>
+<span class="fc" id="L80">        boolean fireOnBegin = getFireOnBegin( annotation );</span>
+
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if ( explicitTypes.length &gt; 0 )</span>
+        {
+<span class="fc bfc" id="L84" title="All 2 branches covered.">            for ( Class&lt;?&gt; explicitType : explicitTypes )</span>
+            {
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">                if ( !paramType.isAssignableFrom( explicitType ) )</span>
+                {
+<span class="nc" id="L88">                    rulesBinder.addError( &quot;Impossible to handle annotation %s on method, %s has to be a %s&quot;,</span>
+<span class="nc" id="L89">                                          annotation, element.toGenericString(), explicitType.getName(),</span>
+<span class="nc" id="L90">                                          paramType.getName() );</span>
+<span class="nc" id="L91">                    return;</span>
+                }
+
+<span class="fc" id="L94">                doHandle( annotation, element, explicitType, fireOnBegin, rulesBinder );</span>
+            }
+        }
+        else
+        {
+<span class="fc" id="L99">            doHandle( annotation, element, paramType, fireOnBegin, rulesBinder );</span>
+        }
+<span class="fc" id="L101">    }</span>
+
+    private void doHandle( A methodAnnotation, Method method, Class&lt;?&gt; type, boolean fireOnBegin,
+                           RulesBinder rulesBinder )
+    {
+<span class="pc bpc" id="L106" title="3 of 4 branches missed.">        if ( type.isInterface() &amp;&amp; Modifier.isAbstract( type.getModifiers() ) )</span>
+        {
+<span class="nc" id="L108">            rulesBinder.addError( &quot;Impossible to proceed analyzing %s, specified type '%s' is an interface/abstract&quot;,</span>
+<span class="nc" id="L109">                                  methodAnnotation, type.getName() );</span>
+<span class="nc" id="L110">            return;</span>
+        }
+
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        for ( Annotation annotation : type.getAnnotations() )</span>
+        {
+<span class="fc" id="L115">            doHandle( methodAnnotation, annotation, method, type, fireOnBegin, rulesBinder );</span>
+        }
+<span class="fc" id="L117">    }</span>
+
+    private void doHandle( A methodAnnotation, Annotation annotation, Method method, final Class&lt;?&gt; type,
+                           boolean fireOnBegin, RulesBinder rulesBinder )
+    {
+<span class="fc bfc" id="L122" title="All 2 branches covered.">        if ( annotation.annotationType().isAnnotationPresent( DigesterRule.class )</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">            &amp;&amp; annotation.annotationType().isAnnotationPresent( CreationRule.class ) )</span>
+        {
+<span class="fc" id="L125">            rulesBinder.install( new FromAnnotationsRuleModule()</span>
+<span class="fc" id="L126">            {</span>
+
+                @Override
+                protected void configureRules()
+                {
+<span class="fc" id="L131">                    bindRulesFrom( type );</span>
+<span class="fc" id="L132">                }</span>
+
+            } );
+
+<span class="fc" id="L136">            String pattern = getAnnotationPattern( annotation );</span>
+<span class="fc" id="L137">            String namespaceURI = getAnnotationNamespaceURI( annotation );</span>
+<span class="fc" id="L138">            doBind( pattern, namespaceURI, method, type, fireOnBegin, rulesBinder );</span>
+<span class="fc" id="L139">        }</span>
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">        else if ( annotation.annotationType().isAnnotationPresent( DigesterRuleList.class ) )</span>
+        {
+            // check if it is one of the *.List annotation
+<span class="fc" id="L143">            Annotation[] annotations = getAnnotationsArrayValue( annotation );</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">            if ( annotations != null )</span>
+            {
+                // if it is an annotations array, process them
+<span class="fc bfc" id="L147" title="All 2 branches covered.">                for ( Annotation ptr : annotations )</span>
+                {
+<span class="fc" id="L149">                    doHandle( methodAnnotation, ptr, method, type, fireOnBegin, rulesBinder );</span>
+                }
+            }
+        }
+<span class="fc" id="L153">    }</span>
+
+    protected abstract void doBind( String pattern, String namespaceURI, Method method, Class&lt;?&gt; type,
+                                    boolean fireOnBegin, RulesBinder rulesBinder );
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
