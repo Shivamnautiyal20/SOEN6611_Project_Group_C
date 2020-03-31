@@ -75,7 +75,7 @@ Versions:-
 
 ## Tools/Plugins used for Metric Measurement
 
-### 1. Jacoco Maven Plugin:-
+## 1. Jacoco Maven Plugin:-
 
 This Plugin has been used to collect data for Metric 1,2 and 4.
 Each pom.xml file of each version of each Project contains this plugin in Build.Plugins.Plugin Tag.
@@ -85,11 +85,11 @@ Run Maven Clean Goal.
 Run the Maven Test Goal.
 We get the reports in jacoco-ut folder which is currently present in the above folder structure in each project/version sub-folders
 
-2. PiTest Plugin
+## 2. PiTest Plugin
 We get the reports in a Pit-test reports folder after successfully running pit-test plugin.
 The output is in the form of index.html format for desired result We had to build script inorder to extract data for further correlation.
 
-3. Code Churn
+## 3. Code Churn
 Download and install cloc
 
 Command used :
@@ -99,10 +99,11 @@ cloc --diff “version1Code” “Version2Code” --out=report.csv
 This creates a file report.csv that contains the count of files ,blank lines, commented lines and lines of code that are same, added , modified and removed in each of the languages used in the given projects .
 We consider the sum of values of LOC for added/modified/deleted sections and get a Code Churn value.
 
-4. SonarCloud :It is online platform that help to evaluate different type of metrices like code smells, line of code etc of any project uploaded to github repository.
+## 4. SonarCloud :
+It is online platform that help to evaluate different type of metrices like code smells, line of code etc of any project uploaded to github repository.
 
 
-5. Jdeodorant :
+## 5. Jdeodorant :
 This is an eclipse plugin which helps to find different types of code smells in the given projects such as Long methods, God Class, Envy Class, Duplicated code etc.
 
 
