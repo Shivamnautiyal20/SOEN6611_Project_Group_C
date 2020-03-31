@@ -120,6 +120,22 @@ It is online platform that help to evaluate different type of metrices like code
 This is an eclipse plugin which helps to find different types of code smells in the given projects such as Long methods, God Class, Envy Class, Duplicated code etc.
 
 
+# Correlation Anaylysis :
+Steps to generate correlation chart and spearman coefficient :
+ e.g We have to generate correlation between metric 1 and metric 4 of JFree chart 
+
+1. Get Metric 1 (Line Coverage )columns values from Jacoco.csv file as we are calculating it for class level.
+2. Similarly get Metric 4 (Complexity Covered ) columns from Jacoco.Csv
+3. We have used tool provided on the following website : 
+
+https://www.wessa.net/rwasp_spearman.wasp
+ 
+4. Put column values in x and y data in above given website and compute.
+5. This will generate the coefficient and corresponding chart of the values.
+
+
+
+
 ## Team Details
 
 * Karan Sharma,         40080005, 95sharma.karan@gmail.com
