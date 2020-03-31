@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="iso-8859-1"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ObjectCreateBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Apache Commons Digester</a> &gt; <a href="index.source.html" class="el_package">org.apache.commons.digester3.binder</a> &gt; <span class="el_source">ObjectCreateBuilder.java</span></div><h1>ObjectCreateBuilder.java</h1><pre class="source lang-java linenums">package org.apache.commons.digester3.binder;
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * &quot;License&quot;); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+import org.apache.commons.digester3.ObjectCreateRule;
+
+/**
+ * Builder chained when invoking {@link LinkedRuleBuilder#createObject()}.
+ *
+ * @since 3.0
+ */
+public final class ObjectCreateBuilder
+    extends AbstractBackToLinkedRuleBuilder&lt;ObjectCreateRule&gt;
+{
+
+    private final ClassLoader classLoader;
+
+    private Class&lt;?&gt; type;
+
+    private String attributeName;
+
+    ObjectCreateBuilder( String keyPattern, String namespaceURI, RulesBinder mainBinder, LinkedRuleBuilder mainBuilder,
+                         ClassLoader classLoader )
+    {
+<span class="fc" id="L42">        super( keyPattern, namespaceURI, mainBinder, mainBuilder );</span>
+<span class="fc" id="L43">        this.classLoader = classLoader;</span>
+<span class="fc" id="L44">    }</span>
+
+    /**
+     * Construct an object with the specified class name.
+     *
+     * @param className Java class name of the object to be created
+     * @return this builder instance
+     */
+    public ObjectCreateBuilder ofType( String className )
+    {
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        if ( className == null )</span>
+        {
+<span class="nc" id="L56">            reportError( &quot;createObject().ofType( String )&quot;, &quot;NULL Java type not allowed&quot; );</span>
+<span class="nc" id="L57">            return this;</span>
+        }
+
+        try
+        {
+<span class="fc" id="L62">            return ofType( this.classLoader.loadClass( className ) );</span>
+        }
+<span class="nc" id="L64">        catch ( ClassNotFoundException e )</span>
+        {
+<span class="nc" id="L66">            reportError( &quot;createObject().ofType( String )&quot;, String.format( &quot;class '%s' cannot be load&quot;, className ) );</span>
+<span class="nc" id="L67">            return this;</span>
+        }
+    }
+
+    /**
+     * Construct an object with the specified class.
+     *
+     * @param &lt;T&gt; any java type
+     * @param type Java class of the object to be created
+     * @return this builder instance
+     */
+    public &lt;T&gt; ObjectCreateBuilder ofType( Class&lt;T&gt; type )
+    {
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if ( type == null )</span>
+        {
+<span class="nc" id="L82">            reportError( &quot;createObject().ofType( Class&lt;?&gt; )&quot;, &quot;NULL Java type not allowed&quot; );</span>
+<span class="nc" id="L83">            return this;</span>
+        }
+
+<span class="fc" id="L86">        this.type = type;</span>
+
+<span class="fc" id="L88">        return this;</span>
+    }
+
+    /**
+     * Allows specify the attribute containing an override class name if it is present.
+     *
+     * @param attributeName The attribute containing an override class name if it is present
+     * @return this builder instance
+     */
+    public ObjectCreateBuilder ofTypeSpecifiedByAttribute( /* @Nullable */String attributeName )
+    {
+<span class="fc" id="L99">        this.attributeName = attributeName;</span>
+<span class="fc" id="L100">        return this;</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected ObjectCreateRule createRule()
+    {
+<span class="fc" id="L109">        return new ObjectCreateRule( attributeName, type );</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
