@@ -85,6 +85,11 @@ Versions:-
 
 ### Apache Commons Configuration         SLOC ~ 80K
 Versions:-
+* 2.7
+* 2.6
+* 2.5
+* 2.4
+* 2.0
 
 ### Apache Commons Digester             SLOC ~27K
 Versions:-
@@ -122,6 +127,10 @@ It is online platform that help to evaluate different type of metrices like code
 
 ## 5. Jdeodorant :
 This is an eclipse plugin which helps to find different types of code smells in the given projects such as Long methods, God Class, Envy Class, Duplicated code etc.
+
+
+## 6. Intellij Jdeodorant :
+This is an Intellij plugin which helps to find different types of code smells in the given projects such as Long methods, God Class, Envy Class.
 
 
 # Correlation Anaylysis :
