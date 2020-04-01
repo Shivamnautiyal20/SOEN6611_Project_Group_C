@@ -1,6 +1,6 @@
 # Project Structure
 
-### 1. The foldercalled Project, which contains four folders:
+### 1. The folder called Project, which contains four folders:
 
 * Apache Commons Configuration.
 * Apache Commons Math.
