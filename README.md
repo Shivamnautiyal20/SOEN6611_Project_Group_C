@@ -77,7 +77,11 @@ Versions:-
 
 ### Apache Commons Math.            SLOC ~ 130K
 Versions:-
-
+* 3.6
+* 3.5
+* 3.4
+* 3.3
+* 3.2
 
 ### Apache Commons Configuration         SLOC ~ 80K
 Versions:-
