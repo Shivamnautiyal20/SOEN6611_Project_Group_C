@@ -7,23 +7,22 @@
 * Apache Commons Digester
 * Jfree Chart.
 
-Each of the four folders is named after the respective project. Each of these folders conatin the following:
+Every Project has its  own folder and each folder contains the following:
 
 The pom files for the five different versions of each project.
-Folders named 'Metric 1,2,4', Metric3, Metric5, Metric6 containing the results for the respective metric.
+Folders named 'Metric 1,2,4', Metric3, Metric5, Metric6 containing the results for the respective metrics.
 
 ### 2. Folder Correlation Data Analysis: 
-Which contains the correlation data and the correlation coefficients in seperate .xlsx files as well as the .csv files extracted from the Pit and Jacoco.
+
+This contains the correlation data and the correlation coefficients in seperate .xlsx files as well as the .csv files extracted from the Pit and Jacoco.
 It also contains the steps and description about the tool used to generate correlation and cofficient.
 
 ### 3. Documents: 
-Contains all of the reports and documents related to this project.
-
-
+This contains all of the reports and documents related to this project.
 
 # Project Description
 
-This Project is aimed at analyzing various open source systems from “The Apache Software Foundation. The systems first undergo a data collection process under which they are subjected to various tools which collect data for different metrics. Later this collected data undergoes Correlation analysis inorder to find some rationales based on the data. By Performing this assessment, we get an idea of the overall quality of the SUT (System under test) as well as helps us to get an idea of the impacts of decision made during the software development life cycle.
+This Project is aimed at analyzing various open source systems from “The Apache Software Foundation. These open source systems first undergo a data collection process under which they are subjected to various tools which collect data for different metrics. Later this collected data undergoes Correlation analysis inorder to find some rationales based on the data. By Performing this assessment, we get an idea of the overall quality of the SUT (System under test) as well as helps us to get an idea of the impacts of decision made during the software development life cycle.
 
 ## Metrics
 
@@ -93,6 +92,11 @@ Versions:-
 
 ### Apache Commons Digester             SLOC ~27K
 Versions:-
+* 3.2
+* 3.0
+* 2.1
+* 2.0
+* 1.8
 
 
 ## Tools/Plugins used for Metric Measurement
@@ -145,8 +149,6 @@ https://www.wessa.net/rwasp_spearman.wasp
  
 4. Put column values in x and y data in above given website and compute.
 5. This will generate the coefficient and corresponding chart of the values.
-
-
 
 
 ## Team Details
