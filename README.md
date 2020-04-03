@@ -137,7 +137,7 @@ This is an eclipse plugin which helps to find different types of code smells in 
 This is an Intellij plugin which helps to find different types of code smells in the given projects such as Long methods, God Class, Envy Class.
 
 
-# Correlation Anaylysis :
+# Correlation Analysis :
 Steps to generate correlation chart and spearman coefficient :
  e.g We have to generate correlation between metric 1 and metric 4 of JFree chart 
 
