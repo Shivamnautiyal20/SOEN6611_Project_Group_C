@@ -133,7 +133,7 @@ This is an eclipse plugin which helps to find different types of code smells in 
 
 # Correlation Analysis :
 Steps to generate correlation chart and spearman coefficient :
-**A)** We have to generate correlation between metric 1 and metric 4 of JFree chart 
+**A)** We have to generate correlation between metric 1 and metric 4 
 
 1. Get Metric 1 (Line Coverage )columns values from Jacoco.csv file as we are calculating it for class level.
 2. Similarly get Metric 4 (Complexity Covered ) columns from Jacoco.Csv
@@ -142,7 +142,12 @@ Steps to generate correlation chart and spearman coefficient :
 5. Now, first find correlation of metric 1 and metric 4 by giving path of the .csv files.
 6. Similarly, find correlation of metric 2 and metric 4 by giving path of the .csv files.
 
-
+**B)** We have to generate correlation between metric 1 and metric 6
+1. Get total percentage of line coverage for each version from their respective Jacoco.csv file and store the them to csv file.
+2. Get total amount of code smells for each version and store the them to csv file.
+3. We created a python script to calculate spearman correlation coefficient and generating the scatter plot.
+4. Now, first find correlation of metric 1 and metric 6 by giving path of the .csv files.
+5. Similarly, find correlation of metric 2 and metric 6 by giving path of the .csv files.
 ## Team Details
 
 * Karan Sharma,         40080005, 95sharma.karan@gmail.com
