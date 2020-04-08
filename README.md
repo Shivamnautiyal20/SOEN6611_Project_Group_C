@@ -149,6 +149,15 @@ Steps to generate correlation chart and spearman coefficient :
 3. We created a python script to calculate spearman correlation coefficient and generating the scatter plot.
 4. Now, first find correlation of metric 1 and metric 6 by giving path of the .csv files.
 5. Similarly, find correlation of metric 2 and metric 6 by giving path of the .csv files.
+
+**C)** Correlation generation between Metric 1 ,Metric 2 and Metric 3 (Line Coverage , Statement Coverage and Mutation testing ) for all projects.
+
+1. We have generated csv files for each of the Line Coverage , Statement Coverage and Mutation testing using a script written in Java using index files of Jacoco and Pit reports.
+2. Get Metric 1, Metric 2, and Metric 3  columns from generated csv as we are calculation it for class level.
+3. We have similarly a python script to calculate spearman correlation coefficient and generating the scatter plot.
+4. Now, first find correlation of metric 1 and metric 3 by giving path of the .csv files.
+5. Similarly, find correlation of metric 2 and metric 3 by giving path of the .csv files.
+
 ## Team Details
 
 * Karan Sharma,         40080005, 95sharma.karan@gmail.com
