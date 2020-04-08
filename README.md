@@ -66,7 +66,7 @@ We used SonarCloud and Jdeodorant to identify the code smells in out projects.
 
 We have Chosen the following Projects for analysis:-
 
-### Jfree Chart                   SLOC ~ 120K
+### Jfree Chart                     SLOC ~ 317K
 Versions:-
 * 1.0.19
 * 1.0.17
@@ -82,7 +82,7 @@ Versions:-
 * 3.3
 * 3.2
 
-### Apache Commons Configuration         SLOC ~ 80K
+### Apache Commons Configuration    SLOC ~ 80K
 Versions:-
 * 2.7
 * 2.6
@@ -90,7 +90,7 @@ Versions:-
 * 2.4
 * 2.0
 
-### Apache Commons Digester             SLOC ~27K
+### Apache Commons Digester         SLOC ~27K
 Versions:-
 * 3.2
 * 3.0
@@ -112,10 +112,11 @@ Run the Maven Test Goal.
 We get the reports in jacoco-ut folder which is currently present in the above folder structure in each project/version sub-folders
 
 ## 2. PiTest Plugin
-We get the reports in a Pit-test reports folder after successfully running pit-test plugin.
+We generated reports from PITClipse and PIT Mutation Idea Plugin to perform PIT testing to get the test suite
+effectiveness.
 The output is in the form of index.html format for desired result We had to build script inorder to extract data for further correlation.
 
-## 3. Code Churn
+## 3. CLOC
 Download and install cloc
 
 Command used :
@@ -125,30 +126,21 @@ cloc --diff “version1Code” “Version2Code” --out=report.csv
 This creates a file report.csv that contains the count of files ,blank lines, commented lines and lines of code that are same, added , modified and removed in each of the languages used in the given projects .
 We consider the sum of values of LOC for added/modified/deleted sections and get a Code Churn value.
 
-## 4. SonarCloud :
-It is online platform that help to evaluate different type of metrices like code smells, line of code etc of any project uploaded to github repository.
 
-
-## 5. Jdeodorant :
+## 4. Jdeodorant :
 This is an eclipse plugin which helps to find different types of code smells in the given projects such as Long methods, God Class, Envy Class, Duplicated code etc.
-
-
-## 6. Intellij Jdeodorant :
-This is an Intellij plugin which helps to find different types of code smells in the given projects such as Long methods, God Class, Envy Class.
 
 
 # Correlation Analysis :
 Steps to generate correlation chart and spearman coefficient :
- e.g We have to generate correlation between metric 1 and metric 4 of JFree chart 
+**A)** We have to generate correlation between metric 1 and metric 4 of JFree chart 
 
 1. Get Metric 1 (Line Coverage )columns values from Jacoco.csv file as we are calculating it for class level.
 2. Similarly get Metric 4 (Complexity Covered ) columns from Jacoco.Csv
-3. We have used tool provided on the following website : 
-
-https://www.wessa.net/rwasp_spearman.wasp
- 
-4. Put column values in x and y data in above given website and compute.
-5. This will generate the coefficient and corresponding chart of the values.
+3. Now, Get Metric 2 data (Branch Coverage) from Jacoco.csv file as we are calculating it for class level. 
+4. We created a python script to calculate spearman correlation coefficient and generating the scatter plot.
+5. Now, first find correlation of metric 1 and metric 3 by giving path of the .csv files.
+6. Similarly, find correlation of metric 2 and metric 3 by giving path of the .csv files.
 
 
 ## Team Details
