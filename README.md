@@ -130,6 +130,30 @@ We consider the sum of values of LOC for added/modified/deleted sections and get
 ## 4. Jdeodorant :
 This is an eclipse plugin which helps to find different types of code smells in the given projects such as Long methods, God Class, Envy Class, Duplicated code etc.
 
+# Requirements to run scripts :
+
+## Script 1 (JScript.java):  Script to generate csv for Pittest
+
+### Description : This script generates csv file using index.html from jacoco and pit test reports.
+
+### Requirements : 
+1. Add jsoup.jar file.
+2. Run JScript class  in the project.
+3. It will ask for path to Jacoco's index.html.
+4. Then add path to Pittest's index.html .
+5. It will generate new.csv containing line and branch coverage along with PitFileExtracted.csv.
+
+## Script 2 (SpearmanScript.py) :  Script to generate Correlation and spearman coefficient.
+
+### Description : This script generates correlation between two metrics and generate Scatterplot graph .
+
+### Requirements : 
+1. Used scipy.stats,matplotlib,pandas libraries in  Spyder IDE.
+2. Run pyhton class in the project.
+3. It will ask for path to Jacoco's index.html.
+4. To find correlation of two metrics, provide  path of the .csv files of corresponding metrics.
+5. It will generate correaltion, scatterplot and spearman coefficient.
+
 
 # Correlation Analysis :
 Steps to generate correlation chart and spearman coefficient :
