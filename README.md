@@ -139,8 +139,8 @@ Steps to generate correlation chart and spearman coefficient :
 2. Similarly get Metric 4 (Complexity Covered ) columns from Jacoco.Csv
 3. Now, Get Metric 2 data (Branch Coverage) from Jacoco.csv file as we are calculating it for class level. 
 4. We created a python script to calculate spearman correlation coefficient and generating the scatter plot.
-5. Now, first find correlation of metric 1 and metric 3 by giving path of the .csv files.
-6. Similarly, find correlation of metric 2 and metric 3 by giving path of the .csv files.
+5. Now, first find correlation of metric 1 and metric 4 by giving path of the .csv files.
+6. Similarly, find correlation of metric 2 and metric 4 by giving path of the .csv files.
 
 
 ## Team Details
