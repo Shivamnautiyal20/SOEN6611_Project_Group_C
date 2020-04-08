@@ -158,6 +158,13 @@ Steps to generate correlation chart and spearman coefficient :
 4. Now, first find correlation of metric 1 and metric 3 by giving path of the .csv files.
 5. Similarly, find correlation of metric 2 and metric 3 by giving path of the .csv files.
 
+**D)** Correlation generation between Metric 5 and Metric 6 (Code Churn and Code Smells ) for all projects.
+
+1. We have generated .csv files of the Code Churn and total code smells in each version.
+2. We ran the python script to calculate spearman correlation coefficient and generated the scatter plot.
+3. Now, first find correlation of metric 5 and metric 6 by giving path of the .csv files.
+
+
 ## Team Details
 
 * Karan Sharma,         40080005, 95sharma.karan@gmail.com
