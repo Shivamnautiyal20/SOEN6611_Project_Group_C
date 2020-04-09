@@ -20,6 +20,10 @@ It also contains the steps and description about the tool used to generate corre
 ### 3. Documents: 
 This contains all of the reports and documents related to this project.
 
+
+### 4. Scripts: 
+This contains all of the scripts we have created to extract data and generate spreaman coefficient and sctterplot.
+
 # Project Description
 
 This Project is aimed at analyzing various open source systems from “The Apache Software Foundation. These open source systems first undergo a data collection process under which they are subjected to various tools which collect data for different metrics. Later this collected data undergoes Correlation analysis inorder to find some rationales based on the data. By Performing this assessment, we get an idea of the overall quality of the SUT (System under test) as well as helps us to get an idea of the impacts of decision made during the software development life cycle.
