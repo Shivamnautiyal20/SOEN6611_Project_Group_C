@@ -14,7 +14,7 @@ Folders named 'Metric 1,2,4', Metric3, Metric5, Metric6 containing the results f
 
 ### 2. Folder Correlation Data Analysis: 
 
-This contains the correlation data and the correlation coefficients in seperate .xlsx files as well as the .csv files extracted from the Pit and Jacoco.
+This contains the correlation data and the correlation coefficients in seperate .xlsx files as well as the .csv files extracted for all the 6 metrics.
 It also contains the steps and description about the tool used to generate correlation and cofficient.
 
 ### 3. Documents: 
